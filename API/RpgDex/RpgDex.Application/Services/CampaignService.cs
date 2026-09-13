@@ -389,7 +389,7 @@ namespace RpgDex.Application.Services
             }
             ChatMessage newMessage = new(
                 user.Id,
-                user.UserName,
+                user.DisplayName,
                 user.IconPath,
                 request.Message,
                 DateTime.UtcNow
