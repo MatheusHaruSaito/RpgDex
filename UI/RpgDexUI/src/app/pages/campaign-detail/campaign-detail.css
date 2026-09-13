@@ -1052,16 +1052,7 @@
 
 /* Campaign Chat */
 app-campaign-chat-component {
-  width: 20%;
-  right: 0;
-  bottom: 0;
-  position: fixed;
-  animation: expandChat 0.5s ease-in;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  height: 50%;
-  flex: 1;
+  display: block;
 }
 @keyframes fadeIn {
   from {

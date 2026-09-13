@@ -1,28 +1,67 @@
-<div class="chat-container">
-  <div id="title">Chat</div>
-  <hr />
-  <section class="messages-ontainer">
-    <div class="messages" *ngFor="let msg of messages">
-      <div>
-        <img *ngIf="msg.userIcon" [src]="msg.userIcon" class="cd-user-avatar-xs" />
-        <strong>{{ msg.username }}:</strong>{{ msg.data }}
-        <span class="timestamp" *ngIf="msg.sentAt"> ({{ msg.sentAt | date: 'shortTime' }}) </span>
+<div class="chat-container" [class.is-minimized]="isMinimized">
+  <div class="chat-header" (click)="toggleMinimize()">
+    <div class="chat-title">
+      <i class="fa fa-comments"></i>
+      <span>Bate-papo da Mesa</span>
+      
+      <span class="chat-unread-badge" *ngIf="isMinimized && unreadCount > 0" title="Novas mensagens">
+        {{ unreadCount }}
+      </span>
+    </div>
+
+    <button class="btn-icon btn-sm" type="button" aria-label="Minimizar ou expandir chat">
+      <i class="fa" [ngClass]="isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </button>
+  </div>
+
+  <div class="chat-body" *ngIf="!isMinimized">
+    <div class="messages-container" #scrollContainer>
+      <div class="chat-empty" *ngIf="messages.length === 0">
+        <i class="fa fa-comment-dots"></i>
+        <span>Nenhuma mensagem por aqui ainda. Escreva algo!</span>
+      </div>
+
+      <div
+        *ngFor="let msg of messages"
+        class="message-item"
+        [class.message-mine]="msg.username === currentUsername"
+      >
+        <div
+          class="message-avatar"
+          [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''"
+        >
+          <i class="fa fa-user" *ngIf="!msg.userIcon"></i>
+        </div>
+
+        <div class="message-content">
+          <div class="message-meta">
+            <span class="message-author">{{ msg.username }}</span>
+            <span class="message-time" *ngIf="msg.sentAt">
+              {{ msg.sentAt | date: 'HH:mm' }}
+            </span>
+          </div>
+          <div class="message-bubble">
+            {{ msg.data }}
+          </div>
+        </div>
       </div>
     </div>
-  </section>
 
-  <div class="chat-controls">
-    <form (ngSubmit)="send()">
-      <input
-        class="newMessageText"
-        type="text"
-        name="newMessageText"
-        id="newMessageText"
-        [(ngModel)]="newMessageText"
-        placeholder="digite sua mensagem"
-        autocomplete="off"
-      />
-      <input class="btn-secondary" type="submit" value=">" />
-    </form>
+    <!-- CONTROLES / FORMULÁRIO -->
+    <div class="chat-controls">
+      <form (ngSubmit)="send()" class="chat-form">
+        <input
+          class="chat-input"
+          type="text"
+          name="newMessageText"
+          [(ngModel)]="newMessageText"
+          placeholder="Digite sua mensagem..."
+          autocomplete="off"
+        />
+        <button class="btn btn-primary btn-send" type="submit" [disabled]="!newMessageText.trim()">
+          <i class="fa fa-paper-plane"></i>
+        </button>
+      </form>
+    </div>
   </div>
 </div>
