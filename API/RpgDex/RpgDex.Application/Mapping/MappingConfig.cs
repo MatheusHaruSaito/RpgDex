@@ -78,7 +78,7 @@ namespace RpgDex.Application.Mapping
                 .NewConfig()
                 .Map(dest => dest.UserIcon, src => string.IsNullOrEmpty(src.UserIcon)
                     ? null
-                    : $"{baseUrl}/api/File/{src.UserIcon}");
+                    : $"{GetApiUrlIfNotFromGoogle(src.UserIcon, baseUrl)}{src.UserIcon}");
         }
         private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
         {
