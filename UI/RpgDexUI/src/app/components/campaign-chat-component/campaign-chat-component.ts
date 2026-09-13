@@ -43,12 +43,10 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
 
     this.chatService.sendMessage(request).subscribe({
       next: (r) => {
-        console.log(r);
         this.newMessageText = '';
       },
       error: (err) => console.log('error sending message: ', err),
     });
-    console.log(this.messages);
   }
 
   ngOnDestroy(): void {
