@@ -5,6 +5,7 @@ using RpgDex.Application.Dto;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using static System.Net.WebRequestMethods;
@@ -72,6 +73,12 @@ namespace RpgDex.Application.Mapping
                 .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
                  : $"{baseUrl}/api/File/{src.IconPath}");
+
+            TypeAdapterConfig<ChatMessage, CampaignChatMessagesResponse>
+                .NewConfig()
+                .Map(dest => dest.UserIcon, src => string.IsNullOrEmpty(src.UserIcon)
+                    ? null
+                    : $"{baseUrl}/api/File/{src.UserIcon}");
         }
         private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
         {

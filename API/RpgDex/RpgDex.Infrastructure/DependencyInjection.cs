@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using Resend;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
@@ -79,6 +80,8 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
             services.AddScoped<IDiscordAuthService, DiscordAuthService>();
             services.AddScoped<ICampaignChatService, CampaignChatService>();
+            services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
+
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

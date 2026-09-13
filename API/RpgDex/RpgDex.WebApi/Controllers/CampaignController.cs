@@ -101,5 +101,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.SendMessage(currentUser, request);
             return result.ToIActionResult();
         }
+        [HttpGet("GetMessages/{campaignId}")]
+        public async Task<IActionResult> GetMessages(Guid campaignId)
+        {
+            var result = await _campaignService.GetChatMessages(campaignId);
+            return result.ToIActionResult();
+        }
     }
 }
