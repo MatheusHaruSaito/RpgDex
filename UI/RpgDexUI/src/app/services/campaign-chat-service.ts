@@ -5,6 +5,7 @@ import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CampaignChatMessageRequest } from '../../models/campaignChatMessageRequest';
+import { ApiResponse } from '../../models/apiResponse';
 @Injectable({
   providedIn: 'root',
 })
@@ -32,19 +33,19 @@ export class CampaignChatService {
       })
       .catch((err) => console.error('SingalR error', err));
 
-    this.hubConnection.on('ReceiveMessage', (user: string, message: string) => {
-      let chatMessage: ChatMessage;
-      chatMessage = { user, message };
-      console.log(chatMessage);
-
+    this.hubConnection.on('ReceiveMessage', (chatMessage: ChatMessage) => {
+      console.log('Mensagem :', chatMessage);
       this.messageReceived$.next(chatMessage);
     });
   }
   public sendMessage(request: CampaignChatMessageRequest): Observable<any> {
     return this.http.post(`${this.env}/SendMessage`, request);
   }
-  public getMessages(): Observable<ChatMessage> {
+  public onMessageReceived(): Observable<ChatMessage> {
     return this.messageReceived$.asObservable();
+  }
+  public getMessages(campaignId: string): Observable<ApiResponse<ChatMessage[]>> {
+    return this.http.get<ApiResponse<ChatMessage[]>>(`${this.env}/GetMessages/${campaignId}`);
   }
   public stopConnection(campaignId: string): void {
     if (this.hubConnection) {

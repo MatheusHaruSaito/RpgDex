@@ -15,6 +15,9 @@
 .chat-container .messages {
   height: 20px;
 }
+.messages-ontainer {
+  overflow: scroll;
+}
 .chat-container .chat-controls {
   margin-top: auto;
   padding: 1px 2px;
@@ -36,4 +39,19 @@
   width: 10%;
   height: 31px;
   padding: 0%;
+}
+.cd-user-avatar-xs {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--rpg-purple-tint);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  float: left;
+  justify-content: center;
+  color: var(--rpg-purple);
+  font-size: 0.65rem;
+  flex-shrink: 0;
 }

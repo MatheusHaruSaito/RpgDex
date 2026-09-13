@@ -6,6 +6,7 @@ import { CampaignChatService } from '../../services/campaign-chat-service';
 import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageRequest';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ApiResponse } from '../../../models/apiResponse';
 
 @Component({
   selector: 'app-campaign-chat-component',
@@ -26,9 +27,15 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
   ) {}
   ngOnInit(): void {
+    this.chatService.getMessages(this.campaignId).subscribe({
+      next: (r) => {
+        this.messages = r.data ? r.data : [];
+      },
+    });
+
     const token = this.authService.Token;
     this.chatService.startConnection(this.campaignId, token);
-    this.chatSubscription = this.chatService.getMessages().subscribe((msg) => {
+    this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg) => {
       this.messages.push(msg);
       this.cdr.detectChanges();
     });
@@ -44,6 +51,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(request).subscribe({
       next: (r) => {
         this.newMessageText = '';
+        this.cdr.detectChanges();
       },
       error: (err) => console.log('error sending message: ', err),
     });

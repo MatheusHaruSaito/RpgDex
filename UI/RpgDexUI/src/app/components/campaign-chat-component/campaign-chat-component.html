@@ -1,9 +1,16 @@
 <div class="chat-container">
   <div id="title">Chat</div>
   <hr />
-  <div class="messages" *ngFor="let msg of messages">
-    <strong>{{ msg.user }}:</strong>{{ msg.message }}
-  </div>
+  <section class="messages-ontainer">
+    <div class="messages" *ngFor="let msg of messages">
+      <div>
+        <img *ngIf="msg.userIcon" [src]="msg.userIcon" class="cd-user-avatar-xs" />
+        <strong>{{ msg.username }}:</strong>{{ msg.data }}
+        <span class="timestamp" *ngIf="msg.sentAt"> ({{ msg.sentAt | date: 'shortTime' }}) </span>
+      </div>
+    </div>
+  </section>
+
   <div class="chat-controls">
     <form (ngSubmit)="send()">
       <input
