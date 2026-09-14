@@ -57,6 +57,9 @@ export class CampaignService {
   AcceptCharacter(request: AcceptCharacterToCampaignRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/AcceptCharacter`, request);
   }
+  RemoveCharacter(request: AcceptCharacterToCampaignRequest): Observable<ApiResponse<String>> {
+    return this.http.patch<ApiResponse<String>>(`${this.env}/AcceptCharacter`, request);
+  }
   RemovePlayer(request: RemovePlayerFromCampaignRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/RemovePlayer`, request);
   }
