@@ -49,7 +49,6 @@ export class CampaignDetailComponent implements OnInit {
   isGameMaster = false;
   isPlayerInCampaign = false;
 
-  // Cache para armazenar dados dos usuários (Key: userId, Value: UserResponse)
   usersCache: { [id: string]: UserResponse } = {};
 
   approvedCharacters: Character[] = [];
@@ -65,7 +64,6 @@ export class CampaignDetailComponent implements OnInit {
   selectedGmCharacterId = '';
   copiedFeedback = false;
 
-  // Controle de alertas e notificações
   successMessage: string | null = null;
   errorMessage: string | null = null;
   private feedbackTimeout: any;
@@ -123,10 +121,8 @@ export class CampaignDetailComponent implements OnInit {
           this.isPlayerInCampaign =
             !!this.campaign.playerIds?.includes(this.currentUserId) || this.isGameMaster;
 
-          // Sincroniza a configuração de aprovação sem sobrescrever seleções pendentes de tela
           this.requireApproval = this.campaign.requireApprovalForCharacters ?? true;
 
-          // Carregar dados agregados
           this.loadUsersInfo();
           this.loadApprovedCharacters();
           this.loadPendingCharacters();
@@ -300,7 +296,6 @@ export class CampaignDetailComponent implements OnInit {
           this.selectedCharacterId = '';
           this.showFeedback('Ficha vinculada/enviada com sucesso!');
 
-          // Atualiza apenas as listas sem resetar o layout
           this.loadCampaign(true);
         },
         error: (err) =>
@@ -400,7 +395,6 @@ export class CampaignDetailComponent implements OnInit {
         );
       },
       error: (err) => {
-        // Reverte a flag visual em caso de erro
         this.requireApproval = !this.requireApproval;
         this.cdr.detectChanges();
         this.showFeedback(

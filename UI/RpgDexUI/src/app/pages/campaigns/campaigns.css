@@ -1,21 +1,5 @@
 .campaigns-wrapper {
   min-height: calc(100vh - 80px);
-  background-color: var(--rpg-bg);
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      var(--rpg-purple-10) 0,
-      var(--rpg-purple-10) 1px,
-      transparent 1px,
-      transparent 40px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      var(--rpg-purple-10) 0,
-      var(--rpg-purple-10) 1px,
-      transparent 1px,
-      transparent 40px
-    );
   padding: 50px 20px 80px;
 }
 

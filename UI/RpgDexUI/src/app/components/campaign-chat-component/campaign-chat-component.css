@@ -150,8 +150,6 @@
 /* Item de mensagem */
 .message-item {
   display: flex;
-  align-items: flex-end;
-  gap: 8px;
   max-width: 88%;
   align-self: flex-start;
 }
@@ -162,8 +160,8 @@
 
 /* Avatar */
 .message-avatar {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: var(--rpg-purple-tint);
   background-size: cover;
@@ -172,10 +170,11 @@
   align-items: center;
   justify-content: center;
   color: var(--rpg-purple);
-  font-size: 0.72rem;
+  font-size: 0.6rem;
   flex-shrink: 0;
-  border: 1.5px solid var(--rpg-border-light);
-  margin-bottom: 2px;
+  border: 1px solid var(--rpg-border-light);
+  margin-bottom: 0;
+  margin-right: 3px;
 }
 
 /* Conteúdo da mensagem */
@@ -189,8 +188,9 @@
 .message-meta {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   padding: 0 2px;
+  margin-bottom: 2px;
 }
 
 

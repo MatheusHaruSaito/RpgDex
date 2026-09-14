@@ -3,7 +3,7 @@
     <div class="chat-title">
       <i class="fa fa-comments"></i>
       <span>Bate-papo da Mesa</span>
-      
+
       <span class="chat-unread-badge" *ngIf="isMinimized && unreadCount > 0" title="Novas mensagens">
         {{ unreadCount }}
       </span>
@@ -21,15 +21,9 @@
         <span>Nenhuma mensagem por aqui ainda. Escreva algo!</span>
       </div>
 
-      <div
-        *ngFor="let msg of messages"
-        class="message-item"
-        [class.message-mine]="msg.username === currentUsername"
-      >
-        <div
-          class="message-avatar"
-          [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''"
-        >
+      <div *ngFor="let msg of messages" class="message-item" [class.message-mine]="msg.username === currentUsername">
+        <!-- Avatar fora do message-content para alinhar com o balão -->
+        <div class="message-avatar" [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''">
           <i class="fa fa-user" *ngIf="!msg.userIcon"></i>
         </div>
 
@@ -50,14 +44,8 @@
     <!-- CONTROLES / FORMULÁRIO -->
     <div class="chat-controls">
       <form (ngSubmit)="send()" class="chat-form">
-        <input
-          class="chat-input"
-          type="text"
-          name="newMessageText"
-          [(ngModel)]="newMessageText"
-          placeholder="Digite sua mensagem..."
-          autocomplete="off"
-        />
+        <input #chatInput class="chat-input" type="text" name="newMessageText" [(ngModel)]="newMessageText"
+          placeholder="Digite sua mensagem..." maxlength="500" autocomplete="off" />
         <button class="btn btn-primary btn-send" type="submit" [disabled]="!newMessageText.trim()">
           <i class="fa fa-paper-plane"></i>
         </button>

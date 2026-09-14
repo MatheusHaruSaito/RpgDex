@@ -3,10 +3,10 @@ import {
   Component,
   ElementRef,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
-  ViewChild,
-  AfterViewChecked
+  ViewChild
 } from '@angular/core';
 import { ChatMessage } from '../../../models/chatMessage';
 import { Subscription } from 'rxjs';
@@ -23,9 +23,10 @@ import { CommonModule } from '@angular/common';
   templateUrl: './campaign-chat-component.html',
   styleUrl: './campaign-chat-component.css',
 })
-export class CampaignChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class CampaignChatComponent implements OnInit, OnDestroy {
   @Input() campaignId!: string;
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
+  @ViewChild('chatInput') private chatInput!: ElementRef<HTMLInputElement>;
 
   messages: ChatMessage[] = [];
   newMessageText: string = '';
@@ -35,21 +36,19 @@ export class CampaignChatComponent implements OnInit, OnDestroy, AfterViewChecke
   unreadCount: number = 0;
 
   private chatSubscription!: Subscription;
-  private shouldScroll = false;
 
   constructor(
     private chatService: CampaignChatService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-  ) {}
+    private ngZone: NgZone
+  ) { }
 
   ngOnInit(): void {
-    // Tenta o cache primeiro (BehaviorSubject já populado por login anterior)
     const cached = this.authService.currentUserValue;
     if (cached?.userName) {
       this.currentUsername = cached.userName;
     } else {
-      // Fallback: busca o perfil e usa userName (não displayName)
       this.authService.GetLoggedUser().subscribe({
         next: (res) => {
           if (res.success && res.data?.userName) {
@@ -63,60 +62,75 @@ export class CampaignChatComponent implements OnInit, OnDestroy, AfterViewChecke
     this.chatService.getMessages(this.campaignId).subscribe({
       next: (r) => {
         this.messages = r.data ?? [];
-        this.shouldScroll = true;
+        this.scrollToBottom();
       },
     });
 
     const token = this.authService.Token;
     this.chatService.startConnection(this.campaignId, token);
 
+    // O NgZone garante que o Angular processe os eventos do WebSocket/SignalR no ciclo de renderização atual
     this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg) => {
-      this.messages.push(msg);
-      if (this.isMinimized) {
-        this.unreadCount++;
-      } else {
-        this.shouldScroll = true;
-      }
-      this.cdr.detectChanges();
-    });
-  }
+      this.ngZone.run(() => {
+        this.messages.push(msg);
 
-  ngAfterViewChecked(): void {
-    if (this.shouldScroll && !this.isMinimized) {
-      this.scrollToBottom();
-      this.shouldScroll = false;
-    }
+        if (this.isMinimized) {
+          this.unreadCount++;
+        } else {
+          this.scrollToBottom();
+        }
+
+        this.cdr.detectChanges();
+      });
+    });
   }
 
   toggleMinimize(): void {
     this.isMinimized = !this.isMinimized;
     if (!this.isMinimized) {
       this.unreadCount = 0;
-      this.shouldScroll = true;
+      this.scrollToBottom();
+      setTimeout(() => this.focusInput(), 0);
     }
   }
 
-  private scrollToBottom(): void {
+private scrollToBottom(): void {
+  Promise.resolve().then(() => {
     try {
       if (this.scrollContainer?.nativeElement) {
-        this.scrollContainer.nativeElement.scrollTop =
-          this.scrollContainer.nativeElement.scrollHeight;
+        const el = this.scrollContainer.nativeElement;
+        el.scrollTop = el.scrollHeight;
       }
-    } catch {}
+    } catch { }
+  });
+}
+
+  private focusInput(): void {
+    this.chatInput?.nativeElement?.focus();
   }
 
   send(): void {
-    if (!this.newMessageText.trim()) return;
+    const text = this.newMessageText.trim().substring(0, 500);
+
+    if (!text) return;
+
+    this.newMessageText = '';
+
     const request: CampaignChatMessageRequest = {
       campaignId: this.campaignId,
-      message: this.newMessageText.trim(),
+      message: text,
     };
+
     this.chatService.sendMessage(request).subscribe({
       next: () => {
-        this.newMessageText = '';
-        this.cdr.detectChanges();
+        this.focusInput();
       },
-      error: (err) => console.error('Erro ao enviar mensagem:', err),
+      error: (err) => {
+        console.error('Erro ao enviar mensagem:', err);
+        this.newMessageText = text;
+        this.cdr.detectChanges();
+        this.focusInput();
+      },
     });
   }
 
