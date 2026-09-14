@@ -59,8 +59,8 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-secondary" (click)="CloseModal()" [disabled]="isLoading">Cancelar</button>
-        <button class="btn-primary" (click)="CreateCharacter()" [disabled]="isLoading">
+        <button class="btn btn-secondary" (click)="CloseModal()" [disabled]="isLoading">Cancelar</button>
+        <button class="btn btn-primary" (click)="CreateCharacter()" [disabled]="isLoading">
           <span *ngIf="!isLoading"><i class="fa fa-arrow-right"></i> Criar e Editar</span>
           <span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i> Criando...</span>
         </button>
@@ -90,8 +90,8 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-secondary" (click)="cancelCrop()">Cancelar</button>
-        <button class="btn-primary" (click)="confirmCrop()">
+        <button class="btn btn-secondary" (click)="cancelCrop()">Cancelar</button>
+        <button class="btn btn-primary" (click)="confirmCrop()">
           <i class="fa fa-check"></i> Confirmar Corte
         </button>
       </div>

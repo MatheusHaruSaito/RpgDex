@@ -4,7 +4,7 @@
     <!-- Cabeçalho do Modal -->
     <div class="modal-header">
       <h2><i class="fa-solid fa-shield-halved"></i> Configurações de Segurança</h2>
-      <button class="modal-close-btn" (click)="onClose()">
+      <button class="btn-icon modal-close-btn" (click)="onClose()">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -71,7 +71,7 @@
           </div>
 
           <button
-            class="btn-primary-2fa"
+            class="btn btn-primary"
             *ngIf="!authOptions?.isTwoFactorEnabled && twoFactorStep === 'idle'"
             (click)="request2FACode()"
             [disabled]="isSending2FAEmail"
@@ -92,7 +92,7 @@
               [(ngModel)]="twoFactorTokenInput"
             />
             <button
-              class="btn-confirm-2fa"
+              class="btn btn-primary"
               (click)="confirm2FAActivation()"
               [disabled]="isActivating2FA || !twoFactorTokenInput"
             >

@@ -4,7 +4,7 @@
       <h1 class="cl-title"><span>Meus Personagens</span></h1>
       <p class="cl-subtitle">Gerencie todas as fichas da sua coleção.</p>
     </div>
-    <button class="btn-primary" (click)="showCreateModal = true">
+    <button class="btn btn-primary" (click)="showCreateModal = true">
       <i class="fa fa-plus"></i> Novo Personagem
     </button>
   </div>
@@ -12,8 +12,12 @@
   <!-- Busca -->
   <div class="cl-search-bar">
     <i class="fa fa-magnifying-glass"></i>
-    <input type="text" placeholder="Buscar personagem por nome..." [(ngModel)]="searchQuery"
-      (ngModelChange)="onSearch()" />
+    <input
+      type="text"
+      placeholder="Buscar personagem por nome..."
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearch()"
+    />
     <button class="cl-search-clear" *ngIf="searchQuery" (click)="searchQuery = ''; onSearch()">
       <i class="fa fa-xmark"></i>
     </button>
@@ -23,7 +27,6 @@
     <table>
       <thead>
         <tr>
-          <!-- REMOVIDO: <th>#</th> -->
           <th>Personagem</th>
           <th>Descrição</th>
           <th>Ações</th>
@@ -31,48 +34,54 @@
       </thead>
       <tbody>
         @for (character of filteredList; track character.id) {
-        <tr (click)="navigateToEditor(character.id)" style="cursor: pointer">
-          <!-- REMOVIDO: <td><span class="id-tag">#{{ character.id }}</span></td> -->
-
-          <td>
-            <div class="char-name-cell">
-              <div class="char-avatar-thumb"
-                [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''">
-                <i class="fa fa-shield-halved" *ngIf="!character.iconPath"></i>
+          <tr (click)="navigateToEditor(character.id)" class="cl-row-clickable">
+            <td>
+              <div class="char-name-cell">
+                <div
+                  class="char-avatar-thumb"
+                  [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''"
+                >
+                  <i class="fa fa-shield-halved" *ngIf="!character.iconPath"></i>
+                </div>
+                <span class="char-name">{{ character.name }}</span>
               </div>
-              <span class="char-name">{{ character.name }}</span>
-            </div>
-          </td>
-          <td><span class="char-desc">{{ character.description }}</span></td>
-          <td>
-            <div class="action-btns">
-              <button class="btn-icon danger" title="Excluir"
-                (click)="$event.stopPropagation(); DeleteCharacter(character.id)">
-                <i class="fa fa-trash"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
+            </td>
+            <td><span class="char-desc">{{ character.description || 'Nenhuma descrição.' }}</span></td>
+            <td>
+              <div class="action-btns">
+                <button
+                  class="btn-icon danger"
+                  title="Excluir"
+                  (click)="$event.stopPropagation(); DeleteCharacter(character.id)"
+                >
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
         } @empty {
-        <tr class="empty-row">
-          <td colspan="3">
-            <div class="empty-content">
-              <div class="empty-icon">
-                <i class="fa fa-ghost"></i>
+          <tr class="empty-row">
+            <td colspan="3">
+              <div class="empty-content">
+                <div class="empty-icon">
+                  <i class="fa fa-ghost"></i>
+                </div>
+                <p class="empty-text">Nenhum personagem encontrado</p>
+                <p class="empty-sub">
+                  {{ searchQuery ? 'Tente buscar por outro nome.' : 'Clique em "Novo Personagem" para criar sua primeira ficha.' }}
+                </p>
               </div>
-              <p class="empty-text">Nenhum personagem encontrado</p>
-              <p class="empty-sub">
-                {{ searchQuery ? 'Tente buscar por outro nome.' : 'Clique em "Novo Personagem" para criar sua primeira
-                ficha.' }}
-              </p>
-            </div>
-          </td>
-        </tr>
+            </td>
+          </tr>
         }
       </tbody>
     </table>
   </div>
 
   <!-- Modal Criar -->
-  <app-create-character-modal [visible]="showCreateModal" (close)="showCreateModal = false"
-    (created)="GetAllCharacters()" />
+  <app-create-character-modal
+    [visible]="showCreateModal"
+    (close)="showCreateModal = false"
+    (created)="GetAllCharacters()"
+  />
+</div>

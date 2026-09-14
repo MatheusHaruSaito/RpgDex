@@ -1,6 +1,5 @@
 <div class="ep-wrapper">
   <div class="ep-card">
-
     <div class="ep-icon-ring">
       <i class="fa fa-envelope-circle-check"></i>
     </div>
@@ -18,22 +17,33 @@
     </div>
 
     <div class="ep-actions">
-      <button class="ep-btn ep-btn--outline" (click)="resend()" [disabled]="resendCooldown > 0">
+      <button type="button" class="ep-btn ep-btn--outline" (click)="resend()" [disabled]="resendCooldown > 0">
         <i class="fa fa-rotate-right"></i>
-        <span *ngIf="resendCooldown === 0">Reenviar email</span>
-        <span *ngIf="resendCooldown > 0">Reenviar em {{ resendCooldown }}s</span>
+        @if (resendCooldown === 0) {
+          <span>Reenviar email</span>
+        } @else {
+          <span>Reenviar em {{ resendCooldown }}s</span>
+        }
       </button>
-      <button class="ep-btn ep-btn--ghost" routerLink="/login">
-        <i class="fa fa-arrow-left"></i> Voltar ao login
+      <button type="button" class="ep-btn ep-btn--ghost" routerLink="/login">
+        <i class="fa fa-arrow-left"></i>
+        <span>Voltar ao login</span>
       </button>
     </div>
 
-    <div class="ep-feedback ep-feedback--success" *ngIf="resendSuccess">
-      <i class="fa fa-circle-check"></i> Email reenviado com sucesso!
-    </div>
-    <div class="ep-feedback ep-feedback--error" *ngIf="resendError">
-      <i class="fa fa-circle-exclamation"></i> {{ resendError }}
-    </div>
+    @if (resendSuccess) {
+      <div class="ep-feedback ep-feedback--success">
+        <i class="fa fa-circle-check"></i>
+        <span>Email reenviado com sucesso!</span>
+      </div>
+    }
+
+    @if (resendError) {
+      <div class="ep-feedback ep-feedback--error">
+        <i class="fa fa-circle-exclamation"></i>
+        <span>{{ resendError }}</span>
+      </div>
+    }
 
     <div class="ep-logo" routerLink="/home">RPGDex</div>
   </div>

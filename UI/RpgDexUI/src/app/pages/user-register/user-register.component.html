@@ -11,7 +11,7 @@
       </div>
       <div class="register-side__actions desktop-only">
         <span class="register-side__small">Já possui uma conta?</span>
-        <button class="btn-side" routerLink="/login">ENTRAR</button>
+        <button type="button" class="btn-side" routerLink="/login">ENTRAR</button>
       </div>
     </div>
 
@@ -29,7 +29,7 @@
             placeholder="Nome de usuário"
             name="displayName"
             [(ngModel)]="registerForm.userName"
-            autocomplete="displayName"
+            autocomplete="username"
             required
           />
         </div>
@@ -45,7 +45,10 @@
             required
           />
         </div>
-        <span class="field-hint" *ngIf="emailInvalid">Informe um email válido.</span>
+
+        @if (emailInvalid) {
+          <span class="field-hint">Informe um email válido.</span>
+        }
 
         <!-- Campo de Senha com Alternância de Visibilidade -->
         <div class="input-group">
@@ -62,13 +65,13 @@
             type="button"
             class="password-toggle-btn"
             (click)="togglePasswordVisibility()"
-            [aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
+            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
           >
             <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
         </div>
 
-        <!-- Lista de Requisitos de Senha Sempre Visível (Estilo Spotify) -->
+        <!-- Lista de Requisitos de Senha Sempre Visível -->
         <div class="password-requirements">
           <p class="requirements-title">A sua senha deve conter pelo menos:</p>
           <ul class="requirements-list">
@@ -110,12 +113,15 @@
             type="button"
             class="password-toggle-btn"
             (click)="toggleConfirmPasswordVisibility()"
-            [aria-label]="showConfirmPassword ? 'Ocultar senha' : 'Exibir senha'"
+            [attr.aria-label]="showConfirmPassword ? 'Ocultar senha' : 'Exibir senha'"
           >
             <i class="fa" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
         </div>
-        <span class="field-hint" *ngIf="passwordsMismatch">As senhas não coincidem.</span>
+
+        @if (passwordsMismatch) {
+          <span class="field-hint">As senhas não coincidem.</span>
+        }
 
         <div class="form-options">
           <label class="checkbox-container">
@@ -126,7 +132,7 @@
               [ngModel]="termsAccepted"
               (click)="onTermsCheckboxClick($event)"
             />
-            <span class="terms-text" style="margin-left: 8px">
+            <span class="terms-text">
               Eu li e aceito os
               <button type="button" class="terms-link-btn" (click)="openTermsModal($event)">
                 Termos de Uso
@@ -135,17 +141,26 @@
           </label>
         </div>
 
-        <div class="feedback-message error-message" *ngIf="errorMessage">
-          <i class="fa fa-circle-exclamation"></i> {{ errorMessage }}
-        </div>
+        @if (errorMessage) {
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
 
-        <div class="feedback-message success-message" *ngIf="successMessage">
-          <i class="fa fa-circle-check"></i> {{ successMessage }}
-        </div>
+        @if (successMessage) {
+          <div class="feedback-message success-message">
+            <i class="fa fa-circle-check"></i>
+            <span>{{ successMessage }}</span>
+          </div>
+        }
 
         <button type="submit" class="btn-register" [disabled]="isLoading">
-          <span *ngIf="!isLoading">CADASTRAR</span>
-          <span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i> Aguarde...</span>
+          @if (!isLoading) {
+            <span>CADASTRAR</span>
+          } @else {
+            <span><i class="fa fa-spinner fa-spin"></i> Aguarde...</span>
+          }
         </button>
       </form>
 
@@ -159,6 +174,7 @@
           class="social-btn"
           (click)="loginComGoogle()"
           title="Cadastrar com Google"
+          aria-label="Cadastrar com Google"
         >
           <i class="fa-brands fa-google"></i>
         </button>
@@ -166,9 +182,10 @@
 
         <button
           type="button"
-          (click)="onDiscordLogin()"
           class="social-btn"
+          (click)="onDiscordLogin()"
           title="Cadastrar com Discord"
+          aria-label="Cadastrar com Discord"
         >
           <i class="fa-brands fa-discord"></i>
         </button>
@@ -180,131 +197,133 @@
 </div>
 
 <!-- MODAL DE TERMOS DE USO -->
-<div class="terms-modal-overlay" *ngIf="isTermsModalOpen">
-  <div class="terms-modal">
-    <div class="terms-modal-header">
-      <h3>Termos de Uso e Serviço - RPGDex</h3>
-      <button type="button" class="close-modal-btn" (click)="closeTermsModal()">&times;</button>
-    </div>
+@if (isTermsModalOpen) {
+  <div class="terms-modal-overlay" (click)="closeTermsModal()">
+    <div class="terms-modal" (click)="$event.stopPropagation()">
+      <div class="terms-modal-header">
+        <h3>Termos de Uso e Serviço - RPGDex</h3>
+        <button type="button" class="close-modal-btn" aria-label="Fechar" (click)="closeTermsModal()">&times;</button>
+      </div>
 
-    <div class="terms-modal-body">
-      <p>
-        Seja bem-vindo ao site da RPGDex. Antes de explorar nossos conteúdos e funcionalidades, é
-        fundamental que você leia, compreenda e concorde com estes Termos de Uso e Serviço, que
-        regem a navegação e a utilização do nosso site (<code>rpgdex.com.br</code>).
-      </p>
+      <div class="terms-modal-body">
+        <p>
+          Seja bem-vindo ao site da RPGDex. Antes de explorar nossos conteúdos e funcionalidades, é
+          fundamental que você leia, compreenda e concorde com estes Termos de Uso e Serviço, que
+          regem a navegação e a utilização do nosso site (<code>rpgdex.com.br</code>).
+        </p>
 
-      <h4>1. Aceitação dos Termos e Modificações</h4>
-      <p>
-        Ao navegar e utilizar a plataforma da RPGDex, você expressa sua concordância automática e
-        integral com as regras e condições aqui estipuladas. Caso não concorde com qualquer
-        disposição, solicitamos que interrompa o uso de nossos serviços. Reservamo-nos o direito de
-        atualizar este documento periodicamente para refletir melhorias em nossos serviços ou
-        adequações legislativas. Mudanças estruturais relevantes serão informadas de forma destacada
-        em nosso site ou via e-mail. O uso continuado da plataforma após atualizações implica a
-        aceitação inequívoca dos novos termos.
-      </p>
+        <h4>1. Aceitação dos Termos e Modificações</h4>
+        <p>
+          Ao navegar e utilizar a plataforma da RPGDex, você expressa sua concordância automática e
+          integral com as regras e condições aqui estipuladas. Caso não concorde com qualquer
+          disposição, solicitamos que interrompa o uso de nossos serviços. Reservamo-nos o direito de
+          atualizar este documento periodicamente para refletir melhorias em nossos serviços ou
+          adequações legislativas. Mudanças estruturais relevantes serão informadas de forma destacada
+          em nosso site ou via e-mail. O uso continuado da plataforma após atualizações implica a
+          aceitação inequívoca dos novos termos.
+        </p>
 
-      <h4>2. Condições de Acesso e Conta de Usuário</h4>
-      <ul>
-        <li>
-          <strong>Acesso Geral:</strong> A navegação básica pelas seções do site para conhecê-lo é
-          livre e não exige cadastro prévio.
-        </li>
-        <li>
-          <strong>Cadastro e Segurança:</strong> Determinadas funcionalidades ou áreas exclusivas
-          podem requerer a criação de uma conta de usuário. Você se compromete a fornecer
-          informações verdadeiras, exatas e atualizadas, responsabilizando-se pela guarda e pelo
-          sigilo de suas credenciais de acesso (login e senha), que são pessoais e intransferíveis.
-        </li>
-        <li>
-          <strong>Conduta do Usuário:</strong> Ao enviar conteúdos à RPGDex, você concorda em agir
-          com urbanidade, respeito e em conformidade com a legislação vigente, sendo vedada a
-          publicação de materiais ilegais ou ofensivos.
-        </li>
-      </ul>
+        <h4>2. Condições de Acesso e Conta de Usuário</h4>
+        <ul>
+          <li>
+            <strong>Acesso Geral:</strong> A navegação básica pelas seções do site para conhecê-lo é
+            livre e não exige cadastro prévio.
+          </li>
+          <li>
+            <strong>Cadastro e Segurança:</strong> Determinadas funcionalidades ou áreas exclusivas
+            podem requerer a criação de uma conta de usuário. Você se compromete a fornecer
+            informações verdadeiras, exatas e atualizadas, responsabilizando-se pela guarda e pelo
+            sigilo de suas credenciais de acesso (login e senha), que são pessoais e intransferíveis.
+          </li>
+          <li>
+            <strong>Conduta do Usuário:</strong> Ao enviar conteúdos à RPGDex, você concorda em agir
+            com urbanidade, respeito e em conformidade com a legislação vigente, sendo vedada a
+            publicação de materiais ilegais ou ofensivos.
+          </li>
+        </ul>
 
-      <h4>3. Privacidade e Proteção de Dados Pessoais</h4>
-      <p>
-        A privacidade e a proteção dos seus dados pessoais são princípios fundamentais para a
-        RPGDex. As operações de tratamento de dados pessoais realizadas em nosso ecossistema são
-        regidas pela Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018). Adotamos
-        medidas técnicas e administrativas aptas a proteger seus dados contra acessos não
-        autorizados ou vazamentos, garantindo total transparência e o pleno exercício dos seus
-        direitos como titular.
-      </p>
+        <h4>3. Privacidade e Proteção de Dados Pessoais</h4>
+        <p>
+          A privacidade e a proteção dos seus dados pessoais são princípios fundamentais para a
+          RPGDex. As operações de tratamento de dados pessoais realizadas em nosso ecossistema são
+          regidas pela Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018). Adotamos
+          medidas técnicas e administrativas aptas a proteger seus dados contra acessos não
+          autorizados ou vazamentos, garantindo total transparência e o pleno exercício dos seus
+          direitos como titular.
+        </p>
 
-      <h4>4. Propriedade Intelectual e Licença de Uso</h4>
-      <p>
-        Todo o conteúdo disponibilizado na plataforma — incluindo textos, ilustrações, marcas,
-        elementos gráficos, códigos-fonte, softwares, áudios e vídeos — constitui propriedade
-        intelectual exclusiva da RPGDex ou de terceiros que nos concederam a devida licença de uso,
-        estando protegido pela legislação nacional e internacional de direitos autorais e
-        propriedade industrial.
-      </p>
-      <ul>
-        <li>
-          <strong>Licença Limitada:</strong> É concedida ao usuário uma licença limitada, revogável,
-          não exclusiva e intransferível para acessar e visualizar o conteúdo exclusivamente para
-          fins pessoais e não comerciais.
-        </li>
-        <li>
-          <strong>Vedações:</strong> É estritamente proibida qualquer reprodução, distribuição,
-          modificação, engenharia reversa ou transmissão não autorizada por escrito do material
-          disponibilizado.
-        </li>
-      </ul>
+        <h4>4. Propriedade Intelectual e Licença de Uso</h4>
+        <p>
+          Todo o conteúdo disponibilizado na plataforma — incluindo textos, ilustrações, marcas,
+          elementos gráficos, códigos-fonte, softwares, áudios e vídeos — constitui propriedade
+          intelectual exclusiva da RPGDex ou de terceiros que nos concederam a devida licença de uso,
+          estando protegido pela legislação nacional e internacional de direitos autorais e
+          propriedade industrial.
+        </p>
+        <ul>
+          <li>
+            <strong>Licença Limitada:</strong> É concedida ao usuário uma licença limitada, revogável,
+            não exclusiva e intransferível para acessar e visualizar o conteúdo exclusivamente para
+            fins pessoais e não comerciais.
+          </li>
+          <li>
+            <strong>Vedações:</strong> É estritamente proibida qualquer reprodução, distribuição,
+            modificação, engenharia reversa ou transmissão não autorizada por escrito do material
+            disponibilizado.
+          </li>
+        </ul>
 
-      <h4>5. Cookies e Tecnologias de Monitoramento</h4>
-      <p>
-        Utilizamos cookies e tecnologias semelhantes para otimizar sua experiência de navegação,
-        armazenar preferências (como idioma e configurações de exibição), compilar estatísticas
-        anônimas de uso e garantir a segurança do ambiente virtual.
-      </p>
-      <ul>
-        <li>
-          <strong>Gestão de Cookies:</strong> O usuário pode configurar ou bloquear o uso de cookies
-          a qualquer momento diretamente nas preferências do seu navegador web. Contudo, ressaltamos
-          que a desativação de certos cookies estritamente necessários pode impactar o correto
-          funcionamento de algumas áreas do site.
-        </li>
-      </ul>
+        <h4>5. Cookies e Tecnologias de Monitoramento</h4>
+        <p>
+          Utilizamos cookies e tecnologias semelhantes para otimizar sua experiência de navegação,
+          armazenar preferências (como idioma e configurações de exibição), compilar estatísticas
+          anônimas de uso e garantir a segurança do ambiente virtual.
+        </p>
+        <ul>
+          <li>
+            <strong>Gestão de Cookies:</strong> O usuário pode configurar ou bloquear o uso de cookies
+            a qualquer momento diretamente nas preferências do seu navegador web. Contudo, ressaltamos
+            que a desativação de certos cookies estritamente necessários pode impactar o correto
+            funcionamento de algumas áreas do site.
+          </li>
+        </ul>
 
-      <h4>6. Links para Terceiros</h4>
-      <p>
-        Nossa plataforma pode conter links direcionadores para sites ou aplicações de terceiros. A
-        RPGDex não exerce controle editorial ou operacional sobre esses ambientes externos e não se
-        responsabiliza por seus conteúdos, práticas de segurança ou políticas de privacidade.
-        Recomendamos a leitura atenta dos termos de uso de cada site visitado.
-      </p>
+        <h4>6. Links para Terceiros</h4>
+        <p>
+          Nossa plataforma pode conter links direcionadores para sites ou aplicações de terceiros. A
+          RPGDex não exerce controle editorial ou operacional sobre esses ambientes externos e não se
+          responsabiliza por seus conteúdos, práticas de segurança ou políticas de privacidade.
+          Recomendamos a leitura atenta dos termos de uso de cada site visitado.
+        </p>
 
-      <h4>7. Responsabilidades das Partes</h4>
-      <ul>
-        <li>
-          <strong>Do Usuário:</strong> Utilizar o site de boa-fé; manter a segurança de seu
-          dispositivo de acesso; não tentar burlar os sistemas de segurança da plataforma; e
-          indenizar a RPGDex por eventuais danos causados pelo uso indevido da conta.
-        </li>
-        <li>
-          <strong>Da RPGDex:</strong> Empenhar esforços razoáveis para manter a plataforma
-          disponível e segura, sem contudo se responsabilizar por indisponividades temporárias
-          decorrentes de falhas técnicas gerais, interrupções de serviços de telecomunicação ou
-          eventos de força maior.
-        </li>
-      </ul>
+        <h4>7. Responsabilidades das Partes</h4>
+        <ul>
+          <li>
+            <strong>Do Usuário:</strong> Utilizar o site de boa-fé; manter a segurança de seu
+            dispositivo de acesso; não tentar burlar os sistemas de segurança da plataforma; e
+            indenizar a RPGDex por eventuais danos causados pelo uso indevido da conta.
+          </li>
+          <li>
+            <strong>Da RPGDex:</strong> Empenhar esforços razoáveis para manter a plataforma
+            disponível e segura, sem contudo se responsabilizar por indisponividades temporárias
+            decorrentes de falhas técnicas gerais, interrupções de serviços de telecomunicação ou
+            eventos de força maior.
+          </li>
+        </ul>
 
-      <h4>Canais de Atendimento e Dúvidas</h4>
-      <p>
-        Em caso de dúvidas sobre estes Termos de Uso ou solicitações relacionadas aos seus dados
-        pessoais, entre em contato conosco através do e-mail oficial:
-        <code>rpgdexoficial@gmail.com</code>.
-      </p>
-    </div>
+        <h4>Canais de Atendimento e Dúvidas</h4>
+        <p>
+          Em caso de dúvidas sobre estes Termos de Uso ou solicitações relacionadas aos seus dados
+          pessoais, entre em contato conosco através do e-mail oficial:
+          <code>rpgdexoficial@gmail.com</code>.
+        </p>
+      </div>
 
-    <div class="terms-modal-footer">
-      <button type="button" class="btn-accept-terms" (click)="acceptTermsAndClose()">
-        Li e Aceito os Termos
-      </button>
+      <div class="terms-modal-footer">
+        <button type="button" class="btn-accept-terms" (click)="acceptTermsAndClose()">
+          Li e Aceito os Termos
+        </button>
+      </div>
     </div>
   </div>
-</div>
+}

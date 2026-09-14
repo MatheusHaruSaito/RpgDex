@@ -11,6 +11,7 @@
 
   /* ── Backgrounds ─────────────────────────────────────── */
   --rpg-bg:             #fdfbf7;
+  --rpg-bg-dark:        #1a1a2e;
   --rpg-surface:        #ffffff;
   --rpg-surface-2:      #fafafa;
   --rpg-surface-tint:   #fdfbff;
@@ -22,6 +23,7 @@
   --rpg-text-strong:    #333333;
   --rpg-text-muted:     #777777;
   --rpg-text-faint:     #aaaaaa;
+  --rpg-text-light:     #ffffff;
 
   /* ── Bordas ──────────────────────────────────────────── */
   --rpg-border:         #e0e0e0;
@@ -31,6 +33,7 @@
   --rpg-border-row:     #f5f0fa;
 
   /* ── Sombras ─────────────────────────────────────────── */
+  --rpg-shadow-sm:      0 2px 8px rgba(60, 52, 137, 0.06);
   --rpg-shadow-nav:     0 4px 20px rgba(158, 116, 208, 0.3);
   --rpg-shadow-md:      0 10px 40px rgba(60, 52, 137, 0.08);
   --rpg-shadow-lg:      0 15px 40px rgba(60, 52, 137, 0.15);
@@ -56,13 +59,10 @@
   --rpg-success-border: #b2dfcc;
 }
 
-/* ============================================================
-   DARK THEME — sobrescreve apenas as variáveis semânticas.
-   As cores de brand (--rpg-purple, --rpg-cyan, gradientes)
-   permanecem iguais para manter a identidade visual.
-   ============================================================ */
+/* ── DARK THEME ── */
 .dark-theme {
   --rpg-bg:             #13131f;
+  --rpg-bg-dark:        #0d0d18;
   --rpg-surface:        #1e1e30;
   --rpg-surface-2:      #252540;
   --rpg-surface-tint:   #252540;
@@ -73,6 +73,7 @@
   --rpg-text-strong:    #d8d8f0;
   --rpg-text-muted:     #7878a0;
   --rpg-text-faint:     #555578;
+  --rpg-text-light:     #ffffff;
 
   --rpg-border:         #3a3a5c;
   --rpg-border-light:   #2e2e4e;
@@ -80,6 +81,7 @@
   --rpg-border-input:   #3a3560;
   --rpg-border-row:     #2a2a45;
 
+  --rpg-shadow-sm:      0 2px 8px rgba(0, 0, 0, 0.3);
   --rpg-shadow-nav:     0 4px 20px rgba(0, 0, 0, 0.5);
   --rpg-shadow-md:      0 10px 40px rgba(0, 0, 0, 0.3);
   --rpg-shadow-lg:      0 15px 40px rgba(0, 0, 0, 0.5);
@@ -99,10 +101,8 @@
   --rpg-success-border: #1a5a30;
 }
 
-/* ============================================================
-   BASE
-   ============================================================ */
-* {
+/* ── BASE & RESET ── */
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -112,13 +112,17 @@ body {
   font-family: 'Nunito', sans-serif;
   background-color: var(--rpg-bg);
   background-image:
-    repeating-linear-gradient(0deg, var(--rpg-purple-15) 0, var(--rpg-purple-15) 1px, transparent 1px, transparent 40px),
-    repeating-linear-gradient(90deg, var(--rpg-purple-15) 0, var(--rpg-purple-15) 1px, transparent 1px, transparent 40px);
+    repeating-linear-gradient(0deg, var(--rpg-purple-15) 0 1px, transparent 1px 40px),
+    repeating-linear-gradient(90deg, var(--rpg-purple-15) 0 1px, transparent 1px 40px);
   color: var(--rpg-text-body);
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.nav-menu-open {
+  overflow: hidden;
 }
 
 h1, h2, h3, h4 {
@@ -135,25 +139,122 @@ main {
   padding: 0 20px;
 }
 
-.btn-primary {
-  background: var(--rpg-purple);
-  color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  font-family: 'Exo 2', sans-serif;
-  transition: filter 0.2s, transform 0.2s;
+/* ── ACESSIBILIDADE GLOBAL (FOCO & MOVIMENTO REDUZIDO) ── */
+:focus-visible {
+  outline: 2px solid var(--rpg-purple);
+  outline-offset: 2px;
 }
 
-.btn-primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-/* ============================================================
-   BOTÕES GLOBAIS — usados em modais e listas
-   ============================================================ */
+
+/* ── BOTÕES GLOBAIS ── */
+.btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  white-space: nowrap;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.2s ease,
+              background-color 0.2s ease,
+              box-shadow 0.2s ease,
+              border-color 0.2s ease,
+              color 0.2s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--rpg-purple);
+  color: #fff;
+  padding: 11px 20px;
+  box-shadow: var(--rpg-shadow-btn);
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: var(--rpg-shadow-btn-hov);
+}
+
+.btn-secondary {
+  padding: 10px 18px;
+  color: var(--rpg-text-body);
+  background: var(--rpg-border-light);
+  border: 2px solid var(--rpg-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--rpg-border);
+  color: var(--rpg-text-dark);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.btn-outline-danger {
+  padding: 10px 18px;
+  border: 2px solid var(--rpg-error-border);
+  background: transparent;
+  color: var(--rpg-error);
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background: var(--rpg-error-bg);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-outline-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-accept {
+  font-size: 0.82rem;
+  padding: 7px 13px;
+  background: var(--rpg-success-bg);
+  color: var(--rpg-success);
+  border: 1px solid var(--rpg-success-border);
+}
+
+.btn-accept:hover:not(:disabled) {
+  background: var(--rpg-success);
+  color: #fff;
+}
+
+.btn-reject {
+  font-size: 0.82rem;
+  padding: 7px 13px;
+  background: var(--rpg-error-bg);
+  color: var(--rpg-error);
+  border: 1px solid var(--rpg-error-border);
+}
+
+.btn-reject:hover:not(:disabled) {
+  background: var(--rpg-error);
+  color: #fff;
+}
+
 .btn-icon {
   background: none;
   border: none;
@@ -161,17 +262,18 @@ main {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
   color: var(--rpg-text-faint);
-  transition: background 0.2s, color 0.2s;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-icon:hover {
   background: var(--rpg-purple-tint);
   color: var(--rpg-purple);
+  transform: translateY(-1px);
 }
 
 .btn-icon.danger:hover {
@@ -179,45 +281,41 @@ main {
   color: var(--rpg-error);
 }
 
-.btn-secondary {
-  font-family: 'Exo 2', sans-serif;
-  padding: 12px 28px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--rpg-text-faint);
-  background: var(--rpg-border-light);
-  border: 2px solid var(--rpg-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* ── CARDS GLOBAIS ── */
+.campaign-card,
+.cmp-card,
+.character-card {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  
+  border: 2px solid var(--rpg-border-light);
+  background-clip: padding-box;
+  box-shadow: var(--rpg-shadow-sm);
+
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: var(--rpg-border);
-  color: var(--rpg-text-body);
+.campaign-card:hover,
+.cmp-card:hover,
+.character-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--rpg-purple);
+  box-shadow: var(--rpg-shadow-md);
 }
 
-.btn-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
+/* ── COMPONENTES AUXILIARES ── */
 .char-counter {
-  font-family: 'Nunito', sans-serif;
   font-size: 0.72rem;
   color: var(--rpg-text-faint);
   text-align: right;
   margin-top: 2px;
 }
 
-.cropper-backdrop {
-  z-index: 1100;
-}
-
-.cropper-card {
-  max-width: 480px;
-}
-
+.cropper-backdrop { z-index: 1100; }
+.cropper-card { max-width: 480px; }
 .cropper-body {
   padding: 16px;
   display: flex;
@@ -233,6 +331,77 @@ image-cropper {
   width: 100%;
 }
 
-body.nav-menu-open {
+/* ── ATRIBUTOS & GRUPOS ── */
+.ce-group {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--rpg-shadow-sm);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.ce-attr-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--rpg-border-light);
+}
+
+.ce-attr-row:last-child {
+  border-bottom: none;
+}
+
+.ce-attr-key,
+.ce-attr-val {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 0.95rem;
+  color: var(--rpg-text-strong);
+  transition: all 0.2s ease;
+}
+
+.ce-attr-key:focus,
+.ce-attr-val:focus {
+  background: var(--rpg-surface);
+  border-color: var(--rpg-purple);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--rpg-purple-15);
+}
+
+.ce-attr-key {
+  flex: 1;
+  font-weight: 600;
+}
+
+.ce-attr-val {
+  flex: 1.2;
+}
+
+.ce-attr-sep {
+  color: var(--rpg-text-muted);
+  font-weight: bold;
+}
+
+/* ── CLASSES UTILITÁRIAS ── */
+.u-truncate {
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.u-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.u-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }

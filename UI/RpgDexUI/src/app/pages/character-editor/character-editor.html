@@ -5,18 +5,18 @@
     <div></div> 
     <div class="ce-topbar-actions">
       <ng-container *ngIf="isEditing">
-        <button class="btn-danger-outline" (click)="confirmDelete()">
+        <button class="btn btn-outline-danger" (click)="confirmDelete()">
           <i class="fa fa-trash"></i> Excluir
         </button>
-        <button class="btn-mode-toggle" (click)="toggleEditMode()">
+        <button class="btn btn-secondary" (click)="toggleEditMode()">
           <i class="fa fa-eye"></i> Visualizar
         </button>
-        <button class="btn-primary" (click)="Save()" [disabled]="isSaving">
+        <button class="btn btn-primary" (click)="Save()" [disabled]="isSaving">
           <span *ngIf="!isSaving"><i class="fa fa-floppy-disk"></i> Salvar</span>
           <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i> Salvando...</span>
         </button>
       </ng-container>
-      <button *ngIf="!isEditing" class="btn-mode-toggle btn-mode-toggle--edit" (click)="toggleEditMode()">
+      <button *ngIf="!isEditing" class="btn btn-primary" (click)="toggleEditMode()">
         <i class="fa fa-pen"></i> Editar Ficha
       </button>
     </div>
@@ -91,7 +91,7 @@
 
       <div class="ce-groups-header" *ngIf="isEditing">
         <h3 class="ce-section-title"><i class="fa fa-list-check"></i> Atributos</h3>
-        <button class="btn-add-property" (click)="addGroup()">
+        <button class="btn btn-secondary btn-add-sm" (click)="addGroup()">
           <i class="fa fa-plus"></i> Novo grupo
         </button>
       </div>
@@ -121,7 +121,7 @@
               placeholder="Nome do grupo"
               maxlength="40"/>
             <div class="ce-group-actions" *ngIf="isEditing">
-              <button class="btn-add-property btn-add-sm"
+              <button class="btn btn-secondary btn-add-sm"
                 (click)="addEntry(group)" title="Adicionar campo">
                 <i class="fa fa-plus"></i>
               </button>
@@ -205,8 +205,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelCrop()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="confirmCrop()">
+        <button type="button" class="btn btn-secondary" (click)="cancelCrop()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="confirmCrop()">
           <i class="fa fa-check"></i> Confirmar Corte
         </button>
       </div>

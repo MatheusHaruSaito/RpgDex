@@ -7,7 +7,7 @@
       class="menu-toggle"
       [class.active]="isMenuOpen"
       (click)="toggleMenu()"
-      aria-label="Abrir menu de navegação"
+      [attr.aria-label]="isMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'"
       [attr.aria-expanded]="isMenuOpen"
       aria-controls="primary-navigation"
     >
@@ -16,44 +16,51 @@
       <span></span>
     </button>
 
-    <div class="nav-backdrop" [class.active]="isMenuOpen" (click)="closeMenu()"></div>
+    <div
+      class="nav-backdrop"
+      [class.active]="isMenuOpen"
+      (click)="closeMenu()"
+      aria-hidden="true"
+    ></div>
 
     <div class="nav-container" id="primary-navigation" [class.active]="isMenuOpen">
       <ul class="nav-links">
         <li><a routerLink="/home" routerLinkActive="active" (click)="closeMenu()">Início</a></li>
 
-        <ng-container *ngIf="authService.isLoggedIn()">
+        @if (authService.isLoggedIn()) {
           <li><a routerLink="/campanhas" routerLinkActive="active" (click)="closeMenu()">Jogar</a></li>
           <li><a routerLink="/biblioteca" routerLinkActive="active" (click)="closeMenu()">Biblioteca</a></li>
-        </ng-container>
+        }
       </ul>
 
-      <a
-        class="user-profile user-profile--image"
-        routerLink="/perfil"
-        routerLinkActive="active"
-        (click)="closeMenu()"
-        aria-label="Meu perfil"
-        *ngIf="authService.isLoggedIn() && userAvatarUrl"
-      >
-        <img class="user-profile__img" [src]="userAvatarUrl" alt="Foto de perfil">
-      </a>
-
-      <a
-        class="user-profile"
-        routerLink="/perfil"
-        routerLinkActive="active"
-        (click)="closeMenu()"
-        aria-label="Meu perfil"
-        *ngIf="authService.isLoggedIn() && !userAvatarUrl"
-      >
-        <i class="fa-solid fa-user"></i>
-      </a>
-
-      <div class="auth-buttons" *ngIf="!authService.isLoggedIn()">
-        <a class="btn-login-nav" routerLink="/login" (click)="closeMenu()">Entrar</a>
-        <a class="btn-register-nav" routerLink="/cadastro" (click)="closeMenu()">Cadastrar</a>
-      </div>
+      @if (authService.isLoggedIn()) {
+        @if (userAvatarUrl) {
+          <a
+            class="user-profile user-profile--image"
+            routerLink="/perfil"
+            routerLinkActive="active"
+            (click)="closeMenu()"
+            aria-label="Meu perfil"
+          >
+            <img class="user-profile__img" [src]="userAvatarUrl" alt="Foto de perfil">
+          </a>
+        } @else {
+          <a
+            class="user-profile"
+            routerLink="/perfil"
+            routerLinkActive="active"
+            (click)="closeMenu()"
+            aria-label="Meu perfil"
+          >
+            <i class="fa-solid fa-user" aria-hidden="true"></i>
+          </a>
+        }
+      } @else {
+        <div class="auth-buttons">
+          <a class="btn-login-nav" routerLink="/login" (click)="closeMenu()">Entrar</a>
+          <a class="btn-register-nav" routerLink="/cadastro" (click)="closeMenu()">Cadastrar</a>
+        </div>
+      }
     </div>
   </nav>
 </header>

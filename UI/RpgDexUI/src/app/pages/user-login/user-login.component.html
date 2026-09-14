@@ -10,7 +10,7 @@
       </div>
       <div class="login-side__actions desktop-only">
         <span class="login-side__small">Ainda não tem conta?</span>
-        <button class="btn-side" routerLink="/cadastro">CADASTRAR</button>
+        <button type="button" class="btn-side" routerLink="/cadastro">CADASTRAR</button>
       </div>
     </div>
 
@@ -32,7 +32,10 @@
             required
           />
         </div>
-        <span class="field-hint" *ngIf="emailInvalid">Informe um email válido.</span>
+        
+        @if (emailInvalid) {
+          <span class="field-hint">Informe um email válido.</span>
+        }
 
         <!-- Campo de Senha com Alternância de Visibilidade -->
         <div class="input-group">
@@ -49,7 +52,7 @@
             type="button"
             class="password-toggle-btn"
             (click)="togglePasswordVisibility()"
-            [aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
+            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
           >
             <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
@@ -59,13 +62,21 @@
           <a routerLink="/esqueci-senha" class="forgot-link">Esqueceu a senha?</a>
         </div>
 
-        <div class="feedback-message error-message" *ngIf="errorMessage">
-          <i class="fa fa-circle-exclamation"></i> {{ errorMessage }}
-        </div>
+        @if (errorMessage) {
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
 
         <button type="submit" class="btn-login" [disabled]="isLoading">
-          <span *ngIf="!isLoading">ENTRAR</span>
-          <span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i> Entrando...</span>
+          @if (!isLoading) {
+            <span>ENTRAR</span>
+          } @else {
+            <span>
+              <i class="fa fa-spinner fa-spin"></i> Entrando...
+            </span>
+          }
         </button>
       </form>
 
@@ -79,6 +90,7 @@
           class="social-btn"
           (click)="loginComGoogle()"
           title="Entrar com Google"
+          aria-label="Entrar com Google"
         >
           <i class="fa-brands fa-google"></i>
         </button>
@@ -86,9 +98,10 @@
 
         <button
           type="button"
-          (click)="onDiscordLogin()"
           class="social-btn"
+          (click)="onDiscordLogin()"
           title="Entrar com Discord"
+          aria-label="Entrar com Discord"
         >
           <i class="fa-brands fa-discord"></i>
         </button>

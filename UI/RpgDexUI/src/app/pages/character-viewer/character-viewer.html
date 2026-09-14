@@ -1,38 +1,56 @@
-<div class="cv-wrapper" *ngIf="character">
-  <!-- Header / Perfil -->
-  <div class="cv-header">
-    <div class="cv-avatar" [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''">
-      <i class="fa fa-shield-halved" *ngIf="!character.iconPath"></i>
-    </div>
-    <div class="cv-details">
-      <h3 class="cv-name">{{ character.name }}</h3>
-      <p class="cv-desc" *ngIf="character.description">{{ character.description }}</p>
-    </div>
-  </div>
-
-  <!-- Conteúdo Dinâmico da Ficha -->
-  <div class="cv-sheet-empty" *ngIf="getSheetColumns().length === 0">
-    <i class="fa fa-circle-info"></i> Nenhum atributo registrado na ficha.
-  </div>
-
-  <div class="cv-sheet-grid" *ngIf="getSheetColumns().length > 0">
-    <div class="cv-sheet-col" *ngFor="let col of getSheetColumns()">
-      
-      <div class="cv-scalar-badge" *ngIf="col.scalar !== undefined">
-        <span class="cv-section-title">{{ col.key }}</span>
-        <span class="cv-prop-val">{{ col.scalar }}</span>
+@if (character) {
+  <div class="cv-wrapper">
+    <!-- Header / Perfil -->
+    <div class="cv-header">
+      <div
+        class="cv-avatar"
+        [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''"
+      >
+        @if (!character.iconPath) {
+          <i class="fa fa-shield-halved"></i>
+        }
       </div>
+      <div class="cv-details">
+        <h3 class="cv-name">{{ character.name }}</h3>
+        @if (character.description) {
+          <p class="cv-desc">{{ character.description }}</p>
+        }
+      </div>
+    </div>
 
-      <div class="cv-section-block" *ngFor="let section of col.sections">
-        <h4 class="cv-section-title">{{ section.title }}</h4>
-        <div class="cv-props-list">
-          <div class="cv-prop-chip" *ngFor="let item of section.items">
-            <span class="cv-prop-key">{{ item.name }}</span>
-            <span class="cv-prop-val">{{ item.value }}</span>
+    <!-- Conteúdo Dinâmico da Ficha -->
+    @if (getSheetColumns().length === 0) {
+      <div class="cv-sheet-empty">
+        <i class="fa fa-circle-info"></i>
+        <span>Nenhum atributo registrado nesta ficha.</span>
+      </div>
+    } @else {
+      <div class="cv-sheet-grid">
+        @for (col of getSheetColumns(); track $index) {
+          <div class="cv-sheet-col">
+            @if (col.scalar !== undefined) {
+              <div class="cv-scalar-badge">
+                <span class="cv-scalar-label">{{ col.key }}</span>
+                <span class="cv-scalar-val">{{ col.scalar }}</span>
+              </div>
+            }
+
+            @for (section of col.sections; track section.title) {
+              <div class="cv-section-block">
+                <h4 class="cv-section-title">{{ section.title }}</h4>
+                <div class="cv-props-list">
+                  @for (item of section.items; track item.name) {
+                    <div class="cv-prop-chip">
+                      <span class="cv-prop-key">{{ item.name }}</span>
+                      <span class="cv-prop-val">{{ item.value }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        }
       </div>
-
-    </div>
+    }
   </div>
-</div>
+}

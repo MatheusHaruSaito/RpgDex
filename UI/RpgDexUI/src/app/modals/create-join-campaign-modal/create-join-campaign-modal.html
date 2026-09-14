@@ -99,14 +99,14 @@
 
     <!-- RODAPÉ DINÂMICO -->
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="close()">Cancelar</button>
+      <button class="btn btn-secondary" (click)="close()">Cancelar</button>
       
-      <button *ngIf="activeTab === 'create'" class="btn-primary" (click)="submitCreate()"
+      <button *ngIf="activeTab === 'create'" class="btn btn-primary" (click)="submitCreate()"
         [disabled]="!newTitle || !selectedIconFile">
         <i class="fa fa-plus"></i> Criar Campanha
       </button>
 
-      <button *ngIf="activeTab === 'join'" class="btn-primary" (click)="submitJoin()"
+      <button *ngIf="activeTab === 'join'" class="btn btn-primary" (click)="submitJoin()"
         [disabled]="!joinId">
         <i class="fa fa-right-to-bracket"></i> Entrar na Campanha
       </button>
@@ -137,8 +137,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="cancelCrop()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="confirmCrop()">
+        <button type="button" class="btn btn-secondary" (click)="cancelCrop()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="confirmCrop()">
           <i class="fa fa-check"></i> Confirmar Corte
         </button>
       </div>

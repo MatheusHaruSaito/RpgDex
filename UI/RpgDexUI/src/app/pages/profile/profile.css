@@ -1,6 +1,7 @@
 .profile-wrapper {
   min-height: calc(100vh - 80px);
   padding: 50px 20px 80px;
+  box-sizing: border-box;
 }
 
 .profile-container {
@@ -18,8 +19,10 @@
   border-radius: 20px;
   padding: 32px 36px;
   box-shadow: var(--rpg-shadow-md);
+  box-sizing: border-box;
 }
 
+/* ── HEADER DE PERFIL ── */
 .profile-header {
   display: flex;
   justify-content: space-between;
@@ -32,6 +35,10 @@
   display: flex;
   align-items: center;
   gap: 25px;
+}
+
+.avatar-wrapper {
+  flex-shrink: 0;
 }
 
 .avatar-placeholder {
@@ -62,15 +69,22 @@
   display: block;
 }
 
+.user-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .username {
   font-size: 2rem;
   color: var(--rpg-text-strong);
   margin: 0;
+  line-height: 1.2;
 }
 
 .email {
   color: var(--rpg-text-muted);
-  margin: 5px 0;
+  margin: 5px 0 10px;
 }
 
 .badge {
@@ -80,8 +94,10 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 700;
+  display: inline-block;
 }
 
+/* ── CONTROLES DO PERFIL ── */
 .profile-controls {
   display: flex;
   flex-direction: column;
@@ -93,29 +109,6 @@
   display: flex;
   gap: 10px;
 }
-
-.btn-edit,
-.btn-logout {
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.3s;
-  border: none;
-}
-
-.btn-edit {
-  background: var(--rpg-purple);
-  color: white;
-}
-
-.btn-logout {
-  background: var(--rpg-border-light);
-  color: var(--rpg-text-body);
-}
-
-.btn-edit:hover  { background: var(--rpg-text-dark); }
-.btn-logout:hover { background: var(--rpg-border); }
 
 .tool-btns {
   display: flex;
@@ -129,8 +122,18 @@
   font-size: 1.5rem;
   color: var(--rpg-purple);
   cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, color 0.2s ease;
 }
 
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+/* ── SEÇÕES & GRIDS ── */
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -140,7 +143,8 @@
 
 .section-title {
   color: var(--rpg-text-strong);
-  margin-bottom: 0;
+  margin: 0;
+  font-size: 1.4rem;
 }
 
 .section-count {
@@ -160,7 +164,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.2s, gap 0.2s;
+  transition: color 0.2s ease, gap 0.2s ease;
   white-space: nowrap;
   margin-top: 4px;
 }
@@ -176,40 +180,41 @@
   gap: 25px;
 }
 
+/* ── CARDS DE CAMPANHA / PERSONAGEM (PADRONIZADOS) ── */
 .campaign-card {
   background: var(--rpg-surface);
-  border-radius: 15px;
+  border-radius: 18px;
   border: 2px solid var(--rpg-border-light);
   overflow: hidden;
-  transition: 0.3s;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .campaign-card:hover {
   border-color: var(--rpg-purple);
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+  box-shadow: var(--rpg-shadow-btn);
 }
 
 .card-image-placeholder {
-  height: 120px;
-  background: var(--rpg-bg);
+  height: 150px;
+  background: var(--rpg-gradient);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
-  color: var(--rpg-border);
+  font-size: 2.5rem;
+  color: rgba(255, 255, 255, 0.6);
+  position: relative;
 }
 
-.character-avatar {
-  background: linear-gradient(135deg, var(--rpg-purple-tint), #e8f8ff);
-  color: var(--rpg-purple);
-}
-
+.campaign-avatar--image,
 .character-avatar--image {
   padding: 0;
   overflow: hidden;
 }
 
+.campaign-avatar-img,
 .character-avatar-img {
   width: 100%;
   height: 100%;
@@ -217,16 +222,26 @@
   display: block;
 }
 
+.character-avatar {
+  background: linear-gradient(135deg, var(--rpg-purple-tint), #e8f8ff);
+  color: var(--rpg-purple);
+}
+
 .card-info {
-  padding: 15px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .camp-name {
-  font-weight: 700;
-  color: var(--rpg-text-strong);
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  color: var(--rpg-text-dark);
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .camp-role {
@@ -255,7 +270,8 @@
   justify-content: center;
   color: var(--rpg-text-faint);
   gap: 10px;
-  min-height: 160px;
+  min-height: 220px;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
 
 .add-card:hover {
@@ -263,42 +279,54 @@
   color: var(--rpg-purple);
 }
 
-.campaign-avatar--image {
-  padding: 0;
-  overflow: hidden;
-}
-
-.campaign-avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 /* ── RESPONSIVO ── */
 @media (max-width: 768px) {
-  .profile-wrapper { padding: 30px 16px 60px; }
-  .profile-card { padding: 24px 20px; }
-
-  .profile-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-
-  .profile-controls { align-items: flex-start; width: 100%; }
-
-  .main-btns { width: 100%; }
-
-  .btn-edit,
-  .btn-logout {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+  .profile-wrapper {
+    padding: 30px 16px 60px;
   }
 
-  .username { font-size: 1.6rem; }
+  .profile-card {
+    padding: 24px 20px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .profile-controls {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .main-btns {
+    width: 100%;
+  }
+
+  .main-btns .btn {
+    flex: 1;
+  }
+
+  .username {
+    font-size: 1.6rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .user-main-info { flex-direction: column; text-align: center; }
-  .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .user-main-info {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .user-text {
+    align-items: center;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }

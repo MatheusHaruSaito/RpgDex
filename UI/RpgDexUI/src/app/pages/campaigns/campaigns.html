@@ -7,10 +7,10 @@
         <p class="cmp-page-sub">Gerencie suas aventuras e sessões.</p>
       </div>
       <div class="cmp-header-actions">
-        <button class="btn-secondary" (click)="openModal('join')">
+        <button class="btn btn-secondary" (click)="openModal('join')">
           <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
         </button>
-        <button class="btn-primary" (click)="openModal('create')">
+        <button class="btn btn-primary" (click)="openModal('create')">
           <i class="fa fa-plus"></i> Nova Campanha
         </button>
       </div>
@@ -40,11 +40,9 @@
             <h3 class="cmp-card__title">{{ camp.title }}</h3>
             <p class="cmp-card__desc" *ngIf="camp.description">{{ camp.description }}</p>
             <div class="cmp-card__meta">
-              <span
-                ><i class="fa fa-users"></i> {{ camp.playerIds?.length || 0 }}/{{
-                  camp.maxPlayers
-                }}</span
-              >
+              <span>
+                <i class="fa fa-users"></i> {{ camp.playerIds?.length || 0 }}/{{ camp.maxPlayers }}
+              </span>
               <span>
                 <i class="fa fa-calendar"></i> {{ formatNextSession(camp.nextSession) }}
               </span>
@@ -59,16 +57,17 @@
         <p class="cmp-empty__title">Nenhuma campanha ainda.</p>
         <p class="cmp-empty__sub">Crie sua própria aventura ou junte-se a uma existente.</p>
         <div class="cmp-empty-actions">
-          <button class="btn-secondary" (click)="openModal('join')">
+          <button class="btn btn-secondary" (click)="openModal('join')">
             <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
           </button>
-          <button class="btn-primary" (click)="openModal('create')">
+          <button class="btn btn-primary" (click)="openModal('create')">
             <i class="fa fa-plus"></i> Nova Campanha
           </button>
         </div>
       </div>
+
       <div id="btn-show-more" class="btn-show-more-container" *ngIf="showMoreButton">
-        <button class="btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
+        <button class="btn btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
       </div>
     </div>
 

@@ -29,6 +29,7 @@
 
     <div class="hero__actions">
       <button
+        type="button"
         class="hero__cta"
         [style.background]="activeTheme().ctaBg"
         [style.color]="activeTheme().ctaC"
@@ -40,13 +41,16 @@
   </div>
 
   <div class="theme-selector">
-    <button
-      *ngFor="let theme of themes; let i = index"
-      (click)="selectTheme(i)"
-      [class.active]="i === current()"
-      class="dot"
-      [title]="theme.tag"
-    ></button>
+    @for (theme of themes; track $index) {
+      <button
+        type="button"
+        (click)="selectTheme($index)"
+        [class.active]="$index === current()"
+        class="dot"
+        [title]="theme.tag"
+        [attr.aria-label]="'Selecionar tema ' + theme.tag"
+      ></button>
+    }
   </div>
 </section>
 
@@ -56,7 +60,9 @@
 
     <div class="features__grid">
       <div class="feat-card">
-        <div class="feat-card__icon">🎲</div>
+        <div class="feat-card__icon">
+          <i class="fa-solid fa-dice-d20"></i>
+        </div>
         <h3 class="feat-card__title">Campanhas</h3>
         <p class="feat-card__text">
           Organize suas histórias, NPCs e sessões em um só lugar de forma intuitiva.
@@ -64,13 +70,19 @@
       </div>
 
       <div class="feat-card">
-        <div class="feat-card__icon">📜</div>
+        <div class="feat-card__icon">
+          <i class="fa-solid fa-book-bookmark"></i>
+        </div>
         <h3 class="feat-card__title">Biblioteca</h3>
-        <p class="feat-card__text">Acesse itens, magias e monstros, salvando tudo que precisar.</p>
+        <p class="feat-card__text">
+          Acesse itens, magias e monstros, salvando tudo que precisar.
+        </p>
       </div>
 
       <div class="feat-card">
-        <div class="feat-card__icon">🛡️</div>
+        <div class="feat-card__icon">
+          <i class="fa-solid fa-id-card"></i>
+        </div>
         <h3 class="feat-card__title">Fichas</h3>
         <p class="feat-card__text">
           Gerencie seus personagens com total controle e personalização.
@@ -80,54 +92,63 @@
   </div>
 </section>
 
-<!-- CTA: visitante -->
-<section class="cta-band" *ngIf="!isLoggedIn">
-  <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
-  <div class="container cta-band__content">
-    <h2 class="cta-band__title">Pronto para rolar os dados?</h2>
-    <button class="btn-white" routerLink="/cadastro">
-      Criar Conta Grátis
-    </button>
-  </div>
-</section>
-
-<!-- CTA: logado — preview de personagens -->
-<section class="cta-band cta-band--logged" *ngIf="isLoggedIn">
-  <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
-  <div class="container cta-band__content">
-
-    <h2 class="cta-band__title">Continue sua aventura</h2>
-
-    <!-- Sem personagens -->
-    <div class="cta-chars__empty" *ngIf="characterPreview.length === 0">
-      <p class="cta-chars__empty-text">Você ainda não tem personagens criados.</p>
-      <button class="btn-white" routerLink="/personagens">
-        <i class="fa-solid fa-plus"></i> Criar Personagem
+<!-- CTA Section -->
+@if (!isLoggedIn) {
+  <!-- CTA: visitante -->
+  <section class="cta-band">
+    <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
+    <div class="container cta-band__content">
+      <h2 class="cta-band__title">Pronto para rolar os dados?</h2>
+      <button type="button" class="btn-white" routerLink="/cadastro">
+        Criar Conta Grátis
       </button>
     </div>
+  </section>
+} @else {
+  <!-- CTA: logado — preview de personagens -->
+  <section class="cta-band cta-band--logged">
+    <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
+    <div class="container cta-band__content">
+      <h2 class="cta-band__title">Continue sua aventura</h2>
 
-    <!-- Com personagens -->
-    <div class="cta-chars" *ngIf="characterPreview.length > 0">
-      <div class="cta-chars__grid">
-        <div class="cta-char-card" *ngFor="let char of characterPreview" routerLink="/personagens">
-          <div
-            class="cta-char-card__avatar"
-            [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
-          >
-            <i class="fa-solid fa-shield-halved" *ngIf="!char.iconPath"></i>
-          </div>
-          <span class="cta-char-card__name">{{ char.name }}</span>
+      @if (characterPreview.length === 0) {
+        <!-- Sem personagens -->
+        <div class="cta-chars__empty">
+          <p class="cta-chars__empty-text">Você ainda não tem personagens criados.</p>
+          <button type="button" class="btn-white" routerLink="/personagens">
+            <i class="fa-solid fa-plus"></i>
+            <span>Criar Personagem</span>
+          </button>
         </div>
-      </div>
-      <div class="cta-chars__actions">
-        <button class="btn-white" routerLink="/campanhas">
-        Jogar
-        </button>
-        <button class="btn-white btn-white--outline" routerLink="/personagens">
-          Ver todos os personagens
-        </button>
-      </div>
-    </div>
+      } @else {
+        <!-- Com personagens -->
+        <div class="cta-chars">
+          <div class="cta-chars__grid">
+            @for (char of characterPreview; track char.id || char.name) {
+              <div class="cta-char-card" routerLink="/personagens">
+                <div
+                  class="cta-char-card__avatar"
+                  [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
+                >
+                  @if (!char.iconPath) {
+                    <i class="fa-solid fa-shield-halved"></i>
+                  }
+                </div>
+                <span class="cta-char-card__name">{{ char.name }}</span>
+              </div>
+            }
+          </div>
 
-  </div>
-</section>
+          <div class="cta-chars__actions">
+            <button type="button" class="btn-white" routerLink="/campanhas">
+              Jogar
+            </button>
+            <button type="button" class="btn-white btn-white--outline" routerLink="/personagens">
+              Ver todos os personagens
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+}

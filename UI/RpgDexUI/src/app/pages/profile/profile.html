@@ -1,16 +1,20 @@
 <div class="profile-wrapper">
   <div class="profile-container">
 
+    <!-- CARD DE PERFIL -->
     <div class="profile-card">
       <header class="profile-header">
         <div class="user-main-info">
           <div class="avatar-wrapper">
-            <div class="avatar-placeholder avatar-placeholder--image" *ngIf="user?.iconPath">
-              <img class="avatar-img" [src]="user!.iconPath" alt="Foto de perfil" />
-            </div>
-            <div class="avatar-placeholder" *ngIf="!user?.iconPath">
-              {{ user?.displayName?.substring(0, 2)?.toUpperCase() || '??' }}
-            </div>
+            @if (user?.iconPath) {
+              <div class="avatar-placeholder avatar-placeholder--image">
+                <img class="avatar-img" [src]="user!.iconPath" alt="Foto de perfil" />
+              </div>
+            } @else {
+              <div class="avatar-placeholder">
+                {{ user?.displayName?.substring(0, 2)?.toUpperCase() || '??' }}
+              </div>
+            }
           </div>
 
           <div class="user-text">
@@ -22,21 +26,32 @@
 
         <div class="profile-controls">
           <div class="main-btns">
-            <button class="btn-edit" (click)="editProfile()">
-              <i class="fa-solid fa-pen"></i> Editar Perfil
+            <button type="button" class="btn btn-primary" (click)="editProfile()">
+              <i class="fa-solid fa-pen"></i>
+              <span>Editar Perfil</span>
             </button>
-            <button class="btn-logout" (click)="logout()">Sair</button>
+            <button type="button" class="btn btn-secondary" (click)="logout()">
+              <span>Sair</span>
+            </button>
           </div>
 
           <div class="tool-btns">
             <button
+              type="button"
               class="icon-btn"
               (click)="toggleTheme()"
               [title]="isDarkMode ? 'Modo Claro' : 'Modo Escuro'"
+              [attr.aria-label]="isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'"
             >
               <i class="fa-solid" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
             </button>
-            <button class="icon-btn" title="Configurações" (click)="openSettingsModal()">
+            <button
+              type="button"
+              class="icon-btn"
+              title="Configurações"
+              aria-label="Configurações"
+              (click)="openSettingsModal()"
+            >
               <i class="fa-solid fa-gear"></i>
             </button>
           </div>
@@ -50,13 +65,18 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Minhas Campanhas</h2>
-            <span class="section-count" *ngIf="campaignTotal > 0">
-              {{ campaignTotal }} {{ campaignTotal === 1 ? 'campanha' : 'campanhas' }}
-            </span>
+            @if (campaignTotal > 0) {
+              <span class="section-count">
+                {{ campaignTotal }} {{ campaignTotal === 1 ? 'campanha' : 'campanhas' }}
+              </span>
+            }
           </div>
-          <a routerLink="/campanhas" class="section-link" *ngIf="campaignTotal > 0">
-            Ver todas <i class="fa-solid fa-arrow-right"></i>
-          </a>
+          @if (campaignTotal > 0) {
+            <a routerLink="/campanhas" class="section-link">
+              <span>Ver todas</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          }
         </div>
 
         <div class="campaigns-grid">
@@ -66,23 +86,24 @@
           </div>
 
           <!-- Cards Dinâmicos de Campanha -->
-          <div
-            class="campaign-card"
-            *ngFor="let camp of campaignPreview"
-            [routerLink]="['/campanha', camp.id]"
-          >
-            <div class="card-image-placeholder campaign-avatar--image" *ngIf="camp.iconPath">
-              <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title">
-            </div>
-            <div class="card-image-placeholder" *ngIf="!camp.iconPath">
-              <i class="fa-solid fa-map-location-dot"></i>
-            </div>
+          @for (camp of campaignPreview; track camp.id || camp.title) {
+            <div class="campaign-card" [routerLink]="['/campanha', camp.id]">
+              @if (camp.iconPath) {
+                <div class="card-image-placeholder campaign-avatar--image">
+                  <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title">
+                </div>
+              } @else {
+                <div class="card-image-placeholder">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                </div>
+              }
 
-            <div class="card-info">
-              <span class="camp-name">{{ camp.title }}</span>
-              <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{ camp.role }}</span>
+              <div class="card-info">
+                <span class="camp-name">{{ camp.title }}</span>
+                <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{ camp.role }}</span>
+              </div>
             </div>
-          </div>
+          }
         </div>
       </section>
     </div>
@@ -93,13 +114,18 @@
         <div class="section-header">
           <div>
             <h2 class="section-title">Meus Personagens</h2>
-            <span class="section-count" *ngIf="characterTotal > 0">
-              {{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}
-            </span>
+            @if (characterTotal > 0) {
+              <span class="section-count">
+                {{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}
+              </span>
+            }
           </div>
-          <a routerLink="/personagens" class="section-link" *ngIf="characterTotal > 0">
-            Ver todos <i class="fa-solid fa-arrow-right"></i>
-          </a>
+          @if (characterTotal > 0) {
+            <a routerLink="/personagens" class="section-link">
+              <span>Ver todos</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+          }
         </div>
 
         <div class="campaigns-grid">
@@ -108,23 +134,24 @@
             <span>Novo Personagem</span>
           </div>
 
-          <div
-            class="campaign-card character-card"
-            *ngFor="let char of characterPreview"
-            routerLink="/personagens"
-          >
-            <div class="card-image-placeholder character-avatar character-avatar--image" *ngIf="char.iconPath">
-              <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name">
-            </div>
-            <div class="card-image-placeholder character-avatar" *ngIf="!char.iconPath">
-              <i class="fa-solid fa-shield-halved"></i>
-            </div>
+          @for (char of characterPreview; track char.id || char.name) {
+            <div class="campaign-card character-card" routerLink="/personagens">
+              @if (char.iconPath) {
+                <div class="card-image-placeholder character-avatar character-avatar--image">
+                  <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name">
+                </div>
+              } @else {
+                <div class="card-image-placeholder character-avatar">
+                  <i class="fa-solid fa-shield-halved"></i>
+                </div>
+              }
 
-            <div class="card-info">
-              <span class="camp-name">{{ char.name }}</span>
-              <span class="char-desc-preview">{{ char.description }}</span>
+              <div class="card-info">
+                <span class="camp-name">{{ char.name }}</span>
+                <span class="char-desc-preview">{{ char.description }}</span>
+              </div>
             </div>
-          </div>
+          }
         </div>
       </section>
     </div>

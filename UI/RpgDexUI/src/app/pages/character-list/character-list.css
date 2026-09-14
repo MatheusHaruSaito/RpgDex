@@ -1,18 +1,20 @@
 .cl-wrapper {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 50px 20px;
+  padding: 30px 20px 60px;
   font-family: 'Nunito', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
-/* --- HEADER --- */
+/* ── HEADER ── */
 .cl-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .cl-title {
@@ -20,6 +22,7 @@
   font-weight: 800;
   font-size: 1.8rem;
   color: var(--rpg-text-dark);
+  margin: 0;
 }
 
 .cl-title span {
@@ -29,16 +32,74 @@
 .cl-subtitle {
   font-size: 0.95rem;
   color: var(--rpg-text-muted);
-  margin-top: 4px;
+  margin: 4px 0 0;
 }
 
-/* --- TABELA --- */
+/* ── BARRA DE BUSCA ── */
+.cl-search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  background: var(--rpg-surface);
+  border: 1.5px solid var(--rpg-border);
+  border-radius: 12px;
+  padding: 0 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.cl-search-bar:focus-within {
+  border-color: var(--rpg-purple);
+  box-shadow: 0 0 0 3px var(--rpg-purple-tint);
+}
+
+.cl-search-bar > i {
+  color: var(--rpg-text-faint);
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.cl-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--rpg-text-strong);
+  outline: none;
+}
+
+.cl-search-bar input::placeholder {
+  color: var(--rpg-text-faint);
+}
+
+.cl-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--rpg-text-faint);
+  font-size: 0.85rem;
+  padding: 6px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cl-search-clear:hover {
+  color: var(--rpg-error);
+  background: var(--rpg-error-bg);
+}
+
+/* ── TABELA ── */
 .cl-table-wrapper {
   background: var(--rpg-surface);
   border-radius: 18px;
   overflow: hidden;
   box-shadow: var(--rpg-shadow-md);
-  border: 1px solid var(--rpg-border-purple);
+  border: 1px solid var(--rpg-border-light);
 }
 
 table {
@@ -75,7 +136,11 @@ tbody tr:last-child {
   border-bottom: none;
 }
 
-tbody tr:hover {
+.cl-row-clickable {
+  cursor: pointer;
+}
+
+.cl-row-clickable:hover {
   background-color: var(--rpg-surface-tint);
 }
 
@@ -90,7 +155,7 @@ tbody td:last-child {
   text-align: right;
 }
 
-/* --- CÉLULAS --- */
+/* ── CÉLULAS E CONTEÚDO ── */
 .char-name-cell {
   display: flex;
   align-items: center;
@@ -98,8 +163,8 @@ tbody td:last-child {
 }
 
 .char-avatar-thumb {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--rpg-gradient);
   background-size: cover;
@@ -108,7 +173,7 @@ tbody td:last-child {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   flex-shrink: 0;
   border: 2px solid var(--rpg-border-light);
 }
@@ -116,7 +181,7 @@ tbody td:last-child {
 .char-name {
   font-weight: 700;
   color: var(--rpg-text-dark);
-  font-size: 1rem;
+  font-size: 0.98rem;
 }
 
 .char-desc {
@@ -125,7 +190,7 @@ tbody td:last-child {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
-  max-width: 360px;
+  max-width: 380px;
 }
 
 table td:nth-child(2) {
@@ -133,7 +198,7 @@ table td:nth-child(2) {
   width: 50%;
 }
 
-/* --- BOTÕES DE AÇÃO --- */
+/* ── BOTÕES DE AÇÃO ── */
 .action-btns {
   display: flex;
   justify-content: flex-end;
@@ -152,9 +217,7 @@ table td:nth-child(2) {
   justify-content: center;
   font-size: 0.95rem;
   color: var(--rpg-text-faint);
-  transition:
-    background 0.2s,
-    color 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 
 .btn-icon:hover {
@@ -167,7 +230,7 @@ table td:nth-child(2) {
   color: var(--rpg-error);
 }
 
-/* --- ESTADO VAZIO --- */
+/* ── ESTADO VAZIO ── */
 .empty-row td {
   padding: 0;
 }
@@ -177,28 +240,28 @@ table td:nth-child(2) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 70px 24px;
+  gap: 8px;
+  padding: 60px 24px;
   text-align: center;
 }
 
 .empty-icon {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   background: var(--rpg-purple-tint);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   color: var(--rpg-purple);
-  margin-bottom: 4px;
-  opacity: 0.7;
+  margin-bottom: 6px;
+  opacity: 0.8;
 }
 
 .empty-text {
   font-size: 1rem;
-  color: var(--rpg-text-faint);
+  color: var(--rpg-text-dark);
   font-weight: 700;
   margin: 0;
 }
@@ -209,65 +272,7 @@ table td:nth-child(2) {
   margin: 0;
 }
 
-/* --- BARRA DE BUSCA --- */
-.cl-search-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  background: var(--rpg-surface);
-  border: 2px solid var(--rpg-border);
-  border-radius: 12px;
-  padding: 0 16px;
-  transition: border-color 0.2s;
-}
-
-.cl-search-bar:focus-within {
-  border-color: var(--rpg-purple);
-}
-
-.cl-search-bar > i {
-  color: var(--rpg-text-faint);
-  font-size: 0.95rem;
-  flex-shrink: 0;
-}
-
-.cl-search-bar input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  padding: 13px 12px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.95rem;
-  color: var(--rpg-text-strong);
-  outline: none;
-}
-
-.cl-search-bar input::placeholder {
-  color: var(--rpg-text-faint);
-}
-
-.cl-search-clear {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--rpg-text-faint);
-  font-size: 0.85rem;
-  padding: 4px 6px;
-  border-radius: 6px;
-  transition:
-    color 0.2s,
-    background 0.2s;
-  display: flex;
-  align-items: center;
-}
-
-.cl-search-clear:hover {
-  color: var(--rpg-error);
-  background: var(--rpg-error-bg);
-}
-
-/* --- RESPONSIVIDADE --- */
+/* ── RESPONSIVIDADE ── */
 @media (max-width: 768px) {
   .cl-header {
     flex-direction: column;
@@ -276,10 +281,6 @@ table td:nth-child(2) {
 
   .cl-title {
     font-size: 1.5rem;
-  }
-
-  .char-desc {
-    max-width: 180px;
   }
 
   thead th:nth-child(2),

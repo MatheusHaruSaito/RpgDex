@@ -13,6 +13,7 @@
   height: 80px;
   background: var(--rpg-gradient-nav);
   color: white;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -52,7 +53,9 @@
   opacity: 0.8;
   padding: 8px 18px;
   border-radius: 20px;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   display: inline-block;
 }
@@ -69,6 +72,7 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
+/* ── PERFIL DO USUÁRIO ── */
 .user-profile {
   position: relative;
   width: 45px;
@@ -77,12 +81,16 @@
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   justify-content: center;
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .user-profile:hover {
@@ -121,6 +129,7 @@
   display: none;
 }
 
+/* ── BOTÕES AUTENTICAÇÃO ── */
 .auth-buttons {
   display: flex;
   gap: 15px;
@@ -139,7 +148,8 @@
   border-radius: 20px;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 0.3s, box-shadow 0.3s, background 0.3s, border-color 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
 .btn-login-nav {
@@ -166,6 +176,7 @@
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* ── ACESSIBILIDADE E MENU TOGGLE ── */
 .nav-links a:focus-visible,
 .logo:focus-visible,
 .user-profile:focus-visible,
@@ -186,7 +197,7 @@
   border-radius: 8px;
   padding: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s ease;
   z-index: 1100;
 }
 
@@ -199,7 +210,7 @@
   height: 3px;
   background-color: white;
   border-radius: 3px;
-  transition: 0.3s;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .nav-backdrop {
@@ -210,6 +221,11 @@
   .auth-buttons {
     flex-direction: column;
     margin-top: 20px;
+    width: 100%;
+  }
+
+  .btn-login-nav,
+  .btn-register-nav {
     width: 100%;
   }
 
@@ -242,11 +258,14 @@
     background: var(--rpg-purple);
     flex-direction: column;
     justify-content: center;
-    gap: 50px;
+    align-items: center;
+    gap: 40px;
     margin-left: 0;
+    padding: 20px;
     z-index: 1080;
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
   }
 
   .nav-container.active {
@@ -258,6 +277,17 @@
     align-items: center;
     margin: 0;
     gap: 16px;
+    width: 100%;
+  }
+
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-links a {
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .menu-toggle.active span:nth-child(1) {

@@ -1,40 +1,43 @@
 <div class="ec-wrapper">
   <div class="ec-card">
-
-    <!-- Aguardando -->
-    <div class="ec-state ec-state--waiting" *ngIf="state === 'waiting'">
-      <div class="ec-icon-ring ec-icon-ring--purple">
-        <i class="fa fa-spinner fa-spin"></i>
+    @if (state === 'waiting') {
+      <!-- Aguardando -->
+      <div class="ec-state ec-state--waiting">
+        <div class="ec-icon-ring ec-icon-ring--purple">
+          <i class="fa fa-spinner fa-spin"></i>
+        </div>
+        <h1 class="ec-title">Verificando seu email...</h1>
+        <p class="ec-sub">Aguarde enquanto confirmamos sua conta.</p>
       </div>
-      <h1 class="ec-title">Verificando seu email...</h1>
-      <p class="ec-sub">Aguarde enquanto confirmamos sua conta.</p>
-    </div>
-
-    <!-- Sucesso -->
-    <div class="ec-state ec-state--success" *ngIf="state === 'success'">
-      <div class="ec-icon-ring ec-icon-ring--success">
-        <i class="fa fa-circle-check"></i>
-      </div>
-      <h1 class="ec-title">Email confirmado!</h1>
-      <p class="ec-sub">{{ message }}</p>
-      <button class="ec-btn ec-btn--primary" (click)="backToLogin()">
-        <i class="fa fa-arrow-right-to-bracket"></i> Ir para o login
-      </button>
-    </div>
-
-    <!-- Erro -->
-    <div class="ec-state ec-state--error" *ngIf="state === 'error'">
-      <div class="ec-icon-ring ec-icon-ring--error">
-        <i class="fa fa-circle-xmark"></i>
-      </div>
-      <h1 class="ec-title">Algo deu errado</h1>
-      <p class="ec-sub">{{ message }}</p>
-      <div class="ec-actions">
-        <button class="ec-btn ec-btn--outline" (click)="backToLogin()">
-          <i class="fa fa-arrow-left"></i> Voltar ao login
+    } @else if (state === 'success') {
+      <!-- Sucesso -->
+      <div class="ec-state ec-state--success">
+        <div class="ec-icon-ring ec-icon-ring--success">
+          <i class="fa fa-circle-check"></i>
+        </div>
+        <h1 class="ec-title">Email confirmado!</h1>
+        <p class="ec-sub">{{ message }}</p>
+        <button type="button" class="ec-btn ec-btn--primary" (click)="backToLogin()">
+          <i class="fa fa-arrow-right-to-bracket"></i>
+          <span>Ir para o login</span>
         </button>
       </div>
-    </div>
+    } @else if (state === 'error') {
+      <!-- Erro -->
+      <div class="ec-state ec-state--error">
+        <div class="ec-icon-ring ec-icon-ring--error">
+          <i class="fa fa-circle-xmark"></i>
+        </div>
+        <h1 class="ec-title">Algo deu errado</h1>
+        <p class="ec-sub">{{ message }}</p>
+        <div class="ec-actions">
+          <button type="button" class="ec-btn ec-btn--outline" (click)="backToLogin()">
+            <i class="fa fa-arrow-left"></i>
+            <span>Voltar ao login</span>
+          </button>
+        </div>
+      </div>
+    }
 
     <div class="ec-logo" routerLink="/home">RPGDex</div>
   </div>

@@ -35,7 +35,7 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── LAYOUT DE ESTRUTURA DO MODAL ── */
+/* ── ESTRUTURA DO MODAL ── */
 .modal-header {
   display: flex;
   align-items: center;
@@ -78,7 +78,7 @@
   flex-shrink: 0;
 }
 
-/* ── INPUTS DO MODAL ── */
+/* ── INPUTS E FORMULÁRIO ── */
 .input-group {
   display: flex;
   flex-direction: column;
@@ -127,40 +127,30 @@
   pointer-events: none;
 }
 
-.input-field-wrapper input {
-  width: 100%;
-  font-family: 'Nunito', sans-serif;
-  padding: 11px 13px 11px 38px;
-  border: 2px solid var(--rpg-border-input);
-  border-radius: 10px;
-  font-size: 0.95rem;
-  color: var(--rpg-text-strong);
-  background: var(--rpg-surface-tint);
-  transition: border-color 0.2s, background 0.2s;
-  box-sizing: border-box;
-}
-
-.input-field-wrapper input:focus {
-  outline: none;
-  border-color: var(--rpg-purple);
-  background: var(--rpg-surface);
-}
-
+.input-field-wrapper input,
 .input-textarea {
   width: 100%;
   font-family: 'Nunito', sans-serif;
-  padding: 11px 13px;
   border: 2px solid var(--rpg-border-input);
   border-radius: 10px;
   font-size: 0.95rem;
   color: var(--rpg-text-strong);
   background: var(--rpg-surface-tint);
-  resize: vertical;
-  min-height: 80px;
   transition: border-color 0.2s, background 0.2s;
   box-sizing: border-box;
 }
 
+.input-field-wrapper input {
+  padding: 11px 13px 11px 38px;
+}
+
+.input-textarea {
+  padding: 11px 13px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.input-field-wrapper input:focus,
 .input-textarea:focus {
   outline: none;
   border-color: var(--rpg-purple);
@@ -228,7 +218,7 @@
   gap: 7px;
   opacity: 0;
   transition: opacity 0.2s;
-  color: white;
+  color: #fff;
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 0.88rem;
@@ -238,7 +228,7 @@
 
 .file-input-hidden { display: none; }
 
-/* ── RESPONSIVIDADE DO MODAL ── */
+/* ── RESPONSIVIDADE ── */
 @media (max-width: 520px) {
   .input-row { flex-direction: column; }
   .input-group--sm { flex: none; }

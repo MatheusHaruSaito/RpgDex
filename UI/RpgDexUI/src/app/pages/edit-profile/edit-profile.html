@@ -10,15 +10,16 @@
           <label
             class="avatar-preview"
             [style.background-image]="avatarPreviewUrl ? 'url(' + avatarPreviewUrl + ')' : ''"
-            style="cursor: pointer"
           >
-            <span *ngIf="!avatarPreviewUrl">
-              {{
-                (editForm.displayName || currentUser?.displayName || '??')
-                  .substring(0, 2)
-                  .toUpperCase()
-              }}
-            </span>
+            @if (!avatarPreviewUrl) {
+              <span>
+                {{
+                  (editForm.displayName || currentUser?.displayName || '??')
+                    .substring(0, 2)
+                    .toUpperCase()
+                }}
+              </span>
+            }
             <div class="avatar-overlay">
               <i class="fa-solid fa-camera"></i>
               <span>Alterar</span>
@@ -41,7 +42,7 @@
 
       <div class="edit-side__actions desktop-only">
         <span class="edit-side__small">Não quer alterar nada?</span>
-        <button class="btn-side" routerLink="/perfil">VOLTAR AO PERFIL</button>
+        <button type="button" class="btn-side" routerLink="/perfil">VOLTAR AO PERFIL</button>
       </div>
     </div>
 
@@ -55,7 +56,10 @@
       <form class="edit-form" (ngSubmit)="saveChanges()">
         <!-- Nome de usuário -->
         <div class="field-section">
-          <label class="field-label"> <i class="fa fa-user"></i> Nome de usuário </label>
+          <label class="field-label">
+            <i class="fa fa-user"></i>
+            <span>Nome de usuário</span>
+          </label>
           <div class="input-group">
             <i class="fa fa-user icon-field"></i>
             <input
@@ -71,7 +75,10 @@
 
         <!-- Foto de perfil por upload -->
         <div class="field-section">
-          <label class="field-label"> <i class="fa fa-image"></i> Foto de perfil </label>
+          <label class="field-label">
+            <i class="fa fa-image"></i>
+            <span>Foto de perfil</span>
+          </label>
           <label class="upload-zone">
             <i class="fa fa-cloud-arrow-up"></i>
             <span>Clique para selecionar uma imagem</span>
@@ -86,19 +93,31 @@
         </div>
 
         <!-- Feedback -->
-        <div class="feedback-message error-message" *ngIf="errorMessage">
-          <i class="fa fa-circle-exclamation"></i> {{ errorMessage }}
-        </div>
-        <div class="feedback-message success-message" *ngIf="successMessage">
-          <i class="fa fa-circle-check"></i> {{ successMessage }}
-        </div>
+        @if (errorMessage) {
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
+        @if (successMessage) {
+          <div class="feedback-message success-message">
+            <i class="fa fa-circle-check"></i>
+            <span>{{ successMessage }}</span>
+          </div>
+        }
 
         <!-- Ações -->
         <div class="form-actions">
           <button type="button" class="btn-cancel" routerLink="/perfil">Cancelar</button>
           <button type="submit" class="btn-save" [disabled]="isLoading">
-            <span *ngIf="!isLoading"><i class="fa fa-floppy-disk"></i> Salvar Alterações</span>
-            <span *ngIf="isLoading"><i class="fa fa-spinner fa-spin"></i> Salvando...</span>
+            @if (!isLoading) {
+              <i class="fa fa-floppy-disk"></i>
+              <span>Salvar Alterações</span>
+            } @else {
+              <i class="fa fa-spinner fa-spin"></i>
+              <span>Salvando...</span>
+            }
           </button>
         </div>
       </form>
@@ -116,7 +135,7 @@
     <div class="modal-card cropper-card">
       <div class="modal-header">
         <h2 class="modal-title">Ajustar <span>Avatar</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <button type="button" class="btn-icon modal-close" (click)="cancelCrop()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>

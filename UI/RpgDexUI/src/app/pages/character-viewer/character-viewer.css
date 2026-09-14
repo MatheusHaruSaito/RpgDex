@@ -12,15 +12,16 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--rpg-surface-tint);
+  background: var(--rpg-surface);
   border: 1px solid var(--rpg-border-light);
   border-radius: 12px;
   padding: 16px;
+  box-shadow: var(--rpg-shadow-sm);
 }
 
 .cv-avatar {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: var(--rpg-gradient);
   background-size: cover;
@@ -30,7 +31,7 @@
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   flex-shrink: 0;
 }
 
@@ -44,7 +45,7 @@
 .cv-name {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   color: var(--rpg-text-dark);
   margin: 0;
   white-space: nowrap;
@@ -65,21 +66,22 @@
   font-family: 'Nunito', sans-serif;
   font-size: 0.9rem;
   color: var(--rpg-text-faint);
-  font-style: italic;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 16px;
+  padding: 24px 16px;
   background: var(--rpg-surface-tint);
-  border-radius: 8px;
-  border: 1px dashed var(--rpg-border-light);
+  border-radius: 10px;
+  border: 1.5px dashed var(--rpg-border-light);
 }
 
 /* ── GRID E COLUNAS DA FICHA ── */
 .cv-sheet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
+  align-items: start;
 }
 
 .cv-sheet-col {
@@ -99,12 +101,28 @@
   gap: 2px;
 }
 
+.cv-scalar-label {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rpg-purple);
+}
+
+.cv-scalar-val {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--rpg-text-dark);
+}
+
 /* ── BLOCOS DE SEÇÃO DA FICHA ── */
 .cv-section-block {
   background: var(--rpg-surface);
   border: 1px solid var(--rpg-border-light);
   border-radius: 10px;
-  padding: 12px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -136,13 +154,13 @@
   justify-content: space-between;
   gap: 12px;
   background: var(--rpg-surface-tint);
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   transition: background 0.15s ease;
 }
 
 .cv-prop-chip:hover {
-  background: rgba(124, 58, 237, 0.08);
+  background: var(--rpg-purple-tint);
 }
 
 .cv-prop-key {
@@ -155,9 +173,10 @@
 .cv-prop-val {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--rpg-purple);
   text-align: right;
+  word-break: break-word;
 }
 
 /* ── RESPONSIVIDADE ── */
