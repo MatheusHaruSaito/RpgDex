@@ -13,6 +13,7 @@ import { UpdateCampaignSettingsRequest } from '../../../models/updateCampaignSet
 import { EditCampaignModalComponent } from '../../modals/edit-campaign-modal/edit-campaign-modal';
 import { CharacterViewerComponent } from '../../pages/character-viewer/character-viewer';
 import { CampaignSetActiveStateRequest } from '../../../models/campaignSetActiveStateRequest';
+import { CampaignChatComponent } from '../../components/campaign-chat-component/campaign-chat-component';
 
 @Component({
   selector: 'app-campaign-detail',
@@ -23,6 +24,7 @@ import { CampaignSetActiveStateRequest } from '../../../models/campaignSetActive
     RouterModule,
     EditCampaignModalComponent,
     CharacterViewerComponent,
+    CampaignChatComponent,
   ],
   providers: [DatePipe],
   templateUrl: './campaign-detail.html',

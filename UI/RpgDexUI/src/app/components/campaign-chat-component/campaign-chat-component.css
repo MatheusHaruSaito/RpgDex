@@ -1,0 +1,294 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  width: 340px;
+  height: 480px;
+  background-color: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: 14px 14px 0 0;
+  box-shadow: 0 -4px 24px rgba(60, 52, 137, 0.12);
+  overflow: hidden;
+
+
+  position: fixed;
+  bottom: 0px; 
+  right: 32px;
+  z-index: 9999;
+
+  transition: height 0.25s ease, box-shadow 0.25s ease;
+}
+
+.chat-container.is-minimized {
+  height: 48px;
+  box-shadow: 0 -2px 12px rgba(60, 52, 137, 0.1);
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+.chat-header {
+  height: 48px;
+  min-height: 48px;
+  flex-shrink: 0;
+  padding: 0 16px;
+  background: var(--rpg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 14px 14px 0 0;
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-title i {
+  color: rgba(255, 255, 255, 0.85);
+  flex-shrink: 0;
+}
+
+/* Badge de não lidas */
+.chat-unread-badge {
+  background: #fff;
+  color: var(--rpg-purple);
+  font-size: 0.72rem;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  flex-shrink: 0;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.15); }
+}
+
+/* Botão chevron no header */
+.btn-icon.btn-sm {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.btn-icon.btn-sm:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── BODY ────────────────────────────────────────────────────── */
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── MENSAGENS ───────────────────────────────────────────────── */
+.messages-container {
+  flex: 1;
+  padding: 14px 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--rpg-bg);
+  min-height: 0;
+}
+
+.messages-container::-webkit-scrollbar { width: 4px; }
+.messages-container::-webkit-scrollbar-thumb {
+  background: var(--rpg-border);
+  border-radius: 4px;
+}
+
+/* Estado vazio */
+.chat-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--rpg-text-faint);
+  gap: 8px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 20px;
+}
+
+.chat-empty i {
+  font-size: 1.8rem;
+  opacity: 0.4;
+}
+
+/* Item de mensagem */
+.message-item {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 88%;
+  align-self: flex-start;
+}
+
+.message-item.message-mine {
+  align-self: flex-start;
+}
+
+/* Avatar */
+.message-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--rpg-purple-tint);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rpg-purple);
+  font-size: 0.72rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--rpg-border-light);
+  margin-bottom: 2px;
+}
+
+/* Conteúdo da mensagem */
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 2px;
+}
+
+
+
+.message-author {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rpg-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.message-time {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.67rem;
+  color: var(--rpg-text-faint);
+  white-space: nowrap;
+}
+
+/* Balão */
+.message-bubble {
+  padding: 8px 12px;
+  border-radius: 12px;
+  border-top-left-radius: 2px;
+  background-color: var(--rpg-surface);
+  color: var(--rpg-text-body);
+  border: 1px solid var(--rpg-border-input);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.message-mine .message-bubble {
+  background-color: var(--rpg-purple);
+  color: #fff;
+  border: none;
+}
+
+/* ── CONTROLES ───────────────────────────────────────────────── */
+.chat-controls {
+  padding: 10px 12px;
+  background-color: var(--rpg-surface);
+  border-top: 1px solid var(--rpg-border);
+  flex-shrink: 0;
+}
+
+.chat-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-input {
+  flex: 1;
+  font-family: 'Nunito', sans-serif;
+  padding: 9px 12px;
+  border: 1.5px solid var(--rpg-border-input);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--rpg-text-strong);
+  background-color: var(--rpg-surface-2);
+  transition: border-color 0.2s;
+  min-width: 0;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--rpg-purple);
+}
+
+.btn-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rpg-purple);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.2s, transform 0.15s;
+}
+
+.btn-send:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}

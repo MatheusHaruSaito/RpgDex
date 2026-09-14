@@ -4,6 +4,7 @@ using MongoDB.Bson.Serialization.Serializers;
 using RpgDex.Application;
 using RpgDex.Application.Mapping;
 using RpgDex.Infrastructure;
+using RpgDex.Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
@@ -22,9 +23,11 @@ builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
-app.UseCors("PermitirTudo");
 
 app.UseForwardedHeaders();
+app.UseRouting();
+
+app.UseCors("PermitirTudo");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -38,5 +41,6 @@ app.UseAuthentication();
 app.UseAuthorization();  
 
 app.MapControllers();
+app.MapHub<CampaignChatHub>("/hubs/campaign-chat");
 
 app.Run();

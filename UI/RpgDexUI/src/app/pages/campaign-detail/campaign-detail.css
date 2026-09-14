@@ -53,7 +53,9 @@
   gap: 8px;
   padding: 8px 12px;
   border-radius: 8px;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
   text-decoration: none;
 }
 
@@ -300,7 +302,9 @@
   border-radius: 10px;
   background: var(--rpg-surface-2);
   color: var(--rpg-text-strong);
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   box-sizing: border-box;
 }
 
@@ -409,7 +413,9 @@
   border: 1px solid var(--rpg-border-light);
   border-radius: 12px;
   overflow: hidden;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .char-card-item:hover {
@@ -760,7 +766,7 @@
   height: 18px;
   border-radius: 50%;
   background: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s;
 }
 
@@ -893,24 +899,57 @@
   opacity: 1;
 }
 
+/* Campaign Chat */
+app-campaign-chat-component {
+  display: block;
+}
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── RESPONSIVO PÁGINA PRINCIPAL ── */
 @media (max-width: 860px) {
-  .cd-grid { grid-template-columns: 1fr; }
-  .cd-hero { flex-direction: column; }
-  .cd-hero-cover { width: 100%; min-height: 160px; }
-  .cd-hero-info { padding: 20px; }
+  .cd-grid {
+    grid-template-columns: 1fr;
+  }
+  .cd-hero {
+    flex-direction: column;
+  }
+  .cd-hero-cover {
+    width: 100%;
+    min-height: 160px;
+  }
+  .cd-hero-info {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 520px) {
-  .cd-topbar { flex-direction: column; align-items: flex-start; }
-  .cd-topbar-actions { width: 100%; justify-content: flex-end; }
-  .cd-hero-title { font-size: 1.5rem; }
-  .cd-input-row { flex-direction: column; }
-  .char-session-card__desc { max-width: 160px; }
-  .char-sheet__columns { grid-template-columns: 1fr; }
+  .cd-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cd-topbar-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .cd-hero-title {
+    font-size: 1.5rem;
+  }
+  .cd-input-row {
+    flex-direction: column;
+  }
+  .char-session-card__desc {
+    max-width: 160px;
+  }
+  .char-sheet__columns {
+    grid-template-columns: 1fr;
+  }
 }

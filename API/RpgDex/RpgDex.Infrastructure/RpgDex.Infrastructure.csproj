@@ -6,6 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
   <ItemGroup>
     <PackageReference Include="AspNet.Security.OAuth.Discord" Version="10.0.0" />
     <PackageReference Include="AspNetCore.Identity.MongoDbCore" Version="7.0.0" />
@@ -13,6 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.3.12" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.11" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />
     <PackageReference Include="MongoDB.Driver" Version="3.8.1" />
@@ -22,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RpgDex.Application\RpgDex.Application.csproj" />
     <ProjectReference Include="..\RpgDex.Domain\RpgDex.Domain.csproj" />
   </ItemGroup>
 

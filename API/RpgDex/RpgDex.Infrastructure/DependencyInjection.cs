@@ -3,18 +3,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using Resend;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Repositories;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -28,6 +31,19 @@ namespace RpgDex.Infrastructure
         {
             //Database configuration
             services.AddSingleton<MongoDbContext>();
+            var redisConnection = configuration.GetConnectionString("Redis");
+            if (!string.IsNullOrEmpty(redisConnection))
+            {
+                var config = ConfigurationOptions.Parse(redisConnection);
+                config.AbortOnConnectFail = false;
+                config.ConnectTimeout = 5000;      
+
+                services.AddSignalR()
+                    .AddStackExchangeRedis(options =>
+                    {
+                        options.Configuration = config;
+                    });
+            }
 
             services.AddScoped<IMongoDatabase>(sp =>
             {
@@ -63,6 +79,9 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignRepository, CampaignRepository>();
             services.AddScoped<IGoogleAuthService, GoogleAuthService>();
             services.AddScoped<IDiscordAuthService, DiscordAuthService>();
+            services.AddScoped<ICampaignChatService, CampaignChatService>();
+            services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
+
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -107,6 +126,20 @@ namespace RpgDex.Infrastructure
                         ClockSkew = TimeSpan.Zero,
                         NameClaimType = JwtRegisteredClaimNames.UniqueName
                     };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+                            return Task.CompletedTask;
+                        }
+                    };
                 })
                 .AddDiscord(o =>
                 {
@@ -140,7 +173,8 @@ namespace RpgDex.Infrastructure
                 options.AddPolicy("PermitirTudo", policy => {
                     policy.WithOrigins(configuration["ApiSettings:UIBaseUrl"], configuration["ApiSettings:BaseUrl"])
                     .AllowAnyHeader()
-                    .AllowAnyMethod();
+                    .AllowAnyMethod()
+                    .AllowCredentials();
                 });
             });
 

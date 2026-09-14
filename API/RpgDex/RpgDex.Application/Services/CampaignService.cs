@@ -14,7 +14,8 @@ namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
-        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator) : ICampaignService
+        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator, 
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -49,7 +50,6 @@ namespace RpgDex.Application.Services
 
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure("Invalid User ID format.");
 
-
             var userExisits = await userRepository.GetByIdAsync(guidUserId);
             if(userExisits is null)
             {
@@ -59,7 +59,6 @@ namespace RpgDex.Application.Services
             var campaign = request.Adapt<Campaign>();
             campaign.GameMasterId = guidUserId;
             campaign.SetPasswordHash(HashPassword(campaign,request.Password));
-
             //Temporary, change when subscriptions are defined
             if (request.MaxPlayers > 15)
             {
@@ -80,6 +79,11 @@ namespace RpgDex.Application.Services
 
             var result = await campaignRepository.InsertAsync(campaign);
             if(result is null)
+            {
+                return Result<CampaignResponse>.Failure("Failed to create campaign");
+            }
+            var chatResult = await campaignChatRepository.InsertAsync(new CampaignChat(result.Id));
+            if (chatResult is null)
             {
                 return Result<CampaignResponse>.Failure("Failed to create campaign");
             }
@@ -366,6 +370,58 @@ namespace RpgDex.Application.Services
             }
 
             return Result<string>.Success("Campaign settings updated successfully");
+        }
+
+        public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
+        {
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<string>.Failure("User not found");
+            }
+
+
+            var campaignChat = await campaignChatRepository.GetCampaignChat(request.CampaignId);
+            if (campaignChat is null)
+            {
+                return Result<string>.Failure("Failed to get campaign chat");
+            }
+            ChatMessage newMessage = new(
+                user.Id,
+                user.DisplayName,
+                user.IconPath,
+                request.Message,
+                DateTime.UtcNow
+                );
+
+            campaignChat.PushCampaignChat(newMessage);
+            var result = await campaignChatRepository.UpdateCampaignChatMessage(campaignChat.Id, campaignChat.ChatMessages);
+            if (!result)
+            {
+                return Result<string>.Failure($"Failed to save new message");
+            }
+            await campaignChatService.SendMessage(request.CampaignId.ToString(), newMessage.Adapt<CampaignChatMessagesResponse>());
+
+            return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
+        }
+        public async Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(Guid campaignId)
+        {
+            //needs more verification
+            var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
+            if (campaignChat is null)
+            {
+                var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
+                if(newcampaignChat is null)
+                {
+                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Failed to get campaign chat");
+                }
+                var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+                return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
+
+            }
+            var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+            return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(messages);
         }
     }
 }

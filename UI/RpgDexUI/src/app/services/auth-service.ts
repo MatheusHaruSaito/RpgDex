@@ -173,4 +173,7 @@ export class AuthService {
   public TwoFAActivation(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ActiveTwoFactorAuth/`, request);
   }
+  public get Token(){
+    return this.cookieService.get(this.JWT_Token);
+  }
 }
