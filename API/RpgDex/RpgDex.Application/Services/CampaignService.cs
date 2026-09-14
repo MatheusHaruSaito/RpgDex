@@ -261,7 +261,49 @@ namespace RpgDex.Application.Services
             return Result<string>.Success(message);
         }
 
+        public async Task<Result<string>> RemoveCharacter(string userId, RemoveCharacterFromCapaignRequest request)
+        {
+            var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
+            if (characterFound is null)
+            {
+                return Result<string>.Failure("Character not found");
+            }
+            //Character found
 
+            var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaignFound is null)
+            {
+                return Result<string>.Failure("Campaign not found");
+            }
+            //Campaign found
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
+
+            var isUserGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
+            if (!isUserGameMaster)
+            {
+                return Result<string>.Failure("Only the game master can accept or reject characters");
+            }
+
+            (string message, bool isSuccess) characterRemoved;
+
+                characterRemoved = campaignFound.TryRemoveCharacter(request.CharacterId);
+
+            if (!characterRemoved.isSuccess)
+            {
+                return Result<string>.Failure(characterRemoved.message);
+
+            }
+
+            //Character accepted into campaign
+
+            var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
+            if (updatedCampaign is null)
+            {
+                return Result<string>.Failure("Failed to update campaign");
+            }
+            return Result<string>.Success(characterRemoved.message);
+        }
         public async Task<Result<string>> AcceptCharacter(string userId, AcceptCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
