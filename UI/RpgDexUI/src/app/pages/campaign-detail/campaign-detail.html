@@ -28,7 +28,7 @@
         <button
           *ngIf="isPlayerInCampaign && !isGameMaster"
           class="btn btn-outline-danger"
-          (click)="removePlayer(currentUserId)"
+          (click)="leaveCampaign(campaignId)"
         >
           <i class="fa fa-right-from-bracket"></i> Sair da Campanha
         </button>

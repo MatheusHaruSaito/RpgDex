@@ -332,10 +332,7 @@ export class CampaignDetailComponent implements OnInit {
   removePlayer(userId: string): void {
     if (!this.campaign) return;
 
-    const confirmMsg =
-      userId === this.currentUserId
-        ? 'Tem certeza de que deseja sair desta campanha?'
-        : 'Tem certeza de que deseja remover este jogador?';
+    const confirmMsg = 'Tem certeza de que deseja remover este jogador';
 
     if (!confirm(confirmMsg)) return;
 
@@ -426,6 +423,15 @@ export class CampaignDetailComponent implements OnInit {
       },
       error: (err) =>
         this.showFeedback(this.getErrorMessage(err, 'Erro ao atualizar dados da campanha.'), true),
+    });
+  }
+  leaveCampaign(userId: string): void {
+    if (!confirm('Tem certeza de que deseja sair desta campanha?')) return;
+
+    this.campaignService.LeaveCampaign({ campaignId: userId }).subscribe({
+      next: () => {
+        this.router.navigate(['/campanhas']);
+      },
     });
   }
 }
