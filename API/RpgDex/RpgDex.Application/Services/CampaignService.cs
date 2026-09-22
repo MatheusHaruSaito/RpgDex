@@ -411,7 +411,63 @@ namespace RpgDex.Application.Services
 
             return Result<string>.Success(message);
         }
+        public async Task<Result<string>> LeaveCampaign(string userId, LeaveCampaignRequest request)
+        {
+            if (!Guid.TryParse(userId, out Guid userIdGuid)) return Result<string>.Failure("Invalid User ID format");
 
+            var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if(campaignFound is null)
+            {
+                return Result<string>.Failure("Campaign does not exist");
+            }
+            //Verifies if user is game master
+            if (campaignFound.GameMasterId.Equals(userIdGuid))
+            {
+                return Result<string>.Failure("The Game Master cannot leave the campaign. Transfer ownership or delete it instead.");
+            }
+            //Verifies if user is in the campaign
+            if (!campaignFound.PlayerIds.Contains(userIdGuid))
+            {
+                return Result<string>.Failure("You are not a player in this campaign");
+            }
+
+            var (message, isSuccess) = campaignFound.TryRemovePlayer(userIdGuid);
+            if (!isSuccess)
+            {
+                return Result<string>.Failure(message);
+            }
+
+            //Try to remove user characters from campaign
+            var userFound = await userRepository.GetByIdAsync(userIdGuid);
+
+            if (userFound is not null && userFound.CharactersId is not null)
+            {
+
+                var charactersToRemove = userFound.CharactersId
+                    .Intersect(campaignFound.CharacterIds)
+                    .ToList();
+                var charactersRequestToRemove = userFound.CharactersId
+                    .Intersect(campaignFound.CharacterRequests)
+                    .ToList();
+                foreach (var characterId in charactersToRemove)
+                {
+                    campaignFound.TryRemoveCharacter(characterId);
+                }
+                foreach (var characterId in charactersRequestToRemove)
+                {
+                    campaignFound.TryRejectCharacter(characterId);
+                }
+            }
+
+            var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
+            if (updatedCampaign is null)
+            {
+                return Result<string>.Failure("Failed to update campaign");
+            }
+
+            return Result<string>.Success("Successfully left the campaign");
+
+        }
         public async Task<Result<string>> UpdateConfiguration(string userId, UpdateCampaignSettingsRequest request)
         {
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
@@ -489,5 +545,7 @@ namespace RpgDex.Application.Services
             var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
             return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(messages);
         }
+
+
     }
 }

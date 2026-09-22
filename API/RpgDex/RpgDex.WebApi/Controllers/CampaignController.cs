@@ -114,5 +114,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.GetChatMessages(campaignId);
             return result.ToIActionResult();
         }
+        [HttpPatch("Leave")]
+        public async Task<IActionResult> GetMessages(LeaveCampaignRequest request)
+        {
+            var result = await _campaignService.LeaveCampaign(currentUser,request);
+            return result.ToIActionResult();
+        }
     }
 }
