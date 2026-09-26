@@ -4,6 +4,10 @@
       <h1 class="cl-title"><span>Meus Personagens</span></h1>
       <p class="cl-subtitle">Gerencie todas as fichas da sua coleção.</p>
     </div>
+    <button class="btn btn-secondary">
+      <i class="fa fa-plus"></i> Importar Personagem
+      <input type="file" (change)="importCharacter($event)" />
+    </button>
     <button class="btn btn-primary" (click)="showCreateModal = true">
       <i class="fa fa-plus"></i> Novo Personagem
     </button>
@@ -39,14 +43,18 @@
               <div class="char-name-cell">
                 <div
                   class="char-avatar-thumb"
-                  [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''"
+                  [style.background-image]="
+                    character.iconPath ? 'url(' + character.iconPath + ')' : ''
+                  "
                 >
                   <i class="fa fa-shield-halved" *ngIf="!character.iconPath"></i>
                 </div>
                 <span class="char-name">{{ character.name }}</span>
               </div>
             </td>
-            <td><span class="char-desc">{{ character.description || 'Nenhuma descrição.' }}</span></td>
+            <td>
+              <span class="char-desc">{{ character.description || 'Nenhuma descrição.' }}</span>
+            </td>
             <td>
               <div class="action-btns">
                 <button
@@ -68,7 +76,11 @@
                 </div>
                 <p class="empty-text">Nenhum personagem encontrado</p>
                 <p class="empty-sub">
-                  {{ searchQuery ? 'Tente buscar por outro nome.' : 'Clique em "Novo Personagem" para criar sua primeira ficha.' }}
+                  {{
+                    searchQuery
+                      ? 'Tente buscar por outro nome.'
+                      : 'Clique em "Novo Personagem" para criar sua primeira ficha.'
+                  }}
                 </p>
               </div>
             </td>

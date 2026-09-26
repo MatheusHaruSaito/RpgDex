@@ -45,7 +45,9 @@
   border: 1.5px solid var(--rpg-border);
   border-radius: 12px;
   padding: 0 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .cl-search-bar:focus-within {
@@ -82,7 +84,9 @@
   font-size: 0.85rem;
   padding: 6px;
   border-radius: 6px;
-  transition: color 0.2s, background 0.2s;
+  transition:
+    color 0.2s,
+    background 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -217,7 +221,9 @@ table td:nth-child(2) {
   justify-content: center;
   font-size: 0.95rem;
   color: var(--rpg-text-faint);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .btn-icon:hover {
