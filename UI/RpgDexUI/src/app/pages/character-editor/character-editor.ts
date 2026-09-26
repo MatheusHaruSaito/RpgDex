@@ -3,9 +3,10 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
-import { finalize } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
+import { HttpClient } from '@angular/common/http';
 
 export interface AttrEntry {
   key: string;
@@ -65,6 +66,7 @@ export class CharacterEditor implements OnInit {
     this.loadCharacter(id);
   }
 
+  constructor(private http: HttpClient) {}
   private loadCharacter(id: string): void {
     this.characterService.GetById(id).subscribe({
       next: (res) => {
@@ -205,8 +207,8 @@ export class CharacterEditor implements OnInit {
 
   confirmCrop(): void {
     if (this.croppedBlob) {
-      this.selectedIconFile = new File([this.croppedBlob], 'avatar.png', {
-        type: 'image/png',
+      this.selectedIconFile = new File([this.croppedBlob], 'avatar.webp', {
+        type: 'image/webp',
       });
     }
     this.showCropperModal = false;
@@ -311,8 +313,12 @@ export class CharacterEditor implements OnInit {
     }
     this.location.back();
   }
-  downloadCharacter(): void {
-    const characterJson = JSON.stringify(this.formatCharacterToDownload(this.character!), null, 2);
+  async downloadCharacter(): Promise<void> {
+    const characterJson = JSON.stringify(
+      await this.formatCharacterToDownload(this.character!),
+      null,
+      2,
+    );
     const blob = new Blob([characterJson], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -323,12 +329,59 @@ export class CharacterEditor implements OnInit {
     window.URL.revokeObjectURL(url);
     a.remove();
   }
-  private formatCharacterToDownload(character: Character) {
+
+  private async formatCharacterToDownload(character: Character) {
     return {
-      icon: character.iconPath,
+      icon: await this.convertImageToBase64(character.iconPath),
       name: character.name,
       description: character.description,
       properties: character.properties,
     };
+  }
+  private async convertImageToBase64(url: string): Promise<string> {
+    if (!url) return '';
+
+    try {
+      const response: any = await firstValueFrom(this.http.get(url, { responseType: 'blob' }));
+
+      const blob: Blob =
+        response instanceof Blob ? response : response?.body instanceof Blob ? response.body : null;
+
+      if (!(blob instanceof Blob)) {
+        console.warn('A resposta da imagem não é um Blob válido:', response);
+        return '';
+      }
+      return new Promise<string>((resolve, reject) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(blob);
+
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            const webpBase64 = canvas.toDataURL('image/webp', 0.8);
+            URL.revokeObjectURL(objectUrl);
+            resolve(webpBase64);
+          } else {
+            URL.revokeObjectURL(objectUrl);
+            reject('Não foi possível obter o contexto do canvas');
+          }
+        };
+
+        img.onerror = (err) => {
+          URL.revokeObjectURL(objectUrl);
+          reject(err);
+        };
+
+        img.src = objectUrl;
+      });
+    } catch (err) {
+      console.error('Erro ao converter imagem para WebP Base64:', err);
+      return '';
+    }
   }
 }
