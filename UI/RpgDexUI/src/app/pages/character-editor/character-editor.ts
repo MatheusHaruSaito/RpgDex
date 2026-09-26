@@ -270,28 +270,28 @@ export class CharacterEditor implements OnInit {
           this.isEditing = false;
           this.successMessage = 'Personagem salvo com sucesso!';
 
-        this.captureSavedState();
-        this.selectedIconFile = null;
+          this.captureSavedState();
+          this.selectedIconFile = null;
 
-        this.isEditing = false;
-        this.successMessage = 'Personagem salvo com sucesso!';
-        this.cdr.detectChanges();
-        setTimeout(() => {
-          this.successMessage = '';
+          this.isEditing = false;
+          this.successMessage = 'Personagem salvo com sucesso!';
           this.cdr.detectChanges();
-        }, 3000);
-      },
-      error: (err) => {
-        this.isSaving = false;
-        const body = err?.error;
-        this.errorMessage =
-          (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
-          body?.message ??
-          body?.title ??
-          'Erro ao salvar.';
-        this.cdr.detectChanges();
-      },
-    });
+          setTimeout(() => {
+            this.successMessage = '';
+            this.cdr.detectChanges();
+          }, 3000);
+        },
+        error: (err) => {
+          this.isSaving = false;
+          const body = err?.error;
+          this.errorMessage =
+            (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
+            body?.message ??
+            body?.title ??
+            'Erro ao salvar.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   confirmDelete(): void {
@@ -310,5 +310,25 @@ export class CharacterEditor implements OnInit {
       if (!confirm('Você tem alterações não salvas. Deseja sair mesmo assim?')) return;
     }
     this.location.back();
+  }
+  downloadCharacter(): void {
+    const characterJson = JSON.stringify(this.formatCharacterToDownload(this.character!), null, 2);
+    const blob = new Blob([characterJson], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${this.character?.name.toLocaleLowerCase().replace(/ /g, '+')}_data.json`;
+
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
+  }
+  private formatCharacterToDownload(character: Character) {
+    return {
+      icon: character.iconPath,
+      name: character.name,
+      description: character.description,
+      properties: character.properties,
+    };
   }
 }
