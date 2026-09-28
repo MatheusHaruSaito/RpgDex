@@ -4,13 +4,25 @@
       <h1 class="cl-title"><span>Meus Personagens</span></h1>
       <p class="cl-subtitle">Gerencie todas as fichas da sua coleção.</p>
     </div>
-    <button class="btn btn-secondary">
-      <i class="fa fa-plus"></i> Importar Personagem
-      <input type="file" (change)="importCharacter($event)" />
-    </button>
-    <button class="btn btn-primary" (click)="showCreateModal = true">
-      <i class="fa fa-plus"></i> Novo Personagem
-    </button>
+    
+    <div class="cl-header-actions">
+      <!-- Input oculto para carregar o ficheiro JSON/ficha -->
+      <input
+        #importInput
+        type="file"
+        accept=".json"
+        class="file-input-hidden"
+        (change)="importCharacter($event)"
+      />
+      
+      <button class="btn btn-secondary" (click)="importInput.click()">
+        <i class="fa fa-file-import"></i> Importar Personagem
+      </button>
+
+      <button class="btn btn-primary" (click)="showCreateModal = true">
+        <i class="fa fa-plus"></i> Novo Personagem
+      </button>
+    </div>
   </div>
 
   <!-- Busca -->

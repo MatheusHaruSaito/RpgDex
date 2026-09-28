@@ -3,6 +3,7 @@
   <div class="ce-topbar">
     <div></div>
     <div class="ce-topbar-actions">
+      <!-- Botões exibidos apenas no modo de EDIÇÃO -->
       <ng-container *ngIf="isEditing">
         <button class="btn btn-outline-danger" (click)="confirmDelete()">
           <i class="fa fa-trash"></i> Excluir
@@ -15,12 +16,16 @@
           <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i> Salvando...</span>
         </button>
       </ng-container>
-      <button *ngIf="!isEditing" class="btn btn-secondary" (click)="downloadCharacter()">
-        <i class="fa fa-pen"></i> Baixar Ficha
-      </button>
-      <button *ngIf="!isEditing" class="btn btn-primary" (click)="toggleEditMode()">
-        <i class="fa fa-pen"></i> Editar Ficha
-      </button>
+
+      <!-- Botões exibidos no modo de VISUALIZAÇÃO -->
+      <ng-container *ngIf="!isEditing">
+        <button class="btn btn-secondary" (click)="downloadCharacter()">
+          <i class="fa fa-download"></i> Baixar Ficha
+        </button>
+        <button class="btn btn-primary" (click)="toggleEditMode()">
+          <i class="fa fa-pen"></i> Editar Ficha
+        </button>
+      </ng-container>
     </div>
   </div>
 
@@ -104,7 +109,7 @@
             rows="8"
             maxlength="2000"
           ></textarea>
-          <span class="ce-char-count">{{ editForm.description.length }}/2000</span>
+          <span class="ce-char-count">{{ editForm.description?.length || 0 }}/2000</span>
         </ng-container>
       </section>
     </div>
