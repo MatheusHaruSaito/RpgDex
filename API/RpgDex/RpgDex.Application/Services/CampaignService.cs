@@ -15,7 +15,8 @@ namespace RpgDex.Application.Services
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator, 
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository) : ICampaignService
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository,
+        IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -374,6 +375,9 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
+            var checkCampaignChatMessageValidator= campaignChatMessageValidator.Validate(request);
+            if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
+
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
