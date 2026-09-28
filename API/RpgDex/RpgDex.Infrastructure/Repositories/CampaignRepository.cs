@@ -80,8 +80,10 @@ namespace RpgDex.Infrastructure.Repositories
 
         private FilterDefinition<Campaign> GetCampaignFilter(Guid userId)
         {
-            return Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId)
-                        | Builders<Campaign>.Filter.AnyEq("PlayerIds", userId);
+            return (Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId))
+                        | Builders<Campaign>.Filter.AnyEq("PlayerIds", userId)
+                        & Builders<Campaign>.Filter.Eq(c=> c.IsActive, true);
+
         }
     }
 }
