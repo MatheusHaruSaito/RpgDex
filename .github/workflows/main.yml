@@ -18,7 +18,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 10.0 # Ou a versão que você está usando
+        dotnet-version: 10.0
 
     - name: Restore dependencies
       run: dotnet restore
@@ -26,7 +26,6 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
       env:
-        # Aqui o GitHub injeta o seu Secret durante o processo de build/teste
         ConnectionStrings__MongoDbConnection: ${{ secrets.MONGODB_CONNECTION_STRING }}
         Jwt__Key: ${{  secrets.JWT_KEY  }}
   build-angular:
