@@ -17,8 +17,10 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<bool>> SetActiveState(string userId, CampaignSetActiveStateRequest request);
         public Task<Result<string>> AddPlayer(string userId, JoinCampaignRequest request);
         public Task<Result<string>> AddCharacter(string userId, AddCharacterToCampaignRequest request);
+        public Task<Result<string>> RemoveCharacter(string userId, RemoveCharacterFromCapaignRequest request);
         public Task<Result<string>> AcceptCharacter(string userId, AcceptCharacterToCampaignRequest request);
         public Task<Result<string>> RemovePlayer(string userId, RemovePlayerFromCampaignRequest request);
+        public Task<Result<string>> LeaveCampaign(string userId, LeaveCampaignRequest request);
         public Task<Result<string>> UpdateConfiguration(string userId ,UpdateCampaignSettingsRequest request);
         //For now it won't be saved on database
         public Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request);
