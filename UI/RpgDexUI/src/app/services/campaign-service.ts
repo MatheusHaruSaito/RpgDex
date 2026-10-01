@@ -13,6 +13,7 @@ import { RemovePlayerFromCampaignRequest } from '../../models/removePlayerFromCa
 import { UpdateCampaignSettingsRequest } from '../../models/updateCampaignSettingsRequest';
 import { CampaignSetActiveStateRequest } from '../../models/campaignSetActiveStateRequest';
 import { GetAllCampaignResponse } from '../../models/getAllCampaignResponse';
+import { LeaveCampaignRequest } from '../../models/leaveCampaignRequest';
 @Injectable({
   providedIn: 'root',
 })
@@ -57,11 +58,17 @@ export class CampaignService {
   AcceptCharacter(request: AcceptCharacterToCampaignRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/AcceptCharacter`, request);
   }
+  RemoveCharacter(request: AcceptCharacterToCampaignRequest): Observable<ApiResponse<String>> {
+    return this.http.patch<ApiResponse<String>>(`${this.env}/AcceptCharacter`, request);
+  }
   RemovePlayer(request: RemovePlayerFromCampaignRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/RemovePlayer`, request);
   }
   UpdateSettings(request: UpdateCampaignSettingsRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/UpdateSettings`, request);
+  }
+  LeaveCampaign(request: LeaveCampaignRequest): Observable<ApiResponse<String>> {
+    return this.http.patch<ApiResponse<String>>(`${this.env}/Leave`, request);
   }
   //bad idea, refactor this later to just deactive
   SetActiveState(request: CampaignSetActiveStateRequest): Observable<ApiResponse<String>> {

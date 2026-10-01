@@ -73,6 +73,13 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.AddCharacter(currentUser, request);
             return result.ToIActionResult();
         }
+        [HttpPatch("RemoveCharacter")]
+        public async Task<IActionResult> RemoveCharacterReuqest(RemoveCharacterFromCapaignRequest request)
+        {
+
+            var result = await _campaignService.RemoveCharacter(currentUser, request);
+            return result.ToIActionResult();
+        }
         [HttpPut("AcceptCharacter")]
         public async Task<IActionResult> AcceptCharacter(AcceptCharacterToCampaignRequest request)
         {
@@ -105,6 +112,12 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> GetMessages(Guid campaignId)
         {
             var result = await _campaignService.GetChatMessages(campaignId);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("Leave")]
+        public async Task<IActionResult> GetMessages(LeaveCampaignRequest request)
+        {
+            var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();
         }
     }

@@ -97,6 +97,13 @@ namespace RpgDex.Domain.Entities
             _characterRequests.Remove(characterId);
             return ("Character rejected", true);
         }
+        public (string message, bool IsSuccess) TryRemoveCharacter(Guid characterId)
+        {
+            if (!_characterIds.Contains(characterId))
+                return ("Character is not in the list.", false);
+            _characterIds.Remove(characterId);
+            return ("Character removed", true);
+        }
         public (string message, bool IsSuccess) TryRemovePlayer(Guid playerId)
         {
             if (!PlayerIds.Contains(playerId))
