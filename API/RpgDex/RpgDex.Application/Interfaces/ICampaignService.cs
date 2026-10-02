@@ -24,7 +24,7 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<string>> UpdateConfiguration(string userId ,UpdateCampaignSettingsRequest request);
         //For now it won't be saved on database
         public Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request);
-        Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(Guid campaignId);
+        Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(string userId, Guid campaignId);
 
 
         //Pensar Melhor sobre essa funcionalidade

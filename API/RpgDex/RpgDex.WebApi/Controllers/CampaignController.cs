@@ -111,11 +111,11 @@ namespace RpgDex.WebApi.Controllers
         [HttpGet("GetMessages/{campaignId}")]
         public async Task<IActionResult> GetMessages(Guid campaignId)
         {
-            var result = await _campaignService.GetChatMessages(campaignId);
+            var result = await _campaignService.GetChatMessages(currentUser, campaignId);
             return result.ToIActionResult();
         }
         [HttpPatch("Leave")]
-        public async Task<IActionResult> GetMessages(LeaveCampaignRequest request)
+        public async Task<IActionResult> LeaveCampaign(LeaveCampaignRequest request)
         {
             var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();

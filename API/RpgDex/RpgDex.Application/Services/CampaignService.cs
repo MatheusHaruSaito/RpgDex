@@ -527,9 +527,16 @@ namespace RpgDex.Application.Services
 
             return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
         }
-        public async Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(Guid campaignId)
+        public async Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(string userId, Guid campaignId)
         {
             //needs more verification
+            var campaign = await campaignRepository.GetByIdAsync(campaignId);
+            if (campaign is null) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign not found");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Invalid User ID format");
+            var isGameMasterOrIsActive = campaign.GameMasterId.Equals(guidUserId) || campaign.IsActive;
+            if (isGameMasterOrIsActive) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
+
+
             var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
             if (campaignChat is null)
             {
