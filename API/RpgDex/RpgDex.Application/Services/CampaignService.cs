@@ -81,11 +81,6 @@ namespace RpgDex.Application.Services
             {
                 return Result<CampaignResponse>.Failure("Failed to create campaign");
             }
-            var chatResult = await campaignChatRepository.InsertAsync(new CampaignChat(result.Id));
-            if (chatResult is null)
-            {
-                return Result<CampaignResponse>.Failure("Failed to create campaign");
-            }
             return Result<CampaignResponse>.Success(result.Adapt<CampaignResponse>());
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId)
@@ -517,57 +512,71 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure("User not found");
             }
 
-
-            var campaignChat = await campaignChatRepository.GetCampaignChat(request.CampaignId);
-            if (campaignChat is null)
+            ChatMessage newMessage = new()
             {
-                return Result<string>.Failure("Failed to get campaign chat");
-            }
-            ChatMessage newMessage = new(
-                user.Id,
-                user.DisplayName,
-                user.IconPath,
-                request.Message,
-                DateTime.UtcNow
-                );
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Username = user.DisplayName,
+                CampaignId = request.CampaignId,
+                UserIcon = user.IconPath,
+                Data = request.Message,
+                SentAt = DateTime.UtcNow
+            };
 
-            campaignChat.PushCampaignChat(newMessage);
-            var result = await campaignChatRepository.UpdateCampaignChatMessage(campaignChat.Id, campaignChat.ChatMessages);
-            if (!result)
-            {
-                return Result<string>.Failure($"Failed to save new message");
-            }
+            await campaignChatRepository.InsertAsync(newMessage);
+
             await campaignChatService.SendMessage(request.CampaignId.ToString(), newMessage.Adapt<CampaignChatMessagesResponse>());
 
             return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
         }
-        public async Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(string userId, Guid campaignId)
+        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId,DateTime? beforeSentAt ,int pageSize,Guid campaignId)
         {
             //needs more verification
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
-            if (campaign is null) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign not found");
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Invalid User ID format");
+            if (campaign is null) return Result<ChatPagedResultDto>.Failure("Campaign not found");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<ChatPagedResultDto>.Failure("Invalid User ID format");
             var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
             if (!isGameMaster && !campaign.IsActive){
-                return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
+                return Result<ChatPagedResultDto>.Failure("Campaign is not active");
             }
 
-            var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
-            if (campaignChat is null)
+            //var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
+            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1)).ToList();
+            if (messages is null)
             {
-                var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
-                if (newcampaignChat is null)
-                {
-                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Failed to get campaign chat");
-                }
-                var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
-                return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
-
+                //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
+                //if (newcampaignChat is null)
+                //{
+                //    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Failed to get campaign chat");
+                //}
+                //var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+                //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
+                return Result<ChatPagedResultDto>.Failure("Failed to load campaign chat");
             }
-            var user = await userRepository.GetByIdAsync(guidUserId);
-            await PlayerJoinChatMessage(campaignId.ToString(), user.DisplayName);
-            var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
-            return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(messages);
+            bool hasMore = messages.Count > pageSize;
+            if(hasMore)
+            {
+                messages.RemoveAt(messages.Count - 1);
+            }
+            DateTime? nextCursor = messages.LastOrDefault()?.SentAt;
+
+            if (!beforeSentAt.HasValue)
+            {
+                var user = await userRepository.GetByIdAsync(guidUserId);
+                if (user is not null)
+                {
+                    await PlayerJoinChatMessage(campaignId.ToString(), user.DisplayName);
+                }
+            }
+            //var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+            var responseMessages = messages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+
+            ChatPagedResultDto result = new(
+                responseMessages,
+                nextCursor,
+                hasMore
+            );
+            return Result<ChatPagedResultDto>.Success(result);
         }
         public async Task PlayerJoinChatMessage(string campaignId, string UserName)
         {

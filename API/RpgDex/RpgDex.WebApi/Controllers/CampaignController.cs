@@ -109,9 +109,9 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpGet("GetMessages/{campaignId}")]
-        public async Task<IActionResult> GetMessages(Guid campaignId)
+        public async Task<IActionResult> GetMessages([FromRoute] Guid campaignId, [FromQuery] DateTime? beforeSentAt, [FromQuery] int pageSize)
         {
-            var result = await _campaignService.GetChatMessages(currentUser, campaignId);
+            var result = await _campaignService.GetChatMessages(currentUser, beforeSentAt, pageSize, campaignId);
             return result.ToIActionResult();
         }
         [HttpPatch("Leave")]

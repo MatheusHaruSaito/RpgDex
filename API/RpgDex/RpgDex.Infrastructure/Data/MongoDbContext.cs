@@ -30,8 +30,8 @@ namespace RpgDex.Infrastructure.Data
             _database.GetCollection<RefreshToken>("RefreshTokens");
         public IMongoCollection<Campaign> Campaigns =>
             _database.GetCollection<Campaign>("Campaigns");
-        public IMongoCollection<CampaignChat> CampaignChat =>
-            _database.GetCollection<CampaignChat>("CampaignChat");
+        public IMongoCollection<ChatMessage> ChatMessage =>
+            _database.GetCollection<ChatMessage>("ChatMessage");
         public IMongoDatabase GetDatabase() => _database;
     }
 }
