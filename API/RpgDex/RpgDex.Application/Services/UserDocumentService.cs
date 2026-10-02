@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    internal class UserDocumentService
+    public class UserDocumentService
     {
     }
 }
