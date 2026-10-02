@@ -69,6 +69,8 @@ namespace RpgDex.Application.Services
             var userDocument = await userDocumentRepository.GetByIdAsync(request.Id);
             if (userDocument is null) return Result<UserDocumentResponse>.Failure("User document not found");
 
+            var isUserOwner = userId.Equals(userDocument.UserId.ToString());
+            if (!isUserOwner) return Result<UserDocumentResponse>.Failure("User is not the owner of the document");
             userDocument.Name = request.Name;
             userDocument.Description = request.Description;
 
