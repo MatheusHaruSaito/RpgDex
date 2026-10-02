@@ -37,7 +37,7 @@ namespace RpgDex.WebApi.Controllers
             var result = await userDocumentService.Update(currentUserId, request);
             return result.ToIActionResult();
         }
-        [HttpPatch("deactivate")]
+        [HttpPatch("Deactivate")]
         public async Task<IActionResult> UpdateActiveState([FromForm] UserDocumentSetActiveStateRequest request)
         {
             var result = await userDocumentService.SetActiveState(currentUserId, request,false);
