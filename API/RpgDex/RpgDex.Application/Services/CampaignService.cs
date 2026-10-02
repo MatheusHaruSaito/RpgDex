@@ -232,22 +232,29 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> AddCharacter(string userId, AddCharacterToCampaignRequest request)
         {
-            var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
-            if (characterFound is null)
-            {
-                return Result<string>.Failure("Character not found");
-            }
-            //Character found
-
+            
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
-            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure("Character isn't from logged user");
 
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
                 return Result<string>.Failure("Campaign not found");
             }
+            var isGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaignFound.IsActive)
+            {
+                return Result<string>.Failure("Campaign is not active");
+            }
             //Campaign found
+            var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
+            if (characterFound is null)
+            {
+                return Result<string>.Failure("Character not found");
+            }
+            //Character found
+            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure("Character isn't from logged user");
+
+
             var (message, IsSuccess) = campaignFound.TryAddCharacter(request.CharacterId);
             if (!IsSuccess)
             {
