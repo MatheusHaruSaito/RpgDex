@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RpgDex.Application.Dto;
-using RpgDex.Application.Services;
+using RpgDex.Application.Interfaces;
 using RpgDex.WebApi.Extensions;
 using System.Security.Claims;
 
@@ -9,11 +9,12 @@ namespace RpgDex.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserDocumentController(UserDocumentService userDocumentService) : ControllerBase
+    [Authorize]
+    public class UserDocumentController(IUserDocumentService userDocumentService) : ControllerBase
     {
         private string currentUserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
         [HttpPost]
-        public async Task<IActionResult> UploadFile(CreateUserDocument request)
+        public async Task<IActionResult> UploadFile([FromForm] CreateUserDocument request)
         {
             var result = await userDocumentService.Create(currentUserId, request);
             return result.ToIActionResult();
@@ -31,13 +32,13 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPut]
-        public async Task<IActionResult> Update(UpdateUserDocumentRequest request)
+        public async Task<IActionResult> Update([FromForm] UpdateUserDocumentRequest request)
         {
             var result = await userDocumentService.Update(currentUserId, request);
             return result.ToIActionResult();
         }
         [HttpPatch("deactivate")]
-        public async Task<IActionResult> UpdateActiveState(UserDocumentSetActiveStateRequest request)
+        public async Task<IActionResult> UpdateActiveState([FromForm] UserDocumentSetActiveStateRequest request)
         {
             var result = await userDocumentService.SetActiveState(currentUserId, request,false);
             return result.ToIActionResult();
