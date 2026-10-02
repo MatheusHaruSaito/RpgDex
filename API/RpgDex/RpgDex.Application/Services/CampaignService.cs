@@ -503,7 +503,14 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure("Campaign not found");
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure("Campaign is not active");
+            }
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
