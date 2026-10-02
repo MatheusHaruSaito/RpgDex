@@ -5,5 +5,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record CreateUserDocument(string Name, string? Description, IFormFile File);
+    public record CreateUserDocumentRequest(string Name, string? Description, IFormFile File);
 }

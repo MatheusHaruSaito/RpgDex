@@ -8,7 +8,7 @@ namespace RpgDex.Application.Interfaces
 {
     public interface IUserDocumentService
     {
-        public Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocument request);
+        public Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocumentRequest request);
         public Task<Result<IEnumerable<UserDocumentResponse>>> GetAllByUserId(string userId, int page, int pageSize);
 
         public Task<Result<UserDocumentResponse>> GetById(Guid id);

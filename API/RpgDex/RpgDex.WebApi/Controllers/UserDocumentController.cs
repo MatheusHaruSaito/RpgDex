@@ -14,7 +14,7 @@ namespace RpgDex.WebApi.Controllers
     {
         private string currentUserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
         [HttpPost]
-        public async Task<IActionResult> UploadFile([FromForm] CreateUserDocument request)
+        public async Task<IActionResult> UploadFile([FromForm] CreateUserDocumentRequest request)
         {
             var result = await userDocumentService.Create(currentUserId, request);
             return result.ToIActionResult();

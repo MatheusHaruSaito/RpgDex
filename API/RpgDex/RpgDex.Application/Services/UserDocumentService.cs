@@ -12,7 +12,7 @@ namespace RpgDex.Application.Services
 {
     public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService) : IUserDocumentService
     {
-        public async Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocument request)
+        public async Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocumentRequest request)
         {
             if(!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure("Invalid user ID");
             if (request?.File == null || request.File.Length == 0) return Result<UserDocumentResponse>.Failure("File is required and cannot be empty");
