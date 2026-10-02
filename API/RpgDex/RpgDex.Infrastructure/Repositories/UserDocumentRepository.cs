@@ -37,7 +37,7 @@ namespace RpgDex.Infrastructure.Repositories
             return userDocument;
         }
 
-        public async Task<bool> SetActiveState(Guid Id, bool ActiveState)
+        public async Task<bool> SetActiveStateAsync(Guid Id, bool ActiveState)
         {
             var Filter = Builders<UserDocument>.Filter.Eq(x => x.Id, Id);
             var Update = Builders<UserDocument>.Update.Set(x => x.IsActive, ActiveState);
@@ -52,7 +52,7 @@ namespace RpgDex.Infrastructure.Repositories
             var Update = Builders<UserDocument>.Update
                 .Set(x => x.Name, newUserDocument.Name)
                 .Set(x => x.Description, newUserDocument.Description)
-                .Set(x => x.FileUrl, newUserDocument.FileUrl)
+                .Set(x => x.FilePath, newUserDocument.FilePath)
                 .Set(x => x.FileName, newUserDocument.FileName)
                 .Set(x => x.FileSize, newUserDocument.FileSize)
                 .Set(x => x.IsActive, newUserDocument.IsActive);

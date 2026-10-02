@@ -11,6 +11,6 @@ namespace RpgDex.Domain.Interfaces
         Task<IEnumerable<UserDocument>> GetAllAsync(Guid userId, int page = 1, int pageSize = 5);
         Task<UserDocument> GetByIdAsync(Guid id);
         Task<bool> UpdateAsync(UserDocument newUserDocument);
-        Task<bool> SetActiveState(Guid Id, bool ActiveState);
+        Task<bool> SetActiveStateAsync(Guid Id, bool ActiveState);
     }
 }
