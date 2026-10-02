@@ -13,9 +13,8 @@ namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
-        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator, 
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository,
-        IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
+        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -497,9 +496,6 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
-            var checkCampaignChatMessageValidator= campaignChatMessageValidator.Validate(request);
-            if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
-
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
@@ -537,8 +533,8 @@ namespace RpgDex.Application.Services
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
             if (campaign is null) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign not found");
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Invalid User ID format");
-            var isGameMasterOrIsActive = campaign.GameMasterId.Equals(guidUserId) || campaign.IsActive;
-            if (isGameMasterOrIsActive) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
 
 
             var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
