@@ -16,9 +16,15 @@ namespace RpgDex.Application.Services
         {
             if(!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure("Invalid user ID");
             if (request?.File == null || request.File.Length == 0) return Result<UserDocumentResponse>.Failure("File is required and cannot be empty");
-
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
-            var filePath = await fileService.UploadFileAsync(request.File, fileNameWithoutExtension);
+            try
+            {
+                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
+                var filePath = await fileService.UploadFileAsync(request.File, fileNameWithoutExtension);
+            }
+            catch (Exception ex)
+            {
+                return Result<UserDocumentResponse>.Failure($"File upload failed: {ex.Message}");
+            }
 
             var userDocument = request.Adapt<UserDocument>();
             userDocument.UserId = userGuidId;
@@ -76,11 +82,19 @@ namespace RpgDex.Application.Services
 
             if(request.File is not null && request.File.Length > 0)
             {
-                var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
-                var filePath = await fileService.UploadFileAsync(request.File, fileNameWithoutExtension);
-                userDocument.FilePath = filePath;
-                userDocument.FileName = request.File.FileName;
-                userDocument.FileSize = request.File.Length;
+                try
+                {
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
+                    var filePath = await fileService.UploadFileAsync(request.File, fileNameWithoutExtension);
+                    userDocument.FilePath = filePath;
+                    userDocument.FileName = request.File.FileName;
+                    userDocument.FileSize = request.File.Length;
+                }
+                catch (Exception ex)
+                {
+                    return Result<UserDocumentResponse>.Failure($"File upload failed: {ex.Message}");
+                }
+
             }
 
             var result = await userDocumentRepository.UpdateAsync(userDocument);

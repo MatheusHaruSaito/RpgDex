@@ -14,6 +14,11 @@ namespace RpgDex.Application.Services
         {
             _fileRepository = fileRepository;
         }
+        private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", 
+            ".pdf", ".txt", ".docx", ".xlsx", ".pptx", ".csv",
+        };
         public async Task<(byte[] fileBytes, string contentType)> DownloadFileAsync(string fileId)
         {
  
@@ -33,20 +38,44 @@ namespace RpgDex.Application.Services
             {
                 throw new ArgumentException("File is null or empty");
             }
+
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+            if (!AllowedExtensions.Contains(extension))
+            {
+                throw new InvalidOperationException($"Extension '{extension}' is not allowed.");
+            }
             var isImage = IsImageExtension(extension);
             using var outputStream = new MemoryStream();
             string serverFileName;
-            if (isImage)
+            if (IsImageExtension(extension))
             {
-                using var inputStream = file.OpenReadStream();
-                using var image = new MagickImage(inputStream);
-
-                image.Format = MagickFormat.WebP;
-                image.Quality = 80;
-
-                await image.WriteAsync(outputStream);
-                serverFileName = $"{fileName}_{Guid.NewGuid()}_icon.webp";
+                try
+                {
+                    using var inputStream = file.OpenReadStream();
+                    if (extension == ".gif")
+                    {
+                        using var collection = new MagickImageCollection(inputStream);
+                        foreach (var frame in collection)
+                        {
+                            frame.Format = MagickFormat.WebP;
+                            frame.Quality = 80;
+                        }
+                        await collection.WriteAsync(outputStream);
+                    }
+                    else
+                    {
+                        using var image = new MagickImage(inputStream);
+                        image.Format = MagickFormat.WebP;
+                        image.Quality = 80;
+                        await image.WriteAsync(outputStream);
+                    }
+                    serverFileName = $"{fileName}_{Guid.NewGuid()}_icon.webp";
+                }
+                catch (MagickException ex)
+                {
+                    throw new InvalidOperationException("The uploaded file is not a valid or supported image.", ex);
+                }
             }
             else
             {
