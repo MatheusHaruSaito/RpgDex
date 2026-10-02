@@ -534,8 +534,9 @@ namespace RpgDex.Application.Services
             if (campaign is null) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign not found");
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Invalid User ID format");
             var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
-            if (!isGameMaster && !campaign.IsActive) return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
-
+            if (!isGameMaster && !campaign.IsActive){
+                return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Campaign is not active");
+            }
 
             var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
             if (campaignChat is null)
@@ -549,10 +550,22 @@ namespace RpgDex.Application.Services
                 return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
 
             }
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            await PlayerJoinChatMessage(campaignId.ToString(), user.DisplayName);
             var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
             return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(messages);
         }
-
+        public async Task PlayerJoinChatMessage(string campaignId, string UserName)
+        {
+            var message = new CampaignChatMessagesResponse(
+                Guid.Empty,
+                "RPG DEX",
+                "",
+                $"{UserName} has joined the campaign chat",
+                DateTime.UtcNow
+            );
+            await campaignChatService.SendMessage(campaignId, message);
+        }
 
     }
 }
