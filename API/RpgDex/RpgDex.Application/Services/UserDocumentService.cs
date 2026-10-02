@@ -46,7 +46,7 @@ namespace RpgDex.Application.Services
             return Result<UserDocumentResponse>.Success(result.Adapt<UserDocumentResponse>());
         }
 
-        public async Task<Result<bool>> SetActiveState(string userId, UserDocumentSetActiveStateRequest request)
+        public async Task<Result<bool>> SetActiveState(string userId, UserDocumentSetActiveStateRequest request, bool isActive)
         {
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<bool>.Failure("Invalid user ID");
 
@@ -58,7 +58,7 @@ namespace RpgDex.Application.Services
 
             var isUserOwner = userId.Equals(document.UserId.ToString());
             if (!isUserOwner) return Result<bool>.Failure("User is not the owner of the document");
-            var result = await userDocumentRepository.SetActiveStateAsync(request.Id, request.IsActive);
+            var result = await userDocumentRepository.SetActiveStateAsync(request.Id, isActive);
             return Result<bool>.Success(result);
         }
 

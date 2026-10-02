@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record UserDocumentSetActiveStateRequest(Guid Id, bool IsActive);
+    public record UserDocumentSetActiveStateRequest(Guid Id);
 }

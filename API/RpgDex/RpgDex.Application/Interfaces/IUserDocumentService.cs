@@ -13,6 +13,6 @@ namespace RpgDex.Application.Interfaces
 
         public Task<Result<UserDocumentResponse>> GetById(Guid id);
         public Task<Result<UserDocumentResponse>> Update(string userId, UpdateUserDocumentRequest request);
-        public Task<Result<bool>> SetActiveState(string userId, UserDocumentSetActiveStateRequest request);
+        public Task<Result<bool>> SetActiveState(string userId, UserDocumentSetActiveStateRequest request, bool isActive);
     }
 }
