@@ -20,10 +20,19 @@
     <!-- ── TOPBAR ── -->
     <div class="cd-topbar">
       <div class="cd-topbar-actions">
-        <button class="btn btn-secondary" (click)="copyCampaignCode()">
-          <i class="fa" [ngClass]="copiedFeedback ? 'fa-check' : 'fa-copy'"></i>
-          {{ copiedFeedback ? 'Copiado!' : 'Copiar Código' }}
-        </button>
+        
+        <app-info-hint
+          [useContent]="true"
+          title="Código de Acesso"
+          text="Copie e compartilhe este código com outros jogadores para que eles possam entrar na campanha."
+          iconClass="fa-solid fa-key"
+          position="bottom-left"
+        >
+          <button class="btn btn-secondary" (click)="copyCampaignCode()">
+            <i class="fa" [ngClass]="copiedFeedback ? 'fa-check' : 'fa-copy'"></i>
+            {{ copiedFeedback ? 'Copiado!' : 'Copiar Código' }}
+          </button>
+        </app-info-hint>
 
         <button
           *ngIf="isPlayerInCampaign && !isGameMaster"
@@ -156,7 +165,7 @@
         <div class="cd-card cd-card--gm" *ngIf="isGameMaster">
           <div class="cd-card-header">
             <h2 class="cd-card-title">
-              <i class="fa fa-user-plus"></i> Adicionar Personagem à Mesa
+              <i class="fa fa-user-plus"></i> Adicionar Personagem à Campanha
             </h2>
           </div>
           <p class="cd-card-sub">
@@ -247,7 +256,7 @@
         <div class="cd-card">
           <div class="cd-card-header">
             <h2 class="cd-card-title">
-              <i class="fa fa-users-viewfinder"></i> Personagens na Mesa
+              <i class="fa fa-users-viewfinder"></i> Personagens na Campanha
             </h2>
             <span class="cd-badge-count">{{ approvedCharacters.length }}</span>
           </div>
@@ -381,14 +390,14 @@
         </div>
       </div>
 
-      <!-- Coluna lateral: Configurações & Painel do Mestre (Expansível) -->
+      <!-- Coluna lateral: Configurações & Painel do Mestre -->
       <div class="cd-col cd-col--side" *ngIf="isGameMaster">
         <div class="cd-card cd-card--gm cd-gm-panel">
           <div
             class="cd-card-header cd-card-header--clickable"
             (click)="isGmSettingsOpen = !isGmSettingsOpen"
           >
-            <h2 class="cd-card-title"><i class="fa fa-sliders"></i> Configurações da Mesa</h2>
+            <h2 class="cd-card-title"><i class="fa fa-sliders"></i> Configurações da Campanha</h2>
             <button class="btn-icon btn-sm" type="button" aria-label="Alternar configurações">
               <i class="fa" [ngClass]="isGmSettingsOpen ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
             </button>
@@ -416,11 +425,13 @@
   </div>
 </div>
 
-<!-- Modal isolado de edição de campanha -->
+<!-- Modal de edição de campanha -->
 <app-edit-campaign-modal
   [(isOpen)]="isEditModalOpen"
   [campaign]="campaign"
   (onSave)="saveCampaignChanges($event)"
 >
 </app-edit-campaign-modal>
+
+<!-- Chat da Campanha incorporado -->
 <app-campaign-chat-component [campaignId]="campaignId"></app-campaign-chat-component>

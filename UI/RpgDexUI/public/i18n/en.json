@@ -1,0 +1,44 @@
+{
+  "ERRORS": {
+    "COMMON_INVALID_USER_ID": "Invalid User ID format.",
+    "COMMON_UPLOAD_IMAGE_FAILED": "Failed to upload image.",
+    "COMMON_VALIDATION_ERROR": "A validation error occurred with the submitted data.",
+
+    "AUTH_USER_NOT_FOUND": "User not found or not logged in.",
+    "AUTH_INVALID_CREDENTIALS": "Invalid user credentials.",
+    "AUTH_EMAIL_NOT_CONFIRMED": "Email is not confirmed.",
+    "AUTH_INVALID_TWO_FACTOR_CODE": "Invalid two-factor code or request.",
+    "AUTH_TWO_FACTOR_ACTIVATION_FAILED": "Unable to activate Two-Factor Authentication.",
+    "AUTH_INVALID_TOKEN": "Token is invalid or expired.",
+    "AUTH_EXPIRED_REFRESH_TOKEN": "Refresh token is expired or invalid.",
+    "AUTH_TOKEN_GENERATION_FAILED": "Could not generate a new token.",
+    "AUTH_USER_CREATION_FAILED": "An error occurred while creating the user.",
+    "AUTH_ACCOUNT_LINKING_FAILED": "An error occurred while linking the external account.",
+    "AUTH_EMAIL_SEND_FAILED": "An error occurred while sending the email.",
+
+    "CAMPAIGN_NOT_FOUND": "Campaign not found.",
+    "CAMPAIGN_NOT_GAME_MASTER": "Only the Game Master can perform this action.",
+    "CAMPAIGN_INVALID_PASSWORD": "Invalid campaign password.",
+    "CAMPAIGN_PLAYER_NOT_FOUND": "Player was not found in this campaign.",
+    "CAMPAIGN_ALREADY_IN_CAMPAIGN": "User is already a player in this campaign.",
+    "CAMPAIGN_CANNOT_REDUCE_CAPACITY": "Remove players before reducing campaign capacity.",
+    "CAMPAIGN_GM_CANNOT_LEAVE": "The Game Master cannot leave the campaign.",
+    "CAMPAIGN_NOT_A_PLAYER": "You are not a player in this campaign.",
+    "CAMPAIGN_CREATE_FAILED": "Failed to create campaign.",
+    "CAMPAIGN_UPDATE_FAILED": "Failed to update campaign.",
+    "CAMPAIGN_CHAT_NOT_FOUND": "Failed to retrieve campaign chat.",
+    "CAMPAIGN_SAVE_MESSAGE_FAILED": "Failed to save new chat message.",
+
+    "CHARACTER_NOT_FOUND": "Character not found.",
+    "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
+    "CHARACTER_PUSH_TO_USER_FAILED": "Failed to add character to user.",
+    "CHARACTER_SET_ACTIVE_STATE_FAILED": "Failed to change character active state.",
+    "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
+    "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
+
+    "USER_UPDATE_FAILED": "Failed to update user profile.",
+    "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
+
+    "VALIDATION_DISPLAYNAME": "Character name is required." 
+  }
+}

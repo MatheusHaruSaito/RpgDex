@@ -13,8 +13,9 @@ namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
-        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository) : ICampaignService
+        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator, 
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository,
+        IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -47,12 +48,12 @@ namespace RpgDex.Application.Services
             var checkCreateCampaignRequest = createCampaignRequestValidator.Validate(request);
             if (!checkCreateCampaignRequest.IsValid) return checkCreateCampaignRequest.ReturnErrors<CampaignResponse>();
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
 
             var userExisits = await userRepository.GetByIdAsync(guidUserId);
             if (userExisits is null)
             {
-                return Result<CampaignResponse>.Failure("User Not Logged In");
+                return Result<CampaignResponse>.Failure(AuthError.UserNotFound);
             }
 
             var campaign = request.Adapt<Campaign>();
@@ -72,29 +73,29 @@ namespace RpgDex.Application.Services
                 }
                 catch
                 {
-                    return Result<CampaignResponse>.Failure("Failed to upload icon");
+                    return Result<CampaignResponse>.Failure(Error.UploadImageFailed);
                 }
             }
 
             var result = await campaignRepository.InsertAsync(campaign);
             if (result is null)
             {
-                return Result<CampaignResponse>.Failure("Failed to create campaign");
+                return Result<CampaignResponse>.Failure(CampaignError.CreateFailed);
             }
             var chatResult = await campaignChatRepository.InsertAsync(new CampaignChat(result.Id));
             if (chatResult is null)
             {
-                return Result<CampaignResponse>.Failure("Failed to create campaign");
+                return Result<CampaignResponse>.Failure(CampaignError.CreateFailed);
             }
             return Result<CampaignResponse>.Success(result.Adapt<CampaignResponse>());
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCampaignResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCampaignResponse>.Failure(Error.InvalidUserId);
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
-                return Result<GetAllCampaignResponse>.Failure("User Not Logged In");
+                return Result<GetAllCampaignResponse>.Failure(AuthError.UserNotFound);
             }
 
             var result = await campaignRepository.GetAllAsync(guidUserId);
@@ -103,11 +104,11 @@ namespace RpgDex.Application.Services
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSize)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCampaignResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCampaignResponse>.Failure(Error.InvalidUserId);
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
-                return Result<GetAllCampaignResponse>.Failure("User Not Logged In");
+                return Result<GetAllCampaignResponse>.Failure(AuthError.UserNotFound);
             }
 
             var result = await campaignRepository.GetAllAsync(guidUserId, page, pageSize);
@@ -121,7 +122,7 @@ namespace RpgDex.Application.Services
             var response = await campaignRepository.GetByIdAsync(id);
             if (response is null)
             {
-                return Result<CampaignResponse>.Failure("Failed to retrieve campaign");
+                return Result<CampaignResponse>.Failure(CampaignError.NotFound);
             }
 
             return Result<CampaignResponse>.Success(response.Adapt<CampaignResponse>());
@@ -132,19 +133,19 @@ namespace RpgDex.Application.Services
             var checkupdateCampaignRequest = updateCampaignRequestValidator.Validate(request);
             if (!checkupdateCampaignRequest.IsValid) return checkupdateCampaignRequest.ReturnErrors<CampaignResponse>();
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
 
             var campaign = await campaignRepository.GetByIdAsync(request.Id);
             if (campaign is null)
             {
-                return Result<CampaignResponse>.Failure("Campaign not found");
+                return Result<CampaignResponse>.Failure(CampaignError.NotFound);
             }
 
-            if (!campaign.GameMasterId.Equals(guidUserId)) Result<CampaignResponse>.Failure("Logged User isn't the game master");
+            if (!campaign.GameMasterId.Equals(guidUserId)) return Result<CampaignResponse>.Failure(CampaignError.NotGameMaster);
 
             if (campaign.PlayerIds.Count() > request.MaxPlayers)
             {
-                return Result<CampaignResponse>.Failure("Remove players before reducing campaign capacity");
+                return Result<CampaignResponse>.Failure(CampaignError.CannotReduceCapacity);
             }
 
             campaign.Update(request.Title, request.Description, request.MaxPlayers, request.NextSession);
@@ -158,7 +159,7 @@ namespace RpgDex.Application.Services
                 }
                 catch
                 {
-                    return Result<CampaignResponse>.Failure("Failed to upload icon");
+                    return Result<CampaignResponse>.Failure(Error.UploadImageFailed);
                 }
             }
 
@@ -166,7 +167,7 @@ namespace RpgDex.Application.Services
 
             if (result is null)
             {
-                return Result<CampaignResponse>.Failure("Failed to update campaign");
+                return Result<CampaignResponse>.Failure(CampaignError.UpdateFailed);
             }
 
             return Result<CampaignResponse>.Success(result.Adapt<CampaignResponse>());
@@ -178,113 +179,117 @@ namespace RpgDex.Application.Services
             var campaign = await campaignRepository.GetByIdAsync(request.Id);
             if (campaign is null)
             {
-                return Result<bool>.Failure("Campaign not found");
+                return Result<bool>.Failure(CampaignError.NotFound);
             }
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure("Invalid User ID format");
-            if (!campaign.GameMasterId.Equals(guidUserId)) return Result<bool>.Failure("Logged user isn't the game master");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure(Error.InvalidUserId);
+            if (!campaign.GameMasterId.Equals(guidUserId)) return Result<bool>.Failure(CampaignError.NotGameMaster);
 
             var result = await campaignRepository.SetActiveState(request.Id, request.State);
             if (!result)
             {
-                return Result<bool>.Failure("Failed to update campaign state");
+                return Result<bool>.Failure(CampaignError.UpdateFailed);
             }
             return Result<bool>.Success(result);
         }
 
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> AddPlayer(string userId, JoinCampaignRequest request)
         {
             var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaign is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
             //Campaign found
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
 
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
-                return Result<string>.Failure("User not found");
+                return Result<string>.Failure(AuthError.UserNotFound);
             }
             //Player found
             var isValid = ValidatePassword(campaign, request.Password);
             if (!isValid)
             {
-                return Result<string>.Failure("Invalid Password");
+                return Result<string>.Failure(CampaignError.InvalidPassword);
             }
             var (message, IsSuccess) = campaign.TryAddPlayer(guidUserId);
             if (!IsSuccess)
             {
-                return Result<string>.Failure(message);
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
 
             var result = await campaignRepository.UpdateAsync(campaign);
             if (result is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
             return Result<string>.Success("Player added to campaign successfully");
         }
-
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> AddCharacter(string userId, AddCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
             if (characterFound is null)
             {
-                return Result<string>.Failure("Character not found");
+                return Result<string>.Failure(CharacterError.NotFound);
             }
             //Character found
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
-            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure("Character isn't from logged user");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure(CharacterError.CharacterNotOwned);
 
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
             //Campaign found
             var (message, IsSuccess) = campaignFound.TryAddCharacter(request.CharacterId);
             if (!IsSuccess)
             {
-                return Result<string>.Failure(message);
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
 
 
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
             return Result<string>.Success(message);
         }
-
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> RemoveCharacter(string userId, RemoveCharacterFromCapaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
             if (characterFound is null)
             {
-                return Result<string>.Failure("Character not found");
+                return Result<string>.Failure(CharacterError.NotFound);
             }
             //Character found
 
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
             //Campaign found
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
             var isUserGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
             if (!isUserGameMaster)
             {
-                return Result<string>.Failure("Only the game master can accept or reject characters");
+                return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
             (string message, bool isSuccess) characterRemoved;
@@ -293,8 +298,7 @@ namespace RpgDex.Application.Services
 
             if (!characterRemoved.isSuccess)
             {
-                return Result<string>.Failure(characterRemoved.message);
-
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
 
             //Character accepted into campaign
@@ -302,32 +306,34 @@ namespace RpgDex.Application.Services
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
             return Result<string>.Success(characterRemoved.message);
         }
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> AcceptCharacter(string userId, AcceptCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
             if (characterFound is null)
             {
-                return Result<string>.Failure("Character not found");
+                return Result<string>.Failure(CharacterError.NotFound);
             }
             //Character found
 
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
             //Campaign found
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
             var isUserGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
             if (!isUserGameMaster)
             {
-                return Result<string>.Failure("Only the game master can accept or reject characters");
+                return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
             (string message, bool isSuccess) chracterAdded;
@@ -343,8 +349,7 @@ namespace RpgDex.Application.Services
 
             if (!chracterAdded.isSuccess)
             {
-                return Result<string>.Failure(chracterAdded.message);
-
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
 
             //Character accepted into campaign
@@ -352,35 +357,36 @@ namespace RpgDex.Application.Services
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
             return Result<string>.Success(chracterAdded.message);
         }
-
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> RemovePlayer(string userId, RemovePlayerFromCampaignRequest request)
         {
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
             //User found
             var isUserGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
             if (!isUserGameMaster)
             {
-                return Result<string>.Failure("Only the game master can kick players");
+                return Result<string>.Failure(CampaignError.NotGameMaster);
             }
             if (!campaignFound.PlayerIds.Contains(request.PlayerId))
             {
-                return Result<string>.Failure("Player to be kicked not found");
+                return Result<string>.Failure(CampaignError.PlayerNotFound);
             }
             //Player to be kicked found
             var (message, IsSuccess) = campaignFound.TryRemovePlayer(request.PlayerId);
             if (!IsSuccess)
             {
-                return Result<string>.Failure(message);
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
             //Try to remove user characters from campaign
             var userFound = await userRepository.GetByIdAsync(request.PlayerId);
@@ -406,35 +412,37 @@ namespace RpgDex.Application.Services
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
             return Result<string>.Success(message);
         }
+        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
+        //Change Those TryAdd messages
         public async Task<Result<string>> LeaveCampaign(string userId, LeaveCampaignRequest request)
         {
-            if (!Guid.TryParse(userId, out Guid userIdGuid)) return Result<string>.Failure("Invalid User ID format");
+            if (!Guid.TryParse(userId, out Guid userIdGuid)) return Result<string>.Failure(Error.InvalidUserId);
 
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if(campaignFound is null)
             {
-                return Result<string>.Failure("Campaign does not exist");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
             //Verifies if user is game master
             if (campaignFound.GameMasterId.Equals(userIdGuid))
             {
-                return Result<string>.Failure("The Game Master cannot leave the campaign. Transfer ownership or delete it instead.");
+                return Result<string>.Failure(CampaignError.GameMasterCannotLeave);
             }
             //Verifies if user is in the campaign
             if (!campaignFound.PlayerIds.Contains(userIdGuid))
             {
-                return Result<string>.Failure("You are not a player in this campaign");
+                return Result<string>.Failure(CampaignError.NotAPlayer);
             }
 
             var (message, isSuccess) = campaignFound.TryRemovePlayer(userIdGuid);
             if (!isSuccess)
             {
-                return Result<string>.Failure(message);
+                return Result<string>.Failure(Error.RefactorPlaceholder);
             }
 
             //Try to remove user characters from campaign
@@ -462,7 +470,7 @@ namespace RpgDex.Application.Services
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
             return Result<string>.Success("Successfully left the campaign");
@@ -473,22 +481,22 @@ namespace RpgDex.Application.Services
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaignFound is null)
             {
-                return Result<string>.Failure("Campaign not found");
+                return Result<string>.Failure(CampaignError.NotFound);
             }
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
             var isUserGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
 
 
             if (!isUserGameMaster)
             {
-                return Result<string>.Failure("Only the game master can update configurations");
+                return Result<string>.Failure(CampaignError.NotGameMaster);
             }
             campaignFound.UpdateSettings(request.Adapt<CampaignSettings>());
             var updatedCampaign = await campaignRepository.UpdateAsync(campaignFound);
             if (updatedCampaign is null)
             {
-                return Result<string>.Failure("Failed to update campaign settings");
+                return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
             return Result<string>.Success("Campaign settings updated successfully");
@@ -496,18 +504,21 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
+            var checkCampaignChatMessageValidator= campaignChatMessageValidator.Validate(request);
+            if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
-                return Result<string>.Failure("User not found");
+                return Result<string>.Failure(AuthError.UserNotFound);
             }
 
 
             var campaignChat = await campaignChatRepository.GetCampaignChat(request.CampaignId);
             if (campaignChat is null)
             {
-                return Result<string>.Failure("Failed to get campaign chat");
+                return Result<string>.Failure(CampaignError.ChatNotFound);
             }
             ChatMessage newMessage = new(
                 user.Id,
@@ -521,7 +532,7 @@ namespace RpgDex.Application.Services
             var result = await campaignChatRepository.UpdateCampaignChatMessage(campaignChat.Id, campaignChat.ChatMessages);
             if (!result)
             {
-                return Result<string>.Failure($"Failed to save new message");
+                return Result<string>.Failure(CampaignError.SaveMessageFailed);
             }
             await campaignChatService.SendMessage(request.CampaignId.ToString(), newMessage.Adapt<CampaignChatMessagesResponse>());
 
@@ -536,7 +547,7 @@ namespace RpgDex.Application.Services
                 var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
                 if (newcampaignChat is null)
                 {
-                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Failed to get campaign chat");
+                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure(CampaignError.ChatNotFound);
                 }
                 var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
                 return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);

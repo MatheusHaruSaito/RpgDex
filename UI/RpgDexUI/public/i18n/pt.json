@@ -1,0 +1,44 @@
+{
+  "ERRORS": {
+    "COMMON_INVALID_USER_ID": "Formato do ID do utilizador inválido.",
+    "COMMON_UPLOAD_IMAGE_FAILED": "Falha ao enviar a imagem.",
+    "COMMON_VALIDATION_ERROR": "Ocorreu um erro de validação nos dados enviados.",
+
+    "AUTH_USER_NOT_FOUND": "Utilizador não encontrado ou sessão não iniciada.",
+    "AUTH_INVALID_CREDENTIALS": "Credenciais de utilizador inválidas.",
+    "AUTH_EMAIL_NOT_CONFIRMED": "O e-mail ainda não foi confirmado.",
+    "AUTH_INVALID_TWO_FACTOR_CODE": "Código de dois fatores ou pedido inválido.",
+    "AUTH_TWO_FACTOR_ACTIVATION_FAILED": "Não foi possível ativar a Autenticação de Dois Fatores.",
+    "AUTH_INVALID_TOKEN": "O token é inválido ou expirou.",
+    "AUTH_EXPIRED_REFRESH_TOKEN": "O token de atualização expirou ou é inválido.",
+    "AUTH_TOKEN_GENERATION_FAILED": "Não foi possível gerar um novo token.",
+    "AUTH_USER_CREATION_FAILED": "Ocorreu um erro ao criar o utilizador.",
+    "AUTH_ACCOUNT_LINKING_FAILED": "Ocorreu um erro ao associar a conta externa.",
+    "AUTH_EMAIL_SEND_FAILED": "Ocorreu um erro ao enviar o e-mail.",
+
+    "CAMPAIGN_NOT_FOUND": "Campanha não encontrada.",
+    "CAMPAIGN_NOT_GAME_MASTER": "Apenas o Mestre da campanha pode realizar esta ação.",
+    "CAMPAIGN_INVALID_PASSWORD": "Palavra-passe da campanha incorreta.",
+    "CAMPAIGN_PLAYER_NOT_FOUND": "O jogador não foi encontrado nesta campanha.",
+    "CAMPAIGN_ALREADY_IN_CAMPAIGN": "O utilizador já faz parte desta campanha.",
+    "CAMPAIGN_CANNOT_REDUCE_CAPACITY": "Remove jogadores antes de reduzir a capacidade da campanha.",
+    "CAMPAIGN_GM_CANNOT_LEAVE": "O Mestre não pode abandonar a campanha.",
+    "CAMPAIGN_NOT_A_PLAYER": "Não és um jogador nesta campanha.",
+    "CAMPAIGN_CREATE_FAILED": "Falha ao criar a campanha.",
+    "CAMPAIGN_UPDATE_FAILED": "Falha ao atualizar a campanha.",
+    "CAMPAIGN_CHAT_NOT_FOUND": "Não foi possível carregar o chat da campanha.",
+    "CAMPAIGN_SAVE_MESSAGE_FAILED": "Falha ao guardar a nova mensagem do chat.",
+
+    "CHARACTER_NOT_FOUND": "Personagem não encontrado.",
+    "CHARACTER_NOT_OWNED": "Este personagem não pertence ao utilizador autenticado.",
+    "CHARACTER_PUSH_TO_USER_FAILED": "Falha ao associar o personagem ao utilizador.",
+    "CHARACTER_SET_ACTIVE_STATE_FAILED": "Falha ao alterar o estado ativo do personagem.",
+    "CHARACTER_UPDATE_FAILED": "Não foi possível atualizar o personagem.",
+    "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
+
+    "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
+    "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
+
+    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
+  }
+}

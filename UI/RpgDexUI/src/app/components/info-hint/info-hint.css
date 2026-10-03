@@ -1,0 +1,107 @@
+.info-hint-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-hint-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--rpg-border-light, #e0e0e0);
+  background: var(--rpg-surface, #ffffff);
+  color: var(--rpg-text-faint, #888888);
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.info-hint-btn:hover,
+.info-hint-btn.active {
+  border-color: var(--rpg-purple, #6b46c1);
+  background: var(--rpg-purple, #6b46c1);
+  color: #fff;
+}
+
+.info-hint-box {
+  position: absolute;
+  z-index: 100;
+  width: 280px;
+  background: var(--rpg-surface, #ffffff);
+  border: 1px solid var(--rpg-border-light, #e0e0e0);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: var(--rpg-shadow-lg, 0 8px 20px rgba(0, 0, 0, 0.25));
+  animation: fadeIn 0.18s ease;
+  
+  /* Reset de herança de texto */
+  text-transform: none !important;
+  font-style: normal !important;
+  text-align: left;
+}
+
+/* Variantes de Posicionamento */
+.info-hint-box.bottom-right { top: calc(100% + 8px); right: 0; }
+.info-hint-box.bottom-left  { top: calc(100% + 8px); left: 0; }
+.info-hint-box.top-right    { bottom: calc(100% + 8px); right: 0; }
+.info-hint-box.top-left     { bottom: calc(100% + 8px); left: 0; }
+
+.hint-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.82rem;
+  color: var(--rpg-purple, #6b46c1);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: none !important;
+}
+
+.hint-text {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  color: var(--rpg-text-muted, #666666);
+  line-height: 1.55;
+  margin: 0;
+  font-weight: 400;
+  text-transform: none !important;
+}
+
+/* Seta do balão de fala */
+.info-hint-box::before {
+  content: '';
+  position: absolute;
+  border-width: 6px;
+  border-style: solid;
+}
+
+.info-hint-box.bottom-left::before,
+.info-hint-box.bottom-right::before {
+  bottom: 100%;
+  border-color: transparent transparent var(--rpg-surface, #ffffff) transparent;
+}
+
+.info-hint-box.bottom-left::before { left: 16px; }
+.info-hint-box.bottom-right::before { right: 16px; }
+
+.info-hint-box.top-left::before,
+.info-hint-box.top-right::before {
+  top: 100%;
+  border-color: var(--rpg-surface, #ffffff) transparent transparent transparent;
+}
+
+.info-hint-box.top-left::before { left: 16px; }
+.info-hint-box.top-right::before { right: 16px; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

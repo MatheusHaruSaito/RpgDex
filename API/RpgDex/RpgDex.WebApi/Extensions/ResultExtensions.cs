@@ -13,7 +13,7 @@ namespace RpgDex.WebApi.Extensions
                 return new BadRequestObjectResult(new
                 {
                     success = result.IsSuccess,
-                    message = result.Error,
+                    message = result.Errors,
                     data = result.Value
                 });
             }

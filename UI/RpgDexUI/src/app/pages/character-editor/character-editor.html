@@ -1,9 +1,9 @@
 <div class="ce-wrapper" *ngIf="character; else loading">
-
   <!-- ── TOPBAR ── -->
   <div class="ce-topbar">
-    <div></div> 
+    <div></div>
     <div class="ce-topbar-actions">
+      <!-- Botões exibidos apenas no modo de EDIÇÃO -->
       <ng-container *ngIf="isEditing">
         <button class="btn btn-outline-danger" (click)="confirmDelete()">
           <i class="fa fa-trash"></i> Excluir
@@ -16,34 +16,57 @@
           <span *ngIf="isSaving"><i class="fa fa-spinner fa-spin"></i> Salvando...</span>
         </button>
       </ng-container>
-      <button *ngIf="!isEditing" class="btn btn-primary" (click)="toggleEditMode()">
-        <i class="fa fa-pen"></i> Editar Ficha
-      </button>
+
+      <!-- Botões exibidos no modo de VISUALIZAÇÃO -->
+      <ng-container *ngIf="!isEditing">
+        <button class="btn btn-secondary" (click)="downloadCharacter()">
+          <i class="fa fa-download"></i> Baixar Ficha
+        </button>
+        <button class="btn btn-primary" (click)="toggleEditMode()">
+          <i class="fa fa-pen"></i> Editar Ficha
+        </button>
+      </ng-container>
     </div>
   </div>
 
   <!-- ── HERO ── -->
   <div class="ce-hero">
     <div class="ce-avatar-wrap">
-      <div class="ce-avatar"
-        [style.background-image]="iconPreviewUrl ? 'url(' + iconPreviewUrl + ')' :
-          (character.iconPath ? 'url(' + character.iconPath + ')' : '')"
+      <div
+        class="ce-avatar"
+        [style.background-image]="
+          iconPreviewUrl
+            ? 'url(' + iconPreviewUrl + ')'
+            : character.iconPath
+              ? 'url(' + character.iconPath + ')'
+              : ''
+        "
         [class.ce-avatar--clickable]="isEditing"
-        (click)="isEditing ? iconInput.click() : null">
+        (click)="isEditing ? iconInput.click() : null"
+      >
         <i class="fa fa-shield-halved" *ngIf="!iconPreviewUrl && !character.iconPath"></i>
         <div class="ce-avatar-overlay" *ngIf="isEditing">
           <i class="fa fa-camera"></i>
           <span>Alterar foto</span>
         </div>
       </div>
-      <input #iconInput type="file" accept="image/*" class="file-input-hidden" (change)="onIconSelected($event)"/>
+      <input
+        #iconInput
+        type="file"
+        accept="image/*"
+        class="file-input-hidden"
+        (change)="onIconSelected($event)"
+      />
     </div>
     <div class="ce-hero-info">
       <div class="ce-name-input-wrapper" *ngIf="isEditing">
         <input
-          class="ce-name-input" type="text"
+          class="ce-name-input"
+          type="text"
           placeholder="Nome do personagem"
-          [(ngModel)]="editForm.name" maxlength="60"/>
+          [(ngModel)]="editForm.name"
+          maxlength="60"
+        />
         <i class="fa fa-pen ce-name-edit-icon"></i>
       </div>
       <h1 *ngIf="!isEditing" class="ce-name-view">{{ character.name }}</h1>
@@ -63,7 +86,6 @@
 
   <!-- ── CORPO ── -->
   <div class="ce-body">
-
     <!-- Coluna esquerda: descrição -->
     <div class="ce-col ce-col--main">
       <section class="ce-section">
@@ -71,24 +93,29 @@
           <h3 class="ce-section-title"><i class="fa fa-align-left"></i> Descrição</h3>
         </div>
 
-        <p *ngIf="!isEditing" class="ce-view-text"
-          [class.ce-view-text--empty]="!editForm.description">
+        <p
+          *ngIf="!isEditing"
+          class="ce-view-text"
+          [class.ce-view-text--empty]="!editForm.description"
+        >
           {{ editForm.description || 'Nenhuma descrição.' }}
         </p>
 
         <ng-container *ngIf="isEditing">
-          <textarea class="ce-textarea"
+          <textarea
+            class="ce-textarea"
             placeholder="Descreva a origem, aparência ou personalidade do personagem..."
             [(ngModel)]="editForm.description"
-            rows="8" maxlength="2000"></textarea>
-          <span class="ce-char-count">{{ editForm.description.length }}/2000</span>
+            rows="8"
+            maxlength="2000"
+          ></textarea>
+          <span class="ce-char-count">{{ editForm.description.length || 0 }}/2000</span>
         </ng-container>
       </section>
     </div>
 
     <!-- Coluna direita: grupos de atributos -->
     <div class="ce-col ce-col--attrs">
-
       <div class="ce-groups-header" *ngIf="isEditing">
         <h3 class="ce-section-title"><i class="fa fa-list-check"></i> Atributos</h3>
         <button class="btn btn-secondary btn-add-sm" (click)="addGroup()">
@@ -96,8 +123,7 @@
         </button>
       </div>
 
-      <div class="ce-groups-empty-view"
-        *ngIf="!isEditing && groups.length === 0">
+      <div class="ce-groups-empty-view" *ngIf="!isEditing && groups.length === 0">
         <i class="fa fa-layer-group"></i>
         <span>Nenhum atributo registrado.</span>
       </div>
@@ -109,70 +135,79 @@
 
       @for (group of groups; track $index) {
         <section class="ce-section ce-group">
-
           <div class="ce-group-header">
             <h4 *ngIf="!isEditing" class="ce-group-title-view">
               {{ group.title || 'Grupo' }}
             </h4>
-            <input *ngIf="isEditing"
+            <input
+              *ngIf="isEditing"
               class="ce-group-title-input"
               [(ngModel)]="group.title"
               [name]="'groupTitle-' + $index"
               placeholder="Nome do grupo"
-              maxlength="40"/>
+              maxlength="40"
+            />
             <div class="ce-group-actions" *ngIf="isEditing">
-              <button class="btn btn-secondary btn-add-sm"
-                (click)="addEntry(group)" title="Adicionar campo">
+              <button
+                class="btn btn-secondary btn-add-sm"
+                (click)="addEntry(group)"
+                title="Adicionar campo"
+              >
                 <i class="fa fa-plus"></i>
               </button>
-              <button class="btn-icon btn-remove-group"
-                (click)="removeGroup($index)" title="Remover grupo">
+              <button
+                class="btn-icon btn-remove-group"
+                (click)="removeGroup($index)"
+                title="Remover grupo"
+              >
                 <i class="fa fa-xmark"></i>
               </button>
             </div>
           </div>
 
           <div class="ce-attrs-list">
-
-            <p class="ce-attrs-empty"
-              *ngIf="isEditing && group.entries.length === 0">
+            <p class="ce-attrs-empty" *ngIf="isEditing && group.entries.length === 0">
               Clique em <strong>+</strong> para adicionar campos.
             </p>
 
             @for (entry of group.entries; track $index) {
-
               <div *ngIf="!isEditing && entry.key.trim()" class="ce-attr-chip">
                 <span class="ce-attr-chip-key">{{ entry.key }}</span>
                 <span class="ce-attr-chip-value">{{ entry.value }}</span>
               </div>
 
               <div *ngIf="isEditing" class="ce-attr-row">
-                <input class="ce-attr-key" type="text"
+                <input
+                  class="ce-attr-key"
+                  type="text"
                   placeholder="Atributo"
                   [(ngModel)]="entry.key"
                   [name]="'key-' + $index + '-g' + $index"
-                  maxlength="40"/>
+                  maxlength="40"
+                />
                 <span class="ce-attr-sep">:</span>
-                <input class="ce-attr-val" type="text"
+                <input
+                  class="ce-attr-val"
+                  type="text"
                   placeholder="Valor"
                   [(ngModel)]="entry.value"
                   [name]="'val-' + $index + '-g' + $index"
-                  maxlength="100"/>
-                <button class="btn-icon btn-remove-attr"
-                  title="Remover" (click)="removeEntry(group, $index)">
+                  maxlength="100"
+                />
+                <button
+                  class="btn-icon btn-remove-attr"
+                  title="Remover"
+                  (click)="removeEntry(group, $index)"
+                >
                   <i class="fa fa-xmark"></i>
                 </button>
               </div>
-
             }
           </div>
-
         </section>
       }
-
     </div>
   </div>
-
 </div>
 
 <ng-template #loading>
