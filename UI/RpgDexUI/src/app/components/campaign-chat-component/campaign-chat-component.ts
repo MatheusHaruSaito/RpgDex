@@ -60,11 +60,9 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         },
       });
     }
-
-    this.initialLoad();
-
     const token = this.authService.Token;
     this.chatService.startConnection(this.campaignId, token);
+    this.initialLoad();
 
     // O NgZone garante que o Angular processe os eventos do WebSocket/SignalR no ciclo de renderização atual
     this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg) => {

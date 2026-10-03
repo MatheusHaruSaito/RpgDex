@@ -37,7 +37,7 @@ namespace RpgDex.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await _campaignService.GetById(id);
+            var result = await _campaignService.GetById(currentUser,id);
             return result.ToIActionResult();
         }
         [HttpPost]

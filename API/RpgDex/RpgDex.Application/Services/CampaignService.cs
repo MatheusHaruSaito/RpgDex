@@ -111,14 +111,21 @@ namespace RpgDex.Application.Services
         }
 
 
-        public async Task<Result<CampaignResponse>> GetById(Guid id)
+        public async Task<Result<CampaignResponse>> GetById(string userId,Guid id)
         {
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure("Invalid User ID format.");
             var response = await campaignRepository.GetByIdAsync(id);
             if (response is null)
             {
                 return Result<CampaignResponse>.Failure("Failed to retrieve campaign");
             }
+            var isPlayerInCampaign = response.PlayerIds.Contains(guidUserId)
+                | response.GameMasterId.Equals(guidUserId);
+            if (!isPlayerInCampaign)
+            {
+                return Result<CampaignResponse>.Failure("User is not a participant in this campaign");
 
+            }
             return Result<CampaignResponse>.Success(response.Adapt<CampaignResponse>());
         }
 
@@ -538,6 +545,12 @@ namespace RpgDex.Application.Services
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
             if (campaign is null) return Result<ChatPagedResultDto>.Failure("Campaign not found");
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<ChatPagedResultDto>.Failure("Invalid User ID format");
+            var isPlayerInCampaign = campaign.PlayerIds.Contains(guidUserId)
+                | campaign.GameMasterId.Equals(guidUserId);
+            if(!isPlayerInCampaign)
+            {
+                return Result<ChatPagedResultDto>.Failure("User is not a participant in this campaign");
+            }
             var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
             if (!isGameMaster && !campaign.IsActive){
                 return Result<ChatPagedResultDto>.Failure("Campaign is not active");
