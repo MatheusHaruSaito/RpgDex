@@ -19,7 +19,7 @@ namespace RpgDex.Application.Services
             var user = await userManager.FindByIdAsync(Id.ToString());
             if (user is null)
             {
-                return Result<UserResponse>.Failure("User not found.");
+                return Result<UserResponse>.Failure(AuthError.UserNotFound);
             }
             var userResponse = user.Adapt<UserResponse>();
             return Result<UserResponse>.Success(userResponse);
@@ -33,7 +33,7 @@ namespace RpgDex.Application.Services
 
             if(user is null)
             {
-                return Result<string>.Failure("Invalid User");
+                return Result<string>.Failure(AuthError.UserNotFound);
             }
             user.DisplayName = updatedUser.DisplayName;
 
@@ -43,16 +43,16 @@ namespace RpgDex.Application.Services
                 {
                     user.IconPath = await fileService.UploadFileAsync(updatedUser.Icon, user.Id.ToString());
                 }
-                catch (Exception ex)
+                catch
                 {
-                    return Result<string>.Failure($"Error occurred while saving the image: {ex.Message}");
+                    return Result<string>.Failure(Error.UploadImageFailed);
                 }
             }
 
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                return Result<string>.Failure("Failed to update profile." + string.Join(" ", result.Errors.Select(e => e.Description)));
+                return Result<string>.Failure(UserError.UpdateFailed);
             }
             return Result<string>.Success("Profile updated successfully!");
         }
