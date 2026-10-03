@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-create-character-modal',
@@ -30,7 +31,7 @@ export class CreateCharacterModal implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
-
+  private translateService = inject(TranslateService);
   isLoading = false;
   errorMessage = '';
   newCharacter = { name: '', description: '' };
@@ -94,7 +95,10 @@ export class CreateCharacterModal implements OnInit {
   CreateCharacter(): void {
     this.errorMessage = '';
     if (!this.newCharacter.name.trim()) {
-      this.errorMessage = 'O nome do personagem é obrigatório.';
+      this.translateService.get('ERRORS.VALIDATION_DISPLAYNAME').subscribe((res: string) => {
+        this.errorMessage = res !== 'ERRORS.VALIDATION_DISPLAYNAME' ? res : 'sds';
+        this.cdr.detectChanges();
+      });
       return;
     }
 
@@ -117,13 +121,37 @@ export class CreateCharacterModal implements OnInit {
         }
       },
       error: (err: any) => {
-        this.isLoading = false;
         const body = err?.error;
-        this.errorMessage =
-          (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
-          body?.message ??
-          body?.title ??
-          'Erro ao criar personagem. Tente novamente.';
+        const errorList = Array.isArray(body?.message) ? body.message : (body?.errors ?? []);
+        const primaryError = errorList[0];
+        if (primaryError?.code) {
+          const translationKey = `ERRORS.${primaryError.code}`;
+
+          this.translateService.get(translationKey).subscribe((translatedText: string) => {
+            const hasTranslation = translatedText !== translationKey;
+            this.errorMessage = hasTranslation ? translatedText : primaryError.message;
+            this.cdr.detectChanges();
+          });
+        } else {
+          const fallbackText = err?.error?.message ?? err?.error?.title;
+
+          if (fallbackText) {
+            this.errorMessage = fallbackText;
+          } else {
+            this.translateService.get('ERRORS.COMMON_DEFAULT').subscribe((res: string) => {
+              this.errorMessage = res;
+              this.cdr.detectChanges();
+            });
+          }
+        }
+
+        // this.isLoading = false;
+        // const body = err?.error;
+        // this.errorMessage =
+        //   (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
+        //   body?.message ??
+        //   body?.title ??
+        //   'Erro ao criar personagem. Tente novamente.';
       },
     });
   }

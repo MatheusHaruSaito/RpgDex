@@ -1,0 +1,25 @@
+<div 
+  class="info-hint-wrapper"
+  (mouseenter)="isOpen = true"
+  (mouseleave)="isOpen = false"
+>
+  <ng-content *ngIf="useContent"></ng-content>
+
+  <button
+    *ngIf="!useContent"
+    type="button"
+    class="info-hint-btn"
+    [class.active]="isOpen"
+    (click)="toggle()"
+    aria-label="Ver mais informações"
+  >
+    ?
+  </button>
+
+  <div class="info-hint-box" [ngClass]="position" *ngIf="isOpen">
+    <p class="hint-title" *ngIf="title">
+      <i [class]="iconClass"></i> {{ title }}
+    </p>
+    <p class="hint-text">{{ text }}</p>
+  </div>
+</div>

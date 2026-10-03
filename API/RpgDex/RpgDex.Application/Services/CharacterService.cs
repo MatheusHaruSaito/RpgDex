@@ -29,11 +29,11 @@ namespace RpgDex.Application.Services
             var character = request.Adapt<Character>();
             character.Id = Guid.NewGuid();
 
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CharacterResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CharacterResponse>.Failure(Error.InvalidUserId);
 
             //Verifies if user exists
             var user = await userRepository.GetByIdAsync(guidUserId);
-            if (user is null) return Result<CharacterResponse>.Failure("User Not Found");
+            if (user is null) return Result<CharacterResponse>.Failure(AuthError.UserNotFound);
 
 
             character.UserId = guidUserId;
@@ -48,7 +48,7 @@ namespace RpgDex.Application.Services
                 }
                 catch
                 {
-                    return Result<CharacterResponse>.Failure("Error saving icon");
+                    return Result<CharacterResponse>.Failure(Error.UploadImageFailed);
                 }
             }
             
@@ -57,7 +57,7 @@ namespace RpgDex.Application.Services
 
             //push character to user list
             var data = await userRepository.PushCharacterAsync(guidUserId, response.Id);
-            if (!data) return Result<CharacterResponse>.Failure("Failed to add character to user");
+            if (!data) return Result<CharacterResponse>.Failure(CharacterError.PushToUserFailed);
 
             return Result<CharacterResponse>.Success(response.Adapt<CharacterResponse>());
         }
@@ -66,11 +66,11 @@ namespace RpgDex.Application.Services
         {
             //Verifies if character exists
             var characterFound = await _character.GetByIdAsync(Id);
-            if(characterFound is null) return Result<CharacterResponse>.Failure("Failed to get character");
+            if(characterFound is null) return Result<CharacterResponse>.Failure(CharacterError.NotFound);
 
             //Verifies if character is deactivated
             bool modified = await _character.SetActiveState(Id,ActiveState);
-            if (!modified) return Result<CharacterResponse>.Failure("Failed to deactivate character");
+            if (!modified) return Result<CharacterResponse>.Failure(CharacterError.SetActiveStateFailed);
 
             //Verifies if the character is removed
             //bool deletedFromUser = await _userRepository.PullCharacterAsync(characterFound.UserId, Id);
@@ -83,22 +83,22 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId, int page, int pageSize)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
             var result =  await _character.GetAllByUserIdAsync(guidUserId,page,pageSize);
-            if (result is null) return Result<GetAllCharacterResponse>.Failure("Failed to get character");
+            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
 
             var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
             return  Result<GetAllCharacterResponse>.Success(response);
         }
         public async Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
             var result = await _character.GetAllByUserIdAsync(guidUserId);
-            if (result is null) return Result<GetAllCharacterResponse>.Failure("Failed to get character");
+            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
             var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
             return Result<GetAllCharacterResponse>.Success(response);
         }
@@ -108,8 +108,9 @@ namespace RpgDex.Application.Services
             var data = await _character.GetByIdAsync(Id);
             if(data is null)
             {
-                return Result<CharacterResponse>.Failure($"Character not found");
+                return Result<CharacterResponse>.Failure(CharacterError.NotFound);
             }
+            
             var response = data.Adapt<CharacterResponse>();
             return Result<CharacterResponse>.Success(response);
         }
@@ -122,10 +123,10 @@ namespace RpgDex.Application.Services
             var updateCharacter = request.Adapt<Character>();
 
             //Verifies if Character is really from user
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure(Error.InvalidUserId);
             var characterFound = await _character.GetByIdAsync(request.Id);
 
-            if (!guidUserId.Equals(characterFound.UserId)) return Result<bool>.Failure("Unauthorized User");
+            if (!guidUserId.Equals(characterFound.UserId)) return Result<bool>.Failure(CharacterError.CharacterNotOwned);
 
             if (request.Icon is not null)
             {
@@ -135,33 +136,33 @@ namespace RpgDex.Application.Services
                 }
                 catch
                 {
-                    return Result<bool>.Failure($"Error saving icon");
+                    return Result<bool>.Failure(Error.UploadImageFailed);
                 }
             }
             else
             {
               
-                if (characterFound is null) return Result<bool>.Failure("Character not found");
+                if (characterFound is null) return Result<bool>.Failure(CharacterError.NotFound);
                 updateCharacter.IconPath = characterFound.IconPath;
             }
 
 
             var response = await _character.UpdateAsync(updateCharacter);
             //Verifies if character was updated
-            if (!response) return Result<bool>.Failure("It was not possible to update character");
+            if (!response) return Result<bool>.Failure(CharacterError.UpdateFailed);
             return Result<bool>.Success(response);
         }
 
         public async Task<Result<bool>> UpdateLastAccess(Guid id)
         {
             var character = await _character.GetByIdAsync(id);
-            if (character is null) return Result<bool>.Failure("Failed to get character");
+            if (character is null) return Result<bool>.Failure(CharacterError.NotFound);
 
 
             var isSuccess = await _character.UpdateLastAccessAsync(id,DateTime.Now);
             if (!isSuccess)
             {
-                return Result<bool>.Failure($"Failed to update last access on: {character.Name}");
+                return Result<bool>.Failure(CharacterError.UpdateLastAccessFailed);
             }
             return Result<bool>.Success(true);
         }

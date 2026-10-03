@@ -22,6 +22,8 @@
     "@angular/ssr": "^21.2.1",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@microsoft/signalr": "^10.0.11",
+    "@ngx-translate/core": "^18.0.0",
+    "@ngx-translate/http-loader": "^18.0.0",
     "express": "^5.1.0",
     "jwt-decode": "^4.0.0",
     "ngx-cookie-service": "^21.3.1",
