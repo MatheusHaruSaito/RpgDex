@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
 import { CampaignService } from '../../services/campaign-service';
@@ -23,6 +24,7 @@ export class CampaignsComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   myCampaigns: Campaign[] = [];
   myCharacters: Character[] = [];
@@ -138,40 +140,108 @@ export class CampaignsComponent implements OnInit {
         this.isModalOpen = false;
         this.loadCampaigns();
       },
-      error: (err) => {
-        const apiMsg = err?.error?.message 
-          || (typeof err?.error === 'string' ? err.error : null)
-          || 'Erro ao criar a campanha. Tente novamente.';
-        
-        if (this.campaignModal) {
-          this.campaignModal.setErrorMessage(apiMsg);
-        }
+      error: (err: any) => {
+        this.handleApiError(err);
       },
     });
   }
 
   handleJoinCampaign(payload: { campaignId: string; password?: string }): void {
-    this.campaignService
-      .AddPlayer({
-        campaignId: payload.campaignId,
-        password: payload.password,
-      })
-      .subscribe({
-        next: () => {
-          this.isModalOpen = false;
-          this.loadCampaigns();
-        },
-        error: (err) => {
-          // Extrai a mensagem enviada pelo backend
-          const apiMsg = err?.error?.message 
-            || (typeof err?.error === 'string' ? err.error : null)
-            || 'Erro ao entrar na campanha. Verifique o ID e Senha.';
-          
-          if (this.campaignModal) {
-            this.campaignModal.setErrorMessage(apiMsg);
+    // Garante que o payload é enviado com as propriedades exigidas pela API
+    const requestBody = {
+      campaignId: payload.campaignId,
+      password: payload.password ?? '',
+    };
+
+    this.campaignService.AddPlayer(requestBody as any).subscribe({
+      next: () => {
+        this.isModalOpen = false;
+        this.loadCampaigns();
+      },
+      error: (err: any) => {
+        this.handleApiError(err);
+      },
+    });
+  }
+
+  // Tratamento rigoroso de erros do .NET com tradução automática
+  private handleApiError(err: any): void {
+    const body = err?.error;
+
+    // 1. Extração do dicionário de validação (ValidationProblemDetails)
+    if (body?.errors && typeof body.errors === 'object') {
+      const errorKeys = Object.keys(body.errors);
+      if (errorKeys.length > 0) {
+        const firstErrorVal = body.errors[errorKeys[0]];
+
+        if (Array.isArray(firstErrorVal) && firstErrorVal.length > 0) {
+          const primaryError = firstErrorVal[0];
+
+          // Se for objeto estruturado com código de erro
+          if (typeof primaryError === 'object' && primaryError?.code) {
+            const translationKey = `ERRORS.${primaryError.code}`;
+            this.translateService.get(translationKey).subscribe((translatedText: string) => {
+              const hasTranslation = translatedText !== translationKey;
+              this.setModalError(hasTranslation ? translatedText : primaryError.message);
+            });
+            return;
           }
-        },
+
+          // Se for texto direto enviado pela API
+          if (typeof primaryError === 'string') {
+            // Mapeamento local para erros padrão do model state em inglês
+            if (primaryError.includes('request field is required')) {
+              this.setModalError('O código da campanha é obrigatório.');
+              return;
+            }
+            this.setModalError(primaryError);
+            return;
+          }
+        }
+      }
+    }
+
+    // 2. Extração de listas em formato de Array (ex: body.message ou body.errors)
+    const errorList = Array.isArray(body?.message)
+      ? body.message
+      : Array.isArray(body?.errors)
+      ? body.errors
+      : [];
+
+    const primaryError = errorList[0];
+
+    if (primaryError?.code) {
+      const translationKey = `ERRORS.${primaryError.code}`;
+      this.translateService.get(translationKey).subscribe((translatedText: string) => {
+        const hasTranslation = translatedText !== translationKey;
+        this.setModalError(hasTranslation ? translatedText : primaryError.message);
       });
+      return;
+    }
+
+    // 3. Fallbacks de mensagens diretas
+    const fallbackText =
+      (typeof body?.message === 'string' ? body.message : null) ??
+      (typeof body?.detail === 'string' ? body.detail : null) ??
+      (typeof body === 'string' ? body : null);
+
+    if (fallbackText) {
+      this.setModalError(fallbackText);
+    } else {
+      this.translateService.get('ERRORS.COMMON_DEFAULT').subscribe((res: string) => {
+        const defaultMsg =
+          res !== 'ERRORS.COMMON_DEFAULT'
+            ? res
+            : 'Ocorreu um erro ao processar o seu pedido. Tente novamente.';
+        this.setModalError(defaultMsg);
+      });
+    }
+  }
+
+  private setModalError(msg: string): void {
+    if (this.campaignModal) {
+      this.campaignModal.setErrorMessage(msg);
+    }
   }
 
   goToCampaignDetail(id: string): void {
