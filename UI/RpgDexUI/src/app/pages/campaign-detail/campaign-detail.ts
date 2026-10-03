@@ -14,6 +14,7 @@ import { EditCampaignModalComponent } from '../../modals/edit-campaign-modal/edi
 import { CharacterViewerComponent } from '../../pages/character-viewer/character-viewer';
 import { CampaignSetActiveStateRequest } from '../../../models/campaignSetActiveStateRequest';
 import { CampaignChatComponent } from '../../components/campaign-chat-component/campaign-chat-component';
+import { InfoHintComponent } from '../../components/info-hint/info-hint';
 
 @Component({
   selector: 'app-campaign-detail',
@@ -25,6 +26,7 @@ import { CampaignChatComponent } from '../../components/campaign-chat-component/
     EditCampaignModalComponent,
     CharacterViewerComponent,
     CampaignChatComponent,
+    InfoHintComponent,
   ],
   providers: [DatePipe],
   templateUrl: './campaign-detail.html',
@@ -318,7 +320,7 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.showFeedback(approve ? 'Personagem aprovado na mesa!' : 'Solicitação recusada.');
+          this.showFeedback(approve ? 'Personagem aprovado na campanha!' : 'Solicitação recusada.');
           this.loadCampaign(true);
         },
         error: (err) =>
@@ -332,7 +334,7 @@ export class CampaignDetailComponent implements OnInit {
   removePlayer(userId: string): void {
     if (!this.campaign) return;
 
-    const confirmMsg = 'Tem certeza de que deseja remover este jogador';
+    const confirmMsg = 'Tem certeza de que deseja remover este jogador?';
 
     if (!confirm(confirmMsg)) return;
 
@@ -425,6 +427,7 @@ export class CampaignDetailComponent implements OnInit {
         this.showFeedback(this.getErrorMessage(err, 'Erro ao atualizar dados da campanha.'), true),
     });
   }
+
   leaveCampaign(userId: string): void {
     if (!confirm('Tem certeza de que deseja sair desta campanha?')) return;
 

@@ -26,7 +26,7 @@
           <span class="status-badge active">Cadastrada</span>
         </div>
 
-        <!-- Provedores Externos (ex: Google) -->
+        <!-- Provedores Externos -->
         <div class="auth-method-item" *ngFor="let provider of authOptions.externalProviders">
           <span><i class="fa-brands" [ngClass]="'fa-' + provider.toLowerCase()"></i> {{ provider }}</span>
           <span class="status-badge active">Conectado</span>
@@ -37,30 +37,17 @@
 
       <!-- Seção 2FA -->
       <div class="settings-group">
-        <h3>
+        <h3 style="display: flex; align-items: center; gap: 8px;">
           Autenticação em Duas Etapas (2FA)
-          <button
-            type="button"
-            class="info-hint-btn"
-            (click)="toggle2FAHint()"
-            [class.active]="show2FAHint"
-            aria-label="O que é a autenticação em duas etapas?"
-          >
-            ?
-          </button>
+          
+          <!-- Componente InfoHint sem botão nativo 'title' e sem herdar uppercase -->
+          <app-info-hint
+            title="O que é isso?"
+            text="A autenticação em duas etapas adiciona uma camada extra de segurança à sua conta. Além da senha, você confirma sua identidade com um código enviado por e-mail a cada login."
+            iconClass="fa-solid fa-shield-halved"
+            position="bottom-left"
+          ></app-info-hint>
         </h3>
-
-        <div class="info-hint-box" *ngIf="show2FAHint">
-          <p class="hint-title">
-            <i class="fa-solid fa-shield-halved"></i> O que é isso?
-          </p>
-          <p class="hint-text">
-            A autenticação em duas etapas adiciona uma camada extra de segurança à sua conta.
-            Além da senha, você confirma sua identidade com um código enviado por e-mail a cada
-            login. Assim, mesmo que alguém descubra sua senha, não conseguirá acessar sua conta
-            sem esse código.
-          </p>
-        </div>
 
         <div class="twofa-status-box">
           <div class="twofa-info">

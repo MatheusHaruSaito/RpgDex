@@ -13,11 +13,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth-service';
 import { UserResponse } from '../../../models/userResponse';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
+import { InfoHintComponent } from '../../components/info-hint/info-hint';
 
 @Component({
   selector: 'app-settings-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, InfoHintComponent],
   templateUrl: './settings-modal.html',
   styleUrl: './settings-modal.css',
 })
@@ -37,10 +38,8 @@ export class SettingsModalComponent implements OnChanges {
   twoFactorTokenInput = '';
   twoFactorStep: 'idle' | 'code-sent' = 'idle';
   settingsMessage = { text: '', type: '' };
-  show2FAHint = false;
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Sempre que o modal for aberto (isOpen mudou para true), busca os dados atualizados
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
       this.loadUserAuthOptions();
     }
@@ -65,12 +64,7 @@ export class SettingsModalComponent implements OnChanges {
     this.twoFactorStep = 'idle';
     this.twoFactorTokenInput = '';
     this.settingsMessage = { text: '', type: '' };
-    this.show2FAHint = false;
     this.closeModal.emit();
-  }
-
-  toggle2FAHint(): void {
-    this.show2FAHint = !this.show2FAHint;
   }
 
   request2FACode(): void {
@@ -144,15 +138,11 @@ export class SettingsModalComponent implements OnChanges {
             this.twoFactorStep = 'idle';
             this.twoFactorTokenInput = '';
 
-            // 1. Atualiza localmente
             if (this.authOptions) {
               this.authOptions.isTwoFactorEnabled = true;
             }
 
-            // 2. Avisa o componente pai
             this.twoFactorUpdated.emit(true);
-
-            // 3. Sincroniza com a API imediatamente
             this.loadUserAuthOptions();
           } else {
             this.settingsMessage = {
