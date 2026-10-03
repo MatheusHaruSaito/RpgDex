@@ -17,41 +17,51 @@
       <button class="cd-alert-close" (click)="errorMessage = null">&times;</button>
     </div>
 
-    <!-- ── TOPBAR ── -->
-    <div class="cd-topbar">
-      <div class="cd-topbar-actions">
-        
-        <app-info-hint
-          [useContent]="true"
-          title="Código de Acesso"
-          text="Copie e compartilhe este código com outros jogadores para que eles possam entrar na campanha."
-          iconClass="fa-solid fa-key"
-          position="bottom-left"
-        >
-          <button class="btn btn-secondary" (click)="copyCampaignCode()">
-            <i class="fa" [ngClass]="copiedFeedback ? 'fa-check' : 'fa-copy'"></i>
-            {{ copiedFeedback ? 'Copiado!' : 'Copiar Código' }}
-          </button>
-        </app-info-hint>
+<!-- ── TOPBAR ── -->
+<div class="cd-topbar">
+  <div class="cd-topbar-actions">
+    
+    <app-info-hint
+      [useContent]="true"
+      title="Código de Acesso"
+      text="Copie e compartilhe este código com outros jogadores para que eles possam entrar na campanha."
+      iconClass="fa-solid fa-key"
+      position="bottom-left"
+    >
+      <button class="btn btn-secondary" (click)="copyCampaignCode()">
+        <i class="fa" [ngClass]="copiedFeedback ? 'fa-check' : 'fa-copy'"></i>
+        {{ copiedFeedback ? 'Copiado!' : 'Copiar Código' }}
+      </button>
+    </app-info-hint>
 
-        <button
-          *ngIf="isPlayerInCampaign && !isGameMaster"
-          class="btn btn-outline-danger"
-          (click)="leaveCampaign(campaignId)"
-        >
-          <i class="fa fa-right-from-bracket"></i> Sair da Campanha
-        </button>
+    <button
+      *ngIf="isPlayerInCampaign && !isGameMaster"
+      class="btn btn-outline-danger"
+      (click)="leaveCampaign(campaignId)"
+    >
+      <i class="fa fa-right-from-bracket"></i> Sair da Campanha
+    </button>
 
-        <button *ngIf="isGameMaster" class="btn btn-outline-danger" (click)="toggleActiveState()">
-          <i class="fa fa-power-off"></i>
-          {{ campaign.isActive ? 'Desativar' : 'Reativar' }}
-        </button>
+    <!-- Balão de Dica adicionado no botão de Desativar/Ativar Campanha -->
+    <app-info-hint
+      *ngIf="isGameMaster"
+      [useContent]="true"
+      [title]="campaign.isActive ? 'Desativar Campanha' : 'Ativar Campanha'"
+      text="Ao desativar, ninguém mais poderá visualizar ou entrar na campanha, ficando acessível apenas para o mestre."
+      iconClass="fa-solid fa-power-off"
+      position="bottom-left"
+    >
+      <button class="btn btn-outline-danger" (click)="toggleActiveState()">
+        <i class="fa fa-power-off"></i>
+        {{ campaign.isActive ? 'Desativar' : 'Reativar' }}
+      </button>
+    </app-info-hint>
 
-        <button *ngIf="isGameMaster" class="btn btn-secondary" (click)="isEditModalOpen = true">
-          <i class="fa fa-gear"></i> Editar
-        </button>
-      </div>
-    </div>
+    <button *ngIf="isGameMaster" class="btn btn-secondary" (click)="isEditModalOpen = true">
+      <i class="fa fa-gear"></i> Editar
+    </button>
+  </div>
+</div>
 
     <!-- ── HERO DA CAMPANHA ── -->
     <div class="cd-hero">

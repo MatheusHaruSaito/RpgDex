@@ -7,7 +7,7 @@
     <h1 class="ep-title">Verifique seu email</h1>
     <p class="ep-sub">
       Enviamos um link de confirmação para
-      <strong class="ep-email">{{ email || 'seu email' }}</strong>.
+      <strong class="ep-email">{{ email || 'seu e-mail cadastrado' }}</strong>.
       Clique no link para ativar sua conta.
     </p>
 
@@ -17,7 +17,7 @@
     </div>
 
     <div class="ep-actions">
-      <button type="button" class="ep-btn ep-btn--outline" (click)="resend()" [disabled]="resendCooldown > 0">
+      <button type="button" class="ep-btn ep-btn--outline" (click)="resend()" [disabled]="resendCooldown > 0 || !email">
         <i class="fa fa-rotate-right"></i>
         @if (resendCooldown === 0) {
           <span>Reenviar email</span>

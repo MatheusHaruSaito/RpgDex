@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth-service';
 import { ResendEmailVerificationRequest } from '../../../models/resendEmailVerificationRequest';
@@ -20,18 +20,21 @@ export class EmailPending implements OnInit, OnDestroy {
   private cooldownTimer: any;
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
-
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  private router = inject(Router);
 
   ngOnInit(): void {
-    // email passado como query param pelo register: /verificar-email?email=...
-    this.email = this.route.snapshot.queryParamMap.get('email') ?? '';
+    const navigation = this.router.getCurrentNavigation();
+    const stateEmail = navigation?.extras?.state?.['email'] || history.state?.['email'];
+
+    if (stateEmail) {
+      this.email = stateEmail;
+    }
   }
 
   resend(): void {
     if (this.resendCooldown > 0 || !this.email) return;
     this.resendSuccess = false;
-    this.resendError   = '';
+    this.resendError = '';
 
     const request: ResendEmailVerificationRequest = { email: this.email };
     this.authService.ResendEmailVerification(request).subscribe({
@@ -59,6 +62,8 @@ export class EmailPending implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    clearInterval(this.cooldownTimer);
+    if (this.cooldownTimer) {
+      clearInterval(this.cooldownTimer);
+    }
   }
 }

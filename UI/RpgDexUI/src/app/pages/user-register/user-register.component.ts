@@ -63,6 +63,12 @@ export class UserRegisterComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  onEmailInput(value: string): void {
+    if (value) {
+      this.registerForm.email = value.replace(/\s+/g, '');
+    }
+  }
+
   get hasMinLength(): boolean {
     return this.registerForm.password.length >= 8;
   }
@@ -101,12 +107,6 @@ export class UserRegisterComponent implements OnInit {
     return '';
   }
 
-  onEmailInput(value: string): void {
-    if (value) {
-      this.registerForm.email = value.replace(/\s+/g, '');
-    }
-  }
-
   private isUserNameValid(userName: string): { valid: boolean; error?: string } {
     if (!userName) return { valid: false, error: 'O nome de usuário é obrigatório.' };
 
@@ -120,8 +120,7 @@ export class UserRegisterComponent implements OnInit {
     if (!/^[a-z0-9_.]{2,32}$/.test(value)) {
       return {
         valid: false,
-        error:
-          'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
+        error: 'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
       };
     }
 
@@ -130,10 +129,7 @@ export class UserRegisterComponent implements OnInit {
     }
 
     if (reservedWords.some((word) => value.includes(word))) {
-      return {
-        valid: false,
-        error: 'Este nome de usuário contém palavras reservadas e não pode ser usado.',
-      };
+      return { valid: false, error: 'Este nome de usuário contém palavras reservadas e não pode ser usado.' };
     }
 
     return { valid: true };
@@ -182,14 +178,12 @@ export class UserRegisterComponent implements OnInit {
     const rawUserName = this.registerForm.userName?.toLowerCase().trim() || '';
     this.registerForm.userName = rawUserName;
 
-    // Validação do userName estilo Discord
     const userValidation = this.isUserNameValid(rawUserName);
     if (!userValidation.valid) {
       this.errorMessage = userValidation.error!;
       return;
     }
 
-    // Preenche o displayName inicial com o mesmo valor do userName
     if ('displayName' in this.registerForm) {
       (this.registerForm as any).displayName = rawUserName;
     }
@@ -224,8 +218,9 @@ export class UserRegisterComponent implements OnInit {
     this.authService.Register(this.registerForm).subscribe({
       next: () => {
         this.isLoading = false;
+        // Transmite o e-mail sem exibi-lo na barra de endereços (URL)
         this.router.navigate(['/verificar-email'], {
-          queryParams: { email: this.registerForm.email },
+          state: { email: this.registerForm.email },
         });
       },
       error: (err) => {
