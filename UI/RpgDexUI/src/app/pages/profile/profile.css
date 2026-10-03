@@ -279,6 +279,29 @@
   color: var(--rpg-purple);
 }
 
+.display-name {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.user-handle {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  margin-top: 2px;
+  display: inline-block;
+}
+
+.email {
+  color: var(--rpg-text-muted);
+  margin: 4px 0 10px;
+  font-size: 0.88rem;
+}
+
 /* ── RESPONSIVO ── */
 @media (max-width: 768px) {
   .profile-wrapper {

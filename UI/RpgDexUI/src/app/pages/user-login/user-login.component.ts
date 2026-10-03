@@ -33,6 +33,12 @@ export class UserLoginComponent implements OnInit {
     return this.authUserForm.email.length > 0 && !this.emailRegex.test(this.authUserForm.email);
   }
 
+  onEmailInput(value: string): void {
+    if (value) {
+      this.authUserForm.email = value.replace(/\s+/g, '');
+    }
+  }
+
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;

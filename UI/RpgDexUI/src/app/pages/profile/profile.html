@@ -18,7 +18,11 @@
           </div>
 
           <div class="user-text">
-            <h1 class="username">{{ user?.displayName || 'Viajante' }}</h1>
+            <!-- Nome de Exibição (displayName) -->
+            <h1 class="display-name">{{ user?.displayName || 'Viajante' }}</h1>
+            <!-- Username Único (@userName) -->
+            <span class="user-handle">@{{ user?.userName || 'viajante' }}</span>
+            <!-- E-mail -->
             <p class="email">{{ user?.email }}</p>
             <span class="badge">Aventureiro</span>
           </div>
@@ -85,7 +89,6 @@
             <span>Nova Campanha</span>
           </div>
 
-          <!-- Cards Dinâmicos de Campanha -->
           @for (camp of campaignPreview; track camp.id || camp.title) {
             <div class="campaign-card" [routerLink]="['/campanha', camp.id]">
               @if (camp.iconPath) {

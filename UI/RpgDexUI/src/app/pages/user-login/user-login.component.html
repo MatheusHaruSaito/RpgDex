@@ -23,37 +23,22 @@
       <form class="login-form" (ngSubmit)="Login()">
         <div class="input-group">
           <i class="fa fa-envelope icon-field"></i>
-          <input
-            type="email"
-            placeholder="Email"
-            name="email"
-            [(ngModel)]="authUserForm.email"
-            autocomplete="username"
-            required
-          />
+          <input type="email" placeholder="Email" name="email" [(ngModel)]="authUserForm.email"
+            (ngModelChange)="onEmailInput($event)" (keydown.space)="$event.preventDefault()" autocomplete="username"
+            required />
         </div>
-        
+
         @if (emailInvalid) {
-          <span class="field-hint">Informe um email válido.</span>
+        <span class="field-hint">Informe um email válido.</span>
         }
 
         <!-- Campo de Senha com Alternância de Visibilidade -->
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            placeholder="Senha"
-            name="password"
-            [(ngModel)]="authUserForm.password"
-            autocomplete="current-password"
-            required
-          />
-          <button
-            type="button"
-            class="password-toggle-btn"
-            (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
-          >
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Senha" name="password"
+            [(ngModel)]="authUserForm.password" autocomplete="current-password" required />
+          <button type="button" class="password-toggle-btn" (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'">
             <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
         </div>
@@ -63,19 +48,19 @@
         </div>
 
         @if (errorMessage) {
-          <div class="feedback-message error-message">
-            <i class="fa fa-circle-exclamation"></i>
-            <span>{{ errorMessage }}</span>
-          </div>
+        <div class="feedback-message error-message">
+          <i class="fa fa-circle-exclamation"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
         }
 
         <button type="submit" class="btn-login" [disabled]="isLoading">
           @if (!isLoading) {
-            <span>ENTRAR</span>
+          <span>ENTRAR</span>
           } @else {
-            <span>
-              <i class="fa fa-spinner fa-spin"></i> Entrando...
-            </span>
+          <span>
+            <i class="fa fa-spinner fa-spin"></i> Entrando...
+          </span>
           }
         </button>
       </form>
@@ -85,24 +70,14 @@
       </div>
 
       <div class="social-logins">
-        <button
-          type="button"
-          class="social-btn"
-          (click)="loginComGoogle()"
-          title="Entrar com Google"
-          aria-label="Entrar com Google"
-        >
+        <button type="button" class="social-btn" (click)="loginComGoogle()" title="Entrar com Google"
+          aria-label="Entrar com Google">
           <i class="fa-brands fa-google"></i>
         </button>
         <div id="google-btn" style="display: none; position: absolute"></div>
 
-        <button
-          type="button"
-          class="social-btn"
-          (click)="onDiscordLogin()"
-          title="Entrar com Discord"
-          aria-label="Entrar com Discord"
-        >
+        <button type="button" class="social-btn" (click)="onDiscordLogin()" title="Entrar com Discord"
+          aria-label="Entrar com Discord">
           <i class="fa-brands fa-discord"></i>
         </button>
       </div>

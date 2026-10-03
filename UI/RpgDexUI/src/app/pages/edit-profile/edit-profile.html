@@ -36,6 +36,7 @@
         <p class="edit-side__name">
           {{ editForm.displayName || currentUser?.displayName || 'Aventureiro' }}
         </p>
+        <span class="edit-side__handle">@{{ currentUser?.userName }}</span>
         <p class="edit-side__email">{{ currentUser?.email }}</p>
         <span class="edit-side__badge">Aventureiro</span>
       </div>
@@ -50,27 +51,47 @@
     <div class="edit-main">
       <div class="edit-header">
         <h2 class="edit-main__title">Editar Perfil</h2>
-        <p class="edit-main__sub">Atualize suas informações de conta.</p>
+        <p class="edit-main__sub">Atualize suas informações públicas e foto de exibição.</p>
       </div>
 
       <form class="edit-form" (ngSubmit)="saveChanges()">
-        <!-- Nome de usuário -->
+        <!-- Nome de Exibição (displayName - EDITÁVEL) -->
         <div class="field-section">
           <label class="field-label">
-            <i class="fa fa-user"></i>
-            <span>Nome de usuário</span>
+            <i class="fa fa-id-card"></i>
+            <span>Nome de exibição</span>
           </label>
           <div class="input-group">
             <i class="fa fa-user icon-field"></i>
             <input
               type="text"
-              placeholder="Seu nome de usuário"
+              placeholder="Seu nome exibido aos outros jogadores"
               name="displayName"
               [(ngModel)]="editForm.displayName"
-              autocomplete="username"
-              maxlength="30"
+              maxlength="32"
+              required
             />
           </div>
+          <small class="field-hint">Este é o nome visível para os outros usuários na plataforma (até 32 caracteres).</small>
+        </div>
+
+        <!-- Nome de Usuário (userName - FIXO/NÃO EDITÁVEL) -->
+        <div class="field-section">
+          <label class="field-label">
+            <i class="fa fa-at"></i>
+            <span>Nome de usuário (único)</span>
+          </label>
+          <div class="input-group input-group--disabled">
+            <i class="fa fa-at icon-field"></i>
+            <input
+              type="text"
+              [value]="currentUser?.userName || ''"
+              disabled
+              readonly
+            />
+            <i class="fa fa-lock icon-lock-field"></i>
+          </div>
+          <small class="field-hint">O identificador único da sua conta não pode ser alterado.</small>
         </div>
 
         <!-- Foto de perfil por upload -->

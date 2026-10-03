@@ -1,6 +1,5 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
@@ -17,6 +16,8 @@ import { CreateJoinCampaignModalComponent } from '../../modals/create-join-campa
   styleUrls: ['./campaigns.css'],
 })
 export class CampaignsComponent implements OnInit {
+  @ViewChild(CreateJoinCampaignModalComponent) campaignModal!: CreateJoinCampaignModalComponent;
+
   private characterService = inject(CharacterService);
   private campaignService = inject(CampaignService);
   private authService = inject(AuthService);
@@ -78,9 +79,6 @@ export class CampaignsComponent implements OnInit {
         const all = r.data?.characters ?? [];
         const filtered = all.filter((c) => c.userId === this.currentUserId);
 
-        //Criar paginamento na api dps (Refatorar)
-        // Ordena por último acesso e limita aos 5 mais recentes
-        //Fazer o filtro pela api
         this.myCharacters = this.sortByLastAccessed(filtered);
         this.cdr.detectChanges();
       },
@@ -136,8 +134,19 @@ export class CampaignsComponent implements OnInit {
 
   handleCreateCampaign(formData: FormData): void {
     this.campaignService.Post(formData as any).subscribe({
-      next: () => this.loadCampaigns(),
-      error: () => {},
+      next: () => {
+        this.isModalOpen = false;
+        this.loadCampaigns();
+      },
+      error: (err) => {
+        const apiMsg = err?.error?.message 
+          || (typeof err?.error === 'string' ? err.error : null)
+          || 'Erro ao criar a campanha. Tente novamente.';
+        
+        if (this.campaignModal) {
+          this.campaignModal.setErrorMessage(apiMsg);
+        }
+      },
     });
   }
 
@@ -149,10 +158,19 @@ export class CampaignsComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          alert('Você entrou na campanha!');
+          this.isModalOpen = false;
           this.loadCampaigns();
         },
-        error: () => alert('Erro ao entrar na campanha. Verifique o ID e Senha.'),
+        error: (err) => {
+          // Extrai a mensagem enviada pelo backend
+          const apiMsg = err?.error?.message 
+            || (typeof err?.error === 'string' ? err.error : null)
+            || 'Erro ao entrar na campanha. Verifique o ID e Senha.';
+          
+          if (this.campaignModal) {
+            this.campaignModal.setErrorMessage(apiMsg);
+          }
+        },
       });
   }
 

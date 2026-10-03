@@ -258,6 +258,25 @@ input[type="number"]:focus,
   opacity: 1;
 }
 
+/* Feedback de erro */
+.feedback-message {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.error-message {
+  color: var(--rpg-error, #e74c3c);
+  background-color: var(--rpg-error-bg, #fde8e8);
+  border: 1px solid var(--rpg-error-border, #f8b4b4);
+}
+
 /* ── RODAPÉ ── */
 .modal-footer {
   padding: 16px 24px;

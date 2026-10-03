@@ -22,16 +22,24 @@
       </div>
 
       <form class="register-form" (ngSubmit)="Register()">
-        <div class="input-group">
-          <i class="fa fa-user icon-field"></i>
-          <input
-            type="text"
-            placeholder="Nome de usuário"
-            name="displayName"
-            [(ngModel)]="registerForm.userName"
-            autocomplete="username"
-            required
-          />
+        <!-- Campo Nome de Usuário (estilo Discord) -->
+        <div class="field-section">
+          <div class="input-group">
+            <i class="fa fa-at icon-field"></i>
+            <input
+              type="text"
+              placeholder="Nome de usuário (ex: aragorn123)"
+              name="userName"
+              [(ngModel)]="registerForm.userName"
+              autocomplete="username"
+              maxlength="32"
+              required
+            />
+          </div>
+          <span class="field-info-hint">
+            <i class="fa fa-circle-info"></i> Apenas letras minúsculas (a-z), números, "." e "_".
+            Servirá como nome de exibição inicial.
+          </span>
         </div>
 
         <div class="input-group">
@@ -41,6 +49,8 @@
             placeholder="Email"
             name="email"
             [(ngModel)]="registerForm.email"
+            (ngModelChange)="onEmailInput($event)"
+            (keydown.space)="$event.preventDefault()"
             autocomplete="email"
             required
           />
@@ -50,7 +60,6 @@
           <span class="field-hint">Informe um email válido.</span>
         }
 
-        <!-- Campo de Senha com Alternância de Visibilidade -->
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
           <input
@@ -71,7 +80,6 @@
           </button>
         </div>
 
-        <!-- Lista de Requisitos de Senha Sempre Visível -->
         <div class="password-requirements">
           <p class="requirements-title">A sua senha deve conter pelo menos:</p>
           <ul class="requirements-list">
@@ -98,7 +106,6 @@
           </ul>
         </div>
 
-        <!-- Campo de Confirmação de Senha -->
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
           <input
@@ -202,7 +209,14 @@
     <div class="terms-modal" (click)="$event.stopPropagation()">
       <div class="terms-modal-header">
         <h3>Termos de Uso e Serviço - RPGDex</h3>
-        <button type="button" class="close-modal-btn" aria-label="Fechar" (click)="closeTermsModal()">&times;</button>
+        <button
+          type="button"
+          class="close-modal-btn"
+          aria-label="Fechar"
+          (click)="closeTermsModal()"
+        >
+          &times;
+        </button>
       </div>
 
       <div class="terms-modal-body">
@@ -215,106 +229,20 @@
         <h4>1. Aceitação dos Termos e Modificações</h4>
         <p>
           Ao navegar e utilizar a plataforma da RPGDex, você expressa sua concordância automática e
-          integral com as regras e condições aqui estipuladas. Caso não concorde com qualquer
-          disposição, solicitamos que interrompa o uso de nossos serviços. Reservamo-nos o direito de
-          atualizar este documento periodicamente para refletir melhorias em nossos serviços ou
-          adequações legislativas. Mudanças estruturais relevantes serão informadas de forma destacada
-          em nosso site ou via e-mail. O uso continuado da plataforma após atualizações implica a
-          aceitação inequívoca dos novos termos.
+          integral com as regras e condições aqui estipuladas.
         </p>
 
         <h4>2. Condições de Acesso e Conta de Usuário</h4>
         <ul>
           <li>
-            <strong>Acesso Geral:</strong> A navegação básica pelas seções do site para conhecê-lo é
-            livre e não exige cadastro prévio.
-          </li>
-          <li>
-            <strong>Cadastro e Segurança:</strong> Determinadas funcionalidades ou áreas exclusivas
-            podem requerer a criação de uma conta de usuário. Você se compromete a fornecer
-            informações verdadeiras, exatas e atualizadas, responsabilizando-se pela guarda e pelo
-            sigilo de suas credenciais de acesso (login e senha), que são pessoais e intransferíveis.
-          </li>
-          <li>
-            <strong>Conduta do Usuário:</strong> Ao enviar conteúdos à RPGDex, você concorda em agir
-            com urbanidade, respeito e em conformidade com a legislação vigente, sendo vedada a
-            publicação de materiais ilegais ou ofensivos.
-          </li>
-        </ul>
-
-        <h4>3. Privacidade e Proteção de Dados Pessoais</h4>
-        <p>
-          A privacidade e a proteção dos seus dados pessoais são princípios fundamentais para a
-          RPGDex. As operações de tratamento de dados pessoais realizadas em nosso ecossistema são
-          regidas pela Lei Geral de Proteção de Dados Pessoais (LGPD - Lei nº 13.709/2018). Adotamos
-          medidas técnicas e administrativas aptas a proteger seus dados contra acessos não
-          autorizados ou vazamentos, garantindo total transparência e o pleno exercício dos seus
-          direitos como titular.
-        </p>
-
-        <h4>4. Propriedade Intelectual e Licença de Uso</h4>
-        <p>
-          Todo o conteúdo disponibilizado na plataforma — incluindo textos, ilustrações, marcas,
-          elementos gráficos, códigos-fonte, softwares, áudios e vídeos — constitui propriedade
-          intelectual exclusiva da RPGDex ou de terceiros que nos concederam a devida licença de uso,
-          estando protegido pela legislação nacional e internacional de direitos autorais e
-          propriedade industrial.
-        </p>
-        <ul>
-          <li>
-            <strong>Licença Limitada:</strong> É concedida ao usuário uma licença limitada, revogável,
-            não exclusiva e intransferível para acessar e visualizar o conteúdo exclusivamente para
-            fins pessoais e não comerciais.
-          </li>
-          <li>
-            <strong>Vedações:</strong> É estritamente proibida qualquer reprodução, distribuição,
-            modificação, engenharia reversa ou transmissão não autorizada por escrito do material
-            disponibilizado.
-          </li>
-        </ul>
-
-        <h4>5. Cookies e Tecnologias de Monitoramento</h4>
-        <p>
-          Utilizamos cookies e tecnologias semelhantes para otimizar sua experiência de navegação,
-          armazenar preferências (como idioma e configurações de exibição), compilar estatísticas
-          anônimas de uso e garantir a segurança do ambiente virtual.
-        </p>
-        <ul>
-          <li>
-            <strong>Gestão de Cookies:</strong> O usuário pode configurar ou bloquear o uso de cookies
-            a qualquer momento diretamente nas preferências do seu navegador web. Contudo, ressaltamos
-            que a desativação de certos cookies estritamente necessários pode impactar o correto
-            funcionamento de algumas áreas do site.
-          </li>
-        </ul>
-
-        <h4>6. Links para Terceiros</h4>
-        <p>
-          Nossa plataforma pode conter links direcionadores para sites ou aplicações de terceiros. A
-          RPGDex não exerce controle editorial ou operacional sobre esses ambientes externos e não se
-          responsabiliza por seus conteúdos, práticas de segurança ou políticas de privacidade.
-          Recomendamos a leitura atenta dos termos de uso de cada site visitado.
-        </p>
-
-        <h4>7. Responsabilidades das Partes</h4>
-        <ul>
-          <li>
-            <strong>Do Usuário:</strong> Utilizar o site de boa-fé; manter a segurança de seu
-            dispositivo de acesso; não tentar burlar os sistemas de segurança da plataforma; e
-            indenizar a RPGDex por eventuais danos causados pelo uso indevido da conta.
-          </li>
-          <li>
-            <strong>Da RPGDex:</strong> Empenhar esforços razoáveis para manter a plataforma
-            disponível e segura, sem contudo se responsabilizar por indisponividades temporárias
-            decorrentes de falhas técnicas gerais, interrupções de serviços de telecomunicação ou
-            eventos de força maior.
+            <strong>Cadastro e Segurança:</strong> Você se compromete a fornecer informações
+            verdadeiras e a manter a segurança do seu nome de usuário único.
           </li>
         </ul>
 
         <h4>Canais de Atendimento e Dúvidas</h4>
         <p>
-          Em caso de dúvidas sobre estes Termos de Uso ou solicitações relacionadas aos seus dados
-          pessoais, entre em contato conosco através do e-mail oficial:
+          Em caso de dúvidas, entre em contato através do e-mail oficial:
           <code>rpgdexoficial@gmail.com</code>.
         </p>
       </div>

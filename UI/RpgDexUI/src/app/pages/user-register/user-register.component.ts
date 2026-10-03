@@ -55,7 +55,6 @@ export class UserRegisterComponent implements OnInit {
     this.googleAuth.renderButton('google-btn');
   }
 
-  // Métodos para alternar a visibilidade da senha
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -102,6 +101,44 @@ export class UserRegisterComponent implements OnInit {
     return '';
   }
 
+  onEmailInput(value: string): void {
+    if (value) {
+      this.registerForm.email = value.replace(/\s+/g, '');
+    }
+  }
+
+  private isUserNameValid(userName: string): { valid: boolean; error?: string } {
+    if (!userName) return { valid: false, error: 'O nome de usuário é obrigatório.' };
+
+    const value = userName.toLowerCase().trim();
+    const reservedWords = ['system', 'admin', 'rpgdex'];
+
+    if (value.length < 2 || value.length > 32) {
+      return { valid: false, error: 'O nome de usuário deve ter entre 2 e 32 caracteres.' };
+    }
+
+    if (!/^[a-z0-9_.]{2,32}$/.test(value)) {
+      return {
+        valid: false,
+        error:
+          'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
+      };
+    }
+
+    if (value.includes('..')) {
+      return { valid: false, error: 'O nome de usuário não pode conter pontos consecutivos (..).' };
+    }
+
+    if (reservedWords.some((word) => value.includes(word))) {
+      return {
+        valid: false,
+        error: 'Este nome de usuário contém palavras reservadas e não pode ser usado.',
+      };
+    }
+
+    return { valid: true };
+  }
+
   openTermsModal(event?: Event): void {
     if (event) event.preventDefault();
     this.isTermsModalOpen = true;
@@ -142,18 +179,23 @@ export class UserRegisterComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (
-      !this.registerForm.userName ||
-      !this.registerForm.email ||
-      !this.registerForm.password ||
-      !this.confirmPassword
-    ) {
-      this.errorMessage = 'Preencha todos os campos.';
+    const rawUserName = this.registerForm.userName?.toLowerCase().trim() || '';
+    this.registerForm.userName = rawUserName;
+
+    // Validação do userName estilo Discord
+    const userValidation = this.isUserNameValid(rawUserName);
+    if (!userValidation.valid) {
+      this.errorMessage = userValidation.error!;
       return;
     }
 
-    if (this.registerForm.userName.includes(' ')) {
-      this.errorMessage = 'O nome de usuario não deve conter espaços.';
+    // Preenche o displayName inicial com o mesmo valor do userName
+    if ('displayName' in this.registerForm) {
+      (this.registerForm as any).displayName = rawUserName;
+    }
+
+    if (!this.registerForm.email || !this.registerForm.password || !this.confirmPassword) {
+      this.errorMessage = 'Preencha todos os campos.';
       return;
     }
 
@@ -192,6 +234,8 @@ export class UserRegisterComponent implements OnInit {
         if (errors) {
           const messages = Object.values(errors).flat() as string[];
           this.errorMessage = messages[0] ?? 'Dados inválidos. Verifique as informações.';
+        } else if (err.status === 409 || err.error?.code === 'DuplicateUserName') {
+          this.errorMessage = 'Este nome de usuário já está em uso.';
         } else if (err.status === 409 || err.error?.code === 'DuplicateEmail') {
           this.errorMessage = 'Este e-mail já está cadastrado.';
         } else {

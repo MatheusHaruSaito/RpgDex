@@ -514,6 +514,26 @@
   transform: translateY(-2px);
 }
 
+.field-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-info-hint {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  color: var(--rpg-text-faint);
+  padding-left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-info-hint i {
+  color: var(--rpg-purple);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
