@@ -46,6 +46,7 @@ namespace RpgDex.Application.Common
         public static readonly Error UpdateFailed = new("CAMPAIGN_UPDATE_FAILED", "Failed to update campaign.");
         public static readonly Error ChatNotFound = new("CAMPAIGN_CHAT_NOT_FOUND", "Failed to retrieve campaign chat.");
         public static readonly Error SaveMessageFailed = new("CAMPAIGN_SAVE_MESSAGE_FAILED", "Failed to save new chat message.");
+        public static readonly Error IsNotActive = new("CAMPAIGN_IS_NOT_ACTIVE", "Campaign is not active.");
     }
 
     public static class CharacterError

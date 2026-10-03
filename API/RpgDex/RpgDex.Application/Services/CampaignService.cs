@@ -5,6 +5,7 @@ using RpgDex.Application.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Validators;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
@@ -14,7 +15,7 @@ namespace RpgDex.Application.Services
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository) : ICampaignService
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -113,7 +114,7 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<CampaignResponse>> GetById(string userId,Guid id)
         {
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
             var response = await campaignRepository.GetByIdAsync(id);
             if (response is null)
             {
@@ -123,8 +124,7 @@ namespace RpgDex.Application.Services
                 | response.GameMasterId.Equals(guidUserId);
             if (!isPlayerInCampaign)
             {
-                return Result<CampaignResponse>.Failure("User is not a participant in this campaign");
-
+                return Result<CampaignResponse>.Failure(CampaignError.PlayerNotFound);
             }
             return Result<CampaignResponse>.Success(response.Adapt<CampaignResponse>());
         }
@@ -206,9 +206,9 @@ namespace RpgDex.Application.Services
             //Campaign found
             if (!campaign.IsActive)
             {
-                return Result<string>.Failure("Campaign is not active");
+                return Result<string>.Failure(CampaignError.IsNotActive);
             }
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format.");
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
 
             var user = await userRepository.GetByIdAsync(guidUserId);
@@ -258,17 +258,11 @@ namespace RpgDex.Application.Services
             var isGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
             if (!isGameMaster && !campaignFound.IsActive)
             {
-                return Result<string>.Failure("Campaign is not active");
+                return Result<string>.Failure(CampaignError.IsNotActive);
             }
             //Campaign found
-            var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
-            if (characterFound is null)
-            {
-                return Result<string>.Failure("Character not found");
-            }
-            //Character found
-            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure("Character isn't from logged user");
 
+            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure(CharacterError.CharacterNotOwned);
 
             var (message, IsSuccess) = campaignFound.TryAddCharacter(request.CharacterId);
             if (!IsSuccess)
@@ -522,18 +516,17 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
+            var checkCampaignChatMessageValidator = campaignChatMessageValidator.Validate(request);
+            if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
             var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
-            if (campaign is null) return Result<string>.Failure("Campaign not found");
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid user ID format");
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
             var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
             if (!isGameMaster && !campaign.IsActive)
             {
-                return Result<string>.Failure("Campaign is not active");
+                return Result<string>.Failure(CampaignError.IsNotActive);
             }
-            var checkCampaignChatMessageValidator= campaignChatMessageValidator.Validate(request);
-            if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
-
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+          
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
@@ -561,24 +554,24 @@ namespace RpgDex.Application.Services
         {
             //needs more verification
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
-            if (campaign is null) return Result<ChatPagedResultDto>.Failure("Campaign not found");
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<ChatPagedResultDto>.Failure("Invalid User ID format");
+            if (campaign is null) return Result<ChatPagedResultDto>.Failure(CampaignError.NotFound);
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<ChatPagedResultDto>.Failure(Error.InvalidUserId);
             var isPlayerInCampaign = campaign.PlayerIds.Contains(guidUserId)
                 | campaign.GameMasterId.Equals(guidUserId);
             if(!isPlayerInCampaign)
             {
-                return Result<ChatPagedResultDto>.Failure("User is not a participant in this campaign");
+                return Result<ChatPagedResultDto>.Failure(CampaignError.NotAPlayer);
             }
             var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
             if (!isGameMaster && !campaign.IsActive){
-                return Result<ChatPagedResultDto>.Failure("Campaign is not active");
-                var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
-                if (newcampaignChat is null)
-                {
-                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure(CampaignError.ChatNotFound);
-                }
-                var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
-                return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
+                return Result<ChatPagedResultDto>.Failure(CampaignError.IsNotActive);
+                //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
+                //if (newcampaignChat is null)
+                //{
+                //    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure(CampaignError.ChatNotFound);
+                //}
+                //var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+                //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
 
             }
 
@@ -593,7 +586,7 @@ namespace RpgDex.Application.Services
                 //}
                 //var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
                 //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
-                return Result<ChatPagedResultDto>.Failure("Failed to load campaign chat");
+                return Result<ChatPagedResultDto>.Failure(CampaignError.ChatNotFound);
             }
             bool hasMore = messages.Count > pageSize;
             if(hasMore)

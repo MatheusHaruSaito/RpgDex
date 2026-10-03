@@ -28,6 +28,7 @@
     "CAMPAIGN_UPDATE_FAILED": "Failed to update campaign.",
     "CAMPAIGN_CHAT_NOT_FOUND": "Failed to retrieve campaign chat.",
     "CAMPAIGN_SAVE_MESSAGE_FAILED": "Failed to save new chat message.",
+    "CAMPAIGN_IS_NOT_ACTIVE": "Campaign is not active.",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -39,6 +40,6 @@
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
-    "VALIDATION_DISPLAYNAME": "Character name is required." 
+    "VALIDATION_DISPLAYNAME": "Character name is required."
   }
 }
