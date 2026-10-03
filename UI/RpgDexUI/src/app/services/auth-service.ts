@@ -61,7 +61,7 @@ export class AuthService {
               ...response.data,
             });
           }
-        })
+        }),
       );
   }
 
@@ -79,7 +79,7 @@ export class AuthService {
           this.GetLoggedUser().subscribe();
         }
         return response;
-      })
+      }),
     );
   }
 
@@ -101,7 +101,7 @@ export class AuthService {
       catchError((error) => {
         this.Logout();
         throw error;
-      })
+      }),
     );
   }
 
@@ -143,7 +143,7 @@ export class AuthService {
           this.GetLoggedUser().subscribe();
         }
         return response;
-      })
+      }),
     );
   }
 
@@ -173,7 +173,7 @@ export class AuthService {
   public TwoFAActivation(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ActiveTwoFactorAuth/`, request);
   }
-  public get Token(){
+  public get Token() {
     return this.cookieService.get(this.JWT_Token);
   }
 }

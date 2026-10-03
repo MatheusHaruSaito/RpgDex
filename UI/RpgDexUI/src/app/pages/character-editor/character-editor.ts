@@ -7,10 +7,12 @@ import { finalize, firstValueFrom } from 'rxjs';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
 import { HttpClient } from '@angular/common/http';
+import { CharacterPropertyValueEnum } from '../../../models/CharacterPropertyValueEnum';
 
 export interface AttrEntry {
   key: string;
   value: string;
+  type?: CharacterPropertyValueEnum;
 }
 export interface AttrGroup {
   title: string;
@@ -34,11 +36,10 @@ export class CharacterEditor implements OnInit {
   character: Character | null = null;
   editForm = { name: '', description: '' };
   groups: AttrGroup[] = [];
-
   showCropperModal = false;
   imageChangedEvent: Event | null = null;
   croppedBlob: Blob | null = null;
-
+  PropertyValueEnum = CharacterPropertyValueEnum;
   private savedState: { editForm: { name: string; description: string }; groups: AttrGroup[] } = {
     editForm: { name: '', description: '' },
     groups: [],
@@ -85,6 +86,7 @@ export class CharacterEditor implements OnInit {
         this.captureSavedState();
         this.characterService.PatchLastAccess(id).subscribe();
         this.cdr.detectChanges();
+        console.log(this.character);
       },
       error: () => this.router.navigate(['/personagens']),
     });
@@ -94,6 +96,15 @@ export class CharacterEditor implements OnInit {
     const current = JSON.stringify({ editForm: this.editForm, groups: this.groups });
     const saved = JSON.stringify(this.savedState);
     return current !== saved || !!this.selectedIconFile;
+  }
+  getPropertyCssClass(type: CharacterPropertyValueEnum): string {
+    switch (type) {
+      case CharacterPropertyValueEnum.BooleanFlgs:
+        return 'ce-prop-boolean-flags';
+      case CharacterPropertyValueEnum.ValueKey:
+      default:
+        return 'ce-prop-text-ValueKey';
+    }
   }
 
   toggleEditMode(): void {
@@ -129,44 +140,86 @@ export class CharacterEditor implements OnInit {
 
   private extractEntries(val: any): AttrEntry[] {
     const out: AttrEntry[] = [];
-    this.walkNode(val, '', out);
+    const inheritType = val.type;
+    this.walkNode(val, '', out, inheritType);
     return out;
   }
 
-  private walkNode(node: any, parentKey: string, out: AttrEntry[]): void {
+  private walkNode(
+    node: any,
+    parentKey: string,
+    out: AttrEntry[],
+    inheritedType?: CharacterPropertyValueEnum,
+  ): void {
     if (node === null || node === undefined) return;
+
+    // Atualiza o tipo herdado se o nó atual possuir um próprio
+    const currentType = node?.type ?? node?.Type ?? inheritedType;
+
     if (typeof node !== 'object') {
-      if (parentKey) out.push({ key: parentKey, value: String(node) });
+      if (parentKey) {
+        out.push({
+          key: parentKey,
+          value: String(node),
+          type: currentType,
+        });
+      }
       return;
     }
+
     if (Array.isArray(node)) {
-      for (const i of node) this.walkNode(i, parentKey, out);
+      for (const i of node) this.walkNode(i, parentKey, out, currentType);
       return;
     }
+
     if ('Name' in node || 'Value' in node) {
       out.push({
         key: String((node.Name ?? node.name ?? parentKey) || 'Atributo'),
         value: String(node.Value ?? node.value ?? ''),
+        type: currentType,
       });
       return;
     }
+
     if ('data' in node) {
       const childKey = node.title ? String(node.title) : parentKey;
       const data = node.data;
+
       if (Array.isArray(data) && data.length > 0) {
-        for (const c of data) this.walkNode(c, childKey, out);
+        for (const c of data) this.walkNode(c, childKey, out, currentType);
         return;
       }
-      if (data && typeof data === 'object' && 'value' in data) {
-        out.push({ key: childKey, value: String(data['value'] ?? '') });
+
+      if (data && typeof data === 'object') {
+        if ('value' in data) {
+          out.push({
+            key: childKey,
+            value: String(data['value'] ?? ''),
+            type: data.type ?? data.Type ?? currentType,
+          });
+          return;
+        }
+
+        for (const [k, v] of Object.entries(data)) {
+          this.walkNode(v, k, out, currentType);
+        }
         return;
       }
-      if (childKey) out.push({ key: childKey, value: '' });
+
+      if (childKey) {
+        out.push({
+          key: childKey,
+          value: String(data ?? ''),
+          type: currentType,
+        });
+      }
       return;
     }
-    for (const [k, v] of Object.entries(node)) this.walkNode(v, k, out);
-  }
 
+    for (const [k, v] of Object.entries(node)) {
+      this.walkNode(v, k, out, currentType);
+    }
+  }
   // ── Grupos ─────────────────────────────────────────────
   addGroup(): void {
     this.groups.push({ title: '', entries: [] });
@@ -175,7 +228,9 @@ export class CharacterEditor implements OnInit {
     this.groups.splice(i, 1);
   }
   addEntry(g: AttrGroup): void {
-    g.entries.push({ key: '', value: '' });
+    //Change this later, this is just for testing
+    const value = CharacterPropertyValueEnum.BooleanFlgs;
+    g.entries.push({ key: '', value: '', type: value });
   }
   removeEntry(g: AttrGroup, i: number): void {
     g.entries.splice(i, 1);
@@ -236,7 +291,7 @@ export class CharacterEditor implements OnInit {
       const key = group.title.trim() || 'Grupo';
       propertiesObj[key] = group.entries
         .filter((e) => e.key.trim())
-        .map((e) => ({ Name: e.key.trim(), Value: e.value }));
+        .map((e) => ({ Name: e.key.trim(), Value: e.value, Type: e.type }));
     }
 
     const form = new FormData();

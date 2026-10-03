@@ -1,3 +1,4 @@
 export enum CharacterPropertyValueEnum {
-  Default,
+  ValueKey,
+  BooleanFlgs,
 }

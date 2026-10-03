@@ -171,29 +171,55 @@
             </p>
 
             @for (entry of group.entries; track $index) {
-              <div *ngIf="!isEditing && entry.key.trim()" class="ce-attr-chip">
+              <div
+                *ngIf="!isEditing && entry.key.trim()"
+                class="ce-attr-chip {{ getPropertyCssClass(entry.type!) }}"
+              >
                 <span class="ce-attr-chip-key">{{ entry.key }}</span>
                 <span class="ce-attr-chip-value">{{ entry.value }}</span>
               </div>
-
               <div *ngIf="isEditing" class="ce-attr-row">
-                <input
-                  class="ce-attr-key"
-                  type="text"
-                  placeholder="Atributo"
-                  [(ngModel)]="entry.key"
-                  [name]="'key-' + $index + '-g' + $index"
-                  maxlength="40"
-                />
-                <span class="ce-attr-sep">:</span>
-                <input
-                  class="ce-attr-val"
-                  type="text"
-                  placeholder="Valor"
-                  [(ngModel)]="entry.value"
-                  [name]="'val-' + $index + '-g' + $index"
-                  maxlength="100"
-                />
+                @switch (entry.type) {
+                  @case (PropertyValueEnum.ValueKey) {
+                    <input
+                      class="ce-attr-key"
+                      type="text"
+                      placeholder="Atributo"
+                      [(ngModel)]="entry.key"
+                      [name]="'key-' + $index + '-g' + $index"
+                      maxlength="40"
+                    />
+                    <span class="ce-attr-sep">:</span>
+                    <input
+                      class="ce-attr-val"
+                      type="text"
+                      placeholder="Valor"
+                      [(ngModel)]="entry.value"
+                      [name]="'val-' + $index + '-g' + $index"
+                      maxlength="100"
+                    />
+                  }
+                  @case (PropertyValueEnum.BooleanFlgs) {
+                    <input
+                      class="ce-attr-key"
+                      type="text"
+                      placeholder="Atributo"
+                      [(ngModel)]="entry.key"
+                      [name]="'key-' + $index + '-g' + $index"
+                      maxlength="40"
+                    />
+                    <span class="ce-attr-sep">:</span>
+                    <input
+                      class="ce-attr-val"
+                      type="checkbox"
+                      placeholder="Valor"
+                      [(ngModel)]="entry.value"
+                      [name]="'val-' + $index + '-g' + $index"
+                      maxlength="100"
+                    />
+                  }
+                }
+
                 <button
                   class="btn-icon btn-remove-attr"
                   title="Remover"
