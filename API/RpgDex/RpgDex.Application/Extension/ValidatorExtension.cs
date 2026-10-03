@@ -3,6 +3,7 @@ using RpgDex.Application.Common;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace RpgDex.Application.Extension
 {
@@ -11,8 +12,10 @@ namespace RpgDex.Application.Extension
         //Refactor this later
         public static Result<T> ReturnErrors<T>(this ValidationResult result)
         {
-            var errrorMessage = string.Join(", ", result.Errors.Select(e => e.ErrorMessage));
-            return Result<T>.Failure(Error.Validation(errrorMessage));
+            var errors = result.Errors
+                .Select(e => new Common.Error($"VALIDATION_{e.PropertyName.ToUpper()}", e.ErrorMessage))
+                .ToList();
+            return Result<T>.Failure(errors);
         }
     }
 }
