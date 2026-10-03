@@ -195,7 +195,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure("Campaign not found");
             }
             //Campaign found
-
+            if (!campaign.IsActive)
+            {
+                return Result<string>.Failure("Campaign is not active");
+            }
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure("Invalid User ID format.");
 
 
