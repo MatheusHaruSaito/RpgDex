@@ -29,6 +29,12 @@
     "CAMPAIGN_CHAT_NOT_FOUND": "Failed to retrieve campaign chat.",
     "CAMPAIGN_SAVE_MESSAGE_FAILED": "Failed to save new chat message.",
     "CAMPAIGN_IS_NOT_ACTIVE": "Campaign is not active.",
+    "CAMPAIGN_MAX_PLAYERS_REACHED": "The maximum player capacity for this campaign has been reached.",
+    "CAMPAIGN_CHARACTER_ALREADY_IN": "This character is already in the campaign.",
+    "CAMPAIGN_CHARACTER_AWAITING_APPROVAL": "The character is awaiting approval from the Game Master.",
+    "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "The character was not found in the join requests list.",
+    "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
+    "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",

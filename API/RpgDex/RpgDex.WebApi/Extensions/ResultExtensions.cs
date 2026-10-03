@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using RpgDex.Application.Common;
+using RpgDex.Domain.Common;
 
 namespace RpgDex.WebApi.Extensions
 {

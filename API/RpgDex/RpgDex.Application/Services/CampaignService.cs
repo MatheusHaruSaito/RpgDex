@@ -1,14 +1,15 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using RpgDex.Application.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Validators;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
+using static RpgDex.Domain.Entities.Campaign;
 
 namespace RpgDex.Application.Services
 {
@@ -194,8 +195,6 @@ namespace RpgDex.Application.Services
             return Result<bool>.Success(result);
         }
 
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> AddPlayer(string userId, JoinCampaignRequest request)
         {
             var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
@@ -222,10 +221,10 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.InvalidPassword);
             }
-            var (message, IsSuccess) = campaign.TryAddPlayer(guidUserId);
-            if (!IsSuccess)
+            var tryAddPlayerResult = campaign.TryAddPlayer(guidUserId);
+            if (!tryAddPlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryAddPlayerResult.Error!);
             }
 
             var result = await campaignRepository.UpdateAsync(campaign);
@@ -234,10 +233,9 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
-            return Result<string>.Success("Player added to campaign successfully");
+            return Result<string>.Success(tryAddPlayerResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> AddCharacter(string userId, AddCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -264,10 +262,10 @@ namespace RpgDex.Application.Services
 
             if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure(CharacterError.CharacterNotOwned);
 
-            var (message, IsSuccess) = campaignFound.TryAddCharacter(request.CharacterId);
-            if (!IsSuccess)
+            var tryAddCharacterResult = campaignFound.TryAddCharacter(request.CharacterId);
+            if (!tryAddCharacterResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryAddCharacterResult.Error!);
             }
 
 
@@ -276,10 +274,9 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(message);
+            return Result<string>.Success(tryAddCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> RemoveCharacter(string userId, RemoveCharacterFromCapaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -304,13 +301,11 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
-            (string message, bool isSuccess) characterRemoved;
+            var tryRemoveCharacterResult = campaignFound.TryRemoveCharacter(request.CharacterId);
 
-            characterRemoved = campaignFound.TryRemoveCharacter(request.CharacterId);
-
-            if (!characterRemoved.isSuccess)
+            if (!tryRemoveCharacterResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemoveCharacterResult.Error!);
             }
 
             //Character accepted into campaign
@@ -320,10 +315,8 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(characterRemoved.message);
+            return Result<string>.Success(tryRemoveCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> AcceptCharacter(string userId, AcceptCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -348,20 +341,20 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
-            (string message, bool isSuccess) chracterAdded;
+            CampaignTryActionResult tryAcceptCharacterResult;
 
             if (request.IsAccepted)
             {
-                chracterAdded = campaignFound.TryAcceptCharacter(request.CharacterId);
+                tryAcceptCharacterResult = campaignFound.TryAcceptCharacter(request.CharacterId);
             }
             else
             {
-                chracterAdded = campaignFound.TryRejectCharacter(request.CharacterId);
+                tryAcceptCharacterResult = campaignFound.TryRejectCharacter(request.CharacterId);
             }
 
-            if (!chracterAdded.isSuccess)
+            if (!tryAcceptCharacterResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryAcceptCharacterResult.Error!);
             }
 
             //Character accepted into campaign
@@ -371,10 +364,8 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(chracterAdded.message);
+            return Result<string>.Success(tryAcceptCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> RemovePlayer(string userId, RemovePlayerFromCampaignRequest request)
         {
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
@@ -395,10 +386,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.PlayerNotFound);
             }
             //Player to be kicked found
-            var (message, IsSuccess) = campaignFound.TryRemovePlayer(request.PlayerId);
-            if (!IsSuccess)
+            var tryRemovePlayerResult = campaignFound.TryRemovePlayer(request.PlayerId);
+            if (!tryRemovePlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemovePlayerResult.Error!);
             }
             //Try to remove user characters from campaign
             var userFound = await userRepository.GetByIdAsync(request.PlayerId);
@@ -427,10 +418,9 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
-            return Result<string>.Success(message);
+            return Result<string>.Success(tryRemovePlayerResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> LeaveCampaign(string userId, LeaveCampaignRequest request)
         {
             if (!Guid.TryParse(userId, out Guid userIdGuid)) return Result<string>.Failure(Error.InvalidUserId);
@@ -451,10 +441,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotAPlayer);
             }
 
-            var (message, isSuccess) = campaignFound.TryRemovePlayer(userIdGuid);
-            if (!isSuccess)
+            var tryRemovePlayerResult = campaignFound.TryRemovePlayer(userIdGuid);
+            if (!tryRemovePlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemovePlayerResult.Error!);
             }
 
             //Try to remove user characters from campaign
