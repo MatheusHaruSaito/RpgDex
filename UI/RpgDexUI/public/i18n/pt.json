@@ -39,6 +39,13 @@
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
 
+    "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
+    "USER_DOCUMENT_NOT_OWNED": "Não tem permissão para aceder ou modificar este documento.",
+    "USER_DOCUMENT_FILE_REQUIRED": "É necessário selecionar um ficheiro válido.",
+    "USER_DOCUMENT_CREATE_FAILED": "Falha ao criar o documento do utilizador.",
+    "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
+    "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
+
     "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
   }
 }

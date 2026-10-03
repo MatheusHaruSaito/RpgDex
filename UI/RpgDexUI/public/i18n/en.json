@@ -39,6 +39,13 @@
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
-    "VALIDATION_DISPLAYNAME": "Character name is required." 
+    "USER_DOCUMENT_NOT_FOUND": "User document not found.",
+    "USER_DOCUMENT_NOT_OWNED": "You are not the owner of this document.",
+    "USER_DOCUMENT_FILE_REQUIRED": "File is required and cannot be empty.",
+    "USER_DOCUMENT_CREATE_FAILED": "Failed to create user document.",
+    "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
+    "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
+
+    "VALIDATION_DISPLAYNAME": "Character name is required."
   }
 }
