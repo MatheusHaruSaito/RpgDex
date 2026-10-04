@@ -19,18 +19,26 @@ namespace RpgDex.Infrastructure.Repositories
         }
         public async Task<IEnumerable<UserDocument>> GetAllAsync(Guid userId, int page = 1, int pageSize = 5)
         {
-            return await _userDocuments.Find(x => x.UserId == userId)
+            var filter = Builders<UserDocument>.Filter.Eq(x => x.UserId, userId)
+                & Builders<UserDocument>.Filter.Eq(x => x.IsActive,true);
+
+
+
+            return await _userDocuments.Find(filter)
                 .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
 
         }
 
-        public async Task<UserDocument> GetByIdAsync(Guid id)
+        public async Task<UserDocument> GetByIdAsync(Guid id,Guid userId)
         {
-            return await _userDocuments.Find(x => x.Id == id).FirstOrDefaultAsync();
-        }
+            var filter = Builders<UserDocument>.Filter.Eq(x => x.Id, id)
+                      & Builders<UserDocument>.Filter.AnyEq("UsersWithAccess", userId)
+                      & Builders<UserDocument>.Filter.Eq(x => x.IsActive, true);
 
+            return await _userDocuments.Find(filter).FirstOrDefaultAsync();
+        }
         public async Task<UserDocument> InsertAsync(UserDocument userDocument)
         {
             await _userDocuments.InsertOneAsync(userDocument);

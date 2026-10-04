@@ -51,9 +51,11 @@ namespace RpgDex.Application.Services
             return Result<IEnumerable<UserDocumentResponse>>.Success(result.Adapt<IEnumerable<UserDocumentResponse>>());
         }
 
-        public async Task<Result<UserDocumentResponse>> GetById(Guid id)
+        public async Task<Result<UserDocumentResponse>> GetById(string userId, Guid id)
         {
-            var result = await userDocumentRepository.GetByIdAsync(id);
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
+
+            var result = await userDocumentRepository.GetByIdAsync(id, userGuidId);
             if(result is null) return Result<UserDocumentResponse>.Failure(UserDocumentError.NotFound);
             return Result<UserDocumentResponse>.Success(result.Adapt<UserDocumentResponse>());
         }
@@ -62,7 +64,7 @@ namespace RpgDex.Application.Services
         {
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<bool>.Failure(Error.InvalidUserId);
 
-            var document = await userDocumentRepository.GetByIdAsync(request.Id);
+            var document = await userDocumentRepository.GetByIdAsync(request.Id,userGuidId);
             if(document is null) return Result<bool>.Failure(UserDocumentError.NotFound);
 
             if(document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);
@@ -77,7 +79,7 @@ namespace RpgDex.Application.Services
             if (!checkUpdateUserDocumentValidator.IsValid) return checkUpdateUserDocumentValidator.ReturnErrors<UserDocumentResponse>();
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
 
-            var userDocument = await userDocumentRepository.GetByIdAsync(request.Id);
+            var userDocument = await userDocumentRepository.GetByIdAsync(request.Id,userGuidId);
             if (userDocument is null) return Result<UserDocumentResponse>.Failure(UserDocumentError.NotFound);
 
             if (userDocument.UserId != userGuidId) return Result<UserDocumentResponse>.Failure(UserDocumentError.NotOwned);
@@ -109,7 +111,7 @@ namespace RpgDex.Application.Services
         public async Task<Result<bool>> UpdateUserAccess(string userId, GiveUserAccessToDocumentRequest request, bool giveAccess)
         {
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<bool>.Failure(Error.InvalidUserId);
-            var document = await userDocumentRepository.GetByIdAsync(request.documentId);
+            var document = await userDocumentRepository.GetByIdAsync(request.documentId,userGuidId);
             if (document is null) return Result<bool>.Failure(UserDocumentError.NotFound);
 
             if (document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);

@@ -28,7 +28,7 @@ namespace RpgDex.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await userDocumentService.GetById(id);
+            var result = await userDocumentService.GetById(currentUserId,id);
             return result.ToIActionResult();
         }
         [HttpPut]
