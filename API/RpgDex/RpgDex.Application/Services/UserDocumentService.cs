@@ -68,7 +68,6 @@ namespace RpgDex.Application.Services
 
             var document = await userDocumentRepository.GetByIdAsync(request.Id,userGuidId);
             if(document is null) return Result<bool>.Failure(UserDocumentError.NotFound);
-            //Temporary, refactor when merge to main.
             if(!document.IsActive) return Result<bool>.Failure(UserDocumentError.NotFound);
             if (document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);
 
