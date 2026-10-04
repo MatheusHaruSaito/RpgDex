@@ -5,11 +5,12 @@ import { LoginUser } from '../../../models/loginUser';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { GoogleAuthService } from '../../services/google-auth-service';
+import { TwoFactorModalComponent } from '../../modals/two-factor-modal/two-factor-modal';
 
 @Component({
   selector: 'app-user-login',
   standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule],
+  imports: [FormsModule, RouterModule, CommonModule, TwoFactorModalComponent],
   templateUrl: './user-login.component.html',
   styleUrl: './user-login.component.css',
 })
@@ -28,6 +29,9 @@ export class UserLoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+
+  // Estado da modal 2FA
+  showTwoFactorModal = false;
 
   get emailInvalid(): boolean {
     return this.authUserForm.email.length > 0 && !this.emailRegex.test(this.authUserForm.email);
@@ -86,17 +90,33 @@ export class UserLoginComponent implements OnInit {
     this.authService.Login(this.authUserForm).subscribe({
       next: (res) => {
         this.isLoading = false;
-        if(!res.data?.twoFactorEnabled) this.router.navigate(['/home']);
-        //Logica de 2 fatores aqui
-        //Talvez abrir modal para exibir codigo?
+
+        // Se o utilizador tem 2FA ativado
+        if (res.data?.twoFactorEnabled) {
+          // Dispara o e-mail com o código de 2FA e abre a modal
+          this.authService.SendTwoFactorAuthEmail().subscribe({
+            next: () => {
+              this.showTwoFactorModal = true;
+            },
+            error: () => {
+              // Mesmo se falhar o envio automático, abrimos a modal para permitir o reenvio
+              this.showTwoFactorModal = true;
+            },
+          });
+        } else {
+          this.router.navigate(['/home']);
+        }
       },
       error: (err) => {
-        console.log('err  ', err);
-        console.log('deu erro');
         this.isLoading = false;
-        this.errorMessage = 'Falha ao entrar. Verifique seu email e senha.';
+        this.errorMessage = err?.error?.message || 'Falha ao entrar. Verifique seu email e senha.';
       },
     });
+  }
+
+  onTwoFactorAuthenticated(): void {
+    this.showTwoFactorModal = false;
+    this.router.navigate(['/home']);
   }
 
   onDiscordLogin(): void {

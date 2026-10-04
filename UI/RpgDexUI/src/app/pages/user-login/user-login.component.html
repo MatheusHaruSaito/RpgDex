@@ -1,5 +1,5 @@
 <div class="login-wrapper">
-  <div class="login-card">
+  <div class="login-card fade-in-content">
     <div class="login-side">
       <div class="login-logo" routerLink="/home">RPGDex</div>
       <div class="login-side__content">
@@ -88,3 +88,11 @@
     </div>
   </div>
 </div>
+
+<!-- Modal 2FA -->
+<app-two-factor-modal
+  [visible]="showTwoFactorModal"
+  [userEmail]="authUserForm.email"
+  (close)="showTwoFactorModal = false"
+  (authenticated)="onTwoFactorAuthenticated()"
+></app-two-factor-modal>
