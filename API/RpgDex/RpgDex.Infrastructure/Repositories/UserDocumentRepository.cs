@@ -33,10 +33,9 @@ namespace RpgDex.Infrastructure.Repositories
 
         public async Task<UserDocument> GetByIdAsync(Guid id,Guid userId)
         {
-            var filter = Builders<UserDocument>.Filter.Eq(x => x.Id, id)
-                      & Builders<UserDocument>.Filter.AnyEq("UsersWithAccess", userId)
-                      & Builders<UserDocument>.Filter.Eq(x => x.IsActive, true);
-
+            var f = Builders<UserDocument>.Filter;
+            var filter = f.Eq(x => x.Id, id)
+                & (f.AnyEq("UsersWithAccess", userId) | f.Eq(x => x.UserId, userId));
             return await _userDocuments.Find(filter).FirstOrDefaultAsync();
         }
         public async Task<UserDocument> InsertAsync(UserDocument userDocument)

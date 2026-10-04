@@ -63,11 +63,14 @@ namespace RpgDex.Application.Services
         public async Task<Result<bool>> SetActiveState(string userId, UserDocumentSetActiveStateRequest request, bool isActive)
         {
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<bool>.Failure(Error.InvalidUserId);
+            Console.WriteLine(request.Id);
+            Console.WriteLine(userGuidId);
 
             var document = await userDocumentRepository.GetByIdAsync(request.Id,userGuidId);
             if(document is null) return Result<bool>.Failure(UserDocumentError.NotFound);
-
-            if(document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);
+            //Temporary, refactor when merge to main
+            if(!document.IsActive) return Result<bool>.Failure(UserDocumentError.CreateFailed);
+            if (document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);
 
             var result = await userDocumentRepository.SetActiveStateAsync(request.Id, isActive);
             return Result<bool>.Success(result);
