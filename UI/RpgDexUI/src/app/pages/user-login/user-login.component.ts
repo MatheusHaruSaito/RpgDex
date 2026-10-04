@@ -94,15 +94,16 @@ export class UserLoginComponent implements OnInit {
         // Se o utilizador tem 2FA ativado
         if (res.data?.twoFactorEnabled) {
           // Dispara o e-mail com o código de 2FA e abre a modal
-          this.authService.SendTwoFactorAuthEmail().subscribe({
-            next: () => {
-              this.showTwoFactorModal = true;
-            },
-            error: () => {
-              // Mesmo se falhar o envio automático, abrimos a modal para permitir o reenvio
-              this.showTwoFactorModal = true;
-            },
-          });
+          // this.authService.SendTwoFactorAuthEmail().subscribe({
+          //   next: () => {
+          this.showTwoFactorModal = true;
+          console.log('É pro modal estar aqui');
+          //   },
+          //   error: () => {
+          //     // Mesmo se falhar o envio automático, abrimos a modal para permitir o reenvio
+          //     this.showTwoFactorModal = true;
+          //   },
+          // });
         } else {
           this.router.navigate(['/home']);
         }
