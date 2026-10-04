@@ -60,5 +60,14 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _userDocuments.UpdateOneAsync(Filter, Update);
             return result.ModifiedCount > 0;
         }
+        public async Task<bool> UpdateAccessList(UserDocument newUserDocument)
+        {
+            var Filter = Builders<UserDocument>.Filter.Eq(x => x.Id, newUserDocument.Id);
+            var Update = Builders<UserDocument>.Update
+                .Set("UsersWithAccess", newUserDocument.UsersWithAccess);
+
+            var result = await _userDocuments.UpdateOneAsync(Filter, Update);
+            return result.ModifiedCount > 0;
+        }
     }
 }

@@ -43,5 +43,17 @@ namespace RpgDex.WebApi.Controllers
             var result = await userDocumentService.SetActiveState(currentUserId, request,false);
             return result.ToIActionResult();
         }
+        [HttpPatch("GiveAccess")]
+        public async Task<IActionResult> GiveAccess([FromForm] GiveUserAccessToDocumentRequest request)
+        {
+            var result = await userDocumentService.UpdateUserAccess(currentUserId, request, true);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("RemoveAccess")]
+        public async Task<IActionResult> RemoveAccess([FromForm] GiveUserAccessToDocumentRequest request)
+        {
+            var result = await userDocumentService.UpdateUserAccess(currentUserId, request, false);
+            return result.ToIActionResult();
+        }
     }
 }

@@ -12,5 +12,7 @@ namespace RpgDex.Domain.Interfaces
         Task<UserDocument> GetByIdAsync(Guid id);
         Task<bool> UpdateAsync(UserDocument newUserDocument);
         Task<bool> SetActiveStateAsync(Guid Id, bool ActiveState);
+        Task<bool> UpdateAccessList(UserDocument newUserDocument);
+
     }
 }

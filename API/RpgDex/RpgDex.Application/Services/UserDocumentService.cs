@@ -15,7 +15,7 @@ namespace RpgDex.Application.Services
 {
     public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService,
         IValidator<CreateUserDocumentRequest> createUserDocumentValidator,
-        IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator ): IUserDocumentService
+        IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator) : IUserDocumentService
     {
         public async Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocumentRequest request)
         {
@@ -105,6 +105,38 @@ namespace RpgDex.Application.Services
             var result = await userDocumentRepository.UpdateAsync(userDocument);
             return Result<UserDocumentResponse>.Success(result.Adapt<UserDocumentResponse>());
         }
-        
+
+        public async Task<Result<bool>> UpdateUserAccess(string userId, GiveUserAccessToDocumentRequest request, bool giveAccess)
+        {
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<bool>.Failure(Error.InvalidUserId);
+            var document = await userDocumentRepository.GetByIdAsync(request.documentId);
+            if (document is null) return Result<bool>.Failure(UserDocumentError.NotFound);
+
+            if (document.UserId != userGuidId) return Result<bool>.Failure(UserDocumentError.NotOwned);
+
+            bool isSuccess;
+            //GiveAccess verifies if i'm removing or adding an access
+            //Refactor this later when merge with main
+            if (giveAccess)
+            {
+                isSuccess =document.GiveAccess(request.userId);
+            }
+            else
+            {
+                isSuccess = document.RemoveAccess(request.userId);
+            }
+            if (!isSuccess)
+            {
+                //Temporary Return implement this correctly after merging with main
+                return Result<bool>.Failure(UserDocumentError.UpdateFailed);
+            }
+            var result = await userDocumentRepository.UpdateAccessList(document);
+            if (!result)
+            {
+                return Result<bool>.Failure(UserDocumentError.UpdateFailed);
+
+            }
+            return Result<bool>.Success(result);
+        }
     }
 }
