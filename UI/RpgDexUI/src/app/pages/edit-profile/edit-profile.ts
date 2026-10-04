@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth-service';
 import { UserService } from '../../services/user-service';
 import { UserResponse } from '../../../models/userResponse';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
 
 interface EditProfileForm {
   displayName: string;
@@ -14,7 +15,7 @@ interface EditProfileForm {
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ImageCropperComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ImageCropperComponent, SkeletonComponent],
   templateUrl: './edit-profile.html',
   styleUrl: './edit-profile.css',
 })
@@ -32,11 +33,12 @@ export class EditProfileComponent implements OnInit {
 
   avatarPreviewUrl: string = '';
   selectedFile: File | null = null;
-  isLoading = false;
+  
+  isInitialLoading = true; // Estado de carregamento dos dados iniciais do utilizador
+  isLoading = false;        // Estado de envio/guardar formulário
   errorMessage = '';
   successMessage = '';
 
-  // Controle do Cropper
   imageChangedEvent: Event | null = null;
   croppedImageBase64: string = '';
   showCropperModal = false;
@@ -47,18 +49,44 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
+    this.loadUserProfile();
+  }
+
+  private loadUserProfile(): void {
+    this.isInitialLoading = true;
     this.authService.GetLoggedUser().subscribe({
       next: (response) => {
         this.currentUser = response.data ?? null;
         this.editForm.displayName = this.currentUser?.displayName ?? '';
         this.avatarPreviewUrl = this.currentUser?.iconPath ?? '';
+        this.isInitialLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Não foi possível carregar os dados do perfil.';
+        this.isInitialLoading = false;
         this.cdr.detectChanges();
       },
     });
+  }
+
+  private isDisplayNameValid(displayName: string): { valid: boolean; error?: string } {
+    const trimmed = displayName.trim();
+    const reservedWords = ['system', 'admin', 'rpgdex'];
+
+    if (!trimmed) {
+      return { valid: false, error: 'O nome de exibição não pode ficar vazio.' };
+    }
+
+    if (trimmed.length < 1 || trimmed.length > 32) {
+      return { valid: false, error: 'O nome de exibição deve ter entre 1 e 32 caracteres.' };
+    }
+
+    if (reservedWords.some((word) => trimmed.toLowerCase().includes(word))) {
+      return { valid: false, error: 'O nome de exibição contém palavras reservadas.' };
+    }
+
+    return { valid: true };
   }
 
   onFileSelected(event: Event): void {
@@ -98,20 +126,24 @@ export class EditProfileComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.editForm.displayName.trim()) {
-      this.errorMessage = 'O nome de usuário não pode ficar vazio.';
+    const trimmedDisplayName = this.editForm.displayName.trim();
+
+    // Validação do displayName
+    const validation = this.isDisplayNameValid(trimmedDisplayName);
+    if (!validation.valid) {
+      this.errorMessage = validation.error!;
       return;
     }
 
     const formData = new FormData();
-    formData.append('displayName', this.editForm.displayName.trim());
+    formData.append('displayName', trimmedDisplayName);
     if (this.selectedFile) {
       formData.append('icon', this.selectedFile, this.selectedFile.name);
     }
 
     this.isLoading = true;
     this.userService.Update(formData).subscribe({
-      next: (r) => {
+      next: () => {
         this.isLoading = false;
         this.successMessage = 'Perfil atualizado com sucesso!';
         this.selectedFile = null;

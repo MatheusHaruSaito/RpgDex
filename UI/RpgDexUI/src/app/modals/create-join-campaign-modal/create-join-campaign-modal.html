@@ -4,10 +4,10 @@
     <!-- Header com Selector de Aba -->
     <div class="modal-header">
       <div class="tab-selector">
-        <button class="tab-btn" [class.active]="activeTab === 'create'" (click)="activeTab = 'create'">
+        <button class="tab-btn" [class.active]="activeTab === 'create'" (click)="activeTab = 'create'; errorMessage = ''">
           <i class="fa fa-plus"></i> Criar Nova
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'join'" (click)="activeTab = 'join'">
+        <button class="tab-btn" [class.active]="activeTab === 'join'" (click)="activeTab = 'join'; errorMessage = ''">
           <i class="fa fa-right-to-bracket"></i> Entrar em uma
         </button>
       </div>
@@ -70,6 +70,12 @@
         </div>
       </div>
 
+      <!-- MENSAGEM DE ERRO DA API -->
+      <div class="feedback-message error-message" *ngIf="errorMessage">
+        <i class="fa fa-circle-exclamation"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+
     </div>
 
     <!-- ABA 2: ENTRAR EM UMA CAMPANHA -->
@@ -95,6 +101,12 @@
         </div>
       </div>
 
+      <!-- MENSAGEM DE ERRO DA API -->
+      <div class="feedback-message error-message" *ngIf="errorMessage">
+        <i class="fa fa-circle-exclamation"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+
     </div>
 
     <!-- RODAPÉ DINÂMICO -->
@@ -116,32 +128,30 @@
 </div>
 
 <!-- SUB-MODAL: CORTE DA IMAGEM -->
-@if (showCropperModal) {
-  <div class="modal-backdrop cropper-backdrop" (click)="$event.stopPropagation()">
-    <div class="modal-card cropper-card">
-      <div class="modal-header">
-        <h2 class="modal-title">Ajustar <span>Capa</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
-          <i class="fa fa-xmark"></i>
-        </button>
-      </div>
+<div class="modal-backdrop cropper-backdrop" *ngIf="showCropperModal" (click)="$event.stopPropagation()">
+  <div class="modal-card cropper-card">
+    <div class="modal-header">
+      <h2 class="modal-title">Ajustar <span>Capa</span></h2>
+      <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <i class="fa fa-xmark"></i>
+      </button>
+    </div>
 
-      <div class="modal-body cropper-body">
-        <image-cropper
-          [imageChangedEvent]="imageChangedEvent"
-          [maintainAspectRatio]="true"
-          [aspectRatio]="16 / 9"
-          format="png"
-          (imageCropped)="imageCropped($event)"
-        ></image-cropper>
-      </div>
+    <div class="modal-body cropper-body">
+      <image-cropper
+        [imageChangedEvent]="imageChangedEvent"
+        [maintainAspectRatio]="true"
+        [aspectRatio]="16 / 9"
+        format="png"
+        (imageCropped)="imageCropped($event)"
+      ></image-cropper>
+    </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="cancelCrop()">Cancelar</button>
-        <button type="button" class="btn btn-primary" (click)="confirmCrop()">
-          <i class="fa fa-check"></i> Confirmar Corte
-        </button>
-      </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="cancelCrop()">Cancelar</button>
+      <button type="button" class="btn btn-primary" (click)="confirmCrop()">
+        <i class="fa fa-check"></i> Confirmar Corte
+      </button>
     </div>
   </div>
-}
+</div>

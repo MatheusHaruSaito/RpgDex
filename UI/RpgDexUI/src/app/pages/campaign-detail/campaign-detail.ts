@@ -48,6 +48,7 @@ export class CampaignDetailComponent implements OnInit {
   currentUserId = '';
   campaign?: Campaign;
 
+  isLoading = true; 
   isGameMaster = false;
   isPlayerInCampaign = false;
 
@@ -78,6 +79,8 @@ export class CampaignDetailComponent implements OnInit {
     if (this.campaignId) {
       this.loadCampaign();
       this.loadMyCharacters();
+    } else {
+      this.isLoading = false;
     }
   }
 
@@ -115,6 +118,10 @@ export class CampaignDetailComponent implements OnInit {
   }
 
   loadCampaign(isSilentReload: boolean = false): void {
+    if (!isSilentReload) {
+      this.isLoading = true;
+    }
+
     this.campaignService.GetById(this.campaignId).subscribe({
       next: (res) => {
         this.campaign = res.data;
@@ -129,9 +136,11 @@ export class CampaignDetailComponent implements OnInit {
           this.loadApprovedCharacters();
           this.loadPendingCharacters();
         }
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.isLoading = false;
         if (!isSilentReload) {
           this.router.navigate(['/campanhas']);
         }

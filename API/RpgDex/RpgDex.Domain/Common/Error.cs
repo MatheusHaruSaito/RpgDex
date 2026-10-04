@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RpgDex.Application.Common
+namespace RpgDex.Domain.Common
 {
     public record Error(string Code, string Message)
     {
@@ -11,10 +11,6 @@ namespace RpgDex.Application.Common
         public static readonly Error UploadImageFailed = new("COMMON_UPLOAD_IMAGE_FAILED", "Failed to upload image.");
         public static Error Validation(string detail) => new("COMMON_VALIDATION_ERROR", detail);
 
-        //Campaigns methods needs refactoring, this error is a placeholder to erros that can't be refactored now
-        //THIS IS A TEMPORARY SOLUTION, PLEASE REFACTOR THE CAMPAIGN METHODS AND REMOVE THIS ERROR
-        //just so api can compile and run
-        public static readonly Error RefactorPlaceholder = new("COMMON_REFACTOR_ERROR", "This error is a placeholder for unrefactored code.");
     }
 
     public static class AuthError
@@ -46,6 +42,13 @@ namespace RpgDex.Application.Common
         public static readonly Error UpdateFailed = new("CAMPAIGN_UPDATE_FAILED", "Failed to update campaign.");
         public static readonly Error ChatNotFound = new("CAMPAIGN_CHAT_NOT_FOUND", "Failed to retrieve campaign chat.");
         public static readonly Error SaveMessageFailed = new("CAMPAIGN_SAVE_MESSAGE_FAILED", "Failed to save new chat message.");
+        public static readonly Error IsNotActive = new("CAMPAIGN_IS_NOT_ACTIVE", "Campaign is not active.");
+        public static readonly Error MaxPlayersReached = new("CAMPAIGN_MAX_PLAYERS_REACHED", "Failed to add player to campaign / max player capacity.");
+        public static readonly Error CharacterAlreadyInCampaign = new("CAMPAIGN_CHARACTER_ALREADY_IN", "Character already in campaign.");
+        public static readonly Error CharacterAwaitingApproval = new("CAMPAIGN_CHARACTER_AWAITING_APPROVAL", "Character awaiting approval.");
+        public static readonly Error CharacterNotInRequests = new("CAMPAIGN_CHARACTER_NOT_IN_REQUESTS", "Character is not in the request list.");
+        public static readonly Error CharacterNotInCampaign = new("CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN", "Character is not in the campaign.");
+        public static readonly Error PlayerNotInCampaign = new("CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN", "Player is not in campaign.");
     }
 
     public static class CharacterError

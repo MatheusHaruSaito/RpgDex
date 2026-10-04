@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Common;
+﻿using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId);
         public Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSizes);
 
-        public Task<Result<CampaignResponse>> GetById(Guid id);
+        Task<Result<CampaignResponse>> GetById(string userId, Guid id);
         public Task<Result<CampaignResponse>> Update(string userId ,UpdateCampaignRequest request);
         public Task<Result<bool>> SetActiveState(string userId, CampaignSetActiveStateRequest request);
         public Task<Result<string>> AddPlayer(string userId, JoinCampaignRequest request);
@@ -24,7 +24,9 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<string>> UpdateConfiguration(string userId ,UpdateCampaignSettingsRequest request);
         //For now it won't be saved on database
         public Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request);
-        Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(Guid campaignId);
+        public Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, DateTime? beforeSentAt, int pageSize, Guid campaignId);
+        
+
 
 
         //Pensar Melhor sobre essa funcionalidade

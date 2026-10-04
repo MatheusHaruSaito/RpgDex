@@ -28,6 +28,13 @@
     "CAMPAIGN_UPDATE_FAILED": "Falha ao atualizar a campanha.",
     "CAMPAIGN_CHAT_NOT_FOUND": "Não foi possível carregar o chat da campanha.",
     "CAMPAIGN_SAVE_MESSAGE_FAILED": "Falha ao guardar a nova mensagem do chat.",
+    "CAMPAIGN_IS_NOT_ACTIVE": "A campanha não está ativa.",
+    "CAMPAIGN_MAX_PLAYERS_REACHED": "A capacidade máxima de jogadores da campanha foi atingida.",
+    "CAMPAIGN_CHARACTER_ALREADY_IN": "Este personagem já faz parte da campanha.",
+    "CAMPAIGN_CHARACTER_AWAITING_APPROVAL": "O personagem está a aguardar aprovação do Mestre.",
+    "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "O personagem não se encontra na lista de pedidos de adesão.",
+    "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "O personagem não faz parte desta campanha.",
+    "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "O jogador não faz parte desta campanha.",
 
     "CHARACTER_NOT_FOUND": "Personagem não encontrado.",
     "CHARACTER_NOT_OWNED": "Este personagem não pertence ao utilizador autenticado.",

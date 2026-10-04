@@ -15,6 +15,7 @@ export class CreateJoinCampaignModalComponent {
 
   @Input() isOpen = false;
   @Input() activeTab: 'create' | 'join' = 'create';
+  @Input() errorMessage: string = '';
 
   @Output() isOpenChange = new EventEmitter<boolean>();
   @Output() onCreate = new EventEmitter<FormData>();
@@ -43,6 +44,11 @@ export class CreateJoinCampaignModalComponent {
     this.resetForm();
   }
 
+  public setErrorMessage(msg: string): void {
+    this.errorMessage = msg;
+    this.cdr.detectChanges();
+  }
+
   validateMaxPlayers(): void {
     if (this.newMaxPlayers < 1) this.newMaxPlayers = 1;
     if (this.newMaxPlayers > 20) this.newMaxPlayers = 20;
@@ -53,11 +59,14 @@ export class CreateJoinCampaignModalComponent {
     if (input.files && input.files[0]) {
       this.imageChangedEvent = event;
       this.showCropperModal = true;
+      this.cdr.detectChanges();
     }
   }
 
   imageCropped(event: ImageCroppedEvent): void {
-    this.croppedImageBlob = event.blob ?? null;
+    if (event.blob) {
+      this.croppedImageBlob = event.blob;
+    }
   }
 
   confirmCrop(): void {
@@ -66,16 +75,20 @@ export class CreateJoinCampaignModalComponent {
       this.coverPreviewUrl = URL.createObjectURL(this.croppedImageBlob);
     }
     this.showCropperModal = false;
+    this.imageChangedEvent = null;
+    this.cdr.detectChanges();
   }
 
   cancelCrop(): void {
     this.showCropperModal = false;
     this.imageChangedEvent = null;
     this.croppedImageBlob = null;
+    this.cdr.detectChanges();
   }
 
   submitCreate(): void {
     if (!this.newTitle || !this.selectedIconFile) return;
+    this.errorMessage = '';
 
     const form = new FormData();
     form.append('title', this.newTitle.substring(0, 60));
@@ -86,17 +99,16 @@ export class CreateJoinCampaignModalComponent {
     if (this.newPassword) form.append('password', this.newPassword.substring(0, 50));
 
     this.onCreate.emit(form);
-    this.close();
   }
 
   submitJoin(): void {
     if (!this.joinId) return;
+    this.errorMessage = '';
 
     this.onJoin.emit({
       campaignId: this.joinId.trim().substring(0, 100),
       password: this.joinPassword ? this.joinPassword.substring(0, 50) : undefined
     });
-    this.close();
   }
 
   private resetForm(): void {
@@ -108,6 +120,9 @@ export class CreateJoinCampaignModalComponent {
     this.coverPreviewUrl = '';
     this.joinId = '';
     this.joinPassword = '';
+    this.errorMessage = '';
     this.showCropperModal = false;
+    this.imageChangedEvent = null;
+    this.croppedImageBlob = null;
   }
 }

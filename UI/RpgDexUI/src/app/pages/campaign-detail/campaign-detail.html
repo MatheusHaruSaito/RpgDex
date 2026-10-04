@@ -1,10 +1,11 @@
-<!-- Loading -->
-<div class="cd-loading" *ngIf="!campaign">
+<!-- Loading Centralizado -->
+<div class="cd-loading" *ngIf="isLoading">
   <i class="fa fa-spinner fa-spin"></i>
-  <span>Carregando campanha...</span>
+  <span>A preparar a mesa de jogo...</span>
 </div>
 
-<div class="cd-wrapper" *ngIf="campaign">
+<!-- Conteúdo da Campanha (Suave com fade-in) -->
+<div class="cd-wrapper fade-in-content" *ngIf="!isLoading && campaign">
   <div class="cd-container">
     <!-- ── ALERTAS DE FEEDBACK (SUCESSO / ERRO) ── -->
     <div #alertBanner class="cd-alert cd-alert-success" *ngIf="successMessage">
@@ -42,10 +43,20 @@
           <i class="fa fa-right-from-bracket"></i> Sair da Campanha
         </button>
 
-        <button *ngIf="isGameMaster" class="btn btn-outline-danger" (click)="toggleActiveState()">
-          <i class="fa fa-power-off"></i>
-          {{ campaign.isActive ? 'Desativar' : 'Reativar' }}
-        </button>
+        <!-- Balão de Dica adicionado no botão de Desativar/Ativar Campanha -->
+        <app-info-hint
+          *ngIf="isGameMaster"
+          [useContent]="true"
+          [title]="campaign.isActive ? 'Desativar Campanha' : 'Ativar Campanha'"
+          text="Ao desativar, ninguém mais poderá visualizar ou entrar na campanha, ficando acessível apenas para o mestre."
+          iconClass="fa-solid fa-power-off"
+          position="bottom-left"
+        >
+          <button class="btn btn-outline-danger" (click)="toggleActiveState()">
+            <i class="fa fa-power-off"></i>
+            {{ campaign.isActive ? 'Desativar' : 'Reativar' }}
+          </button>
+        </app-info-hint>
 
         <button *ngIf="isGameMaster" class="btn btn-secondary" (click)="isEditModalOpen = true">
           <i class="fa fa-gear"></i> Editar

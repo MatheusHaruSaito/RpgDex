@@ -12,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
 
 export interface Theme {
   tag: string;
@@ -32,7 +33,7 @@ export interface Theme {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SkeletonComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -46,6 +47,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private timer?: any;
 
   isLoggedIn = false;
+  isLoadingCharacters = false;
   characterPreview: Character[] = [];
   characterTotal = 0;
 
@@ -135,13 +137,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private loadCharacterPreview(): void {
+    this.isLoadingCharacters = true;
     this.characterService.GetAllByPage(0, 4).subscribe({
       next: (response) => {
-        this.characterTotal = response.data!.characterLenght;
+        this.characterTotal = response.data?.characterLenght ?? 0;
         this.characterPreview = response.data?.characters ?? [];
+        this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => {
+        this.isLoadingCharacters = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 

@@ -32,6 +32,7 @@ export class CharacterEditor implements OnInit {
   private location = inject(Location);
 
   character: Character | null = null;
+  isLoading = true; // Controla o carregamento inicial da ficha
   editForm = { name: '', description: '' };
   groups: AttrGroup[] = [];
 
@@ -57,6 +58,8 @@ export class CharacterEditor implements OnInit {
 
   private readonly GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+  constructor(private http: HttpClient) {}
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
@@ -66,12 +69,13 @@ export class CharacterEditor implements OnInit {
     this.loadCharacter(id);
   }
 
-  constructor(private http: HttpClient) {}
   private loadCharacter(id: string): void {
+    this.isLoading = true;
     this.characterService.GetById(id).subscribe({
       next: (res) => {
         this.character = res.data ?? null;
         if (!this.character) {
+          this.isLoading = false;
           this.router.navigate(['/personagens']);
           return;
         }
@@ -84,9 +88,14 @@ export class CharacterEditor implements OnInit {
         this.iconPreviewUrl = '';
         this.captureSavedState();
         this.characterService.PatchLastAccess(id).subscribe();
+
+        this.isLoading = false; // Finaliza o carregamento antes do render
         this.cdr.detectChanges();
       },
-      error: () => this.router.navigate(['/personagens']),
+      error: () => {
+        this.isLoading = false;
+        this.router.navigate(['/personagens']);
+      },
     });
   }
 
@@ -271,13 +280,8 @@ export class CharacterEditor implements OnInit {
           this.selectedIconFile = null;
           this.isEditing = false;
           this.successMessage = 'Personagem salvo com sucesso!';
-
-          this.captureSavedState();
-          this.selectedIconFile = null;
-
-          this.isEditing = false;
-          this.successMessage = 'Personagem salvo com sucesso!';
           this.cdr.detectChanges();
+
           setTimeout(() => {
             this.successMessage = '';
             this.cdr.detectChanges();
@@ -313,6 +317,7 @@ export class CharacterEditor implements OnInit {
     }
     this.location.back();
   }
+
   async downloadCharacter(): Promise<void> {
     const characterJson = JSON.stringify(
       await this.formatCharacterToDownload(this.character!),
@@ -338,6 +343,7 @@ export class CharacterEditor implements OnInit {
       properties: character.properties,
     };
   }
+
   private async convertImageToBase64(url: string): Promise<string> {
     if (!url) return '';
 

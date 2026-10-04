@@ -1,4 +1,11 @@
-<div class="ce-wrapper" *ngIf="character; else loading">
+<!-- State: Loading Centralizado -->
+<div class="ce-loading" *ngIf="isLoading">
+  <i class="fa fa-spinner fa-spin"></i>
+  <span>A carregar a ficha do personagem...</span>
+</div>
+
+<!-- State: Ficha do Personagem (Fade In suave) -->
+<div class="ce-wrapper fade-in-content" *ngIf="!isLoading && character">
   <!-- ── TOPBAR ── -->
   <div class="ce-topbar">
     <div></div>
@@ -209,13 +216,6 @@
     </div>
   </div>
 </div>
-
-<ng-template #loading>
-  <div class="ce-loading">
-    <i class="fa fa-spinner fa-spin"></i>
-    <span>Carregando personagem...</span>
-  </div>
-</ng-template>
 
 <!-- SUB-MODAL: CORTE DA IMAGEM -->
 @if (showCropperModal) {

@@ -1,5 +1,30 @@
 <div class="edit-profile-wrapper">
-  <div class="edit-profile-card">
+  <!-- Estado de Loading Centralizado com Skeleton -->
+  <div class="edit-profile-card fade-in-content" *ngIf="isInitialLoading">
+    <div class="edit-side">
+      <div class="edit-logo">RPGDex</div>
+      <div class="edit-side__content" style="width: 100%;">
+        <div class="avatar-preview-wrapper">
+          <app-skeleton width="120px" height="120px" radius="50%"></app-skeleton>
+        </div>
+        <app-skeleton width="140px" height="20px" radius="6px"></app-skeleton>
+        <app-skeleton width="180px" height="14px" radius="6px"></app-skeleton>
+      </div>
+    </div>
+    <div class="edit-main">
+      <app-skeleton width="200px" height="28px" radius="6px"></app-skeleton>
+      <app-skeleton width="300px" height="16px" radius="6px" style="margin-bottom: 30px; display: block;"></app-skeleton>
+      
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <app-skeleton width="100%" height="48px" radius="10px"></app-skeleton>
+        <app-skeleton width="100%" height="48px" radius="10px"></app-skeleton>
+        <app-skeleton width="100%" height="100px" radius="10px"></app-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cartão de Edição de Perfil Principal -->
+  <div class="edit-profile-card fade-in-content" *ngIf="!isInitialLoading">
     <!-- Lado esquerdo: visual/identidade -->
     <div class="edit-side">
       <div class="edit-logo" routerLink="/home">RPGDex</div>
@@ -36,6 +61,7 @@
         <p class="edit-side__name">
           {{ editForm.displayName || currentUser?.displayName || 'Aventureiro' }}
         </p>
+        <span class="edit-side__handle">@{{ currentUser?.userName }}</span>
         <p class="edit-side__email">{{ currentUser?.email }}</p>
         <span class="edit-side__badge">Aventureiro</span>
       </div>
@@ -50,27 +76,47 @@
     <div class="edit-main">
       <div class="edit-header">
         <h2 class="edit-main__title">Editar Perfil</h2>
-        <p class="edit-main__sub">Atualize suas informações de conta.</p>
+        <p class="edit-main__sub">Atualize suas informações públicas e foto de exibição.</p>
       </div>
 
       <form class="edit-form" (ngSubmit)="saveChanges()">
-        <!-- Nome de usuário -->
+        <!-- Nome de Exibição (displayName - EDITÁVEL) -->
         <div class="field-section">
           <label class="field-label">
-            <i class="fa fa-user"></i>
-            <span>Nome de usuário</span>
+            <i class="fa fa-id-card"></i>
+            <span>Nome de exibição</span>
           </label>
           <div class="input-group">
             <i class="fa fa-user icon-field"></i>
             <input
               type="text"
-              placeholder="Seu nome de usuário"
+              placeholder="Seu nome exibido aos outros jogadores"
               name="displayName"
               [(ngModel)]="editForm.displayName"
-              autocomplete="username"
-              maxlength="30"
+              maxlength="32"
+              required
             />
           </div>
+          <small class="field-hint">Este é o nome visível para os outros usuários na plataforma (até 32 caracteres).</small>
+        </div>
+
+        <!-- Nome de Usuário (userName - FIXO/NÃO EDITÁVEL) -->
+        <div class="field-section">
+          <label class="field-label">
+            <i class="fa fa-at"></i>
+            <span>Nome de usuário (único)</span>
+          </label>
+          <div class="input-group input-group--disabled">
+            <i class="fa fa-at icon-field"></i>
+            <input
+              type="text"
+              [value]="currentUser?.userName || ''"
+              disabled
+              readonly
+            />
+            <i class="fa fa-lock icon-lock-field"></i>
+          </div>
+          <small class="field-hint">O identificador único da sua conta não pode ser alterado.</small>
         </div>
 
         <!-- Foto de perfil por upload -->
