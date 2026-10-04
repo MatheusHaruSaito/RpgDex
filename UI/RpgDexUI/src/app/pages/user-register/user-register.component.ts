@@ -55,6 +55,18 @@ export class UserRegisterComponent implements OnInit {
     this.googleAuth.renderButton('google-btn');
   }
 
+  onUserNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input) return;
+
+    const sanitized = input.value
+      .toLowerCase()
+      .replace(/[^a-z0-9_.]/g, '');
+
+    this.registerForm.userName = sanitized;
+    input.value = sanitized;
+  }
+
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
@@ -218,7 +230,6 @@ export class UserRegisterComponent implements OnInit {
     this.authService.Register(this.registerForm).subscribe({
       next: () => {
         this.isLoading = false;
-        // Transmite o e-mail sem exibi-lo na barra de endereços (URL)
         this.router.navigate(['/verificar-email'], {
           state: { email: this.registerForm.email },
         });

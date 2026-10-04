@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../../services/auth-service';
 import { FormsModule } from '@angular/forms';
 import { LoginUser } from '../../../models/loginUser';
@@ -18,6 +18,7 @@ export class UserLoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private googleAuth = inject(GoogleAuthService);
+  private cdr = inject(ChangeDetectorRef); // Injeção do ChangeDetectorRef
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,7 +31,7 @@ export class UserLoginComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  // Estado da modal 2FA
+  // Estado do modal 2FA
   showTwoFactorModal = false;
 
   get emailInvalid(): boolean {
@@ -53,6 +54,7 @@ export class UserLoginComponent implements OnInit {
         },
         error: () => {
           this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
+          this.cdr.detectChanges();
         },
       });
     });
@@ -91,19 +93,10 @@ export class UserLoginComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
 
-        // Se o utilizador tem 2FA ativado
+        // Se o utilizador possui 2FA ativo no backend
         if (res.data?.twoFactorEnabled) {
-          // Dispara o e-mail com o código de 2FA e abre a modal
-          // this.authService.SendTwoFactorAuthEmail().subscribe({
-          //   next: () => {
           this.showTwoFactorModal = true;
-          console.log('É pro modal estar aqui');
-          //   },
-          //   error: () => {
-          //     // Mesmo se falhar o envio automático, abrimos a modal para permitir o reenvio
-          //     this.showTwoFactorModal = true;
-          //   },
-          // });
+          this.cdr.detectChanges(); // Força o Angular a renderizar o modal na tela
         } else {
           this.router.navigate(['/home']);
         }
@@ -111,12 +104,14 @@ export class UserLoginComponent implements OnInit {
       error: (err) => {
         this.isLoading = false;
         this.errorMessage = err?.error?.message || 'Falha ao entrar. Verifique seu email e senha.';
+        this.cdr.detectChanges();
       },
     });
   }
 
   onTwoFactorAuthenticated(): void {
     this.showTwoFactorModal = false;
+    this.cdr.detectChanges();
     this.router.navigate(['/home']);
   }
 
