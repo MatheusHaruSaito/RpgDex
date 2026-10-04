@@ -7,8 +7,7 @@ namespace RpgDex.Domain.Interfaces
 {
     public interface ICampaignChatRepository
     {
-        Task<CampaignChat> InsertAsync(CampaignChat campaign);
-        Task<bool> UpdateCampaignChatMessage(Guid id, IEnumerable<ChatMessage> campaign);
-        Task<CampaignChat> GetCampaignChat(Guid campaignId);
+        Task<ChatMessage> InsertAsync(ChatMessage campaign);
+        Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20);
     }
 }

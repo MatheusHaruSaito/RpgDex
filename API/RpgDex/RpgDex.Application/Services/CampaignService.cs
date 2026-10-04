@@ -1,21 +1,22 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using RpgDex.Application.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Validators;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
+using static RpgDex.Domain.Entities.Campaign;
 
 namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
-        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator, 
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository,
-        IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
+        IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -82,11 +83,6 @@ namespace RpgDex.Application.Services
             {
                 return Result<CampaignResponse>.Failure(CampaignError.CreateFailed);
             }
-            var chatResult = await campaignChatRepository.InsertAsync(new CampaignChat(result.Id));
-            if (chatResult is null)
-            {
-                return Result<CampaignResponse>.Failure(CampaignError.CreateFailed);
-            }
             return Result<CampaignResponse>.Success(result.Adapt<CampaignResponse>());
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId)
@@ -117,14 +113,20 @@ namespace RpgDex.Application.Services
         }
 
 
-        public async Task<Result<CampaignResponse>> GetById(Guid id)
+        public async Task<Result<CampaignResponse>> GetById(string userId,Guid id)
         {
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
             var response = await campaignRepository.GetByIdAsync(id);
             if (response is null)
             {
                 return Result<CampaignResponse>.Failure(CampaignError.NotFound);
             }
-
+            var isPlayerInCampaign = response.PlayerIds.Contains(guidUserId)
+                | response.GameMasterId.Equals(guidUserId);
+            if (!isPlayerInCampaign)
+            {
+                return Result<CampaignResponse>.Failure(CampaignError.PlayerNotFound);
+            }
             return Result<CampaignResponse>.Success(response.Adapt<CampaignResponse>());
         }
 
@@ -193,8 +195,6 @@ namespace RpgDex.Application.Services
             return Result<bool>.Success(result);
         }
 
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> AddPlayer(string userId, JoinCampaignRequest request)
         {
             var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
@@ -203,7 +203,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotFound);
             }
             //Campaign found
-
+            if (!campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
 
 
@@ -218,10 +221,10 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.InvalidPassword);
             }
-            var (message, IsSuccess) = campaign.TryAddPlayer(guidUserId);
-            if (!IsSuccess)
+            var tryAddPlayerResult = campaign.TryAddPlayer(guidUserId);
+            if (!tryAddPlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryAddPlayerResult.Error!);
             }
 
             var result = await campaignRepository.UpdateAsync(campaign);
@@ -230,10 +233,9 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
-            return Result<string>.Success("Player added to campaign successfully");
+            return Result<string>.Success(tryAddPlayerResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> AddCharacter(string userId, AddCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -251,11 +253,19 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.NotFound);
             }
-            //Campaign found
-            var (message, IsSuccess) = campaignFound.TryAddCharacter(request.CharacterId);
-            if (!IsSuccess)
+            var isGameMaster = campaignFound.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaignFound.IsActive)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+            //Campaign found
+
+            if (!characterFound.UserId.Equals(guidUserId)) return Result<string>.Failure(CharacterError.CharacterNotOwned);
+
+            var tryAddCharacterResult = campaignFound.TryAddCharacter(request.CharacterId);
+            if (!tryAddCharacterResult.IsSuccess)
+            {
+                return Result<string>.Failure(tryAddCharacterResult.Error!);
             }
 
 
@@ -264,10 +274,9 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(message);
+            return Result<string>.Success(tryAddCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> RemoveCharacter(string userId, RemoveCharacterFromCapaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -292,13 +301,11 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
-            (string message, bool isSuccess) characterRemoved;
+            var tryRemoveCharacterResult = campaignFound.TryRemoveCharacter(request.CharacterId);
 
-            characterRemoved = campaignFound.TryRemoveCharacter(request.CharacterId);
-
-            if (!characterRemoved.isSuccess)
+            if (!tryRemoveCharacterResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemoveCharacterResult.Error!);
             }
 
             //Character accepted into campaign
@@ -308,10 +315,8 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(characterRemoved.message);
+            return Result<string>.Success(tryRemoveCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> AcceptCharacter(string userId, AcceptCharacterToCampaignRequest request)
         {
             var characterFound = await characterRepository.GetByIdAsync(request.CharacterId);
@@ -336,20 +341,20 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotGameMaster);
             }
 
-            (string message, bool isSuccess) chracterAdded;
+            CampaignTryActionResult tryAcceptCharacterResult;
 
             if (request.IsAccepted)
             {
-                chracterAdded = campaignFound.TryAcceptCharacter(request.CharacterId);
+                tryAcceptCharacterResult = campaignFound.TryAcceptCharacter(request.CharacterId);
             }
             else
             {
-                chracterAdded = campaignFound.TryRejectCharacter(request.CharacterId);
+                tryAcceptCharacterResult = campaignFound.TryRejectCharacter(request.CharacterId);
             }
 
-            if (!chracterAdded.isSuccess)
+            if (!tryAcceptCharacterResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryAcceptCharacterResult.Error!);
             }
 
             //Character accepted into campaign
@@ -359,10 +364,8 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
-            return Result<string>.Success(chracterAdded.message);
+            return Result<string>.Success(tryAcceptCharacterResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
         public async Task<Result<string>> RemovePlayer(string userId, RemovePlayerFromCampaignRequest request)
         {
             var campaignFound = await campaignRepository.GetByIdAsync(request.CampaignId);
@@ -383,10 +386,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.PlayerNotFound);
             }
             //Player to be kicked found
-            var (message, IsSuccess) = campaignFound.TryRemovePlayer(request.PlayerId);
-            if (!IsSuccess)
+            var tryRemovePlayerResult = campaignFound.TryRemovePlayer(request.PlayerId);
+            if (!tryRemovePlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemovePlayerResult.Error!);
             }
             //Try to remove user characters from campaign
             var userFound = await userRepository.GetByIdAsync(request.PlayerId);
@@ -415,10 +418,9 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.UpdateFailed);
             }
 
-            return Result<string>.Success(message);
+            return Result<string>.Success(tryRemovePlayerResult.Message!);
         }
-        //REFACTTOR: this method will require a refactor after mergin with chatVerificationBranch
-        //Change Those TryAdd messages
+
         public async Task<Result<string>> LeaveCampaign(string userId, LeaveCampaignRequest request)
         {
             if (!Guid.TryParse(userId, out Guid userIdGuid)) return Result<string>.Failure(Error.InvalidUserId);
@@ -439,10 +441,10 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(CampaignError.NotAPlayer);
             }
 
-            var (message, isSuccess) = campaignFound.TryRemovePlayer(userIdGuid);
-            if (!isSuccess)
+            var tryRemovePlayerResult = campaignFound.TryRemovePlayer(userIdGuid);
+            if (!tryRemovePlayerResult.IsSuccess)
             {
-                return Result<string>.Failure(Error.RefactorPlaceholder);
+                return Result<string>.Failure(tryRemovePlayerResult.Error!);
             }
 
             //Try to remove user characters from campaign
@@ -504,59 +506,112 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request)
         {
-            var checkCampaignChatMessageValidator= campaignChatMessageValidator.Validate(request);
+            var checkCampaignChatMessageValidator = campaignChatMessageValidator.Validate(request);
             if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
-
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+          
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
                 return Result<string>.Failure(AuthError.UserNotFound);
             }
 
-
-            var campaignChat = await campaignChatRepository.GetCampaignChat(request.CampaignId);
-            if (campaignChat is null)
+            ChatMessage newMessage = new()
             {
-                return Result<string>.Failure(CampaignError.ChatNotFound);
-            }
-            ChatMessage newMessage = new(
-                user.Id,
-                user.DisplayName,
-                user.IconPath,
-                request.Message,
-                DateTime.UtcNow
-                );
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Username = user.DisplayName,
+                CampaignId = request.CampaignId,
+                UserIcon = user.IconPath,
+                Data = request.Message,
+                SentAt = DateTime.UtcNow
+            };
 
-            campaignChat.PushCampaignChat(newMessage);
-            var result = await campaignChatRepository.UpdateCampaignChatMessage(campaignChat.Id, campaignChat.ChatMessages);
-            if (!result)
-            {
-                return Result<string>.Failure(CampaignError.SaveMessageFailed);
-            }
+            await campaignChatRepository.InsertAsync(newMessage);
+
             await campaignChatService.SendMessage(request.CampaignId.ToString(), newMessage.Adapt<CampaignChatMessagesResponse>());
 
             return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
         }
-        public async Task<Result<IEnumerable<CampaignChatMessagesResponse>>> GetChatMessages(Guid campaignId)
+        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId,DateTime? beforeSentAt ,int pageSize,Guid campaignId)
         {
             //needs more verification
-            var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
-            if (campaignChat is null)
+            var campaign = await campaignRepository.GetByIdAsync(campaignId);
+            if (campaign is null) return Result<ChatPagedResultDto>.Failure(CampaignError.NotFound);
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<ChatPagedResultDto>.Failure(Error.InvalidUserId);
+            var isPlayerInCampaign = campaign.PlayerIds.Contains(guidUserId)
+                | campaign.GameMasterId.Equals(guidUserId);
+            if(!isPlayerInCampaign)
             {
-                var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
-                if (newcampaignChat is null)
-                {
-                    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure(CampaignError.ChatNotFound);
-                }
-                var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
-                return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
+                return Result<ChatPagedResultDto>.Failure(CampaignError.NotAPlayer);
+            }
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive){
+                return Result<ChatPagedResultDto>.Failure(CampaignError.IsNotActive);
+                //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
+                //if (newcampaignChat is null)
+                //{
+                //    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure(CampaignError.ChatNotFound);
+                //}
+                //var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+                //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
 
             }
-            var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
-            return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(messages);
-        }
 
+            //var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
+            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1)).ToList();
+            if (messages is null)
+            {
+                //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
+                //if (newcampaignChat is null)
+                //{
+                //    return Result<IEnumerable<CampaignChatMessagesResponse>>.Failure("Failed to get campaign chat");
+                //}
+                //var newMessages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+                //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
+                return Result<ChatPagedResultDto>.Failure(CampaignError.ChatNotFound);
+            }
+
+            DateTime? nextCursor = messages.FirstOrDefault()?.SentAt;
+
+            if (!beforeSentAt.HasValue)
+            {
+                var user = await userRepository.GetByIdAsync(guidUserId);
+                if (user is not null)
+                {
+                    await PlayerJoinChatMessage(campaignId.ToString(), user.DisplayName);
+                }
+            }
+            //var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+            var responseMessages = messages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+            bool hasMore = messages.Count > pageSize;
+
+            ChatPagedResultDto result = new(
+                responseMessages,
+                nextCursor,
+                hasMore
+            );
+            return Result<ChatPagedResultDto>.Success(result);
+        }
+        public async Task PlayerJoinChatMessage(string campaignId, string UserName)
+        {
+            var message = new CampaignChatMessagesResponse(
+                Guid.Empty,
+                Guid.Empty,
+                "RPG DEX",
+                "",
+                $"{UserName} has joined the campaign chat",
+                DateTime.UtcNow
+            );
+            await campaignChatService.SendMessage(campaignId, message);
+        }
 
     }
 }
