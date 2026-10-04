@@ -41,10 +41,14 @@ namespace RpgDex.Infrastructure.Repositories
                 filter &= builder.Lt(m => m.SentAt, beforeSentAt.Value);
             }
 
-            return await _entity.Find(filter)
-                                  .SortByDescending(m => m.SentAt)
-                                  .Limit(pageSize)
-                                  .ToListAsync();
+            var messages = await _entity.Find(filter)
+                                 .Sort(Builders<ChatMessage>.Sort
+                                     .Descending(m => m.SentAt)
+                                     .Descending(m => m.Id))
+                                 .Limit(pageSize)
+                                 .ToListAsync();
+            messages.Reverse();
+            return messages;
         }
 
     }

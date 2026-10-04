@@ -102,20 +102,45 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     this.chatService.getMessages(this.campaignId, this.nextCursor, 20).subscribe({
       next: (res) => {
         if (!res.success || !res.data) {
-          console.error('Erro ao carregar mensagens:', res.message);
           this.isLoadingMore = false;
           return;
         }
 
-        // Se o backend enviar os itens em ordem cronológica inversa para paginação, ajustamos aqui
-        const olderMessages = res.data.items;
+        const olderMessages = res.data.items || [];
 
-        this.messages = [...olderMessages, ...this.messages];
-        this.nextCursor = res.data.nextCursor;
+        if (olderMessages.length === 0) {
+          this.hasMore = false;
+          this.isLoadingMore = false;
+          return;
+        }
+        console.log(res);
+
+        // 1. DEDUPLICAÇÃO
+        const existingIds = new Set(this.messages.map((m) => m.id));
+        const newUniqueMessages = olderMessages.filter((m) => !existingIds.has(m.id));
+
+        // 2. CONCATENAÇÃO NO TOPO
+        this.messages = [...newUniqueMessages, ...this.messages];
+
+        // 3. ATUALIZAÇÃO DO CURSOR
+        // Garante que o cursor venha da PRIMEIRA mensagem da lista de itens devolvidos (a mais antiga)
+
+        if (olderMessages.length > 0) {
+          const oldestMsg = olderMessages[0];
+
+          // Se sentAt for do tipo Date, converte com toISOString(); se já for string, mantém
+          const rawSentAt = oldestMsg.sentAt;
+          const cursorDate = rawSentAt instanceof Date ? rawSentAt.toISOString() : rawSentAt;
+
+          this.nextCursor = cursorDate ?? res.data.nextCursor;
+        } else {
+          this.nextCursor = res.data.nextCursor;
+        }
+
         this.hasMore = res.data.hasMore;
         this.isLoadingMore = false;
 
-        // Mantém a posição visual do scroll após inserir os itens no topo
+        // 4. PRESERVAÇÃO DO SCROLL
         setTimeout(() => {
           const newScrollHeight = container.scrollHeight;
           container.scrollTop = newScrollHeight - previousScrollHeight;

@@ -578,12 +578,8 @@ namespace RpgDex.Application.Services
                 //return Result<IEnumerable<CampaignChatMessagesResponse>>.Success(newMessages);
                 return Result<ChatPagedResultDto>.Failure(CampaignError.ChatNotFound);
             }
-            bool hasMore = messages.Count > pageSize;
-            if(hasMore)
-            {
-                messages.RemoveAt(messages.Count - 1);
-            }
-            DateTime? nextCursor = messages.LastOrDefault()?.SentAt;
+
+            DateTime? nextCursor = messages.FirstOrDefault()?.SentAt;
 
             if (!beforeSentAt.HasValue)
             {
@@ -595,6 +591,7 @@ namespace RpgDex.Application.Services
             }
             //var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
             var responseMessages = messages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
+            bool hasMore = messages.Count > pageSize;
 
             ChatPagedResultDto result = new(
                 responseMessages,
@@ -606,6 +603,7 @@ namespace RpgDex.Application.Services
         public async Task PlayerJoinChatMessage(string campaignId, string UserName)
         {
             var message = new CampaignChatMessagesResponse(
+                Guid.Empty,
                 Guid.Empty,
                 "RPG DEX",
                 "",
