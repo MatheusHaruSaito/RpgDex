@@ -5,5 +5,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record UpdateUserDocumentRequest(Guid Id, string Name, Guid UserId, string? Description, IFormFile? File);
+    public record UpdateUserDocumentRequest(Guid Id, string Name, string? Description, IFormFile? File);
 }
