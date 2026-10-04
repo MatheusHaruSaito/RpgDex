@@ -14,7 +14,8 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService,
-        IValidator<CreateUserDocumentRequest> createUserDocumentValidator) : IUserDocumentService
+        IValidator<CreateUserDocumentRequest> createUserDocumentValidator,
+        IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator ): IUserDocumentService
     {
         public async Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocumentRequest request)
         {
@@ -72,6 +73,8 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<UserDocumentResponse>> Update(string userId, UpdateUserDocumentRequest request)
         {
+            var checkUpdateUserDocumentValidator = updateUserDocumentValidator.Validate(request);
+            if (!checkUpdateUserDocumentValidator.IsValid) return checkUpdateUserDocumentValidator.ReturnErrors<UserDocumentResponse>();
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
 
             var userDocument = await userDocumentRepository.GetByIdAsync(request.Id);
