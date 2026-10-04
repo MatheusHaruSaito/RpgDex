@@ -18,7 +18,7 @@ namespace RpgDex.Application.Validators
                 .Matches(@"[^a-zA-Z0-9 ]").WithMessage("The password must contain at least one special character");
             RuleFor(user => user.UserName)
                 .NotNull().NotEmpty().WithMessage("UserName can't be empty")
-                .MaximumLength(255).WithMessage("User Name can't exceed characters")
+                .MaximumLength(255).WithMessage("User Name can't exceed 255 characters")
                 .Must(u => !u.Contains(' ')).WithMessage("UserName cannot contain spaces")
                 .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("UserName can only contain letters, numbers, and underscores");
             RuleFor(user => user.Email)
