@@ -14,7 +14,7 @@ namespace RpgDex.Application.Validators
                 .MaximumLength(60).WithMessage("Name can't exceed 60 characters");
             RuleFor(u => u.Description).MaximumLength(500).WithMessage("User Name can't exceed 500 characters");
 
-            long maxSizeBytes = 5 * 1024 * 1024;
+            long maxSizeBytes = 10 * 1024 * 1024;
             var allowedExtensions = new[] {
              ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp",
             ".pdf", ".txt", ".docx", ".xlsx", ".pptx", ".csv", };
