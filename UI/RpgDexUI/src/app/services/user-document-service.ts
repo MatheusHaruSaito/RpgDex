@@ -34,4 +34,10 @@ export class UserDocumentService {
   Deactivate(request: { id: string }): Observable<ApiResponse<string>> {
     return this.http.put<ApiResponse<string>>(`${this.env}/Deactivate/`, request);
   }
+  GiveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<string>> {
+    return this.http.put<ApiResponse<string>>(`${this.env}/GiveAccess/`, request);
+  }
+  RemoveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<string>> {
+    return this.http.put<ApiResponse<string>>(`${this.env}/RemoveAccess/`, request);
+  }
 }
