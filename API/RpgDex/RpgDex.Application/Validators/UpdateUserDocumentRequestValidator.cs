@@ -24,5 +24,4 @@ namespace RpgDex.Application.Validators
             .Must(file => file.Length <= maxSizeBytes).WithMessage("File size must not exceed 5MB");
         }
     }
-    }
 }
