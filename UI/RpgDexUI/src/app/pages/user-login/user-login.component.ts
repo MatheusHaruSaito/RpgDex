@@ -83,13 +83,16 @@ export class UserLoginComponent implements OnInit {
     }
 
     this.isLoading = true;
-
     this.authService.Login(this.authUserForm).subscribe({
-      next: () => {
+      next: (res) => {
         this.isLoading = false;
-        this.router.navigate(['/home']);
+        if(!res.data?.twoFactorEnabled) this.router.navigate(['/home']);
+        //Logica de 2 fatores aqui
+        //Talvez abrir modal para exibir codigo?
       },
-      error: () => {
+      error: (err) => {
+        console.log('err  ', err);
+        console.log('deu erro');
         this.isLoading = false;
         this.errorMessage = 'Falha ao entrar. Verifique seu email e senha.';
       },

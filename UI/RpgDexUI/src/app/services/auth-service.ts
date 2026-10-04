@@ -61,7 +61,7 @@ export class AuthService {
               ...response.data,
             });
           }
-        })
+        }),
       );
   }
 
@@ -72,14 +72,14 @@ export class AuthService {
   public Login(user: LoginUser): Observable<ApiResponse<LoginResponse>> {
     return this.http.post<ApiResponse<LoginResponse>>(`${this.env}/Login`, user).pipe(
       tap((response: ApiResponse<LoginResponse>) => {
-        if (response.success && response.data) {
+        if (response.success && response.data && response.data.accessToken != null) {
           this.cookieService.set(this.JWT_Token, response.data.accessToken, { path: '/' });
           this.cookieService.set(this.REFRESH_Token, response.data.refreshToken, { path: '/' });
           this.currentUserSubject.next(response.data);
           this.GetLoggedUser().subscribe();
         }
         return response;
-      })
+      }),
     );
   }
 
@@ -101,7 +101,7 @@ export class AuthService {
       catchError((error) => {
         this.Logout();
         throw error;
-      })
+      }),
     );
   }
 
@@ -143,7 +143,7 @@ export class AuthService {
           this.GetLoggedUser().subscribe();
         }
         return response;
-      })
+      }),
     );
   }
 
@@ -161,10 +161,7 @@ export class AuthService {
   }
 
   public ValidateTwoFactor(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
-    return this.http.post<ApiResponse<tokenModel>>(
-      `${this.env}/ValidateTwoFactor/`,
-      request,
-    );
+    return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ValidateTwoFactor/`, request);
   }
   public SendTwoFactorAuthEmail(): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(`${this.env}/SendTwoFactorAuthEmailRequest`, '');
@@ -173,7 +170,7 @@ export class AuthService {
   public TwoFAActivation(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ActiveTwoFactorAuth/`, request);
   }
-  public get Token(){
+  public get Token() {
     return this.cookieService.get(this.JWT_Token);
   }
 }
