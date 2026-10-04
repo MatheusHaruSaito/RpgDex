@@ -2,7 +2,7 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
-using RpgDex.Application.Common;
+using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;

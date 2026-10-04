@@ -9,7 +9,6 @@
   box-shadow: 0 -4px 24px rgba(60, 52, 137, 0.12);
   overflow: hidden;
 
-
   position: fixed;
   bottom: 0px; 
   right: 32px;
@@ -127,6 +126,39 @@
   border-radius: 4px;
 }
 
+/* Botão Carregar Mais Mensagens */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.btn-load-more {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  color: var(--rpg-purple);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-load-more:hover:not(:disabled) {
+  background: var(--rpg-purple-tint);
+  border-color: var(--rpg-purple);
+}
+
+.btn-load-more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Estado vazio */
 .chat-empty {
   display: flex;
@@ -152,16 +184,19 @@
   display: flex;
   max-width: 88%;
   align-self: flex-start;
+  gap: 6px;
 }
 
+/* Alinhamento de mensagens do próprio utilizador à direita */
 .message-item.message-mine {
-  align-self: flex-start;
+  align-self: flex-end;
+  flex-direction: row-reverse;
 }
 
 /* Avatar */
 .message-avatar {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background-color: var(--rpg-purple-tint);
   background-size: cover;
@@ -170,11 +205,10 @@
   align-items: center;
   justify-content: center;
   color: var(--rpg-purple);
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   flex-shrink: 0;
   border: 1px solid var(--rpg-border-light);
-  margin-bottom: 0;
-  margin-right: 3px;
+  margin-top: 2px;
 }
 
 /* Conteúdo da mensagem */
@@ -185,6 +219,10 @@
   min-width: 0;
 }
 
+.message-mine .message-content {
+  align-items: flex-end;
+}
+
 .message-meta {
   display: flex;
   align-items: center;
@@ -192,8 +230,6 @@
   padding: 0 2px;
   margin-bottom: 2px;
 }
-
-
 
 .message-author {
   font-family: 'Exo 2', sans-serif;
@@ -232,9 +268,11 @@
   background-color: var(--rpg-purple);
   color: #fff;
   border: none;
+  border-radius: 12px;
+  border-top-right-radius: 2px;
 }
 
-/* ── CONTROLES ───────────────────────────────────────────────── */
+/* ── CONTROLES & ERROS ───────────────────────────────────────── */
 .chat-controls {
   padding: 10px 12px;
   background-color: var(--rpg-surface);
@@ -264,6 +302,16 @@
 .chat-input:focus {
   outline: none;
   border-color: var(--rpg-purple);
+}
+
+.chat-error-toast {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  color: var(--rpg-error);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .btn-send {

@@ -4,7 +4,11 @@
       <i class="fa fa-comments"></i>
       <span>Bate-papo da Mesa</span>
 
-      <span class="chat-unread-badge" *ngIf="isMinimized && unreadCount > 0" title="Novas mensagens">
+      <span
+        class="chat-unread-badge"
+        *ngIf="isMinimized && unreadCount > 0"
+        title="Novas mensagens"
+      >
         {{ unreadCount }}
       </span>
     </div>
@@ -16,14 +20,41 @@
 
   <div class="chat-body" *ngIf="!isMinimized">
     <div class="messages-container" #scrollContainer>
-      <div class="chat-empty" *ngIf="messages.length === 0">
+      <!-- Estado de Carregamento Inicial -->
+      <div class="chat-empty" *ngIf="isInitialLoading">
+        <i class="fa fa-spinner fa-spin"></i>
+        <span>Carregando conversas...</span>
+      </div>
+
+      <!-- Estado Vazio -->
+      <div class="chat-empty" *ngIf="!isInitialLoading && messages.length === 0">
         <i class="fa fa-comment-dots"></i>
         <span>Nenhuma mensagem por aqui ainda. Escreva algo!</span>
       </div>
 
-      <div *ngFor="let msg of messages" class="message-item" [class.message-mine]="msg.username === currentUsername">
-        <!-- Avatar fora do message-content para alinhar com o balão -->
-        <div class="message-avatar" [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''">
+      <!-- Botão para Carregar Histórico -->
+      <div class="load-more-container" *ngIf="hasMore && messages.length > 0">
+        <button
+          class="btn-load-more"
+          type="button"
+          (click)="loadMoreMessages()"
+          [disabled]="isLoadingMore"
+        >
+          <i class="fa" [ngClass]="isLoadingMore ? 'fa-spinner fa-spin' : 'fa-history'"></i>
+          <span>{{ isLoadingMore ? 'Carregando...' : 'Carregar mensagens anteriores' }}</span>
+        </button>
+      </div>
+
+      <!-- Lista de Mensagens -->
+      <div
+        *ngFor="let msg of messages"
+        class="message-item"
+        [class.message-mine]="msg.username === currentUsername"
+      >
+        <div
+          class="message-avatar"
+          [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''"
+        >
           <i class="fa fa-user" *ngIf="!msg.userIcon"></i>
         </div>
 
@@ -41,15 +72,33 @@
       </div>
     </div>
 
-    <!-- CONTROLES / FORMULÁRIO -->
+    <!-- CONTROLES E FORMULÁRIO -->
     <div class="chat-controls">
       <form (ngSubmit)="send()" class="chat-form">
-        <input #chatInput class="chat-input" type="text" name="newMessageText" [(ngModel)]="newMessageText"
-          placeholder="Digite sua mensagem..." maxlength="500" autocomplete="off" />
-        <button class="btn btn-primary btn-send" type="submit" [disabled]="!newMessageText.trim()">
-          <i class="fa fa-paper-plane"></i>
+        <input
+          #chatInput
+          class="chat-input"
+          type="text"
+          name="newMessageText"
+          [(ngModel)]="newMessageText"
+          placeholder="Digite sua mensagem..."
+          maxlength="500"
+          autocomplete="off"
+          [disabled]="isSending"
+        />
+        <button
+          class="btn btn-primary btn-send"
+          type="submit"
+          [disabled]="!newMessageText.trim() || isSending"
+        >
+          <i class="fa" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
         </button>
       </form>
+
+      <div class="chat-error-toast" *ngIf="sendError">
+        <i class="fa fa-circle-exclamation"></i>
+        <span>{{ sendError }}</span>
+      </div>
     </div>
   </div>
 </div>

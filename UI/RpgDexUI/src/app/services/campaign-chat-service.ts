@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CampaignChatMessageRequest } from '../../models/campaignChatMessageRequest';
 import { ApiResponse } from '../../models/apiResponse';
+import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
 @Injectable({
   providedIn: 'root',
 })
@@ -44,8 +45,17 @@ export class CampaignChatService {
   public onMessageReceived(): Observable<ChatMessage> {
     return this.messageReceived$.asObservable();
   }
-  public getMessages(campaignId: string): Observable<ApiResponse<ChatMessage[]>> {
-    return this.http.get<ApiResponse<ChatMessage[]>>(`${this.env}/GetMessages/${campaignId}`);
+  public getMessages(
+    campaignId: string,
+    beforeSentAt?: string,
+    pageSize: number = 20,
+  ): Observable<ApiResponse<ChatPagedResultDto>> {
+    return this.http.get<ApiResponse<ChatPagedResultDto>>(`${this.env}/GetMessages/${campaignId}`, {
+      params: {
+        ...(beforeSentAt && { beforeSentAt }),
+        pageSize: pageSize,
+      },
+    });
   }
   public stopConnection(campaignId: string): void {
     if (this.hubConnection) {
