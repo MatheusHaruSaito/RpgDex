@@ -33,7 +33,12 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   hasMore: boolean = true;
   newMessageText: string = '';
   currentUsername: string = '';
+
+  isInitialLoading: boolean = true;
   isLoadingMore: boolean = false;
+  isSending: boolean = false;
+  sendError: string = '';
+
   isMinimized: boolean = false;
   unreadCount: number = 0;
 
@@ -60,14 +65,18 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         },
       });
     }
+
     const token = this.authService.Token;
     this.chatService.startConnection(this.campaignId, token);
     this.initialLoad();
 
-    // O NgZone garante que o Angular processe os eventos do WebSocket/SignalR no ciclo de renderização atual
+    // Executa os retornos do SignalR/WebSocket dentro do ciclo do Angular
     this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg) => {
       this.ngZone.run(() => {
-        this.messages.push(msg);
+        // Evita duplicar mensagens recebidas em tempo real caso já existam
+        if (!this.messages.some((m) => m.id === msg.id)) {
+          this.messages.push(msg);
+        }
 
         if (this.isMinimized) {
           this.unreadCount++;
@@ -79,15 +88,23 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       });
     });
   }
+
   initialLoad(): void {
+    this.isInitialLoading = true;
     this.chatService.getMessages(this.campaignId, undefined, 20).subscribe({
       next: (r) => {
         this.messages = r.data?.items ?? [];
         this.nextCursor = r.data?.nextCursor;
         this.hasMore = r.data?.hasMore ?? false;
+        this.isInitialLoading = false;
+        this.cdr.detectChanges();
         setTimeout(() => {
           this.scrollToBottom();
         }, 50);
+      },
+      error: () => {
+        this.isInitialLoading = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -113,7 +130,6 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
           this.isLoadingMore = false;
           return;
         }
-        console.log(res);
 
         // 1. DEDUPLICAÇÃO
         const existingIds = new Set(this.messages.map((m) => m.id));
@@ -123,12 +139,8 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         this.messages = [...newUniqueMessages, ...this.messages];
 
         // 3. ATUALIZAÇÃO DO CURSOR
-        // Garante que o cursor venha da PRIMEIRA mensagem da lista de itens devolvidos (a mais antiga)
-
         if (olderMessages.length > 0) {
           const oldestMsg = olderMessages[0];
-
-          // Se sentAt for do tipo Date, converte com toISOString(); se já for string, mantém
           const rawSentAt = oldestMsg.sentAt;
           const cursorDate = rawSentAt instanceof Date ? rawSentAt.toISOString() : rawSentAt;
 
@@ -140,7 +152,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         this.hasMore = res.data.hasMore;
         this.isLoadingMore = false;
 
-        // 4. PRESERVAÇÃO DO SCROLL
+        // 4. PRESERVAÇÃO DA POSIÇÃO DO SCROLL
         setTimeout(() => {
           const newScrollHeight = container.scrollHeight;
           container.scrollTop = newScrollHeight - previousScrollHeight;
@@ -150,6 +162,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Erro ao buscar mais mensagens:', err);
         this.isLoadingMore = false;
+        this.cdr.detectChanges();
       },
     });
   }
@@ -179,24 +192,36 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   send(): void {
-    const text = this.newMessageText.trim().substring(0, 500);
+    this.sendError = '';
+    const text = this.newMessageText.trim();
 
-    if (!text) return;
+    if (!text || this.isSending) return;
 
+    if (text.length > 500) {
+      this.sendError = 'A mensagem deve ter no máximo 500 caracteres.';
+      return;
+    }
+
+    this.isSending = true;
+    const textToSend = text;
     this.newMessageText = '';
 
     const request: CampaignChatMessageRequest = {
       campaignId: this.campaignId,
-      message: text,
+      message: textToSend,
     };
 
     this.chatService.sendMessage(request).subscribe({
       next: () => {
+        this.isSending = false;
         this.focusInput();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Erro ao enviar mensagem:', err);
-        this.newMessageText = text;
+        this.isSending = false;
+        this.newMessageText = textToSend;
+        this.sendError = err?.error?.message ?? 'Erro ao enviar a mensagem.';
         this.cdr.detectChanges();
         this.focusInput();
       },
