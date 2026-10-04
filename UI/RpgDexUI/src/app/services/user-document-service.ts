@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 import { CreateUserDocumentRequest } from '../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../models/updateUserDocumentRequest';
+import { UserDocumentResponse } from '../../models/userDocumentResponse';
 @Injectable({
   providedIn: 'root',
 })
@@ -14,30 +15,32 @@ export class UserDocumentService {
 
   http = inject(HttpClient);
 
-  UploadDocument(request: CreateUserDocumentRequest): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(`${this.env}`, request);
+  UploadDocument(
+    request: CreateUserDocumentRequest,
+  ): Observable<ApiResponse<UserDocumentResponse>> {
+    return this.http.post<ApiResponse<UserDocumentResponse>>(`${this.env}`, request);
   }
-  GetAllByUserId(page: number, pageSize: number): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${this.env}`, {
+  GetAllByUserId(page: number, pageSize: number): Observable<ApiResponse<UserDocumentResponse[]>> {
+    return this.http.get<ApiResponse<UserDocumentResponse[]>>(`${this.env}`, {
       params: {
         page,
         pageSize,
       },
     });
   }
-  GetById(id: string): Observable<ApiResponse<string>> {
-    return this.http.get<ApiResponse<string>>(`${this.env}/${id}`);
+  GetById(id: string): Observable<ApiResponse<UserDocumentResponse>> {
+    return this.http.get<ApiResponse<UserDocumentResponse>>(`${this.env}/${id}`);
   }
-  Update(request: UpdateUserDocumentRequest): Observable<ApiResponse<string>> {
-    return this.http.put<ApiResponse<string>>(`${this.env}`, request);
+  Update(request: UpdateUserDocumentRequest): Observable<ApiResponse<UserDocumentResponse>> {
+    return this.http.put<ApiResponse<UserDocumentResponse>>(`${this.env}`, request);
   }
-  Deactivate(request: { id: string }): Observable<ApiResponse<string>> {
-    return this.http.put<ApiResponse<string>>(`${this.env}/Deactivate/`, request);
+  Deactivate(request: { id: string }): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/Deactivate/`, request);
   }
-  GiveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<string>> {
-    return this.http.put<ApiResponse<string>>(`${this.env}/GiveAccess/`, request);
+  GiveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/GiveAccess/`, request);
   }
-  RemoveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<string>> {
-    return this.http.put<ApiResponse<string>>(`${this.env}/RemoveAccess/`, request);
+  RemoveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/RemoveAccess/`, request);
   }
 }
