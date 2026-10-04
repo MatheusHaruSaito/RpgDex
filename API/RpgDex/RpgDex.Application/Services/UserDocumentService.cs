@@ -1,6 +1,8 @@
-﻿using Mapster;
+﻿using FluentValidation;
+using Mapster;
 using RpgDex.Application.Common;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -11,11 +13,14 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService) : IUserDocumentService
+    public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService,
+        IValidator<CreateUserDocumentRequest> createUserDocumentValidator) : IUserDocumentService
     {
         public async Task<Result<UserDocumentResponse>> Create(string userId, CreateUserDocumentRequest request)
         {
-            if(!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
+            var checkCreateUserDocumentValidator = createUserDocumentValidator.Validate(request);
+            if (!checkCreateUserDocumentValidator.IsValid) return checkCreateUserDocumentValidator.ReturnErrors<UserDocumentResponse>();
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
             if (request?.File == null || request.File.Length == 0) return Result<UserDocumentResponse>.Failure(UserDocumentError.FileRequired);
             try
             {
