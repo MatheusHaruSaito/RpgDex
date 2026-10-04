@@ -163,8 +163,11 @@ export class AuthService {
   public ValidateTwoFactor(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ValidateTwoFactor/`, request);
   }
-  public SendTwoFactorAuthEmail(): Observable<ApiResponse<tokenModel>> {
-    return this.http.post<ApiResponse<tokenModel>>(`${this.env}/SendTwoFactorAuthEmailRequest`, '');
+  public SendTwoFactorAuthEmail(request: { email: string }): Observable<ApiResponse<tokenModel>> {
+    return this.http.post<ApiResponse<tokenModel>>(
+      `${this.env}/SendTwoFactorAuthEmailRequest`,
+      request,
+    );
   }
 
   public TwoFAActivation(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {

@@ -72,7 +72,7 @@ export class TwoFactorModalComponent {
     this.errorMessage = '';
     this.resendSuccess = false;
 
-    this.authService.SendTwoFactorAuthEmail().subscribe({
+    this.authService.SendTwoFactorAuthEmail({ email: this.userEmail }).subscribe({
       next: () => {
         this.resendSuccess = true;
         this.cdr.detectChanges();
