@@ -14,6 +14,7 @@ import { ResendEmailVerificationRequest } from '../../../models/resendEmailVerif
 export class EmailPending implements OnInit, OnDestroy {
   email = '';
   resendCooldown = 0;
+  isResending = false;
   resendSuccess = false;
   resendError = '';
 
@@ -32,18 +33,22 @@ export class EmailPending implements OnInit, OnDestroy {
   }
 
   resend(): void {
-    if (this.resendCooldown > 0 || !this.email) return;
+    if (this.resendCooldown > 0 || !this.email || this.isResending) return;
+
+    this.isResending = true;
     this.resendSuccess = false;
     this.resendError = '';
 
     const request: ResendEmailVerificationRequest = { email: this.email };
     this.authService.ResendEmailVerification(request).subscribe({
       next: () => {
+        this.isResending = false;
         this.resendSuccess = true;
         this.startCooldown(60);
         this.cdr.detectChanges();
       },
       error: (err) => {
+        this.isResending = false;
         this.resendError = err?.error?.message ?? 'Erro ao reenviar. Tente novamente.';
         this.cdr.detectChanges();
       },

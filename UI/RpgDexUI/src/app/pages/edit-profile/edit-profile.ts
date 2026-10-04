@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth-service';
 import { UserService } from '../../services/user-service';
 import { UserResponse } from '../../../models/userResponse';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
 
 interface EditProfileForm {
   displayName: string;
@@ -14,7 +15,7 @@ interface EditProfileForm {
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ImageCropperComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ImageCropperComponent, SkeletonComponent],
   templateUrl: './edit-profile.html',
   styleUrl: './edit-profile.css',
 })
@@ -32,7 +33,9 @@ export class EditProfileComponent implements OnInit {
 
   avatarPreviewUrl: string = '';
   selectedFile: File | null = null;
-  isLoading = false;
+  
+  isInitialLoading = true; // Estado de carregamento dos dados iniciais do utilizador
+  isLoading = false;        // Estado de envio/guardar formulário
   errorMessage = '';
   successMessage = '';
 
@@ -46,15 +49,22 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
+    this.loadUserProfile();
+  }
+
+  private loadUserProfile(): void {
+    this.isInitialLoading = true;
     this.authService.GetLoggedUser().subscribe({
       next: (response) => {
         this.currentUser = response.data ?? null;
         this.editForm.displayName = this.currentUser?.displayName ?? '';
         this.avatarPreviewUrl = this.currentUser?.iconPath ?? '';
+        this.isInitialLoading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.errorMessage = 'Não foi possível carregar os dados do perfil.';
+        this.isInitialLoading = false;
         this.cdr.detectChanges();
       },
     });

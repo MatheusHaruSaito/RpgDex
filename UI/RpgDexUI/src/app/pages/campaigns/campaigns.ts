@@ -8,11 +8,12 @@ import { CampaignService } from '../../services/campaign-service';
 import { Character } from '../../../models/character';
 import { Campaign } from '../../../models/campaign';
 import { CreateJoinCampaignModalComponent } from '../../modals/create-join-campaign-modal/create-join-campaign-modal';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
 
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule, RouterModule, CreateJoinCampaignModalComponent],
+  imports: [CommonModule, RouterModule, CreateJoinCampaignModalComponent, SkeletonComponent],
   templateUrl: './campaigns.html',
   styleUrls: ['./campaigns.css'],
 })
@@ -30,6 +31,10 @@ export class CampaignsComponent implements OnInit {
   myCharacters: Character[] = [];
   currentUserId = '';
 
+  // Estados de carregamento
+  isLoadingCampaigns = true;
+  isLoadingCharacters = true;
+
   showCharactersCount = 5;
 
   campaingPageCount = 2;
@@ -44,6 +49,9 @@ export class CampaignsComponent implements OnInit {
     if (this.currentUserId) {
       this.loadCampaigns();
       this.loadCharacters();
+    } else {
+      this.isLoadingCampaigns = false;
+      this.isLoadingCharacters = false;
     }
   }
 
@@ -62,29 +70,38 @@ export class CampaignsComponent implements OnInit {
   }
 
   private loadCampaigns(): void {
+    this.isLoadingCampaigns = true;
     this.campaignService.GetAllByUserPage(0, this.campaingsPerPage).subscribe({
       next: (r) => {
         if (r.data!.campaigns.length > this.campaingsPerPage - 1) {
           this.showMoreButton = true;
         }
         this.myCampaigns = r.data?.campaigns ?? [];
-
+        this.isLoadingCampaigns = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => {
+        this.isLoadingCampaigns = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
   private loadCharacters(): void {
+    this.isLoadingCharacters = true;
     this.characterService.GetAllByPage(1, this.showCharactersCount).subscribe({
       next: (r) => {
         const all = r.data?.characters ?? [];
         const filtered = all.filter((c) => c.userId === this.currentUserId);
 
         this.myCharacters = this.sortByLastAccessed(filtered);
+        this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => {
+        this.isLoadingCharacters = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -147,7 +164,6 @@ export class CampaignsComponent implements OnInit {
   }
 
   handleJoinCampaign(payload: { campaignId: string; password?: string }): void {
-    // Garante que o payload é enviado com as propriedades exigidas pela API
     const requestBody = {
       campaignId: payload.campaignId,
       password: payload.password ?? '',
@@ -164,11 +180,9 @@ export class CampaignsComponent implements OnInit {
     });
   }
 
-  // Tratamento rigoroso de erros do .NET com tradução automática
   private handleApiError(err: any): void {
     const body = err?.error;
 
-    // 1. Extração do dicionário de validação (ValidationProblemDetails)
     if (body?.errors && typeof body.errors === 'object') {
       const errorKeys = Object.keys(body.errors);
       if (errorKeys.length > 0) {
@@ -177,7 +191,6 @@ export class CampaignsComponent implements OnInit {
         if (Array.isArray(firstErrorVal) && firstErrorVal.length > 0) {
           const primaryError = firstErrorVal[0];
 
-          // Se for objeto estruturado com código de erro
           if (typeof primaryError === 'object' && primaryError?.code) {
             const translationKey = `ERRORS.${primaryError.code}`;
             this.translateService.get(translationKey).subscribe((translatedText: string) => {
@@ -187,9 +200,7 @@ export class CampaignsComponent implements OnInit {
             return;
           }
 
-          // Se for texto direto enviado pela API
           if (typeof primaryError === 'string') {
-            // Mapeamento local para erros padrão do model state em inglês
             if (primaryError.includes('request field is required')) {
               this.setModalError('O código da campanha é obrigatório.');
               return;
@@ -201,7 +212,6 @@ export class CampaignsComponent implements OnInit {
       }
     }
 
-    // 2. Extração de listas em formato de Array (ex: body.message ou body.errors)
     const errorList = Array.isArray(body?.message)
       ? body.message
       : Array.isArray(body?.errors)
@@ -219,7 +229,6 @@ export class CampaignsComponent implements OnInit {
       return;
     }
 
-    // 3. Fallbacks de mensagens diretas
     const fallbackText =
       (typeof body?.message === 'string' ? body.message : null) ??
       (typeof body?.detail === 'string' ? body.detail : null) ??

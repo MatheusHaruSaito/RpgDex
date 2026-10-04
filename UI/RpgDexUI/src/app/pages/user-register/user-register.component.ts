@@ -218,7 +218,6 @@ export class UserRegisterComponent implements OnInit {
     this.authService.Register(this.registerForm).subscribe({
       next: () => {
         this.isLoading = false;
-        // Transmite o e-mail sem exibi-lo na barra de endereços (URL)
         this.router.navigate(['/verificar-email'], {
           state: { email: this.registerForm.email },
         });

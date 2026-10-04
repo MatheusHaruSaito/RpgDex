@@ -111,9 +111,21 @@
     <div class="container cta-band__content">
       <h2 class="cta-band__title">Continue sua aventura</h2>
 
-      @if (characterPreview.length === 0) {
+      <!-- Estado SKELETON (Carregando) -->
+      @if (isLoadingCharacters) {
+        <div class="cta-chars">
+          <div class="cta-chars__grid">
+            @for (item of [1, 2, 3, 4]; track $index) {
+              <div class="cta-char-card">
+                <app-skeleton width="72px" height="72px" radius="50%"></app-skeleton>
+                <app-skeleton width="60px" height="14px" radius="4px"></app-skeleton>
+              </div>
+            }
+          </div>
+        </div>
+      } @else if (characterPreview.length === 0) {
         <!-- Sem personagens -->
-        <div class="cta-chars__empty">
+        <div class="cta-chars__empty fade-in-content">
           <p class="cta-chars__empty-text">Você ainda não tem personagens criados.</p>
           <button type="button" class="btn-white" routerLink="/personagens">
             <i class="fa-solid fa-plus"></i>
@@ -122,7 +134,7 @@
         </div>
       } @else {
         <!-- Com personagens -->
-        <div class="cta-chars">
+        <div class="cta-chars fade-in-content">
           <div class="cta-chars__grid">
             @for (char of characterPreview; track char.id || char.name) {
               <div class="cta-char-card" routerLink="/personagens">

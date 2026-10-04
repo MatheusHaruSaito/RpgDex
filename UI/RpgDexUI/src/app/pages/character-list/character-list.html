@@ -49,8 +49,33 @@
         </tr>
       </thead>
       <tbody>
-        @for (character of filteredList; track character.id) {
-          <tr (click)="navigateToEditor(character.id)" class="cl-row-clickable">
+        <!-- 1. ESTADO SKELETON (Carregando) -->
+        <ng-container *ngIf="isLoading">
+          <tr *ngFor="let item of [1, 2, 3, 4, 5]">
+            <td>
+              <div class="char-name-cell">
+                <app-skeleton width="40px" height="40px" radius="50%"></app-skeleton>
+                <app-skeleton width="140px" height="18px"></app-skeleton>
+              </div>
+            </td>
+            <td>
+              <app-skeleton width="80%" height="16px"></app-skeleton>
+            </td>
+            <td>
+              <div class="action-btns">
+                <app-skeleton width="34px" height="34px" radius="8px"></app-skeleton>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+
+        <!-- 2. LISTA REAL DE PERSONAGENS -->
+        <ng-container *ngIf="!isLoading && filteredList.length > 0">
+          <tr
+            *ngFor="let character of filteredList"
+            (click)="navigateToEditor(character.id)"
+            class="cl-row-clickable fade-in-content"
+          >
             <td>
               <div class="char-name-cell">
                 <div
@@ -79,25 +104,26 @@
               </div>
             </td>
           </tr>
-        } @empty {
-          <tr class="empty-row">
-            <td colspan="3">
-              <div class="empty-content">
-                <div class="empty-icon">
-                  <i class="fa fa-ghost"></i>
-                </div>
-                <p class="empty-text">Nenhum personagem encontrado</p>
-                <p class="empty-sub">
-                  {{
-                    searchQuery
-                      ? 'Tente buscar por outro nome.'
-                      : 'Clique em "Novo Personagem" para criar sua primeira ficha.'
-                  }}
-                </p>
+        </ng-container>
+
+        <!-- 3. ESTADO VAZIO -->
+        <tr class="empty-row" *ngIf="!isLoading && filteredList.length === 0">
+          <td colspan="3">
+            <div class="empty-content">
+              <div class="empty-icon">
+                <i class="fa fa-ghost"></i>
               </div>
-            </td>
-          </tr>
-        }
+              <p class="empty-text">Nenhum personagem encontrado</p>
+              <p class="empty-sub">
+                {{
+                  searchQuery
+                    ? 'Tente buscar por outro nome.'
+                    : 'Clique em "Novo Personagem" para criar sua primeira ficha.'
+                }}
+              </p>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>

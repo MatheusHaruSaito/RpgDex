@@ -1,9 +1,25 @@
 <div class="profile-wrapper">
   <div class="profile-container">
 
-    <!-- CARD DE PERFIL -->
+    <!-- 1. CARD DE PERFIL -->
     <div class="profile-card">
-      <header class="profile-header">
+
+      <!-- SKELETON: USER INFO -->
+      <header class="profile-header" *ngIf="isLoadingUser">
+        <div class="user-main-info">
+          <div class="avatar-wrapper">
+            <app-skeleton width="120px" height="120px" radius="50%"></app-skeleton>
+          </div>
+          <div class="user-text" style="gap: 8px;">
+            <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
+            <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
+            <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTEÚDO REAL: USER INFO -->
+      <header class="profile-header fade-in-content" *ngIf="!isLoadingUser">
         <div class="user-main-info">
           <div class="avatar-wrapper">
             @if (user?.iconPath) {
@@ -63,19 +79,19 @@
       </header>
     </div>
 
-    <!-- SEÇÃO DE CAMPANHAS -->
+    <!-- 2. SEÇÃO DE CAMPANHAS -->
     <div class="profile-card">
       <section class="campaigns-section">
         <div class="section-header">
           <div>
             <h2 class="section-title">Minhas Campanhas</h2>
-            @if (campaignTotal > 0) {
+            @if (!isLoadingCampaigns && campaignTotal > 0) {
               <span class="section-count">
                 {{ campaignTotal }} {{ campaignTotal === 1 ? 'campanha' : 'campanhas' }}
               </span>
             }
           </div>
-          @if (campaignTotal > 0) {
+          @if (!isLoadingCampaigns && campaignTotal > 0) {
             <a routerLink="/campanhas" class="section-link">
               <span>Ver todas</span>
               <i class="fa-solid fa-arrow-right"></i>
@@ -83,7 +99,19 @@
           }
         </div>
 
-        <div class="campaigns-grid">
+        <!-- SKELETON: CAMPANHAS -->
+        <div class="campaigns-grid" *ngIf="isLoadingCampaigns">
+          <div class="campaign-card" *ngFor="let item of [1, 2, 3]">
+            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+            <div class="card-info">
+              <app-skeleton width="70%" height="18px"></app-skeleton>
+              <app-skeleton width="40%" height="14px"></app-skeleton>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO REAL: CAMPANHAS -->
+        <div class="campaigns-grid fade-in-content" *ngIf="!isLoadingCampaigns">
           <div class="campaign-card add-card" routerLink="/campanhas">
             <i class="fa-solid fa-plus"></i>
             <span>Nova Campanha</span>
@@ -111,19 +139,19 @@
       </section>
     </div>
 
-    <!-- SEÇÃO DE PERSONAGENS -->
+    <!-- 3. SEÇÃO DE PERSONAGENS -->
     <div class="profile-card">
       <section class="characters-section">
         <div class="section-header">
           <div>
             <h2 class="section-title">Meus Personagens</h2>
-            @if (characterTotal > 0) {
+            @if (!isLoadingCharacters && characterTotal > 0) {
               <span class="section-count">
                 {{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}
               </span>
             }
           </div>
-          @if (characterTotal > 0) {
+          @if (!isLoadingCharacters && characterTotal > 0) {
             <a routerLink="/personagens" class="section-link">
               <span>Ver todos</span>
               <i class="fa-solid fa-arrow-right"></i>
@@ -131,7 +159,19 @@
           }
         </div>
 
-        <div class="campaigns-grid">
+        <!-- SKELETON: PERSONAGENS -->
+        <div class="campaigns-grid" *ngIf="isLoadingCharacters">
+          <div class="campaign-card" *ngFor="let item of [1, 2, 3]">
+            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+            <div class="card-info">
+              <app-skeleton width="70%" height="18px"></app-skeleton>
+              <app-skeleton width="90%" height="14px"></app-skeleton>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO REAL: PERSONAGENS -->
+        <div class="campaigns-grid fade-in-content" *ngIf="!isLoadingCharacters">
           <div class="campaign-card add-card" routerLink="/personagens">
             <i class="fa-solid fa-plus"></i>
             <span>Novo Personagem</span>

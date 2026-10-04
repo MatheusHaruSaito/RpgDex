@@ -18,8 +18,23 @@
 
     <!-- ── SEÇÃO: MINHAS CAMPANHAS ── -->
     <div class="cmp-section-card">
-      <!-- ── GRID DE CAMPANHAS ── -->
-      <div class="cmp-grid" *ngIf="myCampaigns.length > 0">
+
+      <!-- 1. SKELETON STATE (CAMPANHAS) -->
+      <div class="cmp-grid" *ngIf="isLoadingCampaigns">
+        <div class="cmp-card" *ngFor="let item of [1, 2, 3, 4]">
+          <div class="cmp-card__cover" style="padding: 0;">
+            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+          </div>
+          <div class="cmp-card__body">
+            <app-skeleton width="70%" height="18px"></app-skeleton>
+            <app-skeleton width="90%" height="14px"></app-skeleton>
+            <app-skeleton width="50%" height="14px"></app-skeleton>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. GRID REAL DE CAMPANHAS -->
+      <div class="cmp-grid fade-in-content" *ngIf="!isLoadingCampaigns && myCampaigns.length > 0">
         <div
           class="cmp-card"
           *ngFor="let camp of myCampaigns"
@@ -51,8 +66,8 @@
         </div>
       </div>
 
-      <!-- Vazio -->
-      <div class="cmp-empty" *ngIf="myCampaigns.length === 0">
+      <!-- 3. ESTADO VAZIO -->
+      <div class="cmp-empty" *ngIf="!isLoadingCampaigns && myCampaigns.length === 0">
         <div class="cmp-empty__icon"><i class="fa fa-map"></i></div>
         <p class="cmp-empty__title">Nenhuma campanha ainda.</p>
         <p class="cmp-empty__sub">Crie sua própria aventura ou junte-se a uma existente.</p>
@@ -66,7 +81,7 @@
         </div>
       </div>
 
-      <div id="btn-show-more" class="btn-show-more-container" *ngIf="showMoreButton">
+      <div id="btn-show-more" class="btn-show-more-container" *ngIf="!isLoadingCampaigns && showMoreButton">
         <button class="btn btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
       </div>
     </div>
@@ -85,8 +100,21 @@
       </div>
 
       <div class="char-session-list">
-        <!-- Vazio -->
-        <div class="char-empty" *ngIf="myCharacters.length === 0">
+        <!-- 1. SKELETON STATE (PERSONAGENS) -->
+        <ng-container *ngIf="isLoadingCharacters">
+          <div class="char-session-card" *ngFor="let item of [1, 2, 3]">
+            <div class="char-session-card__left">
+              <app-skeleton width="48px" height="48px" radius="50%"></app-skeleton>
+              <div class="char-session-card__info" style="flex: 1;">
+                <app-skeleton width="40%" height="16px"></app-skeleton>
+                <app-skeleton width="60%" height="12px"></app-skeleton>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- 2. ESTADO VAZIO -->
+        <div class="char-empty" *ngIf="!isLoadingCharacters && myCharacters.length === 0">
           <div class="char-empty__icon"><i class="fa fa-scroll"></i></div>
           <p class="char-empty__text">Nenhum personagem encontrado.</p>
           <a routerLink="/personagens" class="char-empty__link">
@@ -94,35 +122,35 @@
           </a>
         </div>
 
-        <!-- Item da Lista de Personagens (Máx. 5) -->
-        <div
-          class="char-session-card"
-          *ngFor="let char of myCharacters"
-          (click)="openCharacter(char.id)"
-        >
-          <div class="char-session-card__left">
-            <div
-              class="char-session-avatar"
-              [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
-            >
-              <i class="fa fa-shield-halved" *ngIf="!char.iconPath"></i>
+        <!-- 3. LISTA REAL DE PERSONAGENS -->
+        <ng-container *ngIf="!isLoadingCharacters && myCharacters.length > 0">
+          <div
+            class="char-session-card fade-in-content"
+            *ngFor="let char of myCharacters"
+            (click)="openCharacter(char.id)"
+          >
+            <div class="char-session-card__left">
+              <div
+                class="char-session-avatar"
+                [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
+              >
+                <i class="fa fa-shield-halved" *ngIf="!char.iconPath"></i>
+              </div>
+              <div class="char-session-card__info">
+                <span class="char-session-card__name">{{ char.name }}</span>
+                <span class="char-session-card__desc" *ngIf="char.description">{{ char.description }}</span>
+              </div>
             </div>
-            <div class="char-session-card__info">
-              <span class="char-session-card__name">{{ char.name }}</span>
-              <span class="char-session-card__desc" *ngIf="char.description">{{
-                char.description
-              }}</span>
-            </div>
-          </div>
 
-          <div class="char-quick-meta">
-            <span class="char-quick-time" [class.never]="!wasAccessed(char.id)">
-              <i class="fa fa-clock"></i>
-              {{ lastAccessedLabel(char.id) }}
-            </span>
-            <i class="fa fa-chevron-right char-quick-arrow"></i>
+            <div class="char-quick-meta">
+              <span class="char-quick-time" [class.never]="!wasAccessed(char.id)">
+                <i class="fa fa-clock"></i>
+                {{ lastAccessedLabel(char.id) }}
+              </span>
+              <i class="fa fa-chevron-right char-quick-arrow"></i>
+            </div>
           </div>
-        </div>
+        </ng-container>
       </div>
     </div>
   </div>

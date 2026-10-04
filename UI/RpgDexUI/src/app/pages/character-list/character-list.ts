@@ -7,11 +7,12 @@ import { AuthService } from '../../services/auth-service';
 import { Character } from '../../../models/character';
 import { CreateCharacterModal } from '../../modals/create-character-modal/create-character-modal';
 import { CreateCharacter } from '../../../models/createCharacter';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
 
 @Component({
   selector: 'app-character-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreateCharacterModal],
+  imports: [CommonModule, FormsModule, CreateCharacterModal, SkeletonComponent],
   templateUrl: './character-list.html',
   styleUrl: './character-list.css',
 })
@@ -25,19 +26,26 @@ export class CharacterList implements OnInit {
   filteredList: Character[] = [];
   searchQuery = '';
   showCreateModal = false;
+  isLoading = true; // Controla o estado de carregamento da lista
 
   ngOnInit(): void {
     this.GetAllCharacters();
   }
 
   GetAllCharacters(): void {
+    this.isLoading = true;
     this.characterService.GetAll().subscribe({
       next: (response) => {
         this.characterList = response.data?.characters ?? [];
         this.onSearch();
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Erro ao buscar personagens:', err),
+      error: (err) => {
+        console.error('Erro ao buscar personagens:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -99,7 +107,7 @@ export class CharacterList implements OnInit {
 
         this.characterService.Post(formData as unknown as CreateCharacter).subscribe({
           next: () => {
-            this.GetAllCharacters(); // ou o nome do seu método de carregar a lista
+            this.GetAllCharacters();
             alert('Personagem importado e salvo com sucesso!');
             input.value = '';
           },
