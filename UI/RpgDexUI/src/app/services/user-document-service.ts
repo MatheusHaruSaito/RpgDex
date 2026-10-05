@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { ApiResponse } from '../../models/apiResponse';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { CreateUserDocumentRequest } from '../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../models/updateUserDocumentRequest';
