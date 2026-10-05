@@ -66,5 +66,15 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_UPDATE_FAILED", "Failed to update user profile.");
         public static Error IdentityError(string description) => new("USER_IDENTITY_ERROR", description);
     }
+
+    public static class UserDocumentError
+    {
+        public static readonly Error NotFound = new("USER_DOCUMENT_NOT_FOUND", "User document not found.");
+        public static readonly Error NotOwned = new("USER_DOCUMENT_NOT_OWNED", "User is not the owner of the document.");
+        public static readonly Error FileRequired = new("USER_DOCUMENT_FILE_REQUIRED", "File is required and cannot be empty.");
+        public static readonly Error CreateFailed = new("USER_DOCUMENT_CREATE_FAILED", "Failed to create user document.");
+        public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
+        public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
+    }
 }
 

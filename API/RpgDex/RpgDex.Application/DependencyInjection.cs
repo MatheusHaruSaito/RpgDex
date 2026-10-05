@@ -22,6 +22,8 @@ namespace RpgDex.Application
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<ICampaignService, CampaignService>();
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
+            services.AddScoped<IUserDocumentService, UserDocumentService>();
+
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             return services;

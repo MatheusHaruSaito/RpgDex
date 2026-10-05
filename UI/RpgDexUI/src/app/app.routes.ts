@@ -54,6 +54,14 @@ export const routes: Routes = [
       ),
     canActivate: [authGuard],
   },
+  {
+    path: 'biblioteca',
+    loadComponent: () =>
+      import('./pages/library/library').then(
+        (m) => m.LibraryComponent
+      ),
+    canActivate: [authGuard],
+  },
 
   { path: '**', redirectTo: '/home' },
 ];

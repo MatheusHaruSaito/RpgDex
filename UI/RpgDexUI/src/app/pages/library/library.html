@@ -1,0 +1,348 @@
+<div class="library-wrapper fade-in-content">
+  <header class="library-header">
+    <div class="header-titles">
+      <h1 class="library-title">
+        <i class="fa-solid fa-folder-open icon-header"></i>
+        Biblioteca
+      </h1>
+      <p class="library-subtitle">
+        Armazene documentos, mapas, fichas e áudios para utilizar nas suas sessões.
+      </p>
+    </div>
+
+    <button type="button" class="btn-upload" (click)="openUploadModal()">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <span>Enviar Arquivo</span>
+    </button>
+  </header>
+
+  <section class="library-controls">
+    <div class="search-bar">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input
+        type="text"
+        placeholder="Buscar por nome, descrição ou arquivo..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="applyFilters()"
+      />
+      <button
+        type="button"
+        class="clear-search-btn"
+        *ngIf="searchTerm"
+        (click)="searchTerm = ''; applyFilters()"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="filter-pills">
+      <button
+        type="button"
+        class="pill-btn"
+        [class.active]="activeFilter === 'all'"
+        (click)="setFilter('all')"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        class="pill-btn"
+        [class.active]="activeFilter === 'pdf'"
+        (click)="setFilter('pdf')"
+      >
+        <i class="fa-solid fa-file-pdf"></i> PDFs
+      </button>
+      <button
+        type="button"
+        class="pill-btn"
+        [class.active]="activeFilter === 'image'"
+        (click)="setFilter('image')"
+      >
+        <i class="fa-solid fa-file-image"></i> Imagens
+      </button>
+      <button
+        type="button"
+        class="pill-btn"
+        [class.active]="activeFilter === 'doc'"
+        (click)="setFilter('doc')"
+      >
+        <i class="fa-solid fa-file-lines"></i> Textos
+      </button>
+      <button
+        type="button"
+        class="pill-btn"
+        [class.active]="activeFilter === 'audio'"
+        (click)="setFilter('audio')"
+      >
+        <i class="fa-solid fa-file-audio"></i> Áudios
+      </button>
+    </div>
+
+    <div class="view-toggle">
+      <button
+        type="button"
+        class="toggle-btn"
+        [class.active]="viewMode === 'grid'"
+        (click)="viewMode = 'grid'"
+        title="Grade"
+      >
+        <i class="fa-solid fa-border-all"></i>
+      </button>
+      <button
+        type="button"
+        class="toggle-btn"
+        [class.active]="viewMode === 'list'"
+        (click)="viewMode = 'list'"
+        title="Lista"
+      >
+        <i class="fa-solid fa-list"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- FEEDBACKS VISUAIS -->
+  <div class="feedback-toast success-toast" *ngIf="successMessage">
+    <i class="fa-solid fa-circle-check"></i>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div class="feedback-toast error-toast" *ngIf="errorMessage">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <main class="library-content">
+    <div class="state-container" *ngIf="isLoading">
+      <i class="fa-solid fa-spinner fa-spin state-icon"></i>
+      <p class="state-text">Carregando seus arquivos...</p>
+    </div>
+
+    <div class="state-container" *ngIf="!isLoading && filteredDocuments.length === 0">
+      <div class="empty-illustration">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h3 class="empty-title">Nenhum documento encontrado</h3>
+      <p class="empty-desc">
+        Sua biblioteca não possui arquivos ou nenhum atende aos filtros aplicados.
+      </p>
+      <button type="button" class="btn-secondary" (click)="openUploadModal()">
+        <i class="fa-solid fa-plus"></i> Adicionar Arquivo
+      </button>
+    </div>
+
+    <!-- GRADE -->
+    <div class="docs-grid" *ngIf="!isLoading && filteredDocuments.length > 0 && viewMode === 'grid'">
+      <div class="doc-card" *ngFor="let doc of filteredDocuments">
+        <div class="doc-card-header">
+          <div class="file-badge">
+            <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+          </div>
+          <div class="card-menu">
+            <button
+              type="button"
+              class="icon-action-btn"
+              (click)="openEditModal(doc)"
+              title="Editar"
+            >
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button
+              type="button"
+              class="icon-action-btn btn-delete"
+              (click)="deleteDocument(doc)"
+              title="Remover"
+            >
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="doc-card-body">
+          <h3 class="doc-title" [title]="doc.name">{{ doc.name }}</h3>
+          <p class="doc-description">{{ doc.description || 'Sem descrição.' }}</p>
+        </div>
+
+        <div class="doc-card-footer">
+          <div class="file-meta">
+            <span class="file-size">{{ formatFileSize(doc.fileSize) }}</span>
+            <span class="file-name" [title]="doc.fileName">{{ doc.fileName }}</span>
+          </div>
+
+          <a
+            [href]="doc.filePath"
+            target="_blank"
+            download
+            class="btn-download"
+            title="Download"
+          >
+            <i class="fa-solid fa-download"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- LISTA -->
+    <div class="docs-list" *ngIf="!isLoading && filteredDocuments.length > 0 && viewMode === 'list'">
+      <div class="list-header">
+        <span>Documento</span>
+        <span>Descrição</span>
+        <span>Tamanho</span>
+        <span>Ações</span>
+      </div>
+
+      <div class="list-row" *ngFor="let doc of filteredDocuments">
+        <div class="list-col-main">
+          <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+          <div class="list-title-group">
+            <strong class="list-title">{{ doc.name }}</strong>
+            <small class="list-filename">{{ doc.fileName }}</small>
+          </div>
+        </div>
+
+        <div class="list-col-desc">{{ doc.description || '—' }}</div>
+        <div class="list-col-size">{{ formatFileSize(doc.fileSize) }}</div>
+
+        <div class="list-col-actions">
+          <a [href]="doc.filePath" target="_blank" class="icon-action-btn" title="Download">
+            <i class="fa-solid fa-download"></i>
+          </a>
+          <button type="button" class="icon-action-btn" (click)="openEditModal(doc)" title="Editar">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button type="button" class="icon-action-btn btn-delete" (click)="deleteDocument(doc)" title="Remover">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL UPLOAD -->
+<div class="modal-backdrop fade-in" *ngIf="showUploadModal" (click)="closeUploadModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-title">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <h2>Enviar para a Biblioteca</h2>
+      </div>
+      <button type="button" class="btn-close" (click)="closeUploadModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="uploadDocument()" class="modal-body">
+      <div
+        class="dropzone"
+        (drop)="onFileDropped($event)"
+        (dragover)="onDragOver($event)"
+        [class.has-file]="!!selectedFile"
+      >
+        <input type="file" id="libraryFileInput" (change)="onFileSelected($event)" hidden />
+        <label for="libraryFileInput" class="dropzone-content">
+          <i
+            class="fa-solid dropzone-icon"
+            [ngClass]="selectedFile ? getFileIcon(selectedFile.name) : 'fa-cloud-arrow-up'"
+          ></i>
+          <div class="dropzone-text">
+            <strong *ngIf="!selectedFile">Arraste o arquivo ou clique para selecionar</strong>
+            <strong *ngIf="selectedFile">{{ selectedFile.name }}</strong>
+            <span *ngIf="selectedFile" class="file-size-badge">{{ formatFileSize(selectedFile.size) }}</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label for="docName">Nome do Documento *</label>
+        <input
+          type="text"
+          id="docName"
+          name="docName"
+          class="rpg-input"
+          placeholder="Ex: Mapa de Batalha"
+          [(ngModel)]="uploadData.name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="docDesc">Descrição (Opcional)</label>
+        <textarea
+          id="docDesc"
+          name="docDesc"
+          class="rpg-input rpg-textarea"
+          rows="3"
+          placeholder="Notas ou detalhes adicionais..."
+          [(ngModel)]="uploadData.description"
+        ></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeUploadModal()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="!selectedFile || !uploadData.name.trim() || isUploading"
+        >
+          <span *ngIf="!isUploading">Enviar</span>
+          <span *ngIf="isUploading"><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL EDIÇÃO -->
+<div class="modal-backdrop fade-in" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-header-title">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <h2>Editar Documento</h2>
+      </div>
+      <button type="button" class="btn-close" (click)="closeEditModal()">&times;</button>
+    </div>
+
+    <form (ngSubmit)="updateDocument()" class="modal-body">
+      <div class="form-group">
+        <label for="editDocName">Nome do Documento *</label>
+        <input
+          type="text"
+          id="editDocName"
+          name="editDocName"
+          class="rpg-input"
+          placeholder="Nome do documento"
+          [(ngModel)]="editData.name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="editDocDesc">Descrição</label>
+        <textarea
+          id="editDocDesc"
+          name="editDocDesc"
+          class="rpg-input rpg-textarea"
+          rows="3"
+          placeholder="Notas ou detalhes adicionais..."
+          [(ngModel)]="editData.description"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="editFile">Substituir Arquivo (Opcional)</label>
+        <input type="file" id="editFile" (change)="onEditFileSelected($event)" class="rpg-input" />
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="!editData.name.trim() || isUpdating"
+        >
+          <span *ngIf="!isUpdating">Salvar</span>
+          <span *ngIf="isUpdating"><i class="fa-solid fa-spinner fa-spin"></i> Salvando...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
