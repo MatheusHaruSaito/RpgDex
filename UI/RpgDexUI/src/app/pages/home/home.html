@@ -1,100 +1,89 @@
-<section class="hero" [style.background]="activeTheme().bg">
-  <div class="hero__grid" [style.background-image]="gridStyle()"></div>
-
-  <div class="hero__content">
-    <span
-      class="hero__tag"
-      [style.background]="activeTheme().tagBg"
-      [style.color]="activeTheme().tagC"
-    >
-      {{ activeTheme().tag }}
-    </span>
-
-    <p class="hero__phrase" [style.color]="activeTheme().phraseC">
-      {{ activeTheme().phrase }}
-    </p>
-
-    <h1
-      class="hero__title"
-      [style.font-family]="activeTheme().font"
-      [style.color]="activeTheme().titleC"
-    >
-      RPGDex
-    </h1>
-
-    <p class="hero__sub" [style.color]="activeTheme().subC">
-      A plataforma definitiva para organizar suas mesas, gerenciar fichas e mestrar todas suas
-      sessões.
-    </p>
-
-    <div class="hero__actions">
-      <button
-        type="button"
-        class="hero__cta"
-        [style.background]="activeTheme().ctaBg"
-        [style.color]="activeTheme().ctaC"
-        (click)="goToCta()"
-      >
-        {{ isLoggedIn ? 'Ir para Campanhas' : 'Começar Agora' }}
-      </button>
-    </div>
-  </div>
-
-  <div class="theme-selector">
-    @for (theme of themes; track $index) {
-      <button
-        type="button"
-        (click)="selectTheme($index)"
-        [class.active]="$index === current()"
-        class="dot"
-        [title]="theme.tag"
-        [attr.aria-label]="'Selecionar tema ' + theme.tag"
-      ></button>
-    }
-  </div>
-</section>
-
-<section class="features">
-  <div class="container">
-    <h2 class="features__title">Tudo que sua mesa precisa</h2>
-
-    <div class="features__grid">
-      <div class="feat-card">
-        <div class="feat-card__icon">
-          <i class="fa-solid fa-dice-d20"></i>
-        </div>
-        <h3 class="feat-card__title">Campanhas</h3>
-        <p class="feat-card__text">
-          Organize suas histórias, NPCs e sessões em um só lugar de forma intuitiva.
-        </p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-card__icon">
-          <i class="fa-solid fa-book-bookmark"></i>
-        </div>
-        <h3 class="feat-card__title">Biblioteca</h3>
-        <p class="feat-card__text">
-          Acesse itens, magias e monstros, salvando tudo que precisar.
-        </p>
-      </div>
-
-      <div class="feat-card">
-        <div class="feat-card__icon">
-          <i class="fa-solid fa-id-card"></i>
-        </div>
-        <h3 class="feat-card__title">Fichas</h3>
-        <p class="feat-card__text">
-          Gerencie seus personagens com total controle e personalização.
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA Section -->
 @if (!isLoggedIn) {
-  <!-- CTA: visitante -->
+  <!-- HOME PARA VISITANTES -->
+  <section class="hero" [style.background]="activeTheme().bg">
+    <div class="hero__grid" [style.background-image]="gridStyle()"></div>
+
+    <div class="hero__content">
+      <span
+        class="hero__tag"
+        [style.background]="activeTheme().tagBg"
+        [style.color]="activeTheme().tagC"
+      >
+        {{ activeTheme().tag }}
+      </span>
+
+      <p class="hero__phrase" [style.color]="activeTheme().phraseC">
+        {{ activeTheme().phrase }}
+      </p>
+
+      <h1
+        class="hero__title"
+        [style.font-family]="activeTheme().font"
+        [style.color]="activeTheme().titleC"
+      >
+        RPGDex
+      </h1>
+
+      <p class="hero__sub" [style.color]="activeTheme().subC">
+        A plataforma definitiva para organizar suas mesas, gerenciar fichas e mestrar todas suas
+        sessões.
+      </p>
+
+      <div class="hero__actions">
+        <button
+          type="button"
+          class="hero__cta"
+          [style.background]="activeTheme().ctaBg"
+          [style.color]="activeTheme().ctaC"
+          (click)="goToCta()"
+        >
+          Começar Agora
+        </button>
+      </div>
+    </div>
+
+    <div class="theme-selector">
+      @for (theme of themes; track $index) {
+        <button
+          type="button"
+          (click)="selectTheme($index)"
+          [class.active]="$index === current()"
+          class="dot"
+          [title]="theme.tag"
+          [attr.aria-label]="'Selecionar tema ' + theme.tag"
+        ></button>
+      }
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="features__title">Tudo que sua mesa precisa</h2>
+
+      <div class="features__grid">
+        <div class="feat-card">
+          <div class="feat-card__icon">
+            <i class="fa-solid fa-dice-d20"></i>
+          </div>
+          <h3 class="feat-card__title">Campanhas</h3>
+          <p class="feat-card__text">
+            Organize suas histórias, NPCs e sessões em um só lugar de forma intuitiva.
+          </p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card__icon">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <h3 class="feat-card__title">Fichas</h3>
+          <p class="feat-card__text">
+            Gerencie seus personagens com total controle e personalização.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="cta-band">
     <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
     <div class="container cta-band__content">
@@ -105,62 +94,146 @@
     </div>
   </section>
 } @else {
-  <!-- CTA: logado — preview de personagens -->
-  <section class="cta-band cta-band--logged">
-    <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
-    <div class="container cta-band__content">
-      <h2 class="cta-band__title">Continue sua aventura</h2>
+  <!-- HOME PARA USUÁRIOS LOGADOS (ESTRUTURA EM CARDS ESTILO PERFIL) -->
+  <div class="home-wrapper fade-in-content">
+    <div class="home-container">
 
-      <!-- Estado SKELETON (Carregando) -->
-      @if (isLoadingCharacters) {
-        <div class="cta-chars">
-          <div class="cta-chars__grid">
-            @for (item of [1, 2, 3, 4]; track $index) {
-              <div class="cta-char-card">
-                <app-skeleton width="72px" height="72px" radius="50%"></app-skeleton>
-                <app-skeleton width="60px" height="14px" radius="4px"></app-skeleton>
+      <!-- 1. HEADER HERO BANNER -->
+      <header class="dash-welcome">
+        <div class="welcome-user">
+          <div class="user-avatar-badge">
+            @if (userAvatarUrl) {
+              <img [src]="userAvatarUrl" [alt]="userName" class="user-avatar-img" />
+            } @else {
+              <div class="avatar-text-fallback">
+                {{ userName.substring(0, 2).toUpperCase() }}
               </div>
             }
           </div>
+          <div class="welcome-titles">
+            @if (isLoadingUser) {
+              <app-skeleton width="220px" height="28px" radius="6px"></app-skeleton>
+              <div style="margin-top: 6px;">
+                <app-skeleton width="280px" height="16px" radius="6px"></app-skeleton>
+              </div>
+            } @else {
+              <h1 class="welcome-heading">Bem-vindo, {{ userName }}!</h1>
+              <p class="welcome-sub">Sua mesa de jogo e suas ferramentas estão prontas para a próxima sessão.</p>
+            }
+          </div>
         </div>
-      } @else if (characterPreview.length === 0) {
-        <!-- Sem personagens -->
-        <div class="cta-chars__empty fade-in-content">
-          <p class="cta-chars__empty-text">Você ainda não tem personagens criados.</p>
-          <button type="button" class="btn-white" routerLink="/personagens">
+
+        <div class="quick-actions">
+          <button type="button" class="btn-quick primary" routerLink="/campanhas">
+            <i class="fa-solid fa-dice-d20"></i>
+            <span>Minhas Campanhas</span>
+          </button>
+          <button type="button" class="btn-quick secondary" routerLink="/personagens">
             <i class="fa-solid fa-plus"></i>
-            <span>Criar Personagem</span>
+            <span>Novo Personagem</span>
           </button>
         </div>
-      } @else {
-        <!-- Com personagens -->
-        <div class="cta-chars fade-in-content">
-          <div class="cta-chars__grid">
-            @for (char of characterPreview; track char.id || char.name) {
-              <div class="cta-char-card" routerLink="/personagens">
-                <div
-                  class="cta-char-card__avatar"
-                  [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
-                >
-                  @if (!char.iconPath) {
-                    <i class="fa-solid fa-shield-halved"></i>
-                  }
-                </div>
-                <span class="cta-char-card__name">{{ char.name }}</span>
+      </header>
+
+      <!-- 2. CARD DO PAINEL DE CONTROLE (MÓDULOS) -->
+      <div class="home-card">
+        <section class="dash-section">
+          <h2 class="dash-section-title">
+            <i class="fa-solid fa-compass"></i>
+            Painel de Controle
+          </h2>
+
+          <div class="modules-grid">
+            <a routerLink="/campanhas" class="module-card">
+              <div class="module-icon purple">
+                <i class="fa-solid fa-dice-d20"></i>
               </div>
+              <div class="module-info">
+                <h3>Campanhas & Mesas</h3>
+                <p>Acesse suas mesas ativas ou crie uma nova aventura.</p>
+              </div>
+              <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a>
+
+            <a routerLink="/personagens" class="module-card">
+              <div class="module-icon cyan">
+                <i class="fa-solid fa-user-group"></i>
+              </div>
+              <div class="module-info">
+                <h3>Fichas de Personagens</h3>
+                <p>Gerencie atributos, habilidades e inventários.</p>
+              </div>
+              <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a>
+          </div>
+        </section>
+      </div>
+
+      <!-- 3. CARD DE PERSONAGENS -->
+      <div class="home-card">
+        <section class="dash-section">
+          <div class="section-header-inline">
+            <div class="title-group">
+              <h2 class="dash-section-title margin-0">
+                <i class="fa-solid fa-shield-halved"></i>
+                Seus Personagens
+              </h2>
+              @if (!isLoadingCharacters && characterTotal > 0) {
+                <span class="section-count">{{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}</span>
+              }
+            </div>
+            @if (!isLoadingCharacters && characterTotal > 0) {
+              <a routerLink="/personagens" class="see-all-link">
+                <span>Ver todos</span>
+                <i class="fa-solid fa-arrow-right"></i>
+              </a>
             }
           </div>
 
-          <div class="cta-chars__actions">
-            <button type="button" class="btn-white" routerLink="/campanhas">
-              Jogar
-            </button>
-            <button type="button" class="btn-white btn-white--outline" routerLink="/personagens">
-              Ver todos os personagens
-            </button>
-          </div>
-        </div>
-      }
+          @if (isLoadingCharacters) {
+            <div class="chars-grid-large">
+              @for (item of [1, 2, 3]; track $index) {
+                <div class="char-dash-card skeleton-card">
+                  <app-skeleton width="48px" height="48px" radius="50%"></app-skeleton>
+                  <div class="skeleton-info">
+                    <app-skeleton width="120px" height="16px" radius="4px"></app-skeleton>
+                    <app-skeleton width="80px" height="12px" radius="4px"></app-skeleton>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (characterPreview.length === 0) {
+            <div class="dash-empty-box">
+              <i class="fa-solid fa-ghost empty-box-icon"></i>
+              <p>Você ainda não possui personagens cadastrados.</p>
+              <button type="button" class="btn-dash-action" routerLink="/personagens">
+                <i class="fa-solid fa-plus"></i> Criar Primeiro Personagem
+              </button>
+            </div>
+          } @else {
+            <div class="chars-grid-large">
+              @for (char of characterPreview; track char.id || char.name) {
+                <a [routerLink]="['/personagens']" class="char-dash-card">
+                  <div
+                    class="char-avatar"
+                    [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
+                  >
+                    @if (!char.iconPath) {
+                      <i class="fa-solid fa-shield-halved"></i>
+                    }
+                  </div>
+                  <div class="char-meta">
+                    <strong class="char-name">{{ char.name }}</strong>
+                    <span class="char-subtitle">{{ char.description || 'Clique para abrir a ficha' }}</span>
+                  </div>
+                  <i class="fa-solid fa-pen-to-square edit-icon"></i>
+                </a>
+              }
+            </div>
+          }
+        </section>
+      </div>
+
     </div>
-  </section>
+  </div>
 }

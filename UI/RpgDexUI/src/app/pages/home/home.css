@@ -1,4 +1,6 @@
-/* --- SEÇÃO HERO --- */
+/* ══════════════════════════════════════════════════════════════ */
+/* ESTILOS DA HOME VISITANTE (RESTANRADOS E ANIMADOS)           */
+/* ══════════════════════════════════════════════════════════════ */
 .hero {
   position: relative;
   min-height: 85vh;
@@ -86,7 +88,6 @@
   transform: translateY(0);
 }
 
-/* --- SELETOR DE TEMAS --- */
 .theme-selector {
   position: absolute;
   bottom: 40px;
@@ -117,14 +118,19 @@
 }
 
 .dot.active {
-  background: var(--rpg-purple);
+  background: var(--rpg-purple, #8a2be2);
   transform: scale(1.4);
 }
 
-/* --- FEATURES --- */
+/* FEATURES DESLOGADO */
 .features {
-  padding: 100px 0;
-  background-color: var(--rpg-bg);
+  padding: 100px 20px;
+  background-color: var(--rpg-bg, #f8fafc);
+}
+
+.features .container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .features__title {
@@ -132,7 +138,7 @@
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
   font-size: 2.8rem;
-  color: var(--rpg-text-dark);
+  color: var(--rpg-text-dark, #2d2654);
   margin: 0 0 70px;
 }
 
@@ -143,17 +149,13 @@
 }
 
 .feat-card {
-  background: var(--rpg-surface);
+  background: var(--rpg-surface, #ffffff);
   padding: 40px 30px;
   border-radius: 15px;
   text-align: center;
-  border: 2px solid var(--rpg-border-light);
-  background-clip: padding-box;
-  box-shadow: var(--rpg-shadow-sm);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.2s ease,
-              box-shadow 0.2s ease;
-  box-sizing: border-box;
+  border: 2px solid var(--rpg-border-light, #e2e8f0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -161,16 +163,16 @@
 
 .feat-card:hover {
   transform: translateY(-5px);
-  border-color: var(--rpg-purple);
-  box-shadow: var(--rpg-shadow-md);
+  border-color: var(--rpg-purple, #8a2be2);
+  box-shadow: 0 12px 24px rgba(138, 43, 226, 0.12);
 }
 
 .feat-card__icon {
   width: 56px;
   height: 56px;
   border-radius: 12px;
-  background: var(--rpg-purple-tint);
-  color: var(--rpg-purple);
+  background: rgba(138, 43, 226, 0.1);
+  color: var(--rpg-purple, #8a2be2);
   font-size: 1.5rem;
   display: flex;
   align-items: center;
@@ -180,7 +182,7 @@
 }
 
 .feat-card:hover .feat-card__icon {
-  background: var(--rpg-purple);
+  background: var(--rpg-purple, #8a2be2);
   color: #ffffff;
 }
 
@@ -188,19 +190,19 @@
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
   font-size: 1.4rem;
-  color: var(--rpg-text-dark);
+  color: var(--rpg-text-dark, #1a202c);
   margin: 0 0 12px;
 }
 
 .feat-card__text {
   font-family: 'Nunito', sans-serif;
   font-size: 1rem;
-  color: var(--rpg-text-body);
+  color: var(--rpg-text-body, #718096);
   line-height: 1.6;
   margin: 0;
 }
 
-/* --- CTA FINAL --- */
+/* CTA BAND DESLOGADO */
 .cta-band {
   position: relative;
   padding: 60px 20px;
@@ -241,18 +243,13 @@
   padding: 13px 35px;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--rpg-text-dark);
+  color: #2d2654;
   background: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-  text-align: center;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-white:hover {
@@ -261,129 +258,405 @@
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
 }
 
-.btn-white--outline {
-  background: transparent;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  box-shadow: none;
+/* ══════════════════════════════════════════════════════════════ */
+/* ESTILOS DO DASHBOARD LOGADO (ESTRUTURA EM CARDS DA HOME)       */
+/* ══════════════════════════════════════════════════════════════ */
+.home-wrapper {
+  padding: 40px 20px;
+  min-height: calc(100vh - 80px);
 }
 
-.btn-white--outline:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border-color: white;
-}
-
-/* --- CTA LOGADO --- */
-.cta-band--logged {
-  min-height: 360px;
-}
-
-.cta-chars {
+.home-container {
+  max-width: 1100px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 28px;
-  width: 100%;
 }
 
-.cta-chars__grid {
+.home-card {
+  background: var(--rpg-surface, #ffffff);
+  border-radius: 20px;
+  padding: 28px 32px;
+  border: 1px solid var(--rpg-border-light, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dash-welcome {
+  background: linear-gradient(135deg, #1f1b3a 0%, #151226 100%);
+  border: 1px solid #2d2654;
+  border-radius: 20px;
+  padding: 28px 32px;
   display: flex;
-  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   flex-wrap: wrap;
-  justify-content: center;
 }
 
-.cta-char-card {
+.welcome-user {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+  gap: 20px;
 }
 
-.cta-char-card:hover {
-  transform: translateY(-3px);
-}
-
-.cta-char-card__avatar {
-  width: 72px;
-  height: 72px;
+.user-avatar-badge {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.15);
-  background-size: cover;
-  background-position: center;
-  border: 3px solid rgba(255, 255, 255, 0.6);
+  background: var(--rpg-purple, #8a2be2);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.4rem;
-  transition: border-color 0.2s ease;
+  font-size: 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.cta-char-card:hover .cta-char-card__avatar {
-  border-color: white;
-}
-
-.cta-char-card__name {
+.avatar-text-fallback {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
+  color: #fff;
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.welcome-heading {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.8rem;
+  color: #ffffff;
+  margin: 0 0 6px;
+}
+
+.welcome-sub {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.98rem;
+  color: #a0aec0;
+  margin: 0;
+}
+
+.quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn-quick {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.92rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  border: none;
+}
+
+.btn-quick.primary {
+  background: var(--rpg-purple, #8a2be2);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(138, 43, 226, 0.35);
+}
+
+.btn-quick.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-quick:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.dash-section-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: var(--rpg-text-strong, #1a202c);
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dash-section-title.margin-0 {
+  margin: 0;
+}
+
+.dash-section-title i {
+  color: var(--rpg-purple, #8a2be2);
+}
+
+.section-header-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-count {
+  font-family: 'Exo 2', sans-serif;
   font-size: 0.85rem;
-  color: white;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  max-width: 80px;
-  text-align: center;
+  font-weight: 700;
+  color: var(--rpg-purple, #8a2be2);
+  background: rgba(138, 43, 226, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.see-all-link {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--rpg-purple, #8a2be2);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: gap 0.2s ease;
+}
+
+.see-all-link:hover {
+  gap: 10px;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.module-card {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 1.5px solid var(--rpg-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--rpg-purple, #8a2be2);
+  box-shadow: 0 8px 20px rgba(138, 43, 226, 0.12);
+}
+
+.module-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.module-icon.purple { background: #f4f0ff; color: #8a2be2; }
+.module-icon.cyan { background: #e6fffa; color: #319795; }
+
+.module-info {
+  flex: 1;
+}
+
+.module-info h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--rpg-text-strong, #1a202c);
+  margin: 0 0 4px;
+}
+
+.module-info p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  color: var(--rpg-text-body, #718096);
+  margin: 0;
+}
+
+.arrow-icon {
+  color: #cbd5e0;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.module-card:hover .arrow-icon {
+  color: var(--rpg-purple, #8a2be2);
+  transform: translateX(4px);
+}
+
+.chars-grid-large {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.char-dash-card {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 1.5px solid var(--rpg-border, #e2e8f0);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.char-dash-card:hover {
+  border-color: var(--rpg-purple, #8a2be2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.1);
+}
+
+.char-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #edf2f7;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a2be2;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.char-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.char-name {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--rpg-text-strong, #1a202c);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.cta-chars__actions {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
+.char-subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  color: var(--rpg-text-body, #a0aec0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cta-chars__empty {
+.edit-icon {
+  color: #cbd5e0;
+}
+
+.dash-empty-box {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 2px dashed var(--rpg-border, #e2e8f0);
+  border-radius: 16px;
+  padding: 32px 20px;
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
 }
 
-.cta-chars__empty-text {
-  color: rgba(255, 255, 255, 0.85);
+.empty-box-icon {
+  font-size: 2.2rem;
+  color: #cbd5e0;
+}
+
+.dash-empty-box p {
   font-family: 'Nunito', sans-serif;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  color: var(--rpg-text-body, #718096);
   margin: 0;
 }
 
+.btn-dash-action {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #f4f0ff;
+  color: var(--rpg-purple, #8a2be2);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-dash-action:hover {
+  background: var(--rpg-purple, #8a2be2);
+  color: #ffffff;
+}
+
+.skeleton-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.skeleton-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .fade-in-content {
-  animation: fadeInContent 0.3s ease-in-out forwards;
+  animation: fadeIn 0.3s ease-in-out forwards;
 }
 
-@keyframes fadeInContent {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 768px) {
-  .features__title {
-    font-size: 2.2rem;
-    margin-bottom: 40px;
+@media (max-width: 900px) {
+  .dash-welcome {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .cta-band__title {
-    font-size: 1.8rem;
+  .quick-actions {
+    width: 100%;
+  }
+
+  .btn-quick {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .home-card {
+    padding: 20px;
   }
 }
