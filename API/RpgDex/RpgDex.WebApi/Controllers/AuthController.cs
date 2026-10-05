@@ -127,6 +127,7 @@ namespace RpgDex.WebApi.Controllers
 
         }
         [HttpPost("ValidateTwoFactor")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateTwoFactor(ValidateTwoFactorRequest request)
         {
             var result = await _authSerice.ValidateTwoFactor(request);
@@ -134,9 +135,10 @@ namespace RpgDex.WebApi.Controllers
         }
 
         [HttpPost("SendTwoFactorAuthEmailRequest")]
-        public async Task<IActionResult> SendTwoFactorAuthEmailRequest()
+        [AllowAnonymous]
+        public async Task<IActionResult> SendTwoFactorAuthEmailRequest(SendTwoFactEmailrequest request)
         {
-            var result = await _authSerice.SendTwoFactorAuthEmailRequest(currentUser);
+            var result = await _authSerice.SendTwoFactorAuthEmailRequest(request);
             return result.ToIActionResult();
         }
 

@@ -88,3 +88,11 @@
     </div>
   </div>
 </div>
+
+<!-- Modal 2FA -->
+<app-two-factor-modal
+  [visible]="showTwoFactorModal"
+  [userEmail]="authUserForm.email"
+  (close)="showTwoFactorModal = false"
+  (authenticated)="onTwoFactorAuthenticated()"
+></app-two-factor-modal>

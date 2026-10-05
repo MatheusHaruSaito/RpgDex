@@ -1,0 +1,187 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 12, 35, 0.65);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--rpg-shadow-lg);
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rpg-border-light);
+  background: var(--rpg-surface-2);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--rpg-purple);
+  font-size: 1.1rem;
+}
+
+.header-title h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--rpg-text-dark);
+  margin: 0;
+}
+
+.btn-icon-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--rpg-text-faint);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.btn-icon-close:hover {
+  color: var(--rpg-purple);
+}
+
+.modal-body {
+  padding: 28px 24px;
+}
+
+.modal-desc {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--rpg-text-body);
+  line-height: 1.5;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.email-highlight {
+  color: var(--rpg-purple);
+  word-break: break-all;
+}
+
+.code-input-group {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.code-input {
+  width: 220px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 12px;
+  text-align: center;
+  padding: 12px 16px;
+  border: 2px solid var(--rpg-border);
+  border-radius: 12px;
+  background: var(--rpg-surface-2);
+  color: var(--rpg-text-strong);
+  transition: border-color 0.2s ease;
+}
+
+.code-input:focus {
+  outline: none;
+  border-color: var(--rpg-purple);
+  background: var(--rpg-surface);
+}
+
+.feedback-msg {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.error-msg {
+  color: var(--rpg-error);
+  background: var(--rpg-error-bg);
+  border: 1px solid var(--rpg-error-border);
+}
+
+.success-msg {
+  color: var(--rpg-success);
+  background: var(--rpg-success-bg);
+  border: 1px solid var(--rpg-success-border);
+}
+
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-resend {
+  background: transparent;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s ease;
+}
+
+.btn-resend:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn-submit {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 12px 28px;
+  border-radius: 10px;
+  background: var(--rpg-purple);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-submit:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.fade-in-content {
+  animation: fadeIn 0.25s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

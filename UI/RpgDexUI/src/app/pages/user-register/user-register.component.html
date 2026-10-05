@@ -22,7 +22,7 @@
       </div>
 
       <form class="register-form" (ngSubmit)="Register()">
-        <!-- Campo Nome de Usuário (estilo Discord) -->
+        <!-- Campo Nome de Usuário com conversão imediata para minúsculas e sanitização -->
         <div class="field-section">
           <div class="input-group">
             <i class="fa fa-at icon-field"></i>
@@ -31,6 +31,7 @@
               placeholder="Nome de usuário (ex: aragorn123)"
               name="userName"
               [(ngModel)]="registerForm.userName"
+              (input)="onUserNameInput($event)"
               autocomplete="username"
               maxlength="32"
               required

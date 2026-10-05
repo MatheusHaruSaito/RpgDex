@@ -1,0 +1,69 @@
+<div class="modal-backdrop fade-in-content" *ngIf="visible" (click)="onClose()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-title">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h2>Verificação de Dois Fatores</h2>
+      </div>
+      <button type="button" class="btn-icon-close" (click)="onClose()" aria-label="Fechar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="modal-desc">
+        Enviámos um código de verificação de 6 dígitos para o e-mail:
+        <strong class="email-highlight">{{ userEmail }}</strong>.
+      </p>
+
+      <form (ngSubmit)="verifyCode()">
+        <div class="code-input-group">
+          <input
+            type="text"
+            class="code-input"
+            placeholder="000000"
+            maxlength="6"
+            [(ngModel)]="code"
+            name="twoFactorCode"
+            (ngModelChange)="onCodeInput($event)"
+            autocomplete="one-time-code"
+            autofocus
+          />
+        </div>
+
+        <div class="feedback-msg error-msg" *ngIf="errorMessage">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ errorMessage }}</span>
+        </div>
+
+        <div class="feedback-msg success-msg" *ngIf="resendSuccess">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Código reenviado com sucesso!</span>
+        </div>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="btn-resend"
+            (click)="resendCode()"
+            [disabled]="isLoading"
+          >
+            <i class="fa-solid fa-rotate-right"></i> Reenviar código
+          </button>
+
+          <button
+            type="submit"
+            class="btn-submit"
+            [disabled]="code.length !== 6 || isLoading"
+          >
+            @if (!isLoading) {
+              <span>Confirmar</span>
+            } @else {
+              <i class="fa-solid fa-spinner fa-spin"></i>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

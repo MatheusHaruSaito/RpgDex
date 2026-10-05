@@ -81,7 +81,7 @@ export class SettingsModalComponent implements OnChanges {
     this.isSending2FAEmail = true;
     this.settingsMessage = { text: '', type: '' };
 
-    this.authService.SendTwoFactorAuthEmail().subscribe({
+    this.authService.SendTwoFactorAuthEmail({ email: this.user!.email }).subscribe({
       next: (response: any) => {
         this.isSending2FAEmail = false;
 

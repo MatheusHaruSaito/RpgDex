@@ -1,15 +1,16 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { AuthService } from '../../services/auth-service';
 import { FormsModule } from '@angular/forms';
 import { LoginUser } from '../../../models/loginUser';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { GoogleAuthService } from '../../services/google-auth-service';
+import { TwoFactorModalComponent } from '../../modals/two-factor-modal/two-factor-modal';
 
 @Component({
   selector: 'app-user-login',
   standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule],
+  imports: [FormsModule, RouterModule, CommonModule, TwoFactorModalComponent],
   templateUrl: './user-login.component.html',
   styleUrl: './user-login.component.css',
 })
@@ -17,6 +18,7 @@ export class UserLoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private googleAuth = inject(GoogleAuthService);
+  private cdr = inject(ChangeDetectorRef); // Injeção do ChangeDetectorRef
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,6 +30,9 @@ export class UserLoginComponent implements OnInit {
   showPassword = false;
   isLoading = false;
   errorMessage = '';
+
+  // Estado do modal 2FA
+  showTwoFactorModal = false;
 
   get emailInvalid(): boolean {
     return this.authUserForm.email.length > 0 && !this.emailRegex.test(this.authUserForm.email);
@@ -49,6 +54,7 @@ export class UserLoginComponent implements OnInit {
         },
         error: () => {
           this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
+          this.cdr.detectChanges();
         },
       });
     });
@@ -83,17 +89,30 @@ export class UserLoginComponent implements OnInit {
     }
 
     this.isLoading = true;
-
     this.authService.Login(this.authUserForm).subscribe({
-      next: () => {
+      next: (res) => {
         this.isLoading = false;
-        this.router.navigate(['/home']);
+
+        // Se o utilizador possui 2FA ativo no backend
+        if (res.data?.twoFactorEnabled) {
+          this.showTwoFactorModal = true;
+          this.cdr.detectChanges(); // Força o Angular a renderizar o modal na tela
+        } else {
+          this.router.navigate(['/home']);
+        }
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
-        this.errorMessage = 'Falha ao entrar. Verifique seu email e senha.';
+        this.errorMessage = err?.error?.message || 'Falha ao entrar. Verifique seu email e senha.';
+        this.cdr.detectChanges();
       },
     });
+  }
+
+  onTwoFactorAuthenticated(): void {
+    this.showTwoFactorModal = false;
+    this.cdr.detectChanges();
+    this.router.navigate(['/home']);
   }
 
   onDiscordLogin(): void {
