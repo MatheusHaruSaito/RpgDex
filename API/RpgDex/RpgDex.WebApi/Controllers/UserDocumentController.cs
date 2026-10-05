@@ -32,7 +32,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateUserDocumentRequest request)
+        public async Task<IActionResult> Update([FromForm] UpdateUserDocumentRequest request)
         {
             var result = await userDocumentService.Update(currentUserId, request);
             return result.ToIActionResult();
