@@ -17,7 +17,7 @@ export class UserDocumentService {
   private http = inject(HttpClient);
 
   UploadDocument(
-    request: CreateUserDocumentRequest
+    request: CreateUserDocumentRequest,
   ): Observable<ApiResponse<UserDocumentResponse>> {
     const formData = new FormData();
     formData.append('name', request.name);
@@ -29,7 +29,7 @@ export class UserDocumentService {
 
   GetAllByUserId(
     page: number = 1,
-    pageSize: number = 20
+    pageSize: number = 20,
   ): Observable<ApiResponse<UserDocumentResponse[]>> {
     return this.http.get<ApiResponse<UserDocumentResponse[]>>(`${this.env}`, {
       params: { page, pageSize },
@@ -40,9 +40,7 @@ export class UserDocumentService {
     return this.http.get<ApiResponse<UserDocumentResponse>>(`${this.env}/${id}`);
   }
 
-  Update(
-    request: UpdateUserDocumentRequest
-  ): Observable<ApiResponse<UserDocumentResponse>> {
+  Update(request: UpdateUserDocumentRequest): Observable<ApiResponse<UserDocumentResponse>> {
     const formData = new FormData();
     formData.append('id', request.id);
     formData.append('name', request.name);
@@ -65,17 +63,11 @@ export class UserDocumentService {
     return this.http.patch<ApiResponse<boolean>>(`${this.env}/Activate`, request);
   }
 
-  GiveAccess(request: {
-    documentId: string;
-    userId: string;
-  }): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(`${this.env}/GiveAccess`, request);
+  GiveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/GiveAccess`, request);
   }
 
-  RemoveAccess(request: {
-    documentId: string;
-    userId: string;
-  }): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(`${this.env}/RemoveAccess`, request);
+  RemoveAccess(request: { documentId: string; userId: string }): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/RemoveAccess`, request);
   }
 }

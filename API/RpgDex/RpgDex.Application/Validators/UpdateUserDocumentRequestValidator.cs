@@ -18,10 +18,13 @@ namespace RpgDex.Application.Validators
             var allowedExtensions = new[] {
              ".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp",
             ".pdf", ".txt", ".docx", ".xlsx", ".pptx", ".csv", };
-            RuleFor(u => u.File)
+            When(u => u.File != null, () =>
+            {
+                RuleFor(u => u.File)
             .Cascade(CascadeMode.Stop)
             .Must(file => allowedExtensions.Contains(System.IO.Path.GetExtension(file.FileName).ToLower())).WithMessage("File must be a PDF, TXT, DOCX, XLSX, PPTX, CSV, PNG, JPG, JPEG, WEBP, GIF or BMP file")
             .Must(file => file.Length <= maxSizeBytes).WithMessage("File size must not exceed 10MB");
+            });
         }
     }
 }
