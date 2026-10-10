@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
@@ -17,6 +17,7 @@ export class UserRegisterComponent implements OnInit {
   authService = inject(AuthService);
   private googleAuth = inject(GoogleAuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,19 +36,31 @@ export class UserRegisterComponent implements OnInit {
   showConfirmPassword = false;
 
   isLoading = false;
+  isGoogleLoading = false;
+  isDiscordLoading = false;
   errorMessage = '';
   successMessage = '';
+
+  get isAnyLoading(): boolean {
+    return this.isLoading || this.isGoogleLoading || this.isDiscordLoading;
+  }
 
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;
+      this.isGoogleLoading = true;
+      this.errorMessage = '';
+      this.cdr.detectChanges();
 
       this.authService.GoogleSingUp(token).subscribe({
         next: () => {
+          this.isGoogleLoading = false;
           this.router.navigate(['/home']);
         },
         error: () => {
-          this.errorMessage = 'Falha ao entrar com o Google. Verifique seu email e senha.';
+          this.isGoogleLoading = false;
+          this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
+          this.cdr.detectChanges();
         },
       });
     });
@@ -175,6 +188,8 @@ export class UserRegisterComponent implements OnInit {
   }
 
   loginComGoogle(): void {
+    if (this.isAnyLoading) return;
+
     const googleBtn = document.querySelector('#google-btn div[role="button"]') as HTMLElement;
     if (googleBtn) {
       googleBtn.click();
@@ -252,6 +267,8 @@ export class UserRegisterComponent implements OnInit {
   }
 
   onDiscordLogin() {
+    if (this.isAnyLoading) return;
+    this.isDiscordLoading = true;
     this.authService.DiscordSingUp();
   }
 }

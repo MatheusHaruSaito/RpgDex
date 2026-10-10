@@ -18,7 +18,7 @@ export class UserLoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private googleAuth = inject(GoogleAuthService);
-  private cdr = inject(ChangeDetectorRef); // Injeção do ChangeDetectorRef
+  private cdr = inject(ChangeDetectorRef);
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -29,13 +29,18 @@ export class UserLoginComponent implements OnInit {
 
   showPassword = false;
   isLoading = false;
+  isGoogleLoading = false;
+  isDiscordLoading = false;
   errorMessage = '';
 
-  // Estado do modal 2FA
   showTwoFactorModal = false;
 
   get emailInvalid(): boolean {
     return this.authUserForm.email.length > 0 && !this.emailRegex.test(this.authUserForm.email);
+  }
+
+  get isAnyLoading(): boolean {
+    return this.isLoading || this.isGoogleLoading || this.isDiscordLoading;
   }
 
   onEmailInput(value: string): void {
@@ -47,12 +52,17 @@ export class UserLoginComponent implements OnInit {
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;
+      this.isGoogleLoading = true;
+      this.errorMessage = '';
+      this.cdr.detectChanges();
 
       this.authService.GoogleSingUp(token).subscribe({
         next: () => {
+          this.isGoogleLoading = false;
           this.router.navigate(['/home']);
         },
         error: () => {
+          this.isGoogleLoading = false;
           this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
           this.cdr.detectChanges();
         },
@@ -67,6 +77,8 @@ export class UserLoginComponent implements OnInit {
   }
 
   loginComGoogle(): void {
+    if (this.isAnyLoading) return;
+
     const googleBtn = document.querySelector('#google-btn div[role="button"]') as HTMLElement;
     if (googleBtn) {
       googleBtn.click();
@@ -93,10 +105,9 @@ export class UserLoginComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
 
-        // Se o utilizador possui 2FA ativo no backend
         if (res.data?.twoFactorEnabled) {
           this.showTwoFactorModal = true;
-          this.cdr.detectChanges(); // Força o Angular a renderizar o modal na tela
+          this.cdr.detectChanges();
         } else {
           this.router.navigate(['/home']);
         }
@@ -116,6 +127,8 @@ export class UserLoginComponent implements OnInit {
   }
 
   onDiscordLogin(): void {
+    if (this.isAnyLoading) return;
+    this.isDiscordLoading = true;
     this.authService.DiscordSingUp('');
   }
 }

@@ -534,6 +534,17 @@
   color: var(--rpg-purple);
 }
 
+.social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.social-btn.loading {
+  color: var(--rpg-purple);
+  border-color: var(--rpg-purple);
+}
+
 /* ── ANIMAÇÃO DE REVELAÇÃO SUAVE ── */
 .fade-in-content {
   animation: fadeInContent 0.3s ease-in-out forwards;

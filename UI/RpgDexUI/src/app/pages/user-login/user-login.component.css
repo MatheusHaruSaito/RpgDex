@@ -351,6 +351,17 @@
   animation: fadeInContent 0.3s ease-in-out forwards;
 }
 
+.social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.social-btn.loading {
+  color: var(--rpg-purple);
+  border-color: var(--rpg-purple);
+}
+
 @keyframes fadeInContent {
   from {
     opacity: 0;

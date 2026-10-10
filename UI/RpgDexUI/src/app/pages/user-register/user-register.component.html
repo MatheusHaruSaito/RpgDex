@@ -22,7 +22,6 @@
       </div>
 
       <form class="register-form" (ngSubmit)="Register()">
-        <!-- Campo Nome de Usuário com conversão imediata para minúsculas e sanitização -->
         <div class="field-section">
           <div class="input-group">
             <i class="fa fa-at icon-field"></i>
@@ -34,6 +33,7 @@
               (input)="onUserNameInput($event)"
               autocomplete="username"
               maxlength="32"
+              [disabled]="isAnyLoading"
               required
             />
           </div>
@@ -53,6 +53,7 @@
             (ngModelChange)="onEmailInput($event)"
             (keydown.space)="$event.preventDefault()"
             autocomplete="email"
+            [disabled]="isAnyLoading"
             required
           />
         </div>
@@ -69,6 +70,7 @@
             name="password"
             [(ngModel)]="registerForm.password"
             autocomplete="new-password"
+            [disabled]="isAnyLoading"
             required
           />
           <button
@@ -115,6 +117,7 @@
             name="confirmPassword"
             [(ngModel)]="confirmPassword"
             autocomplete="new-password"
+            [disabled]="isAnyLoading"
             required
           />
           <button
@@ -138,6 +141,7 @@
               id="terms"
               name="terms"
               [ngModel]="termsAccepted"
+              [disabled]="isAnyLoading"
               (click)="onTermsCheckboxClick($event)"
             />
             <span class="terms-text">
@@ -163,7 +167,7 @@
           </div>
         }
 
-        <button type="submit" class="btn-register" [disabled]="isLoading">
+        <button type="submit" class="btn-register" [disabled]="isAnyLoading">
           @if (!isLoading) {
             <span>CADASTRAR</span>
           } @else {
@@ -180,22 +184,34 @@
         <button
           type="button"
           class="social-btn"
+          [class.loading]="isGoogleLoading"
+          [disabled]="isAnyLoading"
           (click)="loginComGoogle()"
           title="Cadastrar com Google"
           aria-label="Cadastrar com Google"
         >
-          <i class="fa-brands fa-google"></i>
+          @if (!isGoogleLoading) {
+            <i class="fa-brands fa-google"></i>
+          } @else {
+            <i class="fa fa-spinner fa-spin"></i>
+          }
         </button>
         <div id="google-btn" style="display: none; position: absolute"></div>
 
         <button
           type="button"
           class="social-btn"
+          [class.loading]="isDiscordLoading"
+          [disabled]="isAnyLoading"
           (click)="onDiscordLogin()"
           title="Cadastrar com Discord"
           aria-label="Cadastrar com Discord"
         >
-          <i class="fa-brands fa-discord"></i>
+          @if (!isDiscordLoading) {
+            <i class="fa-brands fa-discord"></i>
+          } @else {
+            <i class="fa fa-spinner fa-spin"></i>
+          }
         </button>
       </div>
 
