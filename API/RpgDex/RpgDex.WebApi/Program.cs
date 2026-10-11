@@ -23,6 +23,19 @@ builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        await IdentityDataSeeder.SeedRoleAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An Error has occured while seeding roles in database");
+    }
+}
 
 app.UseForwardedHeaders();
 app.UseRouting();
