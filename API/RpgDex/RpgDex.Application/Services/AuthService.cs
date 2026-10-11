@@ -35,6 +35,16 @@ namespace RpgDex.Application.Services
             var IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
             if(!IsEmailConfirmed) return Result<LoginResponse>.Failure(AuthError.EmailNotConfirmed);
 
+            var userHasRole = (await userManager.GetRolesAsync(user)).Any();
+            if (!userHasRole)
+            {
+                var result = await userManager.AddToRoleAsync(user, "User");
+                if (!result.Succeeded)
+                {
+                    return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
+                }
+            }
+
             var response = new LoginResponse();
 
             if (user.TwoFactorEnabled)
