@@ -12,6 +12,7 @@ namespace RpgDex.Domain.Entities
         public string Description { get; set; }
         public string ReportOwner { get; set; }
         public string DataId { get; set; }
+        public bool IsActive { get; set; }
         public ReportEnum ReportType { get; set; }
     }
 }
