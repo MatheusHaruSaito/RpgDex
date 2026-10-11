@@ -46,7 +46,18 @@ export class AuthService {
   public get currentUserValue() {
     return this.currentUserSubject.value;
   }
+  public isUserAdming = (): boolean => {
+    const jwtToken = this.cookieService.get(this.JWT_Token);
+    const decodedToken = jwtDecode<JwtPayload>(jwtToken);
+    const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+    console.log(role);
+    if (!role) return false;
 
+    if (Array.isArray(role)) {
+      return role.includes('Admin');
+    }
+    return role === 'Admin';
+  };
   public GetLoggedUser(): Observable<ApiResponse<UserResponse>> {
     const jwtToken = this.cookieService.get(this.JWT_Token);
     const decodedToken = jwtDecode<JwtPayload>(jwtToken);
