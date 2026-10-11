@@ -13,7 +13,7 @@ namespace RpgDex.Application.Dto
         public DateTime NextSession { get; set; }
         public IFormFile? Icon { get; set; }
         public int MaxPlayers { get; set; }
-        public string? newPassword { get; set; }
+        public string? NewPassword { get; set; }
 
     }
 }
