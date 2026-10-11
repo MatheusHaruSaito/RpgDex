@@ -1,8 +1,10 @@
 import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { ResendEmailVerificationRequest } from '../../../models/resendEmailVerificationRequest';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-email-pending',
@@ -22,6 +24,7 @@ export class EmailPending implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private translateService = inject(TranslateService);
 
   ngOnInit(): void {
     const navigation = this.router.getCurrentNavigation();
@@ -49,8 +52,10 @@ export class EmailPending implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isResending = false;
-        this.resendError = err?.error?.message ?? 'Erro ao reenviar. Tente novamente.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.resendError = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
