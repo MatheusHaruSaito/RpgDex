@@ -15,7 +15,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService, RoleManager<ApplicationRole> rolemanager,
+    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService,
         IConfiguration configuration, IDiscordAuthService discordAuthService, IValidator<CreateUserDTO> createUserValidator, IValidator<AuthUserDTO> authUserValidator) : IAuthService
     {
         private const string GoogleProvider = "Google";
@@ -175,6 +175,11 @@ namespace RpgDex.Application.Services
             user.DisplayName = user.UserName;
             var result = await userManager.CreateAsync(user, authUser.Password);
             if (!result.Succeeded)
+            {
+                return Result<string>.Failure(AuthError.UserCreationFailed);
+            }
+            var roleResult = await userManager.AddToRoleAsync(user,"User");
+            if (!roleResult.Succeeded)
             {
                 return Result<string>.Failure(AuthError.UserCreationFailed);
             }
