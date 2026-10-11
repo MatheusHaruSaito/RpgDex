@@ -5,4 +5,5 @@ export interface UpdateCampaignRequest {
   nextSession: Date;
   icon: File;
   maxPlayers: number;
+  newPassword: string;
 }
