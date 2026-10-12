@@ -53,6 +53,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
 
-    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
+    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório.",
+
+    "REPORT_NOT_FOUND": "Denúncia não encontrada.",
+    "REPORT_CREATE_FAILED": "Falha ao criar a denúncia.",
+    "REPORT_UPDATE_FAILED": "Falha ao atualizar a denúncia.",
+    "REPORT_CLOSE_FAILED": "Falha ao fechar a denúncia."
   }
 }

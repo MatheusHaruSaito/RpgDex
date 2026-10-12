@@ -53,6 +53,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
 
-    "VALIDATION_DISPLAYNAME": "Character name is required."
+    "VALIDATION_DISPLAYNAME": "Character name is required.",
+
+    "REPORT_NOT_FOUND": "Report not found.",
+    "REPORT_CREATE_FAILED": "Failed to create report.",
+    "REPORT_UPDATE_FAILED": "Failed to update report.",
+    "REPORT_CLOSE_FAILED": "Failed to close report."
   }
 }
