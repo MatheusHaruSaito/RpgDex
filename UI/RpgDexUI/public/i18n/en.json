@@ -44,6 +44,7 @@
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
 
     "USER_UPDATE_FAILED": "Failed to update user profile.",
+    "USER_BAN_FAILED": "Failed to ban the user.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
     "USER_DOCUMENT_NOT_FOUND": "User document not found.",

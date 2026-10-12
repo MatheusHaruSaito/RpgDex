@@ -44,6 +44,7 @@
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
+    "USER_BAN_FAILED": "Falha ao banir usuario",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
 
     "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
