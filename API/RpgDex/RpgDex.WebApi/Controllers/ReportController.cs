@@ -21,18 +21,24 @@ namespace RpgDex.WebApi.Controllers
             var result = await reportService.Create(currentUser,request);
             return result.ToIActionResult();
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("All/{page}/{pageSize}")]
         public async Task<IActionResult> GetAll(int page,int pageSize)
         {
             var result = await reportService.GetAll(page,pageSize);
             return result.ToIActionResult();
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByid(Guid id)
         {
             var result = await reportService.GetById(id);
             return result.ToIActionResult();
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpPatch("Close")]
         public async Task<IActionResult> GetByid(CloseReportRequest request)
         {
