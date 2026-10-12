@@ -23,6 +23,9 @@ export class ReportService {
     return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.env}/${id}`);
   }
   public Close(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}`, request);
+    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}/Close`, request);
+  }
+  public PunishUser(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
+    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}/PunishUser`, request);
   }
 }
