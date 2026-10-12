@@ -16,7 +16,7 @@ namespace RpgDex.WebApi.Controllers
         private string currentUser => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser(CreateReportRequest request)
+        public async Task<IActionResult> CreateReport(CreateReportRequest request)
         {
             var result = await reportService.Create(currentUser,request);
             return result.ToIActionResult();
