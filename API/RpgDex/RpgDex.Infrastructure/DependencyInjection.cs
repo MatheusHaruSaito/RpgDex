@@ -82,6 +82,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
 
 
 

@@ -23,7 +23,7 @@ namespace RpgDex.Application
             services.AddScoped<ICampaignService, CampaignService>();
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
             services.AddScoped<IUserDocumentService, UserDocumentService>();
-
+            services.AddScoped<IReportService, ReportService>();
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             return services;

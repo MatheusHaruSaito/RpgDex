@@ -10,6 +10,7 @@ namespace RpgDex.Domain.Interfaces
         Task<Report> InsertAsync(Report report);
         Task<IEnumerable<Report>> GetAllAsync(int page = 1, int pageSize = 5);
         Task<Report> GetByIdAsync(Guid id);
+        Task<long> GetReportsCountAsync();
         Task<bool> SetActiveState(Guid Id, bool ActiveState);
     }
 }

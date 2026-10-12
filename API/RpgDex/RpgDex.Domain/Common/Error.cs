@@ -76,5 +76,12 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
     }
+    public static class ReportError
+    {
+        public static readonly Error NotFound = new("REPORT_NOT_FOUND", "Report not found.");
+        public static readonly Error CreateFailed = new("REPORT_CREATE_FAILED", "Failed to create report.");
+        public static readonly Error UpdateFailed = new("REPORT_UPDATE_FAILED", "Failed to update report.");
+        public static readonly Error CloseFailed = new("REPORT_CLOSE_FAILED", "Failed to close report.");
+    }
 }
 

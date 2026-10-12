@@ -35,6 +35,12 @@ namespace RpgDex.Infrastructure.Repositories
             return await _entitie.Find(filter).FirstOrDefaultAsync();
         }
 
+        public async Task<long> GetReportsCountAsync()
+        {
+            var filter = Builders<Report>.Filter.Eq(c => c.IsActive, true);
+            return await _entitie.Find(filter).CountDocumentsAsync();
+        }
+
         public async Task<Report> InsertAsync(Report report)
         {
             await _entitie.InsertOneAsync(report);
