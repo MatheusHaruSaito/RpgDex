@@ -45,5 +45,12 @@ namespace RpgDex.WebApi.Controllers
             var result = await reportService.Close(request);
             return result.ToIActionResult();
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("PunishUser")]
+        public async Task<IActionResult> CloseReportRequest(UserPunishRequest request)
+        {
+            var result = await reportService.PunishAndCloseAsync(request);
+            return result.ToIActionResult();
+        }
     }
 }

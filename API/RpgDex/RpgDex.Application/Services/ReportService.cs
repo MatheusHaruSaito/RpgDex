@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class ReportService(IReportRepository reportRepository,ICampaignRepository campaignRepository,ICharacterRepository characterRepository) : IReportService
+    public class ReportService(IReportRepository reportRepository,ICampaignRepository campaignRepository,ICharacterRepository characterRepository,UserManager<ApplicationUser> userManager) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
         {
@@ -61,6 +62,41 @@ namespace RpgDex.Application.Services
                 return Result<ReportResponse>.Failure(ReportError.NotFound);
             }
             return Result<ReportResponse>.Success(report.Adapt<ReportResponse>());
+        }
+
+        public async Task<Result<ReportResponse>> PunishAndCloseAsync(UserPunishRequest request)
+        {
+            var report = await reportRepository.GetByIdAsync(request.reportId);
+            if (report is null)
+            {
+                return Result<ReportResponse>.Failure(ReportError.NotFound);
+            }
+            var user = await userManager.FindByIdAsync(report.ReportedUser.ToString());
+            if(user is null)
+            {
+                return Result<ReportResponse>.Failure(AuthError.UserNotFound);
+            }
+            if (!user.LockoutEnabled)
+            {
+                await userManager.SetLockoutEnabledAsync(user, true);
+            }
+            var lockoutEnd = DateTimeOffset.UtcNow.AddYears(100);
+            var result = await userManager.SetLockoutEndDateAsync(user,lockoutEnd);
+
+            if (!result.Succeeded)
+            {
+                return Result<ReportResponse>.Failure(UserError.BanFailed);
+            }
+            //Send an email After this
+
+            //
+            var closeResult = await reportRepository.SetActiveState(report.Id, false);
+            if (!closeResult)
+            {
+                return Result<ReportResponse>.Failure(ReportError.CloseFailed);
+            }
+            return Result<ReportResponse>.Success(report.Adapt<ReportResponse>());
+
         }
 
         private async Task<Guid> GetUserIdByReportType(ReportEnum type,Guid DataId)

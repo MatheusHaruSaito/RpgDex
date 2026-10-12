@@ -64,6 +64,7 @@ namespace RpgDex.Domain.Common
     public static class UserError
     {
         public static readonly Error UpdateFailed = new("USER_UPDATE_FAILED", "Failed to update user profile.");
+        public static readonly Error BanFailed = new("USER_BAN_FAILED", "Failed to ban the user.");
         public static Error IdentityError(string description) => new("USER_IDENTITY_ERROR", description);
     }
 

@@ -12,6 +12,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<GetAllReportResponse>> GetAll(int page, int pageSize);
         Task<Result<ReportResponse>> GetById(Guid id);
         Task<Result<ReportResponse>> Close(CloseReportRequest request);
-        //Task<ReportResponse> PunishUser(UserPunishRequest request);
+        //In the future add the possibility to chose punishment time
+        Task<Result<ReportResponse>> PunishAndCloseAsync(UserPunishRequest request);
     }
 }
