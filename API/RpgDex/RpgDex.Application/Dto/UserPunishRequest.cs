@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record UserPunishRequest(Guid reportId);
+    public record UserPunishRequest(Guid ReportId);
 }

@@ -32,7 +32,10 @@ namespace RpgDex.Application.Services
 
             var validUser = await userManager.CheckPasswordAsync(user, authUser.Password);
             if (!validUser) return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
-
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                return Result<LoginResponse>.Failure(UserError.UserIsBanned);
+            }
             var IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
             if(!IsEmailConfirmed) return Result<LoginResponse>.Failure(AuthError.EmailNotConfirmed);
 
@@ -218,6 +221,10 @@ namespace RpgDex.Application.Services
             var userDb = await userManager.FindByEmailAsync(googleUser.email);
 
             if (userDb is not null) {
+                if (await userManager.IsLockedOutAsync(userDb))
+                {
+                    return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
+                }
                 //User Exists, but is the user already linked with Google?
                 var userLogins = await userManager.GetLoginsAsync(userDb);
                 var googleLoginInfo = userLogins.FirstOrDefault(l => l.LoginProvider == GoogleProvider && l.ProviderKey == googleUser.googleId);
@@ -271,6 +278,10 @@ namespace RpgDex.Application.Services
             var userDb = await userManager.FindByEmailAsync(discorduser.Email);
             if (userDb is not null)
             {
+                if (await userManager.IsLockedOutAsync(userDb))
+                {
+                    return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
+                }
                 //User Exists, but is the user already linked with Discord?
                 var userLogins = await userManager.GetLoginsAsync(userDb);
                 if (!userLogins.Any(x => x.LoginProvider == DiscordProvider))

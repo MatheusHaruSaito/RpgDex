@@ -45,6 +45,7 @@
 
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_BAN_FAILED": "Failed to ban the user.",
+    "USER_IS_BANNED": "This user account is banned.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
     "USER_DOCUMENT_NOT_FOUND": "User document not found.",
