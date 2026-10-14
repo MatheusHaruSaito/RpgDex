@@ -76,5 +76,28 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
     }
+    public static class ValidationErrorCodes
+    {
+        public const string GeneralEmpty = "VALIDATION_EMPTY";
+        public const string GeneralMaxLength = "VALIDATION_MAX_LENGTH";
+        public const string InvalidEmail = "VALIDATION_INVALID_EMAIL";
+        public const string FileTooLarge = "VALIDATION_FILE_TOO_LARGE";
+        public const string InvalidFileExtension = "VALIDATION_INVALID_FILE_EXTENSION";
+
+        public const string PasswordEmpty = "VALIDATION_PASSWORD_EMPTY";
+        public const string PasswordUppercase = "VALIDATION_PASSWORD_UPPERCASE";
+        public const string PasswordLowercase = "VALIDATION_PASSWORD_LOWERCASE";
+        public const string PasswordNumber = "VALIDATION_PASSWORD_NUMBER";
+        public const string PasswordSpecial = "VALIDATION_PASSWORD_SPECIAL";
+
+        public const string UserNameEmpty = "VALIDATION_USERNAME_EMPTY";
+        public const string UserNameMaxLength = "VALIDATION_USERNAME_MAX_LENGTH";
+        public const string UserNameNoSpaces = "VALIDATION_USERNAME_NO_SPACES";
+        public const string UserNameInvalidChars = "VALIDATION_USERNAME_INVALID_CHARS";
+        public const string DisplayNameEmpty = "VALIDATION_DISPLAYNAME_EMPTY";
+
+        public const string CampaignIconRequired = "CAMPAIGN_VALIDATION_ICON_REQUIRED";
+        public const string DocumentFileRequired = "DOCUMENT_VALIDATION_FILE_REQUIRED";
+    }
 }
 

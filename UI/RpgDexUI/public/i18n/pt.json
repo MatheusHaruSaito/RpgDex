@@ -53,6 +53,17 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
 
-    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
+    "VALIDATION_PASSWORD_EMPTY": "A senha não pode estar vazia.",
+    "VALIDATION_PASSWORD_UPPERCASE": "A senha deve conter pelo menos uma letra maiúscula.",
+    "VALIDATION_PASSWORD_LOWERCASE": "A senha deve conter pelo menos uma letra minúscula.",
+    "VALIDATION_PASSWORD_NUMBER": "A senha deve conter pelo menos um número.",
+    "VALIDATION_PASSWORD_SPECIAL": "A senha deve conter pelo menos um caractere especial.",
+    "VALIDATION_USERNAME_EMPTY": "O nome de utilizador não pode estar vazio.",
+    "VALIDATION_USERNAME_MAX_LENGTH": "O nome de utilizador não pode exceder 255 caracteres.",
+    "VALIDATION_USERNAME_NO_SPACES": "O nome de utilizador não pode conter espaços.",
+    "VALIDATION_USERNAME_INVALID_CHARS": "O nome de utilizador apenas pode conter letras, números e underscores.",
+    "CAMPAIGN_VALIDATION_ICON_REQUIRED": "A imagem da campanha é obrigatória.",
+    "VALIDATION_INVALID_FILE_EXTENSION": "O ícone deve ser um ficheiro JPG, JPEG, PNG ou WEBP.",
+    "VALIDATION_FILE_TOO_LARGE": "O tamanho do ficheiro do ícone excede o limite permitido."
   }
 }
