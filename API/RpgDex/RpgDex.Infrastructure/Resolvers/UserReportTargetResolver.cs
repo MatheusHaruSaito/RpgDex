@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RpgDex.Infrastructure.Services
+namespace RpgDex.Infrastructure.Resolvers
 {
     public class UserReportTargetResolver : IReportTargetResolver
     {

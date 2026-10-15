@@ -16,6 +16,7 @@ using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
+using RpgDex.Infrastructure.Resolvers;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
@@ -87,6 +88,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IReportQueries, ReportQueries>();
             services.AddScoped<IReportTargetResolver, UserReportTargetResolver>();
+            services.AddScoped<IReportTargetResolver, CampaignReportTargetResolver>();
 
 
             //Identity
