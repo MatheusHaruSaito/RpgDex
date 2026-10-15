@@ -6,6 +6,7 @@ import { CreateReportRequest } from '../../models/createReportRequest';
 import { ReportResponse } from '../../models/reportResponse';
 import { ApiResponse } from '../../models/apiResponse';
 import { GetAllReportResponse } from '../../models/getAllReportResponse';
+import { ReportDetail } from '../../models/reportDetailBase';
 
 @Injectable({
   providedIn: 'root',
@@ -19,8 +20,8 @@ export class ReportService {
   public GetAll(page: number, pageSize: number): Observable<ApiResponse<GetAllReportResponse>> {
     return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.env}/All/${page}/${pageSize}`);
   }
-  public GetById(id: string): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.env}/${id}`);
+  public GetById(id: string): Observable<ApiResponse<ReportDetail>> {
+    return this.http.get<ApiResponse<ReportDetail>>(`${this.env}/${id}`);
   }
   public Close(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
     return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}/Close`, request);

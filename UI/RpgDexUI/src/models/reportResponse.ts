@@ -1,4 +1,4 @@
-import { ReportEnum } from './reportEnum';
+import { ReportType } from './reportType';
 
 export interface ReportResponse {
   id: string;
@@ -8,5 +8,5 @@ export interface ReportResponse {
   dataId: string;
   reportedUser: string;
   isActive: boolean;
-  ReportEnum: ReportEnum;
+  ReportEnum: ReportType;
 }

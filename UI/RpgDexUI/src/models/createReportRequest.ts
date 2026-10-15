@@ -1,8 +1,8 @@
-import { ReportEnum } from './reportEnum';
+import { ReportType } from './reportType';
 
 export interface CreateReportRequest {
   title: string;
   description: string;
   dataId: string;
-  ReportEnum: ReportEnum;
+  ReportEnum: ReportType;
 }
