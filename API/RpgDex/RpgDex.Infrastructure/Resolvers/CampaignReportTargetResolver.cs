@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
@@ -18,14 +19,16 @@ namespace RpgDex.Infrastructure.Resolvers
         private readonly IMongoCollection<ApplicationUser> _users;
         private readonly IMongoCollection<Campaign> _campaigns;
         private readonly IMongoCollection<Character> _characters;
+        private readonly IFileUrlBuilder _urls;
 
 
-        public CampaignReportTargetResolver(MongoDbContext dbContext)
+        public CampaignReportTargetResolver(MongoDbContext dbContext, IFileUrlBuilder urls)
         {
             _dbContext = dbContext;
             _users = _dbContext.Users;
             _campaigns = _dbContext.Campaigns;
             _characters = _dbContext.Character;
+            _urls = urls;
         }
 
         public ReportEnum Type => ReportEnum.CampaignReport;
@@ -46,7 +49,7 @@ namespace RpgDex.Infrastructure.Resolvers
             var characters = characterTask.Result;
 
             UserSummary? ToSummary(Guid id) => users.TryGetValue(id, out var u)
-                ? u.ToSummary()
+                ? u.ToSummary(_urls)
                 : null;
 
             var players = campaign.PlayerIds
@@ -57,9 +60,9 @@ namespace RpgDex.Infrastructure.Resolvers
                     characters.Where(c => c.UserId == s!.Id).Select(c => c.Id).ToList())).ToList();
 
             return new ReportedCampaignProfile(
-                campaign.Id, campaign.Title, campaign.Description, campaign.IconPath, campaign.IsActive, campaign.CreatedAt,
+                campaign.Id, campaign.Title, campaign.Description, _urls.Build(campaign.IconPath), campaign.IsActive, campaign.CreatedAt,
                 campaign.NextSession, campaign.MaxPlayers, ToSummary(campaign.GameMasterId), players,
-                characters.Select(c => new CampaignCharacterSummary(c.Id, c.Name, c.IconPath, c.UserId)).ToList(),
+                characters.Select(c => new CampaignCharacterSummary(c.Id, c.Name, _urls.Build(c.IconPath), c.UserId)).ToList(),
                 campaign.CharacterRequests.Count());
         }
     }

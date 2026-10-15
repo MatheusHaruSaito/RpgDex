@@ -2,6 +2,7 @@
 using MongoDB.Bson.IO;
 using MongoDB.Driver;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
@@ -20,13 +21,14 @@ namespace RpgDex.Infrastructure.Resolvers
 
         private readonly IMongoCollection<ApplicationUser> _users;
         private readonly IMongoCollection<Character> _characters;
+        private readonly IFileUrlBuilder _urls;
 
-
-        public CharacterReportTargetResolver(MongoDbContext dbContext)
+        public CharacterReportTargetResolver(MongoDbContext dbContext, IFileUrlBuilder urls)
         {
             _dbContext = dbContext;
             _users = _dbContext.Users;
             _characters = _dbContext.Character;
+            _urls = urls;
         }
 
         public ReportEnum Type => ReportEnum.CharacterReport;
@@ -41,12 +43,12 @@ namespace RpgDex.Infrastructure.Resolvers
             return new ReportedCharacterProfile(
                 character.Id,
                 character.Name,
-                character.IconPath,
+                _urls.Build(character.IconPath),
                 character.Description,
                 character.IsActive,
                 character.CreatedAt,
                 character.LastAccess,
-                owner?.ToSummary(),
+                owner?.ToSummary(_urls),
                 character.Properties.ToDictionary()
                 );
         }

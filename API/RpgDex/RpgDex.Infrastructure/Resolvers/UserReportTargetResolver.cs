@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
@@ -18,14 +19,16 @@ namespace RpgDex.Infrastructure.Resolvers
         private readonly IMongoCollection<ApplicationUser> _users;
         private readonly IMongoCollection<Campaign> _campaigns;
         private readonly IMongoCollection<Character> _characters;
+        private readonly IFileUrlBuilder _urls;
 
 
-        public UserReportTargetResolver(MongoDbContext dbContext)
+        public UserReportTargetResolver(MongoDbContext dbContext, IFileUrlBuilder urls)
         {
             _dbContext = dbContext;
             _users = _dbContext.Users;
             _campaigns = _dbContext.Campaigns;
             _characters = _dbContext.Character;
+            _urls = urls;
         }
 
         public ReportEnum Type => ReportEnum.UserReport;
@@ -50,7 +53,7 @@ namespace RpgDex.Infrastructure.Resolvers
                 && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
 
             return new ReportedUserProfile(
-                user.ToSummary(),
+                user.ToSummary(_urls),
                 (int)charactersTask.Result,
                 (int)campaignsTask.Result,
                 isLocked ? user.LockoutEnd : null
