@@ -4,6 +4,7 @@ using RpgDex.Domain.Entities;
 using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
+using RpgDex.Infrastructure.Extension;
 using System;
 using System.Collections.Generic;
 using System.Text;
