@@ -12,7 +12,8 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class ReportService(IReportRepository reportRepository,ICampaignRepository campaignRepository,ICharacterRepository characterRepository,UserManager<ApplicationUser> userManager) : IReportService
+    public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager,
+        IReportQueries queries) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
         {
@@ -31,9 +32,16 @@ namespace RpgDex.Application.Services
         {
             if (!Guid.TryParse(userId, out var userIdGuid)) return Result<ReportResponse>.Failure(Error.InvalidUserId);
 
+            var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
+            var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
+            if (reportedUser is null)
+            {
+                return Result<ReportResponse>.Failure(AuthError.UserNotFound);
+            }
+
             var report = request.Adapt<Report>();
             report.ReportOwner = userIdGuid;
-            report.ReportedUser = await GetUserIdByReportType(request.ReportType, request.DataId);
+            report.ReportedUser = reportedUserId;
             var response = await reportRepository.InsertAsync(report);
             if (response is null)
             {
@@ -54,19 +62,19 @@ namespace RpgDex.Application.Services
             return Result<GetAllReportResponse>.Success(response);
         }
 
-        public async Task<Result<ReportResponse>> GetById(Guid id)
+        public async Task<Result<ReportDetailResponse>> GetById(Guid id)
         {
-            var report = await reportRepository.GetByIdAsync(id);
+            var report = await queries.GetDetailAsync(id);
             if (report is null)
             {
-                return Result<ReportResponse>.Failure(ReportError.NotFound);
+                return Result<ReportDetailResponse>.Failure(ReportError.NotFound);
             }
-            return Result<ReportResponse>.Success(report.Adapt<ReportResponse>());
+            return Result<ReportDetailResponse>.Success(report.Adapt<ReportDetailResponse>());
         }
 
         public async Task<Result<ReportResponse>> PunishAndCloseAsync(UserPunishRequest request)
         {
-            var report = await reportRepository.GetByIdAsync(request.reportId);
+            var report = await reportRepository.GetByIdAsync(request.ReportId);
             if (report is null)
             {
                 return Result<ReportResponse>.Failure(ReportError.NotFound);

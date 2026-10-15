@@ -12,8 +12,9 @@ namespace RpgDex.Domain.Entities
         public string Description { get; set; }
         public Guid ReportOwner { get; set; }
         public Guid ReportedUser { get; set; }
-        public Guid DataId { get; set; }
+        public Guid TargetId { get; set; }
         public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ReportEnum ReportType { get; set; }
     }
 }
