@@ -5,14 +5,9 @@ using System.Text;
 namespace RpgDex.Application.Dto
 {
     public record ReportedUserProfile(
-    Guid Id,
-    string UserName,
-    string DisplayName,
-    string Email,
-    string? IconPath,
+    UserSummary UserSummary,
     int CharactersCount,
     int CampaignsCount,
-    bool IsLocked,
     DateTimeOffset? DateTimeOffset
     );
 }

@@ -49,11 +49,10 @@ namespace RpgDex.Infrastructure.Resolvers
                 && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
 
             return new ReportedUserProfile(
-                user.Id, user.UserName, user.DisplayName, user.Email, user.IconPath,
+                user.ToSummary(),
                 (int)charactersTask.Result,
                 (int)campaignsTask.Result,
-                isLocked,
-                isLocked? user.LockoutEnd : null
+                isLocked ? user.LockoutEnd : null
                 );
         }
     }
