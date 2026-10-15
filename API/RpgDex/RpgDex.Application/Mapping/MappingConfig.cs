@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace RpgDex.Application.Mapping
 {
     public class MappingConfig
     {
-        public static void Configure(string baseUrl = "http://localhost:8080")
+        public static void Configure(IFileUrlBuilder urls)
         {
             //Mapeamentos para Character podem ser adicionados aqui, se necessário
             TypeAdapterConfig<CreateCharacterRequest, Character>
@@ -24,9 +25,9 @@ namespace RpgDex.Application.Mapping
             TypeAdapterConfig<Character, CharacterResponse>
                 .NewConfig()
                 .Map(dest => dest.Properties, src => ConvertToDictionary(src.Properties))
-                    .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath) 
-                    ? null 
-                    :$"{baseUrl}/api/File/{src.IconPath}"); //Tirar isso quando Implementar o uso  do cloudflare r2 / Solução Temporaria para mostrar a imagem
+                    .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
+                    ? null
+                    : urls.Build(src.IconPath));
 
             TypeAdapterConfig<UpdateCharacterRequest, Character>
                 .NewConfig()
@@ -54,7 +55,7 @@ namespace RpgDex.Application.Mapping
                  .Map(dest => dest.Email, src => src.Email)
                  .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
-                 : $"{GetApiUrlIfNotFromGoogle(src.IconPath, baseUrl)}{src.IconPath}"); //Tirar isso quando Implementar o uso  do cloudflare r2 / Solução Temporaria para mostrar a imagem
+                 : urls.Build(src.IconPath));
 
 
             //Mapeamentos para Campaign podem ser adicionados aqui, se necessário
@@ -72,13 +73,13 @@ namespace RpgDex.Application.Mapping
                 .Map(dest => dest.CharacterRequests, src => src.CharacterRequests)
                 .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
-                 : $"{baseUrl}/api/File/{src.IconPath}");
+                 : urls.Build(src.IconPath));
 
             TypeAdapterConfig<ChatMessage, CampaignChatMessagesResponse>
                 .NewConfig()
                 .Map(dest => dest.UserIcon, src => string.IsNullOrEmpty(src.UserIcon)
                     ? null
-                    : $"{GetApiUrlIfNotFromGoogle(src.UserIcon, baseUrl)}{src.UserIcon}");
+                    : urls.Build(src.UserIcon));
             //Mappings for UserDocument can be added here if necessary
             TypeAdapterConfig<UserDocument, UserDocumentResponse>
             .NewConfig()
@@ -86,32 +87,8 @@ namespace RpgDex.Application.Mapping
             .Map(dest => dest.UserId, src => src.UserId)
             .Map(dest => dest.FilePath, src => string.IsNullOrEmpty(src.FilePath)
                 ? null
-                : $"{baseUrl}/api/File/{src.FilePath}");
+                : urls.Build(src.FilePath));
                 }
-        private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
-        {
-            if (VerifyImageUrl(iconPath))
-            {
-                return "";
-            }
-            return $"{baseUrl}/api/File/";
-        }
-        //Verifies if the image URL is from Google or Discord, if not, it will return false
-        private static bool VerifyImageUrl(string imageUrl)
-        {
-            if (string.IsNullOrEmpty(imageUrl))
-            {
-                return false;
-            }
-            // Verifica se a URL contém "googleusercontent.com"
-            if (imageUrl.Contains("googleusercontent.com") 
-                || imageUrl.Contains("discordapp.com"))
-            {
-                return true;
-            }
-            // Se não for uma imagem do Google, retorna null
-            return false;
-        }
 
         // Metodos para converter Dictionary<string, object> em BsonDocument
 

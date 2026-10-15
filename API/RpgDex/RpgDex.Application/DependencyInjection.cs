@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
 using RpgDex.Application.Validators;
 using RpgDex.Domain.Entities;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -14,7 +16,7 @@ namespace RpgDex.Application
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddScoped<ICharacterService, CharacterService>();
             services.AddScoped<IAuthService, AuthService>();
@@ -23,9 +25,9 @@ namespace RpgDex.Application
             services.AddScoped<ICampaignService, CampaignService>();
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
             services.AddScoped<IUserDocumentService, UserDocumentService>();
-
-
+            services.AddScoped<IReportService, ReportService>();
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            services.AddSingleton<IFileUrlBuilder>(new FileUrlBuilder(configuration["ApiSettings:BaseUrl"]!));
             return services;
         }
     }

@@ -44,6 +44,8 @@
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
 
     "USER_UPDATE_FAILED": "Failed to update user profile.",
+    "USER_BAN_FAILED": "Failed to ban the user.",
+    "USER_IS_BANNED": "This user account is banned.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
     "USER_DOCUMENT_NOT_FOUND": "User document not found.",
@@ -53,6 +55,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
 
-    "VALIDATION_DISPLAYNAME": "Character name is required."
+    "VALIDATION_DISPLAYNAME": "Character name is required.",
+
+    "REPORT_NOT_FOUND": "Report not found.",
+    "REPORT_CREATE_FAILED": "Failed to create report.",
+    "REPORT_UPDATE_FAILED": "Failed to update report.",
+    "REPORT_CLOSE_FAILED": "Failed to close report."
   }
 }

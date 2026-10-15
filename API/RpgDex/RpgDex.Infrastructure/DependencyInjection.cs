@@ -14,7 +14,9 @@ using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
+using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
+using RpgDex.Infrastructure.Resolvers;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
@@ -82,8 +84,12 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
-
-
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IReportQueries, ReportQueries>();
+            services.AddScoped<IReportTargetResolver, UserReportTargetResolver>();
+            services.AddScoped<IReportTargetResolver, CampaignReportTargetResolver>();
+            services.AddScoped<IReportTargetResolver, CharacterReportTargetResolver>();
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

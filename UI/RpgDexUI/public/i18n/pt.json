@@ -44,6 +44,8 @@
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
+    "USER_BAN_FAILED": "Falha ao banir usuario",
+    "USER_IS_BANNED": "Esta conta esta banida",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
 
     "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
@@ -53,6 +55,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
 
-    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
+    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório.",
+
+    "REPORT_NOT_FOUND": "Denúncia não encontrada.",
+    "REPORT_CREATE_FAILED": "Falha ao criar a denúncia.",
+    "REPORT_UPDATE_FAILED": "Falha ao atualizar a denúncia.",
+    "REPORT_CLOSE_FAILED": "Falha ao fechar a denúncia."
   }
 }
