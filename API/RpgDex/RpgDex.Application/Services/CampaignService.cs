@@ -516,20 +516,28 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.IsNotActive);
             }
-          
+
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
                 return Result<string>.Failure(AuthError.UserNotFound);
             }
-
+            string? icon = user.IconPath;
+            string displayName = user.DisplayName!;
+            if (request.CharacterId is not null)
+            {
+                var character = await characterRepository.GetByIdAsync(request.CharacterId.Value);
+                if (!campaign.CharacterIds.Contains(character.Id)) return Result<string>.Failure(CampaignError.CharacterNotInCampaign);
+                icon = character.IconPath;
+                displayName = character.Name;
+            }
             ChatMessage newMessage = new()
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                Username = user.DisplayName,
+                Username = displayName,
                 CampaignId = request.CampaignId,
-                UserIcon = user.IconPath,
+                UserIcon = icon,
                 Data = request.Message,
                 SentAt = DateTime.UtcNow
             };

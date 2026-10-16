@@ -21,7 +21,7 @@ namespace RpgDex.Domain.Entities
         public Guid UserId { get; set; }
 
         public string Username { get; set; } = string.Empty;
-        public string UserIcon { get; set; } = string.Empty;
+        public string? UserIcon { get; set; } = string.Empty;
         public string Data { get; set; } = string.Empty;
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
         public DateTime? EditedAt { get; set; }

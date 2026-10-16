@@ -213,6 +213,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
 
     const request: CampaignChatMessageRequest = {
       campaignId: this.campaignId,
+      characterId: null,
       message: textToSend,
     };
 
