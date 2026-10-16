@@ -120,5 +120,17 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();
         }
+        [HttpPatch("EditMessage")]
+        public async Task<IActionResult> EditMessage([FromForm]EditChatMessageRequest request)
+        {
+            var result = await _campaignService.EditMessage(currentUser,request);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("RestoreMessage")]
+        public async Task<IActionResult> RestoreMessage([FromForm] RestoreMessageRequest request)
+        {
+            var result = await _campaignService.RestoreMessage(currentUser,request);
+            return result.ToIActionResult();
+        }
     }
 }

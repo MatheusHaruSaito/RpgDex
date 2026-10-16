@@ -25,11 +25,6 @@ namespace RpgDex.Infrastructure.Repositories
             return campaignChat;
         }
 
-        public async Task<ChatMessage> GetCampaignChat(Guid campaignId)
-        {
-            return await _entity.Find(o => o.CampaignId == campaignId).FirstOrDefaultAsync();
-        }
-
         public async Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20)
         {
             var builder = Builders<ChatMessage>.Filter;
@@ -51,5 +46,21 @@ namespace RpgDex.Infrastructure.Repositories
             return messages;
         }
 
+        public async Task<ChatMessage?> UpdateData(ChatMessage message)
+        {
+            var filter = Builders<ChatMessage>.Filter.Eq(m => m.Id, message.Id);
+            var update = Builders<ChatMessage>.Update
+                .Push(m => m.History,message.History.Last())
+                .Set(m => m.Version, message.Version)
+                .Set(m => m.EditedAt, message.EditedAt)
+                .Set(m => m.Data, message.Data);
+            var result = await _entity.UpdateOneAsync(filter, update);
+            return result.MatchedCount ==1? message : null;
+        }
+
+        public async Task<ChatMessage> GetById(Guid id)
+        {
+            return await _entity.Find(m => m.Id ==id).FirstOrDefaultAsync();
+        }
     }
 }

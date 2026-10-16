@@ -7,6 +7,8 @@ import { HttpClient } from '@angular/common/http';
 import { CampaignChatMessageRequest } from '../../models/campaignChatMessageRequest';
 import { ApiResponse } from '../../models/apiResponse';
 import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
+import { EditChatMessageRequest } from '../../models/editChatMessageRequest';
+import { RestoreMessageRequest } from '../../models/restoreMessageRequest';
 @Injectable({
   providedIn: 'root',
 })
@@ -62,5 +64,11 @@ export class CampaignChatService {
       this.hubConnection.invoke('LeaveCampaign', campaignId);
       this.hubConnection.stop();
     }
+  }
+  public editMessage(request: EditChatMessageRequest): Observable<any> {
+    return this.http.patch(`${this.env}/EditMessage`, request);
+  }
+  public restoreMessage(request: RestoreMessageRequest): Observable<any> {
+    return this.http.patch(`${this.env}/RestoreMessage`, request);
   }
 }

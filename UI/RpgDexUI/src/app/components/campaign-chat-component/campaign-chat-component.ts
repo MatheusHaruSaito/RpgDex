@@ -9,7 +9,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ChatMessage } from '../../../models/chatMessage';
-import { Subscription } from 'rxjs';
+import { findIndex, Subscription } from 'rxjs';
 import { AuthService } from '../../services/auth-service';
 import { CampaignChatService } from '../../services/campaign-chat-service';
 import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageRequest';
@@ -73,17 +73,22 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     // Executa os retornos do SignalR/WebSocket dentro do ciclo do Angular
     this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg) => {
       this.ngZone.run(() => {
-        // Evita duplicar mensagens recebidas em tempo real caso já existam
-        if (!this.messages.some((m) => m.id === msg.id)) {
-          this.messages.push(msg);
-        }
+        const index = this.messages.findIndex((m) => m.id === msg.id);
 
-        if (this.isMinimized) {
-          this.unreadCount++;
+        if (index !== -1) {
+          // Mensagem já existe: foi editada/restaurada. Só atualiza no lugar.
+          this.messages[index] = msg;
+          // Nova referência, pra o *ngFor / OnPush perceberem a mudança
+          this.messages = [...this.messages];
         } else {
-          this.scrollToBottom();
-        }
+          this.messages = [...this.messages, msg];
 
+          if (this.isMinimized) {
+            this.unreadCount++;
+          } else {
+            this.scrollToBottom();
+          }
+        }
         this.cdr.detectChanges();
       });
     });

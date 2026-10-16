@@ -5,4 +5,5 @@ export interface ChatMessage {
   userIcon: string;
   data: string;
   sentAt: Date;
+  editedAt: Date;
 }

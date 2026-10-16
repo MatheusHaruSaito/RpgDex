@@ -600,7 +600,75 @@ namespace RpgDex.Application.Services
             );
             return Result<ChatPagedResultDto>.Success(result);
         }
-        public async Task PlayerJoinChatMessage(string campaignId, string UserName)
+        public async Task<Result<string>> EditMessage(string userId, EditChatMessageRequest request)
+        {
+            /// Remember to create the validator
+            ///
+            //var checkCampaignChatMessageValidator = campaignChatMessageValidator.Validate(request);
+            //if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+
+            var chatMessage = await campaignChatRepository.GetById(request.MessageId);
+            if(chatMessage is null)
+            {
+                return Result<string>.Failure(CampaignError.MessageNotFound);
+            }
+            chatMessage.Edit(request.NewMessage);
+            await campaignChatRepository.UpdateData(chatMessage);
+
+            await campaignChatService.SendMessage(request.CampaignId.ToString(), chatMessage.Adapt<CampaignChatMessagesResponse>());
+
+            return Result<string>.Success($"Message edited by {user.DisplayName} : {request.NewMessage}");
+        }
+        public async Task<Result<string>> RestoreMessage(string userId,RestoreMessageRequest request)
+        {
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+
+            var chatMessage = await campaignChatRepository.GetById(request.MessageId);
+            if (chatMessage is null || chatMessage.CampaignId != request.CampaignId)
+            {
+                return Result<string>.Failure(CampaignError.MessageNotFound);
+            }
+            if(chatMessage.UserId != guidUserId)
+                return Result<string>.Failure(CampaignError.MessageForbidden);
+            if (!chatMessage.Restore(request.HistoryIndex))
+                return Result<string>.Failure(CampaignError.FailedToRestoreMessage);
+
+           var result = await campaignChatRepository.UpdateData(chatMessage);
+           if(result is null) return Result<string>.Failure(CampaignError.FailedToRestoreMessage);
+            await campaignChatService.SendMessage(request.CampaignId.ToString(), chatMessage.Adapt<CampaignChatMessagesResponse>());
+
+            return Result<string>.Success($"Message restored");
+        }
+        private async Task PlayerJoinChatMessage(string campaignId, string UserName)
         {
             var message = new CampaignChatMessagesResponse(
                 Guid.Empty,
@@ -608,7 +676,8 @@ namespace RpgDex.Application.Services
                 "RPG DEX",
                 "",
                 $"{UserName} has joined the campaign chat",
-                DateTime.UtcNow
+                DateTime.UtcNow,
+                null
             );
             await campaignChatService.SendMessage(campaignId, message);
         }

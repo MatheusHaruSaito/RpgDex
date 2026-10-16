@@ -25,7 +25,8 @@ namespace RpgDex.Application.Interfaces
         //For now it won't be saved on database
         public Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request);
         public Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, DateTime? beforeSentAt, int pageSize, Guid campaignId);
-        
+        Task<Result<string>> EditMessage(string userId, EditChatMessageRequest request);
+        Task<Result<string>> RestoreMessage(string userId, RestoreMessageRequest request);
 
 
 
