@@ -199,9 +199,12 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   send(): void {
     this.sendError = '';
     const text = this.newMessageText.trim();
-
+    const commandSuffix = this.chatService.commandSuffix;
     if (!text || this.isSending) return;
-
+    if (text.startsWith(commandSuffix)) {
+      const result = this.chatService.tryExecuteCommand(text);
+      console.log('Comando executado: ', result);
+    }
     if (text.length > 500) {
       this.sendError = 'A mensagem deve ter no máximo 500 caracteres.';
       return;

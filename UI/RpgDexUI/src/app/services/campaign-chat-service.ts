@@ -9,6 +9,7 @@ import { ApiResponse } from '../../models/apiResponse';
 import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
 import { EditChatMessageRequest } from '../../models/editChatMessageRequest';
 import { RestoreMessageRequest } from '../../models/restoreMessageRequest';
+import { chatCommandList } from '../../models/chatCommandList';
 @Injectable({
   providedIn: 'root',
 })
@@ -17,6 +18,14 @@ export class CampaignChatService {
   private messageReceived$ = new Subject<ChatMessage>();
   private readonly controller = 'Campaign';
   private readonly env = `${environment.RpxDexApi}/${this.controller}`;
+  private COMMAND_SUFFIX = '@rpg';
+  private normalize = (s: string) =>
+    s
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase();
+
   constructor(private http: HttpClient) {}
 
   public startConnection(campaignId: string, token: string): void {
@@ -54,6 +63,7 @@ export class CampaignChatService {
     data?: string,
   ): Observable<ApiResponse<ChatPagedResultDto>> {
     const params: Record<string, string | number> = { pageSize };
+
     if (beforeSentAt) params['beforeSentAt'] = beforeSentAt;
     if (data) params['data'] = data;
     return this.http.get<ApiResponse<ChatPagedResultDto>>(`${this.env}/GetMessages/${campaignId}`, {
@@ -71,5 +81,26 @@ export class CampaignChatService {
   }
   public restoreMessage(request: RestoreMessageRequest): Observable<any> {
     return this.http.patch(`${this.env}/RestoreMessage`, request);
+  }
+  public get commandSuffix() {
+    return this.COMMAND_SUFFIX;
+  }
+  public tryExecuteCommand(imput: string) {
+    const [rawName, ...args] = imput.slice(this.COMMAND_SUFFIX.length).trim().split(/\s+/);
+    const command = this.findCommand(rawName);
+    const arg = this.formatCommandArg(command!.name, args);
+    return command?.run(arg);
+  }
+  private findCommand(name: string) {
+    const key = this.normalize(name);
+    return chatCommandList.find((c) => c.aliases.some((alias) => this.normalize(alias) === key));
+  }
+  private formatCommandArg(name: string, args: string[]): string[] {
+    switch (name) {
+      case 'roll':
+        return args[0].split(/d/i) ?? [];
+      default:
+        return args;
+    }
   }
 }
