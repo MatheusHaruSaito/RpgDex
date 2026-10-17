@@ -548,7 +548,7 @@ namespace RpgDex.Application.Services
 
             return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
         }
-        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId,DateTime? beforeSentAt ,int pageSize,Guid campaignId)
+        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, Guid campaignId, DateTime? beforeSentAt ,int pageSize, string? dataFilter =null)
         {
             //needs more verification
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
@@ -574,7 +574,7 @@ namespace RpgDex.Application.Services
             }
 
             //var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
-            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1)).ToList();
+            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1, dataFilter)).ToList();
             if (messages is null)
             {
                 //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));

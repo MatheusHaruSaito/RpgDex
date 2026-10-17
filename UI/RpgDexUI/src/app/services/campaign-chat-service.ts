@@ -51,12 +51,13 @@ export class CampaignChatService {
     campaignId: string,
     beforeSentAt?: string,
     pageSize: number = 20,
+    data?: string,
   ): Observable<ApiResponse<ChatPagedResultDto>> {
+    const params: Record<string, string | number> = { pageSize };
+    if (beforeSentAt) params['beforeSentAt'] = beforeSentAt;
+    if (data) params['data'] = data;
     return this.http.get<ApiResponse<ChatPagedResultDto>>(`${this.env}/GetMessages/${campaignId}`, {
-      params: {
-        ...(beforeSentAt && { beforeSentAt }),
-        pageSize: pageSize,
-      },
+      params,
     });
   }
   public stopConnection(campaignId: string): void {

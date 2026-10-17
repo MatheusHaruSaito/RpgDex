@@ -5,6 +5,7 @@ using RpgDex.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RpgDex.Infrastructure.Repositories
 {
@@ -25,7 +26,7 @@ namespace RpgDex.Infrastructure.Repositories
             return campaignChat;
         }
 
-        public async Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20)
+        public async Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20,string? data =null)
         {
             var builder = Builders<ChatMessage>.Filter;
             var filter = builder.Eq(m => m.CampaignId, campaignId);
@@ -34,6 +35,10 @@ namespace RpgDex.Infrastructure.Repositories
             if (beforeSentAt.HasValue)
             {
                 filter &= builder.Lt(m => m.SentAt, beforeSentAt.Value);
+            }
+            if (!string.IsNullOrWhiteSpace(data))
+            {
+                filter &= builder.Regex(m => m.Data, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(data),"i"));
             }
 
             var messages = await _entity.Find(filter)
