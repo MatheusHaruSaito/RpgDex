@@ -3,7 +3,7 @@
   <div class="ce-topbar">
     <div></div>
     <div class="ce-topbar-actions">
-      <!-- Botões exibidos apenas no modo de EDIÇÃO -->
+      <!-- Modo de EDIÇÃO -->
       <ng-container *ngIf="isEditing">
         <button class="btn btn-outline-danger" (click)="confirmDelete()">
           <i class="fa fa-trash"></i> Excluir
@@ -17,7 +17,7 @@
         </button>
       </ng-container>
 
-      <!-- Botões exibidos no modo de VISUALIZAÇÃO -->
+      <!-- Modo de VISUALIZAÇÃO -->
       <ng-container *ngIf="!isEditing">
         <button class="btn btn-secondary" (click)="downloadCharacter()">
           <i class="fa fa-download"></i> Baixar Ficha
@@ -86,11 +86,11 @@
 
   <!-- ── CORPO ── -->
   <div class="ce-body">
-    <!-- Coluna esquerda: descrição -->
+    <!-- Coluna esquerda: Descrição -->
     <div class="ce-col ce-col--main">
       <section class="ce-section">
         <div class="ce-section-header">
-          <h3 class="ce-section-title"><i class="fa fa-align-left"></i> Descrição</h3>
+          <h3 class="ce-section-title"><i class="fa fa-align-left"></i> Descrição & Biografia</h3>
         </div>
 
         <p
@@ -98,13 +98,13 @@
           class="ce-view-text"
           [class.ce-view-text--empty]="!editForm.description"
         >
-          {{ editForm.description || 'Nenhuma descrição.' }}
+          {{ editForm.description || 'Nenhuma descrição informada.' }}
         </p>
 
         <ng-container *ngIf="isEditing">
           <textarea
             class="ce-textarea"
-            placeholder="Descreva a origem, aparência ou personalidade do personagem..."
+            placeholder="Descreva a origem, aparência, motivações ou personalidade do personagem..."
             [(ngModel)]="editForm.description"
             rows="8"
             maxlength="2000"
@@ -114,51 +114,54 @@
       </section>
     </div>
 
-    <!-- Coluna direita: grupos de atributos -->
+    <!-- Coluna direita: Grupos de Atributos Customizáveis -->
     <div class="ce-col ce-col--attrs">
       <div class="ce-groups-header" *ngIf="isEditing">
-        <h3 class="ce-section-title"><i class="fa fa-list-check"></i> Atributos</h3>
+        <h3 class="ce-section-title"><i class="fa fa-list-check"></i> Atributos do Personagem</h3>
         <button class="btn btn-secondary btn-add-sm" (click)="addGroup()">
-          <i class="fa fa-plus"></i> Novo grupo
+          <i class="fa fa-plus"></i> Novo Grupo
         </button>
       </div>
 
       <div class="ce-groups-empty-view" *ngIf="!isEditing && groups.length === 0">
         <i class="fa fa-layer-group"></i>
-        <span>Nenhum atributo registrado.</span>
+        <span>Nenhum atributo registado nesta ficha.</span>
       </div>
 
       <div class="ce-groups-empty" *ngIf="isEditing && groups.length === 0">
         <i class="fa fa-layer-group"></i>
-        <span>Clique em <strong>+ Novo grupo</strong> para começar.</span>
+        <span
+          >Clique em <strong>+ Novo Grupo</strong> para criar seções (ex: Atributos Primários,
+          Perícias, Equipamento).</span
+        >
       </div>
 
-      @for (group of groups; track $index) {
+      @for (group of groups; track $index; let gIdx = $index) {
         <section class="ce-section ce-group">
           <div class="ce-group-header">
             <h4 *ngIf="!isEditing" class="ce-group-title-view">
-              {{ group.title || 'Grupo' }}
+              {{ group.title || 'Grupo sem Nome' }}
             </h4>
             <input
               *ngIf="isEditing"
               class="ce-group-title-input"
               [(ngModel)]="group.title"
-              [name]="'groupTitle-' + $index"
-              placeholder="Nome do grupo"
+              [name]="'groupTitle-' + gIdx"
+              placeholder="Nome do grupo (ex: Atributos, Status...)"
               maxlength="40"
             />
             <div class="ce-group-actions" *ngIf="isEditing">
               <button
                 class="btn btn-secondary btn-add-sm"
                 (click)="addEntry(group)"
-                title="Adicionar campo"
+                title="Adicionar Atributo"
               >
-                <i class="fa fa-plus"></i>
+                <i class="fa fa-plus"></i> Atributo
               </button>
               <button
                 class="btn-icon btn-remove-group"
-                (click)="removeGroup($index)"
-                title="Remover grupo"
+                (click)="removeGroup(gIdx)"
+                title="Remover Grupo"
               >
                 <i class="fa fa-xmark"></i>
               </button>
@@ -167,67 +170,192 @@
 
           <div class="ce-attrs-list">
             <p class="ce-attrs-empty" *ngIf="isEditing && group.entries.length === 0">
-              Clique em <strong>+</strong> para adicionar campos.
+              Clique em <strong>+ Atributo</strong> para adicionar campos.
             </p>
 
-            @for (entry of group.entries; track $index) {
-              <div
-                *ngIf="!isEditing && entry.key.trim()"
-                class="ce-attr-chip {{ getPropertyCssClass(entry.type!) }}"
-              >
-                <span class="ce-attr-chip-key">{{ entry.key }}</span>
-                <span class="ce-attr-chip-value">{{ entry.value }}</span>
-              </div>
-              <div *ngIf="isEditing" class="ce-attr-row">
-                @switch (entry.type) {
-                  @case (PropertyValueEnum.ValueKey) {
-                    <input
-                      class="ce-attr-key"
-                      type="text"
-                      placeholder="Atributo"
-                      [(ngModel)]="entry.key"
-                      [name]="'key-' + $index + '-g' + $index"
-                      maxlength="40"
-                    />
-                    <span class="ce-attr-sep">:</span>
-                    <input
-                      class="ce-attr-val"
-                      type="text"
-                      placeholder="Valor"
-                      [(ngModel)]="entry.value"
-                      [name]="'val-' + $index + '-g' + $index"
-                      maxlength="100"
-                    />
-                  }
-                  @case (PropertyValueEnum.BooleanFlgs) {
-                    <input
-                      class="ce-attr-key"
-                      type="text"
-                      placeholder="Atributo"
-                      [(ngModel)]="entry.key"
-                      [name]="'key-' + $index + '-g' + $index"
-                      maxlength="40"
-                    />
-                    <span class="ce-attr-sep">:</span>
-                    <input
-                      class="ce-attr-val"
-                      type="checkbox"
-                      placeholder="Valor"
-                      [(ngModel)]="entry.value"
-                      [name]="'val-' + $index + '-g' + $index"
-                      maxlength="100"
-                    />
-                  }
-                }
+            @for (entry of group.entries; track $index; let eIdx = $index) {
+              <!-- ── EXIBIÇÃO / VISUALIZAÇÃO ── -->
+              @if (!isEditing && entry.key.trim()) {
+                <div class="ce-attr-chip" [ngClass]="getPropertyCssClass(entry.type!)">
+                  <span class="ce-attr-chip-key">{{ entry.key }}</span>
 
-                <button
-                  class="btn-icon btn-remove-attr"
-                  title="Remover"
-                  (click)="removeEntry(group, $index)"
-                >
-                  <i class="fa fa-xmark"></i>
-                </button>
-              </div>
+                  <!-- Visualização por Tipo -->
+                  @switch (entry.type) {
+                    @case (PropertyValueEnum.BooleanFlgs) {
+                      <div
+                        class="ce-attr-boolean ce-attr-boolean--clickable"
+                        (click)="toggleBoolean(entry)"
+                        title="Clique para alternar"
+                      >
+                        <i
+                          class="fa"
+                          [ngClass]="
+                            isTrue(entry.value)
+                              ? 'fa-circle-check text-success'
+                              : 'fa-circle-xmark text-muted'
+                          "
+                        ></i>
+                        <span>{{ isTrue(entry.value) ? 'Ativo' : 'Inativo' }}</span>
+                      </div>
+                    }
+                    @case (PropertyValueEnum.Number) {
+                      <div class="ce-attr-number-view">
+                        <button class="btn-step" (click)="adjustNumber(entry, -1)">
+                          <i class="fa fa-minus"></i>
+                        </button>
+                        <span class="ce-attr-chip-value">{{ entry.value || 0 }}</span>
+                        <button class="btn-step" (click)="adjustNumber(entry, 1)">
+                          <i class="fa fa-plus"></i>
+                        </button>
+                      </div>
+                    }
+                    @case (PropertyValueEnum.ResourceBar) {
+                      <div class="ce-resource-bar-wrap">
+                        <div class="ce-resource-inputs">
+                          <input
+                            type="number"
+                            class="ce-res-input"
+                            [value]="getResourceCurrent(entry)"
+                            (change)="updateResourceCurrent(entry, $event)"
+                          />
+                          <span class="ce-res-sep">/</span>
+                          <span class="ce-res-max">{{ getResourceMax(entry) }}</span>
+                        </div>
+                        <div class="ce-bar-bg">
+                          <div
+                            class="ce-bar-fill"
+                            [style.width.%]="getResourcePercentage(entry)"
+                          ></div>
+                        </div>
+                      </div>
+                    }
+                    @case (PropertyValueEnum.TextArea) {
+                      <div class="ce-textarea-view-wrap">
+                        <div class="ce-textarea-header" (click)="toggleExpand(entry)">
+                          <span class="ce-textarea-status">
+                            <i
+                              class="fa"
+                              [ngClass]="isExpanded(entry) ? 'fa-chevron-down' : 'fa-chevron-right'"
+                            ></i>
+                            {{
+                              isExpanded(entry) ? 'Ocultar conteúdo' : 'Mostrar / Editar conteúdo'
+                            }}
+                          </span>
+                        </div>
+
+                        @if (isExpanded(entry)) {
+                          <textarea
+                            class="ce-textarea-quick"
+                            placeholder="Escreva suas anotações aqui..."
+                            [(ngModel)]="entry.value"
+                            rows="4"
+                          ></textarea>
+                        }
+                      </div>
+                    }
+                    @default {
+                      <span class="ce-attr-chip-value">{{ entry.value || '—' }}</span>
+                    }
+                  }
+                </div>
+              }
+              <!-- ── MODO EDIÇÃO ── -->
+              @if (isEditing) {
+                <div class="ce-attr-edit-card">
+                  <div class="ce-attr-edit-top">
+                    <!-- Seletor de Tipo de Atributo -->
+                    <select
+                      class="ce-type-select"
+                      [ngModel]="entry.type"
+                      (ngModelChange)="onChangeType(entry, $event)"
+                    >
+                      <option [ngValue]="PropertyValueEnum.ValueKey">Texto Simples</option>
+                      <option [ngValue]="PropertyValueEnum.Number">Número</option>
+                      <option [ngValue]="PropertyValueEnum.ResourceBar">
+                        Barra de Recurso (Vida/Mana)
+                      </option>
+                      <option [ngValue]="PropertyValueEnum.BooleanFlgs">Marcador (Sim/Não)</option>
+                      <option [ngValue]="PropertyValueEnum.TextArea">Texto Longo / Notas</option>
+                    </select>
+
+                    <button
+                      class="btn-icon btn-remove-attr"
+                      title="Remover Atributo"
+                      (click)="removeEntry(group, eIdx)"
+                    >
+                      <i class="fa fa-trash-can"></i>
+                    </button>
+                  </div>
+
+                  <div class="ce-attr-edit-inputs">
+                    <input
+                      class="ce-attr-key-input"
+                      type="text"
+                      placeholder="Nome do Atributo (ex: Força, HP, Item...)"
+                      [(ngModel)]="entry.key"
+                      maxlength="40"
+                    />
+
+                    <!-- Controles específicos no editor -->
+                    @switch (entry.type) {
+                      @case (PropertyValueEnum.BooleanFlgs) {
+                        <label class="ce-checkbox-label">
+                          <input
+                            type="checkbox"
+                            [checked]="isTrue(entry.value)"
+                            (change)="entry.value = $any($event.target).checked ? 'true' : 'false'"
+                          />
+                          <span>Ativo por padrão</span>
+                        </label>
+                      }
+                      @case (PropertyValueEnum.ResourceBar) {
+                        <div class="ce-resource-edit-inputs">
+                          <input
+                            type="number"
+                            class="ce-input-sm"
+                            placeholder="Atual"
+                            [value]="getResourceCurrent(entry)"
+                            (input)="setResourceCurrent(entry, $any($event.target).value)"
+                          />
+                          <span>/</span>
+                          <input
+                            type="number"
+                            class="ce-input-sm"
+                            placeholder="Máximo"
+                            [value]="getResourceMax(entry)"
+                            (input)="setResourceMax(entry, $any($event.target).value)"
+                          />
+                        </div>
+                      }
+                      @case (PropertyValueEnum.TextArea) {
+                        <textarea
+                          class="ce-textarea-sm"
+                          placeholder="Texto ou detalhes..."
+                          [(ngModel)]="entry.value"
+                          rows="2"
+                        ></textarea>
+                      }
+                      @case (PropertyValueEnum.Number) {
+                        <input
+                          class="ce-attr-val-input"
+                          type="number"
+                          placeholder="Valor inicial"
+                          [(ngModel)]="entry.value"
+                        />
+                      }
+                      @default {
+                        <input
+                          class="ce-attr-val-input"
+                          type="text"
+                          placeholder="Valor (ex: +3, Espada Longa)"
+                          [(ngModel)]="entry.value"
+                          maxlength="100"
+                        />
+                      }
+                    }
+                  </div>
+                </div>
+              }
             }
           </div>
         </section>
