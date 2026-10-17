@@ -108,6 +108,7 @@ export class CampaignChatService {
       case 'roll': {
         const parts = this.formatCommandArg(command.name, args);
         if (parts.length !== 2) return;
+
         const result = command.run(parts) as number[];
         console.log(result);
         if (result.some(Number.isNaN)) return;
@@ -134,10 +135,14 @@ export class CampaignChatService {
   }
   private formatCommandArg(name: string, args: string[]): string[] {
     switch (name) {
-      case 'roll':
-        return args[0].split(/d/i) ?? [];
-      default:
+      case 'roll': {
+        const match = args[0]?.match(/^(\d*)d(\d+)$/i);
+        if (!match) return [];
+        return [match[1] || '1', match[2]];
+      }
+      default: {
         return args;
+      }
     }
   }
 }
