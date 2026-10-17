@@ -79,5 +79,13 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
     }
+
+    public static class DiceLogError
+    {
+        public static readonly Error AddRollFailed = new("DICE_LOG_ADD_ROLL_FAILED", "Failed to save dice roll to the campaign log.");
+        public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
+        public static readonly Error RollResultsRequired = new("DICE_LOG_ROLL_RESULTS_REQUIRED", "Dice roll must contain at least one result.");
+        public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
+    }
 }
 

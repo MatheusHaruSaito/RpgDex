@@ -27,6 +27,8 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, Guid campaignId, DateTime? beforeSentAt, int pageSize, string? dataFilter = null);
         Task<Result<string>> EditMessage(string userId, EditChatMessageRequest request);
         Task<Result<string>> RestoreMessage(string userId, RestoreMessageRequest request);
+        Task<Result<bool>> AddRollToLogAsync(string userId, AddRollToLogRequest request);
+        Task<Result<IEnumerable<DiceRollsLogResult>>> GetDiceRollLogAsync(string userId, Guid campaignId);
 
 
 

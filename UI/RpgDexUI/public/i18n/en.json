@@ -56,6 +56,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
 
+    "DICE_LOG_ADD_ROLL_FAILED": "Failed to save dice roll to the campaign log.",
+    "DICE_LOG_NOT_FOUND": "Dice roll log not found for this campaign.",
+    "DICE_LOG_ROLL_RESULTS_REQUIRED": "Dice roll must contain at least one result.",
+    "DICE_LOG_EXPRESSION_REQUIRED": "Dice roll expression is required.",
+
     "VALIDATION_DISPLAYNAME": "Character name is required."
   }
 }
