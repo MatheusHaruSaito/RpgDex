@@ -3,7 +3,7 @@
 
     <div class="modal-header">
       <h2 class="modal-title">Editar <span>Campanha</span></h2>
-      <button class="btn-icon modal-close" (click)="close()">
+      <button type="button" class="btn-icon modal-close" (click)="close()">
         <i class="fa fa-xmark"></i>
       </button>
     </div>
@@ -43,6 +43,28 @@
         <small class="char-counter">{{ editDescription.length }}/1000</small>
       </div>
 
+      <!-- Nova Senha -->
+      <div class="input-group">
+        <label class="input-label">Nova Senha de Acesso <span class="input-optional">(deixe em branco para não alterar)</span></label>
+        <div class="input-field-wrapper">
+          <i class="fa fa-key icon-field"></i>
+          <input
+            [type]="showNewPassword ? 'text' : 'password'"
+            [(ngModel)]="editNewPassword"
+            placeholder="Nova senha da campanha"
+            maxlength="50"
+          >
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showNewPassword ? 'Ocultar senha' : 'Exibir senha'"
+          >
+            <i class="fa" [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- Próxima sessão + Máx jogadores -->
       <div class="input-row">
         <div class="input-group">
@@ -63,8 +85,8 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="close()">Cancelar</button>
-      <button class="btn btn-primary" (click)="submitSave()" [disabled]="!editTitle">
+      <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
+      <button type="button" class="btn btn-primary" (click)="submitSave()" [disabled]="!editTitle">
         <i class="fa fa-floppy-disk"></i> Salvar
       </button>
     </div>
@@ -78,7 +100,7 @@
     <div class="modal-card cropper-card">
       <div class="modal-header">
         <h2 class="modal-title">Ajustar <span>Capa</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <button type="button" class="btn-icon modal-close" (click)="cancelCrop()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>
