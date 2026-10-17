@@ -10,6 +10,10 @@ import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
 import { EditChatMessageRequest } from '../../models/editChatMessageRequest';
 import { RestoreMessageRequest } from '../../models/restoreMessageRequest';
 import { chatCommandList } from '../../models/chatCommandList';
+import { AddRollToLogRequest } from '../../models/addRollToLogRequest';
+import { DiceRollsLogResult } from '../../models/diceRollsLogResult';
+import { CommandModel } from '../../models/commandModel';
+import e from 'express';
 @Injectable({
   providedIn: 'root',
 })
@@ -82,18 +86,51 @@ export class CampaignChatService {
   public restoreMessage(request: RestoreMessageRequest): Observable<any> {
     return this.http.patch(`${this.env}/RestoreMessage`, request);
   }
+  public AddRollToLog(request: AddRollToLogRequest): Observable<DiceRollsLogResult[]> {
+    return this.http.patch<DiceRollsLogResult[]>(`${this.env}/AddRollToLog`, request);
+  }
   public get commandSuffix() {
     return this.COMMAND_SUFFIX;
   }
-  public tryExecuteCommand(imput: string) {
+  public tryExecuteCommand(imput: string, campId: string) {
     const [rawName, ...args] = imput.slice(this.COMMAND_SUFFIX.length).trim().split(/\s+/);
     const command = this.findCommand(rawName);
-    const arg = this.formatCommandArg(command!.name, args);
-    return command?.run(arg);
+    if (!command) return;
+    return this.ExecuteCommand(campId, command, args);
   }
   private findCommand(name: string) {
     const key = this.normalize(name);
     return chatCommandList.find((c) => c.aliases.some((alias) => this.normalize(alias) === key));
+  }
+
+  private ExecuteCommand(campId: string, command: CommandModel, args: string[]) {
+    switch (command.name) {
+      case 'roll': {
+        const parts = this.formatCommandArg(command.name, args);
+        if (parts.length !== 2) return;
+        const result = command.run(parts) as number[];
+        console.log(result);
+        if (result.some(Number.isNaN)) return;
+        const request: AddRollToLogRequest = {
+          campaignId: campId,
+          expression: args[0],
+          results: result,
+        };
+        console.log('request: ', request);
+        this.AddRollToLog(request).subscribe({
+          next: (r) => {
+            return r;
+          },
+          error: (e) => {
+            console.error(e);
+          },
+        });
+        break;
+      }
+      default:
+        command.run(args);
+        break;
+    }
   }
   private formatCommandArg(name: string, args: string[]): string[] {
     switch (name) {

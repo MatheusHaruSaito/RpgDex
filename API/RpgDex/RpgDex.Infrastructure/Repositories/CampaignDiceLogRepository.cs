@@ -23,7 +23,7 @@ namespace RpgDex.Infrastructure.Repositories
             var update = Builders<CampaignDiceLog>.Update
                 .PushEach(l => l.Rolls, new[] { roll }, slice: -MAX_ROLLS);
             var result = await _entity.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
-            return result.ModifiedCount > 0;
+            return result.IsAcknowledged && (result.ModifiedCount > 0 || result.UpsertedId != null);
         }
 
         public async Task<CampaignDiceLog> GetCampaignDiceLog(Guid campaignId)

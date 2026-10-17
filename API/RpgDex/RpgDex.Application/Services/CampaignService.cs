@@ -707,7 +707,7 @@ namespace RpgDex.Application.Services
             };
             var result = await campaignDiceLogRepository.AddRollAsync(request.CampaignId, roll);
             if (!result) return Result<bool>.Failure(DiceLogError.AddRollFailed);
-            await RpgDexSendMessage(request.CampaignId.ToString(), $"{roll.Total} <-- {String.Join(", ",roll)}");
+            await RpgDexSendMessage(request.CampaignId.ToString(), $"{roll.Total} <-- {String.Join(" | ",roll.Results!)}");
             return Result<bool>.Success(result);
         }
 
@@ -735,7 +735,7 @@ namespace RpgDex.Application.Services
         private async Task RpgDexSendMessage(string campaignId,string data)
         {
             var message = new CampaignChatMessagesResponse(
-                Guid.Empty,
+                Guid.NewGuid(),
                 Guid.Empty,
                 "RPG DEX",
                 "",

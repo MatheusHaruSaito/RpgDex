@@ -133,13 +133,13 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPatch("AddRollToLog")]
-        public async Task<IActionResult> AddRollToLog([FromForm] AddRollToLogRequest request)
+        public async Task<IActionResult> AddRollToLog([FromBody] AddRollToLogRequest request)
         {
             var result = await _campaignService.AddRollToLogAsync(currentUser, request);
             return result.ToIActionResult();
         }
         [HttpGet("GetRollsLog/{campaignId}")]
-        public async Task<IActionResult> AddRollToLog(Guid campaignId)
+        public async Task<IActionResult> GetRollsLog(Guid campaignId)
         {
             var result = await _campaignService.GetDiceRollLogAsync(currentUser, campaignId);
             return result.ToIActionResult();
