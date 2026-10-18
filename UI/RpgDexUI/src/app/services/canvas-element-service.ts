@@ -35,16 +35,19 @@ export class CanvasElementService {
   public UpdateElement(
     request: UpdateCanvaElementRequest,
   ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.post<ApiResponse<CanvasElementResponse>>(this.env, request);
+    return this.http.put<ApiResponse<CanvasElementResponse>>(this.env, request);
   }
   public MoveElement(
     request: MoveCanvaElementsRequest,
   ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.patch<ApiResponse<CanvasElementResponse>>(this.env, request);
+    return this.http.patch<ApiResponse<CanvasElementResponse>>(`${this.env}/MoveElement`, request);
   }
   public ReOrderElement(
     request: ReOrderCanvaElementsRequest,
   ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.patch<ApiResponse<CanvasElementResponse>>(this.env, request);
+    return this.http.patch<ApiResponse<CanvasElementResponse>>(
+      `${this.env}/ReOrderElement`,
+      request,
+    );
   }
 }

@@ -1,4 +1,4 @@
 export interface MoveCanvaElementsRequest {
   campaignId: string;
-  items: { id: number; x: number; y: number }[];
+  items: { id: string; x: number; y: number }[];
 }
