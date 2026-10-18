@@ -695,19 +695,23 @@ namespace RpgDex.Application.Services
                 return Result<bool>.Failure(AuthError.UserNotFound);
             }
 
-            if (!DiceParserService.TryEvaluate(request.Expression, out var eval) || eval is null)
+            if (!DiceParserService.TryEvaluate(request.Expression, out var evals) || evals is null)
                 return Result<bool>.Failure(DiceLogError.InvalidExpression);
             var roll = new DiceRoll
             {
-                Expression = eval.Expression,
-                Results = eval.Rolls,
-                Total = eval.Total,
-                UserId = guidUserId
-
+                UserId = guidUserId,
+                Expression = request.Expression,
+                Entires = evals.Select(x => new DiceRollEntry
+                {
+                    Breakdown = x.Breakdown,
+                    Results = x.Rolls,
+                    Total = x.Total
+                }).ToList()
             };
             var result = await campaignDiceLogRepository.AddRollAsync(request.CampaignId, roll);
             if (!result) return Result<bool>.Failure(DiceLogError.AddRollFailed);
-            await RpgDexSendMessage(request.CampaignId.ToString(), $"{roll.Total} <-- {String.Join(" | ",roll.Results!)}");
+            Console.WriteLine(roll.Expression);
+            await RpgDexSendMessage(request.CampaignId.ToString(), BuildMessage(roll));
             return Result<bool>.Success(result);
         }
 
@@ -744,6 +748,13 @@ namespace RpgDex.Application.Services
                 null
             );
             await campaignChatService.SendMessage(campaignId, message);
+        }
+        private static string BuildMessage(DiceRoll roll)
+        {
+            var total = roll.Entires.Select(e => e.Total).Sum();
+            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total,2)}");
+            return $"{string.Join("\n", lines)}\n -> {Math.Round(total)}";
+
         }
     }
 }

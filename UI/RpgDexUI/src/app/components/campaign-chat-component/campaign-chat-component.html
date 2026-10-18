@@ -44,7 +44,11 @@
         [(ngModel)]="searchQuery"
         (ngModelChange)="onSearchChange()"
       />
-      <button class="btn-clear-search" *ngIf="searchQuery" (click)="searchQuery = ''; onSearchChange()">
+      <button
+        class="btn-clear-search"
+        *ngIf="searchQuery"
+        (click)="searchQuery = ''; onSearchChange()"
+      >
         <i class="fa fa-xmark"></i>
       </button>
     </div>
@@ -168,9 +172,7 @@
         </label>
         <select class="persona-select" [(ngModel)]="selectedCharacterId">
           <option [ngValue]="null">Mestre / Meu Perfil</option>
-          <option *ngFor="let char of myCharacters" [ngValue]="char.id">
-            🎭 {{ char.name }}
-          </option>
+          <option *ngFor="let char of myCharacters" [ngValue]="char.id">🎭 {{ char.name }}</option>
         </select>
       </div>
 

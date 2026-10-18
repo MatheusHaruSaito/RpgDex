@@ -266,10 +266,6 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (text.startsWith(commandPrefix)) {
-      console.log('COMMANDO: ', text);
-      this.chatService.tryExecuteCommand(text, this.campaignId)?.subscribe();
-    }
     this.isSending = true;
     const textToSend = text;
     this.newMessageText = '';
@@ -301,6 +297,10 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         this.focusInput();
       },
     });
+    if (text.startsWith(commandPrefix)) {
+      console.log('COMMANDO: ', text);
+      this.chatService.tryExecuteCommand(text, this.campaignId)?.subscribe();
+    }
   }
 
   // ── EDIÇÃO E RESTAURAÇÃO DE MENSAGENS ──

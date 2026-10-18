@@ -10,11 +10,13 @@
   overflow: hidden;
 
   position: fixed;
-  bottom: 0px; 
+  bottom: 0px;
   right: 32px;
   z-index: 9999;
 
-  transition: height 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    height 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .chat-container.is-minimized {
@@ -80,8 +82,13 @@
 }
 
 @keyframes pulse-badge {
-  0%, 100% { transform: scale(1); }
-  50%       { transform: scale(1.15); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
 }
 
 .btn-icon.btn-sm {
@@ -159,7 +166,9 @@
   min-height: 0;
 }
 
-.messages-container::-webkit-scrollbar { width: 4px; }
+.messages-container::-webkit-scrollbar {
+  width: 4px;
+}
 .messages-container::-webkit-scrollbar-thumb {
   background: var(--rpg-border);
   border-radius: 4px;
@@ -294,6 +303,7 @@
   font-size: 0.88rem;
   line-height: 1.45;
   word-break: break-word;
+  white-space: pre-line;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -318,7 +328,7 @@
   border: 1px solid var(--rpg-border);
   border-radius: 6px;
   padding: 2px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .message-item:hover .message-hover-actions {
@@ -338,7 +348,9 @@
   justify-content: center;
   cursor: pointer;
   font-size: 0.75rem;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .btn-hover-action:hover {
@@ -380,10 +392,18 @@
   font-size: 0.8rem;
 }
 
-.btn-check { color: var(--rpg-purple); }
-.btn-check:hover { background: var(--rpg-purple-tint); }
-.btn-cancel { color: var(--rpg-text-faint); }
-.btn-cancel:hover { background: rgba(0, 0, 0, 0.05); }
+.btn-check {
+  color: var(--rpg-purple);
+}
+.btn-check:hover {
+  background: var(--rpg-purple-tint);
+}
+.btn-cancel {
+  color: var(--rpg-text-faint);
+}
+.btn-cancel:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
 
 /* ── SELETOR DE PERSONA ─────────────────────────────────────── */
 .persona-selector-wrap {
@@ -476,7 +496,9 @@
   color: #fff;
   border: none;
   cursor: pointer;
-  transition: filter 0.2s, transform 0.15s;
+  transition:
+    filter 0.2s,
+    transform 0.15s;
 }
 
 .btn-send:hover:not(:disabled) {

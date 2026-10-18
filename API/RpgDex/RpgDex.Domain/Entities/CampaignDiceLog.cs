@@ -19,9 +19,15 @@ namespace RpgDex.Domain.Entities
     {
         public Guid UserId { get; set; } = default!;
         public string Expression { get; set; } = default!;
-        public List<int> Results { get; set; } = new();
-        public float Total { get; set; }
+        public List<DiceRollEntry> Entires { get; set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
+    public class DiceRollEntry
+    {
+        public string Breakdown { get; set; } = default!;
+        public List<int> Results { get; set; } = new();
+        public double Total { get; set; }
+    }
+
 }
