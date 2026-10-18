@@ -23,7 +23,6 @@ namespace RpgDex.Application
             services.AddScoped<ICampaignService, CampaignService>();
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
             services.AddScoped<IUserDocumentService, UserDocumentService>();
-            services.AddScoped<ICanvaElementService, CanvaElementService>();
 
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
