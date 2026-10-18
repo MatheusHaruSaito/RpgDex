@@ -5,5 +5,5 @@ using System.Text;
 namespace RpgDex.Application.Dto
 {
 
-    public record MoveElementsRequest(Guid CampaignId, List<MoveElementItem> Items);
+    public record MoveCanvaElementsRequest(Guid CampaignId, List<MoveElementItem> Items);
 }

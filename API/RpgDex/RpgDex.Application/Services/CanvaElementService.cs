@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -12,10 +13,10 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class CanvaElementService(ICanvaElementRepository canvaElementRepository,UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository) : ICanvaElementService
+    public class CanvaElementService(ICanvaElementRepository canvaElementRepository,UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService) : ICanvaElementService
     {
         private const int MaxElementsPerCanvas = 500;
-        public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCampaignElementRequest request)
+        public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
             var(guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
@@ -25,10 +26,22 @@ namespace RpgDex.Application.Services
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             var element = request.Adapt<CanvaElement>();
-            if (element.Id == Guid.Empty) element.Id = Guid.NewGuid();
+
+            if (request.Image is not null)
+            {
+                try
+                {
+                    element.ImageUrl = await fileService.UploadFileAsync(request.Image, Guid.NewGuid().ToString());
+                }
+                catch
+                {
+                    return Result<CanvasElementResponse>.Failure(Error.UploadImageFailed);
+                }
+            }
+
             element.UserId = guidUserId;
 
-            var created = await canvaElementRepository.InsertAsync(element);
+            var created = await canvaElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
 
@@ -36,17 +49,17 @@ namespace RpgDex.Application.Services
 
         }
 
-        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId)
+        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
         {
             var (_, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
-            var result = await canvaElementRepository.GetAllElementsByCampaignAsync(campaignId);
+            var result = await canvaElementRepository.GetAllElementsByCampaignAsync(campaignId,page,pageSize);
             return Result<GetAllCanvasElementResponse>.Success(
                 new GetAllCanvasElementResponse(result.elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
         }
 
-        public async Task<Result<bool>> MoveElement(string userId, MoveElementsRequest request)
+        public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)
         {
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
@@ -57,7 +70,7 @@ namespace RpgDex.Application.Services
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.MoveFailed);
         }
 
-        public async Task<Result<bool>> ReOrderElement(string userId,ReorderElementsRequest request)
+        public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request)
         {
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
@@ -78,7 +91,7 @@ namespace RpgDex.Application.Services
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
         }
 
-        public async Task<Result<CanvasElementResponse>> UpdateElement(string userId,UpdateElementRequest request)
+        public async Task<Result<CanvasElementResponse>> UpdateElement(string userId,UpdateCanvaElementRequest request)
         {
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
@@ -86,10 +99,21 @@ namespace RpgDex.Application.Services
             var element = await canvaElementRepository.GetByIdAsync(request.CampaignId, request.Id);
             if (element is null) return Result<CanvasElementResponse>.Failure(CanvaElementError.NotFound);
 
+            if (request.Image is not null)
+            {
+                try
+                {
+                    element.ImageUrl = await fileService.UploadFileAsync(request.Image,Guid.NewGuid().ToString());
+                }
+                catch
+                {
+                    return Result<CanvasElementResponse>.Failure(Error.UploadImageFailed);
+                }
+            }
+
             element.Scale = request.Scale;
             element.Content = request.Content;
             element.Color = request.Color;
-            element.ImageUrl = request.ImageUrl;
             element.Points = request.Points;
             element.StrokeWidth = request.StrokeWidth;
 

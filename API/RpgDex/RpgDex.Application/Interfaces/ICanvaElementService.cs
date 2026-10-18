@@ -5,12 +5,12 @@ namespace RpgDex.Application.Interfaces
 {
     public interface ICanvaElementService
     {
-        Task<Result<CanvasElementResponse>> CreateElement(string userId,CreateCampaignElementRequest request);
-        Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId);
-        Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateElementRequest request);
-        Task<Result<bool>> MoveElement(string userId, MoveElementsRequest request);
-        Task<Result<bool>> ReOrderElement(ReorderElementsRequest request);
-        Task<Result<bool>> SetElementActiveState(SetElementActiveStateRequest request,bool state);
+        Task<Result<CanvasElementResponse>> CreateElement(string userId,CreateCanvaElementRequest request);
+        Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignI, int page = 1, int pageSize = 20);
+        Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvaElementRequest request);
+        Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request);
+        Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request);
+        Task<Result<bool>> SetElementActiveState(string userId,SetElementActiveStateRequest request,bool state);
 
     }
 }

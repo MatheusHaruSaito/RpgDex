@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record ReorderElementItem(Guid Id, int Z);
+    public record ReOrderElementItem(Guid Id, int Z);
 }

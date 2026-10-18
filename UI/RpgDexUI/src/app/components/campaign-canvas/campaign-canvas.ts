@@ -1,34 +1,14 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { NgxColorsModule } from 'ngx-colors';
+import { CanvasElementResponse } from '../../../models/canvasElementResponse';
+import { CanvasElementType } from '../../../models/canvasElementType';
+import { CanvasElementService } from '../../services/canvas-element-service';
 
 export type ToolMode = 'cursor' | 'draw';
-
-export type ElementType = (typeof ElementType)[keyof typeof ElementType];
-
-export const ElementType = {
-  Token: 'token',
-  Text: 'text',
-  Image: 'image',
-  Drawing: 'drawing',
-} as const;
-
-export interface CanvasElement {
-  id: string;
-  type: ElementType;
-  x: number;
-  y: number;
-  z: number;
-  scale: number;
-  content?: string;
-  color?: string;
-  imageUrl?: string;
-  points?: { x: number; y: number }[];
-  strokeWidth?: number;
-}
 
 @Component({
   selector: 'app-campaign-canvas',
@@ -55,14 +35,14 @@ export class CampaignCanvasComponent implements OnInit {
   isPanning: boolean = false;
 
   // ── SELEÇÃO E CAIXA DE SELEÇÃO ──
-  selectedElements: CanvasElement[] = [];
+  selectedElements: CanvasElementResponse[] = [];
   selectionBox = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
 
-  activeDrawing: CanvasElement | null = null;
+  activeDrawing: CanvasElementResponse | null = null;
   lastPointer = { x: 0, y: 0 };
   maxZ: number = 10;
 
-  elements: CanvasElement[] = [];
+  elements: CanvasElementResponse[] = [];
 
   // ── HISTÓRICO (UNDO / REDO) ──
   history: string[] = [];
@@ -78,6 +58,7 @@ export class CampaignCanvasComponent implements OnInit {
   tempCroppedBase64: string = '';
   cropImageSource: string = '';
 
+  canvasElementService = inject(CanvasElementService);
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -177,9 +158,9 @@ export class CampaignCanvasComponent implements OnInit {
         const parsed = JSON.parse(textData);
         if (parsed.isRpgDexElements && Array.isArray(parsed.elements)) {
           this.saveState();
-          const pastedElements: CanvasElement[] = [];
+          const pastedElements: CanvasElementResponse[] = [];
 
-          parsed.elements.forEach((el: CanvasElement) => {
+          parsed.elements.forEach((el: CanvasElementResponse) => {
             const newEl = { ...el };
             newEl.id = Date.now().toString() + Math.random().toString();
             this.maxZ++;
@@ -205,7 +186,7 @@ export class CampaignCanvasComponent implements OnInit {
             const reader = new FileReader();
             reader.onload = (e) => {
               this.saveState();
-              const el = this.createElement('image');
+              const el = this.createElement(CanvasElementType.Image);
               el.imageUrl = e.target?.result as string;
               this.elements.push(el);
               this.selectedElements = [el];
@@ -220,7 +201,7 @@ export class CampaignCanvasComponent implements OnInit {
 
     if (textData && textData.trim() !== '') {
       this.saveState();
-      const el = this.createElement('text', textData);
+      const el = this.createElement(CanvasElementType.Text, textData);
       this.elements.push(el);
       this.selectedElements = [el];
       event.preventDefault();
@@ -237,7 +218,7 @@ export class CampaignCanvasComponent implements OnInit {
     const name = prompt('Nome do Token:');
     if (!name) return;
     this.saveState();
-    const el = this.createElement('token', name);
+    const el = this.createElement(CanvasElementType.Token, name);
     this.elements.push(el);
     this.setTool('cursor');
     this.selectedElements = [el];
@@ -247,7 +228,7 @@ export class CampaignCanvasComponent implements OnInit {
     const text = prompt('Digite sua anotação:');
     if (!text) return;
     this.saveState();
-    const el = this.createElement('text', text);
+    const el = this.createElement(CanvasElementType.Text, text);
     this.elements.push(el);
     this.setTool('cursor');
     this.selectedElements = [el];
@@ -263,7 +244,7 @@ export class CampaignCanvasComponent implements OnInit {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.saveState();
-        const el = this.createElement('image');
+        const el = this.createElement(CanvasElementType.Image);
         el.imageUrl = e.target?.result as string;
         this.elements.push(el);
         this.setTool('cursor');
@@ -274,7 +255,7 @@ export class CampaignCanvasComponent implements OnInit {
     input.value = '';
   }
 
-  createElement(type: CanvasElement['type'], content?: string): CanvasElement {
+  createElement(type: CanvasElementType, content?: string): CanvasElementResponse {
     this.maxZ++;
     return {
       id: Date.now().toString(),
@@ -292,7 +273,7 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.selectedElements.length > 0) {
       this.saveState();
       this.selectedElements.forEach((el) => {
-        if (el.type !== 'image') el.color = colorValue;
+        if (el.type !== CanvasElementType.Image) el.color = colorValue;
       });
     }
     this.selectedColor = colorValue;
@@ -338,7 +319,10 @@ export class CampaignCanvasComponent implements OnInit {
 
   // ── CORTE DE IMAGEM ──
   startCropping(): void {
-    if (this.selectedElements.length === 1 && this.selectedElements[0].type === 'image') {
+    if (
+      this.selectedElements.length === 1 &&
+      this.selectedElements[0].type === CanvasElementType.Image
+    ) {
       this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
 
@@ -480,9 +464,9 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.activeTool === 'draw') {
       this.selectedElements = [];
       this.maxZ++;
-      const newDrawing: CanvasElement = {
+      const newDrawing: CanvasElementResponse = {
         id: Date.now().toString(),
-        type: 'drawing',
+        type: CanvasElementType.Drawing,
         x: 0,
         y: 0,
         z: this.maxZ,
@@ -505,7 +489,7 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  onElementDown(event: PointerEvent, element: CanvasElement): void {
+  onElementDown(event: PointerEvent, element: CanvasElementResponse): void {
     if (event.button === 1 || event.button === 2) return;
     if (this.activeTool !== 'cursor') return;
 
