@@ -57,7 +57,12 @@
   flex-shrink: 0;
 }
 
-/* Badge de não lidas */
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .chat-unread-badge {
   background: #fff;
   color: var(--rpg-purple);
@@ -79,7 +84,6 @@
   50%       { transform: scale(1.15); }
 }
 
-/* Botão chevron no header */
 .btn-icon.btn-sm {
   background: rgba(255, 255, 255, 0.15);
   border: none;
@@ -97,6 +101,41 @@
 
 .btn-icon.btn-sm:hover {
   background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── BARRA DE PESQUISA DE MENSAGENS ─────────────────────────── */
+.chat-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--rpg-surface-tint);
+  border-bottom: 1px solid var(--rpg-border-light);
+  position: relative;
+}
+
+.search-icon {
+  color: var(--rpg-text-faint);
+  font-size: 0.8rem;
+}
+
+.search-input {
+  flex: 1;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--rpg-text-strong);
+}
+
+.btn-clear-search {
+  background: transparent;
+  border: none;
+  color: var(--rpg-text-faint);
+  cursor: pointer;
+  padding: 2px;
+  font-size: 0.8rem;
 }
 
 /* ── BODY ────────────────────────────────────────────────────── */
@@ -126,7 +165,6 @@
   border-radius: 4px;
 }
 
-/* Botão Carregar Mais Mensagens */
 .load-more-container {
   display: flex;
   justify-content: center;
@@ -159,7 +197,6 @@
   cursor: not-allowed;
 }
 
-/* Estado vazio */
 .chat-empty {
   display: flex;
   flex-direction: column;
@@ -179,21 +216,19 @@
   opacity: 0.4;
 }
 
-/* Item de mensagem */
 .message-item {
+  position: relative;
   display: flex;
   max-width: 88%;
   align-self: flex-start;
   gap: 6px;
 }
 
-/* Alinhamento de mensagens do próprio utilizador à direita */
 .message-item.message-mine {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
 
-/* Avatar */
 .message-avatar {
   width: 24px;
   height: 24px;
@@ -211,7 +246,6 @@
   margin-top: 2px;
 }
 
-/* Conteúdo da mensagem */
 .message-content {
   display: flex;
   flex-direction: column;
@@ -249,7 +283,6 @@
   white-space: nowrap;
 }
 
-/* Balão */
 .message-bubble {
   padding: 8px 12px;
   border-radius: 12px;
@@ -270,6 +303,122 @@
   border: none;
   border-radius: 12px;
   border-top-right-radius: 2px;
+}
+
+/* ── BOTÕES DE AÇÕES HOVER (EDITAR/RESTAURAR) ───────────────── */
+.message-hover-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  align-self: center;
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: 6px;
+  padding: 2px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.message-item:hover .message-hover-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-hover-action {
+  background: transparent;
+  border: none;
+  color: var(--rpg-text-muted);
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-hover-action:hover {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+}
+
+/* Edição Inline */
+.edit-message-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--rpg-surface);
+  border: 1.5px solid var(--rpg-purple);
+  border-radius: 8px;
+  padding: 4px 6px;
+}
+
+.edit-message-input {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  border: none;
+  background: transparent;
+  outline: none;
+  color: var(--rpg-text-strong);
+  min-width: 120px;
+}
+
+.btn-icon-action {
+  background: transparent;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.btn-check { color: var(--rpg-purple); }
+.btn-check:hover { background: var(--rpg-purple-tint); }
+.btn-cancel { color: var(--rpg-text-faint); }
+.btn-cancel:hover { background: rgba(0, 0, 0, 0.05); }
+
+/* ── SELETOR DE PERSONA ─────────────────────────────────────── */
+.persona-selector-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--rpg-purple-tint);
+  border-radius: 6px;
+}
+
+.persona-label {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.persona-select {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rpg-text-strong);
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  outline: none;
+  cursor: pointer;
+  max-width: 170px;
 }
 
 /* ── CONTROLES & ERROS ───────────────────────────────────────── */

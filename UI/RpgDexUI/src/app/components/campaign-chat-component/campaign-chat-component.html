@@ -13,12 +13,42 @@
       </span>
     </div>
 
-    <button class="btn-icon btn-sm" type="button" aria-label="Minimizar ou expandir chat">
-      <i class="fa" [ngClass]="isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-    </button>
+    <div class="chat-header-actions" (click)="$event.stopPropagation()">
+      <button
+        class="btn-icon btn-sm"
+        type="button"
+        (click)="toggleSearch()"
+        title="Pesquisar mensagens"
+      >
+        <i class="fa fa-magnifying-glass"></i>
+      </button>
+      <button
+        class="btn-icon btn-sm"
+        type="button"
+        (click)="toggleMinimize()"
+        aria-label="Minimizar ou expandir chat"
+      >
+        <i class="fa" [ngClass]="isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </button>
+    </div>
   </div>
 
   <div class="chat-body" *ngIf="!isMinimized">
+    <!-- BARRA DE PESQUISA -->
+    <div class="chat-search-bar" *ngIf="showSearchInput">
+      <i class="fa fa-magnifying-glass search-icon"></i>
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Filtrar mensagens..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+      />
+      <button class="btn-clear-search" *ngIf="searchQuery" (click)="searchQuery = ''; onSearchChange()">
+        <i class="fa fa-xmark"></i>
+      </button>
+    </div>
+
     <div class="messages-container" #scrollContainer>
       <!-- Estado de Carregamento Inicial -->
       <div class="chat-empty" *ngIf="isInitialLoading">
@@ -29,7 +59,7 @@
       <!-- Estado Vazio -->
       <div class="chat-empty" *ngIf="!isInitialLoading && messages.length === 0">
         <i class="fa fa-comment-dots"></i>
-        <span>Nenhuma mensagem por aqui ainda. Escreva algo!</span>
+        <span>Nenhuma mensagem encontrada.</span>
       </div>
 
       <!-- Botão para Carregar Histórico -->
@@ -49,7 +79,7 @@
       <div
         *ngFor="let msg of messages"
         class="message-item"
-        [class.message-mine]="msg.username === currentUsername"
+        [class.message-mine]="isMyMessage(msg)"
       >
         <div
           class="message-avatar"
@@ -65,15 +95,85 @@
               {{ msg.sentAt | date: 'HH:mm' }}
             </span>
           </div>
-          <div class="message-bubble">
-            {{ msg.data }}
-          </div>
+
+          <!-- MODO EDIÇÃO INLINE DA MENSAGEM -->
+          <ng-container *ngIf="editingMessageId === msg.id; else displayBubble">
+            <div class="edit-message-box">
+              <input
+                type="text"
+                class="edit-message-input"
+                [(ngModel)]="editingText"
+                maxlength="500"
+                (keydown.enter)="saveEdit(msg.id)"
+                (keydown.escape)="cancelEdit()"
+              />
+              <div class="edit-actions">
+                <button
+                  type="button"
+                  class="btn-icon-action btn-check"
+                  (click)="saveEdit(msg.id)"
+                  title="Salvar alteração"
+                >
+                  <i class="fa fa-check"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn-icon-action btn-cancel"
+                  (click)="cancelEdit()"
+                  title="Cancelar"
+                >
+                  <i class="fa fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- BALÃO NORMAL DA MENSAGEM -->
+          <ng-template #displayBubble>
+            <div class="message-bubble">
+              {{ msg.data }}
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- AÇÕES FLUTUANTES NO HOVER PARA MENSAGENS DO PRÓPRIO USUÁRIO -->
+        <div class="message-hover-actions" *ngIf="isMyMessage(msg) && editingMessageId !== msg.id">
+          <button
+            type="button"
+            class="btn-hover-action"
+            (click)="startEditing(msg)"
+            title="Editar mensagem"
+          >
+            <i class="fa fa-pen"></i>
+          </button>
+          <button
+            type="button"
+            class="btn-hover-action"
+            (click)="restorePreviousVersion(msg)"
+            title="Restaurar versão anterior"
+          >
+            <i class="fa fa-rotate-left"></i>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- CONTROLES E FORMULÁRIO -->
+    <!-- CONTROLES E FORMULÁRIO COM SELETOR DE PERSONA -->
     <div class="chat-controls">
+      <!-- Seletor de Persona (Perfil / Personagem) -->
+      <div class="persona-selector-wrap" *ngIf="myCharacters.length > 0">
+        <label class="persona-label">
+          <i class="fa fa-mask"></i>
+          <span>Enviar como:</span>
+        </label>
+        <select class="persona-select" [(ngModel)]="selectedCharacterId">
+          <option [ngValue]="null">Mestre / Meu Perfil</option>
+          <option *ngFor="let char of myCharacters" [ngValue]="char.id">
+            🎭 {{ char.name }}
+          </option>
+        </select>
+      </div>
+
       <form (ngSubmit)="send()" class="chat-form">
         <input
           #chatInput
