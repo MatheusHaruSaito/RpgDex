@@ -697,7 +697,6 @@ namespace RpgDex.Application.Services
 
             if (!DiceParserService.TryEvaluate(request.Expression, out var eval) || eval is null)
                 return Result<bool>.Failure(DiceLogError.InvalidExpression);
-            //Change this later, this just sum
             var roll = new DiceRoll
             {
                 Expression = eval.Expression,

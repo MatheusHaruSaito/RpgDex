@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace RpgDex.Application.Services
 {
-    public sealed record DiceEvaluation(int Total, List<int> Rolls, string Expression);
+    public sealed record DiceEvaluation(float Total, List<int> Rolls, string Expression);
     public class DiceParserService
     {
         private const int MaxDice = 100;
@@ -54,7 +54,7 @@ namespace RpgDex.Application.Services
                 var floored = Math.Floor(value);
                 if (floored is > int.MaxValue or < int.MinValue) throw new OverflowException();
 
-                return new DiceEvaluation((int)floored, _rolls, _breakdown.ToString());
+                return new DiceEvaluation((float)value, _rolls, _breakdown.ToString());
             }
 
             private string? Peek() => _pos < tokens.Count ? tokens[_pos] : null;
@@ -105,6 +105,8 @@ namespace RpgDex.Application.Services
                     return inner;
                 }
 
+  
+
                 if (token.Contains('d'))
                 {
                     var parts = token.Split('d');
@@ -122,6 +124,7 @@ namespace RpgDex.Application.Services
                     _breakdown.Append('[').Append(string.Join(", ", thrown)).Append(']');
                     return thrown.Sum();
                 }
+                   
 
                 _breakdown.Append(token);
                 return decimal.Parse(token, CultureInfo.InvariantCulture);

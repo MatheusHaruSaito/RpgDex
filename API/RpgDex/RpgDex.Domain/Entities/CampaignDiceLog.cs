@@ -2,6 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace RpgDex.Domain.Entities
@@ -19,7 +20,7 @@ namespace RpgDex.Domain.Entities
         public Guid UserId { get; set; } = default!;
         public string Expression { get; set; } = default!;
         public List<int> Results { get; set; } = new();
-        public int Total { get; set; }
+        public float Total { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
