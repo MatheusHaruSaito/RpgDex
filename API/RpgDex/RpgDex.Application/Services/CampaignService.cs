@@ -710,7 +710,6 @@ namespace RpgDex.Application.Services
             };
             var result = await campaignDiceLogRepository.AddRollAsync(request.CampaignId, roll);
             if (!result) return Result<bool>.Failure(DiceLogError.AddRollFailed);
-            Console.WriteLine(roll.Expression);
             await RpgDexSendMessage(request.CampaignId.ToString(), BuildMessage(roll));
             return Result<bool>.Success(result);
         }

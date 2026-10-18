@@ -50,7 +50,6 @@ export class CampaignChatService {
       .catch((err) => console.error('SingalR error', err));
 
     this.hubConnection.on('ReceiveMessage', (chatMessage: ChatMessage) => {
-      console.log('Mensagem :', chatMessage);
       this.messageReceived$.next(chatMessage);
     });
   }
