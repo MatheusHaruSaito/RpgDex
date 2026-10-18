@@ -64,6 +64,19 @@
     "VALIDATION_USERNAME_INVALID_CHARS": "O nome de utilizador apenas pode conter letras, números e underscores.",
     "CAMPAIGN_VALIDATION_ICON_REQUIRED": "A imagem da campanha é obrigatória.",
     "VALIDATION_INVALID_FILE_EXTENSION": "O ícone deve ser um ficheiro JPG, JPEG, PNG ou WEBP.",
-    "VALIDATION_FILE_TOO_LARGE": "O tamanho do ficheiro do ícone excede o limite permitido."
+    "VALIDATION_FILE_TOO_LARGE": "O tamanho do ficheiro do ícone excede o limite permitido.",
+    
+    "CANVAS_ELEMENT_NOT_FOUND": "Elemento do canvas não encontrado.",
+    "CANVAS_ELEMENT_CREATE_FAILED": "Falha ao criar o elemento do canvas.",
+    "CANVAS_ELEMENT_UPDATE_FAILED": "Falha ao atualizar o elemento do canvas.",
+    "CANVAS_ELEMENT_MOVE_FAILED": "Falha ao mover os elementos do canvas.",
+    "CANVAS_ELEMENT_REORDER_FAILED": "Falha ao reordenar os elementos do canvas.",
+    "CANVAS_ELEMENT_SET_ACTIVE_STATE_FAILED": "Falha ao alterar o estado do elemento do canvas.",
+    "CANVAS_ELEMENT_INVALID": "Os dados do elemento não correspondem ao seu tipo.",
+    "CANVAS_ELEMENT_IMAGE_TOO_LARGE": "A imagem é demasiado grande.",
+    "CANVAS_ELEMENT_TOO_MANY_POINTS": "O desenho tem demasiados pontos.",
+    "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Número de elementos inválido no pedido.",
+    "CANVAS_ELEMENT_LIMIT_REACHED": "O limite de elementos do canvas foi atingido.",
+    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
   }
 }
