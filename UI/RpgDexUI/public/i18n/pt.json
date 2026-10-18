@@ -58,8 +58,8 @@
 
     "DICE_LOG_ADD_ROLL_FAILED": "Falha ao guardar a rolagem no registo da campanha.",
     "DICE_LOG_NOT_FOUND": "Registo de rolagens não encontrado para esta campanha.",
-    "DICE_LOG_ROLL_RESULTS_REQUIRED": "A rolagem deve conter pelo menos um resultado.",
     "DICE_LOG_EXPRESSION_REQUIRED": "A expressão da rolagem é obrigatória.",
+    "DICE_LOG_INVALID_EXPRESSION": "Expressão de dados inválida.",
 
     "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
   }

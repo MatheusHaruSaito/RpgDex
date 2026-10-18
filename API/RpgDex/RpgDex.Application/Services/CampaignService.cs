@@ -681,8 +681,6 @@ namespace RpgDex.Application.Services
         {
             if (string.IsNullOrWhiteSpace(request.Expression))
                 return Result<bool>.Failure(DiceLogError.ExpressionRequired);
-            if (request.Results is null || request.Results.Count == 0)
-                return Result<bool>.Failure(DiceLogError.RollResultsRequired);
 
             var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
             if (campaign is null)
@@ -696,12 +694,15 @@ namespace RpgDex.Application.Services
             {
                 return Result<bool>.Failure(AuthError.UserNotFound);
             }
-            var total = request.Results?.Sum() ?? 0;
+
+            if (!DiceParserService.TryEvaluate(request.Expression, out var eval) || eval is null)
+                return Result<bool>.Failure(DiceLogError.InvalidExpression);
+            //Change this later, this just sum
             var roll = new DiceRoll
             {
-                Expression = request.Expression,
-                Results = request.Results,
-                Total = total,
+                Expression = eval.Expression,
+                Results = eval.Rolls,
+                Total = eval.Total,
                 UserId = guidUserId
 
             };

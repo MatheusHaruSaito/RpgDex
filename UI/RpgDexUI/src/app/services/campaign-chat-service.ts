@@ -22,7 +22,7 @@ export class CampaignChatService {
   private messageReceived$ = new Subject<ChatMessage>();
   private readonly controller = 'Campaign';
   private readonly env = `${environment.RpxDexApi}/${this.controller}`;
-  private COMMAND_SUFFIX = '@rpg';
+  private COMMAND_PREFIX = '@rpg';
   private normalize = (s: string) =>
     s
       .normalize('NFD')
@@ -89,60 +89,24 @@ export class CampaignChatService {
   public AddRollToLog(request: AddRollToLogRequest): Observable<DiceRollsLogResult[]> {
     return this.http.patch<DiceRollsLogResult[]>(`${this.env}/AddRollToLog`, request);
   }
-  public get commandSuffix() {
-    return this.COMMAND_SUFFIX;
+  public get commandPrefix() {
+    return this.COMMAND_PREFIX;
   }
-  public tryExecuteCommand(imput: string, campId: string) {
-    const [rawName, ...args] = imput.slice(this.COMMAND_SUFFIX.length).trim().split(/\s+/);
+  tryExecuteCommand(input: string, campId: string): Observable<unknown> | null {
+    const [rawName, ...args] = input.slice(this.COMMAND_PREFIX.length).trim().split(/\s+/);
+
     const command = this.findCommand(rawName);
-    if (!command) return;
-    return this.ExecuteCommand(campId, command, args);
+    if (!command) return null;
+
+    switch (command.name) {
+      case 'roll':
+        return this.AddRollToLog({ campaignId: campId, expression: args.join('') });
+      default:
+        return null;
+    }
   }
   private findCommand(name: string) {
     const key = this.normalize(name);
     return chatCommandList.find((c) => c.aliases.some((alias) => this.normalize(alias) === key));
-  }
-
-  private ExecuteCommand(campId: string, command: CommandModel, args: string[]) {
-    switch (command.name) {
-      case 'roll': {
-        const parts = this.formatCommandArg(command.name, args);
-        if (parts.length !== 2) return;
-
-        const result = command.run(parts) as number[];
-        console.log(result);
-        if (result.some(Number.isNaN)) return;
-        const request: AddRollToLogRequest = {
-          campaignId: campId,
-          expression: args[0],
-          results: result,
-        };
-        console.log('request: ', request);
-        this.AddRollToLog(request).subscribe({
-          next: (r) => {
-            return r;
-          },
-          error: (e) => {
-            console.error(e);
-          },
-        });
-        break;
-      }
-      default:
-        command.run(args);
-        break;
-    }
-  }
-  private formatCommandArg(name: string, args: string[]): string[] {
-    switch (name) {
-      case 'roll': {
-        const match = args[0]?.match(/^(\d*)d(\d+)$/i);
-        if (!match) return [];
-        return [match[1] || '1', match[2]];
-      }
-      default: {
-        return args;
-      }
-    }
   }
 }

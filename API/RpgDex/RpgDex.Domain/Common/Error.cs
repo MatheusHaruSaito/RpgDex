@@ -84,8 +84,8 @@ namespace RpgDex.Domain.Common
     {
         public static readonly Error AddRollFailed = new("DICE_LOG_ADD_ROLL_FAILED", "Failed to save dice roll to the campaign log.");
         public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
-        public static readonly Error RollResultsRequired = new("DICE_LOG_ROLL_RESULTS_REQUIRED", "Dice roll must contain at least one result.");
         public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
+        public static readonly Error InvalidExpression = new("DICE_LOG_INVALID_EXPRESSION", "Invalid dice expression.");
     }
 }
 

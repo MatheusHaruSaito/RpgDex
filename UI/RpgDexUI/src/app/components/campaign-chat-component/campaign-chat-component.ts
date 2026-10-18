@@ -199,7 +199,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   send(): void {
     this.sendError = '';
     const text = this.newMessageText.trim();
-    const commandSuffix = this.chatService.commandSuffix;
+    const commandPrefix = this.chatService.commandPrefix;
     if (!text || this.isSending) return;
 
     if (text.length > 500) {
@@ -232,9 +232,12 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         this.focusInput();
       },
     });
-    if (text.startsWith(commandSuffix)) {
-      const result = this.chatService.tryExecuteCommand(text, this.campaignId);
-      console.log('Comando executado: ', result);
+    if (text.startsWith(commandPrefix)) {
+      this.chatService.tryExecuteCommand(text, this.campaignId)?.subscribe({
+        next: (r) => {
+          console.log(r);
+        },
+      });
     }
   }
 
