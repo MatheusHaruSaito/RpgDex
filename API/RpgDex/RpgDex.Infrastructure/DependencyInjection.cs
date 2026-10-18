@@ -14,6 +14,7 @@ using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
+using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
@@ -83,6 +84,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
             services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
+            services.AddScoped<ICharacterQueries, CharacterQueries>();
 
 
 

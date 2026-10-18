@@ -155,8 +155,9 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   private loadUserCharacters(): void {
-    this.characterService.GetAll().subscribe({
+    this.characterService.GetAllFromCampaign(this.campaignId).subscribe({
       next: (res) => {
+        console.log(res);
         this.myCharacters = res.data?.characters ?? [];
         this.cdr.detectChanges();
       },
