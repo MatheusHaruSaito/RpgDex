@@ -148,9 +148,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     }
 
     if (msg.username && this.myCharacters.length > 0) {
-      return this.myCharacters.some(
-        (c) => c.name.toLowerCase() === msg.username.toLowerCase()
-      );
+      return this.myCharacters.some((c) => c.name.toLowerCase() === msg.username.toLowerCase());
     }
 
     return false;
@@ -259,7 +257,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   send(): void {
     this.sendError = '';
     const text = this.newMessageText.trim();
-    const commandSuffix = this.chatService.commandSuffix;
+    const commandPrefix = this.chatService.commandPrefix;
 
     if (!text || this.isSending) return;
 
@@ -273,9 +271,10 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     this.newMessageText = '';
 
     // Garante que characterId é um GUID válido ou estritamente null
-    const charId = this.selectedCharacterId && this.selectedCharacterId !== 'null' 
-      ? this.selectedCharacterId 
-      : null;
+    const charId =
+      this.selectedCharacterId && this.selectedCharacterId !== 'null'
+        ? this.selectedCharacterId
+        : null;
 
     const request: CampaignChatMessageRequest = {
       campaignId: this.campaignId,
@@ -299,7 +298,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       },
     });
 
-    if (text.startsWith(commandSuffix)) {
+    if (text.startsWith(commandPrefix)) {
       this.chatService.tryExecuteCommand(text, this.campaignId);
     }
   }

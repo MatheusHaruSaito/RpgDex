@@ -121,7 +121,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPatch("EditMessage")]
-        public async Task<IActionResult> EditMessage([FromForm]EditChatMessageRequest request)
+        public async Task<IActionResult> EditMessage([FromBody] EditChatMessageRequest request)
         {
             var result = await _campaignService.EditMessage(currentUser,request);
             return result.ToIActionResult();
