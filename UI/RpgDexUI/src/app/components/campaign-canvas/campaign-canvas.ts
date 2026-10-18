@@ -7,9 +7,18 @@ import { NgxColorsModule } from 'ngx-colors';
 
 export type ToolMode = 'cursor' | 'draw';
 
+export type ElementType = (typeof ElementType)[keyof typeof ElementType];
+
+export const ElementType = {
+  Token: 'token',
+  Text: 'text',
+  Image: 'image',
+  Drawing: 'drawing',
+} as const;
+
 export interface CanvasElement {
   id: string;
-  type: 'token' | 'text' | 'image' | 'drawing';
+  type: ElementType;
   x: number;
   y: number;
   z: number;
@@ -17,22 +26,16 @@ export interface CanvasElement {
   content?: string;
   color?: string;
   imageUrl?: string;
-  points?: { x: number, y: number }[];
+  points?: { x: number; y: number }[];
   strokeWidth?: number;
 }
 
 @Component({
   selector: 'app-campaign-canvas',
   standalone: true,
-  imports: [
-    CommonModule, 
-    RouterModule, 
-    FormsModule, 
-    ImageCropperComponent, 
-    NgxColorsModule
-  ],
+  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent, NgxColorsModule],
   templateUrl: './campaign-canvas.html',
-  styleUrls: ['./campaign-canvas.css']
+  styleUrls: ['./campaign-canvas.css'],
 })
 export class CampaignCanvasComponent implements OnInit {
   @ViewChild('canvasContainer') canvasContainer!: ElementRef;
@@ -47,20 +50,20 @@ export class CampaignCanvasComponent implements OnInit {
 
   activeTool: ToolMode = 'cursor';
   brushSize: number = 4;
-  
+
   isInteracting: boolean = false;
   isPanning: boolean = false;
-  
+
   // ── SELEÇÃO E CAIXA DE SELEÇÃO ──
   selectedElements: CanvasElement[] = [];
   selectionBox = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
-  
+
   activeDrawing: CanvasElement | null = null;
   lastPointer = { x: 0, y: 0 };
   maxZ: number = 10;
 
   elements: CanvasElement[] = [];
-  
+
   // ── HISTÓRICO (UNDO / REDO) ──
   history: string[] = [];
   redoHistory: string[] = [];
@@ -84,9 +87,10 @@ export class CampaignCanvasComponent implements OnInit {
 
   // ── SISTEMA DE DESFAZER E REFAZER ──
   saveState(): void {
+    console.log(this.elements);
     this.history.push(JSON.stringify(this.elements));
     if (this.history.length > 30) this.history.shift();
-    this.redoHistory = []; 
+    this.redoHistory = [];
   }
 
   undo(): void {
@@ -110,7 +114,8 @@ export class CampaignCanvasComponent implements OnInit {
   // ── CONTROLOS DE TECLADO ──
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
 
     const ctrlOrCmd = event.ctrlKey || event.metaKey;
 
@@ -138,7 +143,8 @@ export class CampaignCanvasComponent implements OnInit {
   // ── COPY / CUT / PASTE (SUPORTA SELEÇÃO MÚLTIPLA) ──
   @HostListener('window:copy', ['$event'])
   onCopy(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
     if (this.selectedElements.length > 0) {
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
@@ -148,7 +154,8 @@ export class CampaignCanvasComponent implements OnInit {
 
   @HostListener('window:cut', ['$event'])
   onCut(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
     if (this.selectedElements.length > 0) {
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
@@ -159,7 +166,8 @@ export class CampaignCanvasComponent implements OnInit {
 
   @HostListener('window:paste', ['$event'])
   onPaste(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
 
     const items = event.clipboardData?.items;
     const textData = event.clipboardData?.getData('text/plain');
@@ -170,18 +178,18 @@ export class CampaignCanvasComponent implements OnInit {
         if (parsed.isRpgDexElements && Array.isArray(parsed.elements)) {
           this.saveState();
           const pastedElements: CanvasElement[] = [];
-          
+
           parsed.elements.forEach((el: CanvasElement) => {
             const newEl = { ...el };
             newEl.id = Date.now().toString() + Math.random().toString();
             this.maxZ++;
             newEl.z = this.maxZ;
-            newEl.x += 40; 
+            newEl.x += 40;
             newEl.y += 40;
             this.elements.push(newEl);
             pastedElements.push(newEl);
           });
-          
+
           this.selectedElements = pastedElements;
           event.preventDefault();
           return;
@@ -263,7 +271,7 @@ export class CampaignCanvasComponent implements OnInit {
       };
       reader.readAsDataURL(input.files[0]);
     }
-    input.value = ''; 
+    input.value = '';
   }
 
   createElement(type: CanvasElement['type'], content?: string): CanvasElement {
@@ -276,14 +284,14 @@ export class CampaignCanvasComponent implements OnInit {
       y: this.getWorldY(window.innerHeight / 2) - 50,
       z: this.maxZ,
       scale: 1,
-      color: this.selectedColor
+      color: this.selectedColor,
     };
   }
 
   onColorChange(colorValue: string): void {
     if (this.selectedElements.length > 0) {
       this.saveState();
-      this.selectedElements.forEach(el => {
+      this.selectedElements.forEach((el) => {
         if (el.type !== 'image') el.color = colorValue;
       });
     }
@@ -294,14 +302,14 @@ export class CampaignCanvasComponent implements OnInit {
   deleteSelected(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
-    this.elements = this.elements.filter(e => !this.selectedElements.includes(e));
+    this.elements = this.elements.filter((e) => !this.selectedElements.includes(e));
     this.selectedElements = [];
   }
 
   bringForward(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
-    this.selectedElements.forEach(el => {
+    this.selectedElements.forEach((el) => {
       this.maxZ++;
       el.z = this.maxZ;
     });
@@ -311,8 +319,8 @@ export class CampaignCanvasComponent implements OnInit {
   sendBackward(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
-    const minZ = Math.min(...this.elements.map(e => e.z)) - 1;
-    this.selectedElements.forEach(el => {
+    const minZ = Math.min(...this.elements.map((e) => e.z)) - 1;
+    this.selectedElements.forEach((el) => {
       el.z = minZ; // Empurra todos para o fundo
     });
     this.sortElements();
@@ -331,13 +339,13 @@ export class CampaignCanvasComponent implements OnInit {
   // ── CORTE DE IMAGEM ──
   startCropping(): void {
     if (this.selectedElements.length === 1 && this.selectedElements[0].type === 'image') {
-      this.saveState(); 
+      this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
-      
+
       this.isCropping = true;
       this.cropImageSource = '';
       this.tempCroppedBase64 = '';
-      
+
       setTimeout(() => {
         this.cropImageSource = currentImage;
         this.tempCroppedBase64 = currentImage;
@@ -351,7 +359,9 @@ export class CampaignCanvasComponent implements OnInit {
     } else if (event.blob) {
       const reader = new FileReader();
       reader.readAsDataURL(event.blob);
-      reader.onloadend = () => { this.tempCroppedBase64 = reader.result as string; };
+      reader.onloadend = () => {
+        this.tempCroppedBase64 = reader.result as string;
+      };
     } else if (event.objectUrl) {
       this.tempCroppedBase64 = event.objectUrl;
     }
@@ -375,7 +385,7 @@ export class CampaignCanvasComponent implements OnInit {
     this.isRoundCrop = isRound;
     const temp = this.cropImageSource;
     this.cropImageSource = '';
-    setTimeout(() => this.cropImageSource = temp, 10);
+    setTimeout(() => (this.cropImageSource = temp), 10);
   }
 
   isBase64Url(url: string): boolean {
@@ -383,11 +393,17 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   // ── CÂMERA E ZOOM ──
-  getWorldX(screenX: number): number { return (screenX - this.panX) / this.scale; }
-  getWorldY(screenY: number): number { return (screenY - this.panY) / this.scale; }
+  getWorldX(screenX: number): number {
+    return (screenX - this.panX) / this.scale;
+  }
+  getWorldY(screenY: number): number {
+    return (screenY - this.panY) / this.scale;
+  }
 
   centerCamera(): void {
-    this.scale = 1; this.panX = 0; this.panY = 0;
+    this.scale = 1;
+    this.panX = 0;
+    this.panY = 0;
   }
 
   doZoom(newScale: number, clientX: number, clientY: number): void {
@@ -400,8 +416,12 @@ export class CampaignCanvasComponent implements OnInit {
     this.panY = clientY - wy * this.scale;
   }
 
-  zoomIn(): void { this.doZoom(this.scale + 0.2, window.innerWidth / 2, window.innerHeight / 2); }
-  zoomOut(): void { this.doZoom(this.scale - 0.2, window.innerWidth / 2, window.innerHeight / 2); }
+  zoomIn(): void {
+    this.doZoom(this.scale + 0.2, window.innerWidth / 2, window.innerHeight / 2);
+  }
+  zoomOut(): void {
+    this.doZoom(this.scale - 0.2, window.innerWidth / 2, window.innerHeight / 2);
+  }
 
   @HostListener('wheel', ['$event'])
   onWheel(event: WheelEvent): void {
@@ -413,17 +433,25 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   // ── SELEÇÃO MÚLTIPLA: LÓGICA DE DETEÇÃO ──
-  getMin(a: number, b: number): number { return Math.min(a, b); }
-  getAbs(val: number): number { return Math.abs(val); }
+  getMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+  getAbs(val: number): number {
+    return Math.abs(val);
+  }
 
   updateSelectionBoxIntersection(): void {
-    const boxWorldX = this.getWorldX(Math.min(this.selectionBox.startX, this.selectionBox.currentX));
-    const boxWorldY = this.getWorldY(Math.min(this.selectionBox.startY, this.selectionBox.currentY));
+    const boxWorldX = this.getWorldX(
+      Math.min(this.selectionBox.startX, this.selectionBox.currentX),
+    );
+    const boxWorldY = this.getWorldY(
+      Math.min(this.selectionBox.startY, this.selectionBox.currentY),
+    );
     const boxWorldW = Math.abs(this.selectionBox.currentX - this.selectionBox.startX) / this.scale;
     const boxWorldH = Math.abs(this.selectionBox.currentY - this.selectionBox.startY) / this.scale;
 
-    this.selectedElements = this.elements.filter(el => {
-      const elW = 100 * el.scale; 
+    this.selectedElements = this.elements.filter((el) => {
+      const elW = 100 * el.scale;
       const elH = 100 * el.scale;
       return (
         el.x < boxWorldX + boxWorldW &&
@@ -438,8 +466,8 @@ export class CampaignCanvasComponent implements OnInit {
   onPointerDown(event: PointerEvent): void {
     if ((event.target as HTMLElement).closest('.canvas-ui')) return;
     (event.target as Element).setPointerCapture(event.pointerId);
-    
-    this.pointerDownState = JSON.stringify(this.elements); 
+
+    this.pointerDownState = JSON.stringify(this.elements);
     this.lastPointer = { x: event.clientX, y: event.clientY };
 
     if (event.button === 1 || event.button === 2) {
@@ -454,10 +482,14 @@ export class CampaignCanvasComponent implements OnInit {
       this.maxZ++;
       const newDrawing: CanvasElement = {
         id: Date.now().toString(),
-        type: 'drawing', x: 0, y: 0, z: this.maxZ, scale: 1,
+        type: 'drawing',
+        x: 0,
+        y: 0,
+        z: this.maxZ,
+        scale: 1,
         color: this.selectedColor,
         strokeWidth: this.brushSize,
-        points: [{ x: this.getWorldX(event.clientX), y: this.getWorldY(event.clientY) }]
+        points: [{ x: this.getWorldX(event.clientX), y: this.getWorldY(event.clientY) }],
       };
       this.elements.push(newDrawing);
       this.activeDrawing = newDrawing;
@@ -474,12 +506,12 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   onElementDown(event: PointerEvent, element: CanvasElement): void {
-    if (event.button === 1 || event.button === 2) return; 
-    if (this.activeTool !== 'cursor') return; 
-    
+    if (event.button === 1 || event.button === 2) return;
+    if (this.activeTool !== 'cursor') return;
+
     event.stopPropagation();
     (event.target as Element).setPointerCapture(event.pointerId);
-    
+
     this.pointerDownState = JSON.stringify(this.elements);
     this.isInteracting = true;
 
@@ -501,7 +533,7 @@ export class CampaignCanvasComponent implements OnInit {
         this.selectedElements = [element];
       }
     }
-    
+
     this.lastPointer = { x: event.clientX, y: event.clientY };
   }
 
@@ -521,10 +553,9 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.activeTool === 'draw' && this.activeDrawing && this.activeDrawing.points) {
       this.activeDrawing.points.push({
         x: this.getWorldX(event.clientX),
-        y: this.getWorldY(event.clientY)
+        y: this.getWorldY(event.clientY),
       });
-    } 
-    else if (this.activeTool === 'cursor') {
+    } else if (this.activeTool === 'cursor') {
       if (this.selectionBox.active) {
         this.selectionBox.currentX = event.clientX;
         this.selectionBox.currentY = event.clientY;
@@ -534,7 +565,7 @@ export class CampaignCanvasComponent implements OnInit {
         const deltaY = event.clientY - this.lastPointer.y;
 
         if (this.selectedElements.length > 0) {
-          this.selectedElements.forEach(el => {
+          this.selectedElements.forEach((el) => {
             el.x += deltaX / this.scale;
             el.y += deltaY / this.scale;
           });
@@ -549,20 +580,24 @@ export class CampaignCanvasComponent implements OnInit {
   onPointerUp(event: PointerEvent): void {
     if (this.isPanning || this.isInteracting) {
       const currentState = JSON.stringify(this.elements);
-      if (this.pointerDownState && this.pointerDownState !== currentState && (this.selectedElements.length > 0 || this.activeDrawing)) {
+      if (
+        this.pointerDownState &&
+        this.pointerDownState !== currentState &&
+        (this.selectedElements.length > 0 || this.activeDrawing)
+      ) {
         this.history.push(this.pointerDownState);
         if (this.history.length > 30) this.history.shift();
         this.redoHistory = [];
       }
     }
-    
+
     this.isInteracting = false;
     this.isPanning = false;
     this.selectionBox.active = false;
     this.activeDrawing = null;
   }
 
-  getSvgPath(points?: {x: number, y: number}[]): string {
+  getSvgPath(points?: { x: number; y: number }[]): string {
     if (!points || points.length === 0) return '';
     let path = `M ${points[0].x} ${points[0].y}`;
     for (let i = 1; i < points.length; i++) path += ` L ${points[i].x} ${points[i].y}`;
