@@ -7,7 +7,6 @@
 <!-- Conteúdo da Campanha (Suave com fade-in) -->
 <div class="cd-wrapper fade-in-content" *ngIf="!isLoading && campaign">
   <div class="cd-container">
-    
     <!-- ── ALERTAS DE FEEDBACK (SUCESSO / ERRO) ── -->
     <div #alertBanner class="cd-alert cd-alert-success" *ngIf="successMessage">
       <span><i class="fa fa-circle-check"></i> {{ successMessage }}</span>
@@ -44,6 +43,7 @@
           <i class="fa fa-right-from-bracket"></i> Sair da Campanha
         </button>
 
+        <!-- Balão de Dica adicionado no botão de Desativar/Ativar Campanha -->
         <app-info-hint
           *ngIf="isGameMaster"
           [useContent]="true"
@@ -105,26 +105,24 @@
       </div>
     </div>
 
-    <!-- ── TABULEIRO VIRTUAL (CHAMADA PARA A TELA CHEIA) ── -->
-    <div class="cd-card vtt-placeholder-card" style="background: var(--rpg-bg-dark); border-color: var(--rpg-purple); overflow: hidden; position: relative;">
-      <!-- Fundo decorativo -->
-      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at 80% 20%, var(--rpg-purple-15) 0%, transparent 40%), linear-gradient(rgba(158, 116, 208, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(158, 116, 208, 0.05) 1px, transparent 1px); background-size: 100% 100%, 30px 30px, 30px 30px; pointer-events: none;"></div>
-
-      <div class="vtt-placeholder-body" style="position: relative; z-index: 1;">
-        <i class="fa fa-chess-board" style="font-size: 3.5rem; color: var(--rpg-cyan); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(128, 226, 255, 0.4));"></i>
-        <h3 style="color: white; font-size: 1.4rem;">Mesa Interativa & Quadro Branco</h3>
-        <p style="color: var(--rpg-text-faint); margin-bottom: 20px;">
-          Abra o tabuleiro virtual em tela cheia. Adicione mapas, desenhe rotas, insira anotações e mova os tokens dos jogadores livremente pelo cenário.
+    <!-- ── MESA VIRTUAL / TABULEIRO (Placeholder) ── -->
+    <div class="cd-card vtt-placeholder-card">
+      <div class="cd-card-header">
+        <h2 class="cd-card-title"><i class="fa fa-dice-d20"></i> Tabuleiro Virtual</h2>
+        <span class="vtt-badge">Em Breve</span>
+      </div>
+      <div class="vtt-placeholder-body">
+        <i class="fa fa-chess-board vtt-icon"></i>
+        <h3>Mesa de Jogo em Desenvolvimento</h3>
+        <p>
+          Em breve você poderá acessar o tabuleiro virtual interativo com mapas, tokens e rolagens
+          de dados em tempo real diretamente por aqui.
         </p>
-        <button class="btn btn-primary" [routerLink]="['/campanha', campaignId, 'tabuleiro']" style="padding: 12px 24px; font-size: 1rem;">
-          <i class="fa fa-arrow-up-right-from-square"></i> Acessar Tabuleiro Interativo
-        </button>
       </div>
     </div>
 
     <!-- ── GRID DE CONTEÚDO ── -->
     <div class="cd-grid">
-      
       <!-- Coluna principal -->
       <div class="cd-col cd-col--main">
         <!-- Entrar na campanha (visitante) -->
@@ -401,7 +399,6 @@
             </ng-container>
           </div>
         </div>
-
       </div>
 
       <!-- Coluna lateral: Configurações & Painel do Mestre -->
@@ -435,7 +432,6 @@
           </div>
         </div>
       </div>
-      
     </div>
   </div>
 </div>
