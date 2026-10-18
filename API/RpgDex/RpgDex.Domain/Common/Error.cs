@@ -76,5 +76,19 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
     }
+    public static class CanvaElementError
+    {
+        public static readonly Error NotFound = new("CANVAS_ELEMENT_NOT_FOUND", "Canvas element not found.");
+        public static readonly Error CreateFailed = new("CANVAS_ELEMENT_CREATE_FAILED", "Failed to create canvas element.");
+        public static readonly Error UpdateFailed = new("CANVAS_ELEMENT_UPDATE_FAILED", "Failed to update canvas element.");
+        public static readonly Error MoveFailed = new("CANVAS_ELEMENT_MOVE_FAILED", "Failed to move canvas elements.");
+        public static readonly Error ReorderFailed = new("CANVAS_ELEMENT_REORDER_FAILED", "Failed to reorder canvas elements.");
+        public static readonly Error SetActiveStateFailed = new("CANVAS_ELEMENT_SET_ACTIVE_STATE_FAILED", "Failed to change canvas element active state.");
+        public static readonly Error InvalidElement = new("CANVAS_ELEMENT_INVALID", "Element data does not match its type.");
+        public static readonly Error ImageTooLarge = new("CANVAS_ELEMENT_IMAGE_TOO_LARGE", "Image is too large.");
+        public static readonly Error TooManyPoints = new("CANVAS_ELEMENT_TOO_MANY_POINTS", "Drawing has too many points.");
+        public static readonly Error TooManyItems = new("CANVAS_ELEMENT_TOO_MANY_ITEMS", "Invalid number of elements in the request.");
+        public static readonly Error LimitReached = new("CANVAS_ELEMENT_LIMIT_REACHED", "Canvas element limit reached.");
+    }
 }
 

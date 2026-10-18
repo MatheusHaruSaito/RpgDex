@@ -12,6 +12,7 @@ namespace RpgDex.Domain.Entities
         [BsonGuidRepresentation(GuidRepresentation.Standard)]
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid CampaignId { get; set; } = Guid.Empty;
+        public Guid UserId { get; set; } = Guid.Empty;
         public CanvaElementType ElementType { get; set; }
         public double X { get; set; }
         public double Y { get; set; }

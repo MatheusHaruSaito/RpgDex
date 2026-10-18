@@ -9,13 +9,15 @@ namespace RpgDex.Domain.Interfaces
     public interface ICanvaElementRepository
     {
         Task<CanvaElement> InsertElementAsync(CanvaElement canvaElement);
-        Task<IEnumerable<CanvaElement>> GetAllElementsByCampaignAsync(Guid campaignId, int page=1, int pageSize=20);
+        Task<int> CountByCampaignAsync(Guid campaignId);
+        Task<GetAllCanvasElementResponse> GetAllElementsByCampaignAsync(Guid campaignId, int page=1, int pageSize=20);
+        Task<CanvaElement> GetByIdAsync(Guid campaignId,Guid id);
         Task<bool> UpdateElementAsync(CanvaElement newElement);
         Task<bool> MoveElementAsync(Guid campaignId,IEnumerable<ElementPosition> items);
         Task<bool> MoveElementAsync(Guid campaignId, ElementPosition item);
         Task<bool> ReorderElementsAsync(Guid campaignId, IEnumerable<ElementOrder> items);
         Task<bool> SetActiveState(Guid id,Guid campaignId, bool state);
 
-
+        public record GetAllCanvasElementResponse(IEnumerable<CanvaElement> elements, int Count );
     }
 }

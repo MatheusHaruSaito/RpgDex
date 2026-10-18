@@ -1,26 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
-using MongoDB.Driver;
-using RpgDex.Domain.Common;
+﻿using MongoDB.Driver;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
 using RpgDex.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
+using static RpgDex.Domain.Interfaces.ICanvaElementRepository;
+
 
 namespace RpgDex.Infrastructure.Repositories
 {
     public class CanvaElementRepository : ICanvaElementRepository
     {
         private readonly IMongoCollection<CanvaElement> _entity;
-        private const int MAX_CAMPAING_ELEMENT_PER_CAMPAING = 300;
         public CanvaElementRepository(MongoDbContext ctx)
         {
             _entity = ctx.CanvaElements;
         }
-        public async Task<IEnumerable<CanvaElement>> GetAllElementsByCampaignAsync(Guid campaignId, int page = 1, int pageSize = 20)
+        public async Task<GetAllCanvasElementResponse> GetAllElementsByCampaignAsync(Guid campaignId, int page = 1, int pageSize = 20)
         {
             page = page < 1 ? 1 : page;
             pageSize = pageSize < 1 ? 1 : pageSize;
@@ -31,21 +26,27 @@ namespace RpgDex.Infrastructure.Repositories
                 .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();
-
-            return elements;
+            var count = await CountByCampaignAsync(campaignId);
+            return new (elements,(int)count);
+        }
+        public async Task<CanvaElement> GetByIdAsync(Guid campaignId, Guid id)
+        {
+            var filter = Builders<CanvaElement>.Filter.And(
+                Builders<CanvaElement>.Filter.Eq(e => e.Id, id),
+                Builders<CanvaElement>.Filter.Eq(e => e.CampaignId, campaignId));
+            return await _entity.Find(filter).FirstOrDefaultAsync();
         }
 
         public async Task<CanvaElement> InsertElementAsync(CanvaElement canvaElement)
         {
-            var elementCount = await _entity.CountDocumentsAsync(e => e.CampaignId == canvaElement.CampaignId);
-            if(elementCount >= MAX_CAMPAING_ELEMENT_PER_CAMPAING)
-            {
-                return null;
-            }
             await _entity.InsertOneAsync(canvaElement);
             return canvaElement;
         }
-
+        public async Task<int> CountByCampaignAsync(Guid campaignId)
+        {
+            var count = await _entity.CountDocumentsAsync(e => e.CampaignId == campaignId);
+            return (int)count;
+        }
         public async Task<bool> UpdateElementAsync(CanvaElement newElement)
         {
             var filter = Builders<CanvaElement>.Filter.And(
