@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { UserDocumentService } from '../../services/user-document-service';
 import { UserDocumentResponse } from '../../../models/userDocumentResponse';
 import { CreateUserDocumentRequest } from '../../../models/createUserDocumentRequest';
@@ -16,6 +17,7 @@ import { UpdateUserDocumentRequest } from '../../../models/updateUserDocumentReq
 export class LibraryComponent implements OnInit {
   private documentService = inject(UserDocumentService);
   private cdr = inject(ChangeDetectorRef);
+  private sanitizer = inject(DomSanitizer);
 
   documents: UserDocumentResponse[] = [];
   filteredDocuments: UserDocumentResponse[] = [];
@@ -34,19 +36,17 @@ export class LibraryComponent implements OnInit {
   // Modal Upload
   showUploadModal = false;
   selectedFile: File | null = null;
-  uploadData = {
-    name: '',
-    description: '',
-  };
+  uploadData = { name: '', description: '' };
 
   // Modal Edição
   showEditModal = false;
   editingDoc: UserDocumentResponse | null = null;
-  editData = {
-    name: '',
-    description: '',
-  };
+  editData = { name: '', description: '' };
   editSelectedFile: File | null = null;
+
+  // Modal Pré-visualização
+  previewDoc: UserDocumentResponse | null = null;
+  previewSafeUrl: SafeResourceUrl | null = null;
 
   ngOnInit(): void {
     this.loadDocuments();
@@ -87,14 +87,7 @@ export class LibraryComponent implements OnInit {
     }
 
     if (this.activeFilter !== 'all') {
-      result = result.filter((doc) => {
-        const ext = this.getFileExtension(doc.fileName);
-        if (this.activeFilter === 'pdf') return ext === 'pdf';
-        if (this.activeFilter === 'image') return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
-        if (this.activeFilter === 'doc') return ['doc', 'docx', 'txt', 'rtf'].includes(ext);
-        if (this.activeFilter === 'audio') return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
-        return true;
-      });
+      result = result.filter((doc) => this.getFileCategory(doc.fileName) === this.activeFilter);
     }
 
     this.filteredDocuments = result;
@@ -103,6 +96,18 @@ export class LibraryComponent implements OnInit {
   setFilter(category: 'all' | 'pdf' | 'image' | 'doc' | 'audio'): void {
     this.activeFilter = category;
     this.applyFilters();
+  }
+
+  // ── PRÉ-VISUALIZAÇÃO ────────────────────────────────────
+  openPreviewModal(doc: UserDocumentResponse): void {
+    this.previewDoc = doc;
+    // Torna a URL segura para o Iframe interpretar PDFs
+    this.previewSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(doc.filePath);
+  }
+
+  closePreviewModal(): void {
+    this.previewDoc = null;
+    this.previewSafeUrl = null;
   }
 
   // ── UPLOAD ──────────────────────────────────────────────
@@ -176,7 +181,8 @@ export class LibraryComponent implements OnInit {
   }
 
   // ── EDIÇÃO ──────────────────────────────────────────────
-  openEditModal(doc: UserDocumentResponse): void {
+  openEditModal(doc: UserDocumentResponse, event?: Event): void {
+    event?.stopPropagation(); // Impede abrir o Preview ao clicar no botão de editar
     this.editingDoc = doc;
     this.editData = {
       name: doc.name,
@@ -234,7 +240,8 @@ export class LibraryComponent implements OnInit {
   }
 
   // ── DESATIVAÇÃO ──────────────────────────────────────────
-  deleteDocument(doc: UserDocumentResponse): void {
+  deleteDocument(doc: UserDocumentResponse, event?: Event): void {
+    event?.stopPropagation();
     if (!confirm(`Deseja desativar "${doc.name}" da biblioteca?`)) return;
 
     this.clearMessages();
@@ -256,7 +263,7 @@ export class LibraryComponent implements OnInit {
     });
   }
 
-  // ── UTILITÁRIOS & FEEDBACK ────────────────────────────────
+  // ── UTILITÁRIOS ──────────────────────────────────────────
   private clearMessages(): void {
     this.errorMessage = '';
     this.successMessage = '';
@@ -275,33 +282,23 @@ export class LibraryComponent implements OnInit {
     return fileName.split('.').pop()?.toLowerCase() || '';
   }
 
-  getFileIcon(fileName: string): string {
+  getFileCategory(fileName: string): 'image' | 'audio' | 'pdf' | 'doc' | 'other' {
     const ext = this.getFileExtension(fileName);
-    switch (ext) {
-      case 'pdf':
-        return 'fa-file-pdf';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'webp':
-      case 'gif':
-        return 'fa-file-image';
-      case 'doc':
-      case 'docx':
-      case 'txt':
-      case 'rtf':
-        return 'fa-file-lines';
-      case 'mp3':
-      case 'wav':
-      case 'ogg':
-      case 'm4a':
-        return 'fa-file-audio';
-      case 'zip':
-      case 'rar':
-      case '7z':
-        return 'fa-file-zipper';
-      default:
-        return 'fa-file';
+    if (['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext)) return 'image';
+    if (['mp3', 'wav', 'ogg', 'm4a'].includes(ext)) return 'audio';
+    if (ext === 'pdf') return 'pdf';
+    if (['doc', 'docx', 'txt', 'rtf'].includes(ext)) return 'doc';
+    return 'other';
+  }
+
+  getFileIcon(fileName: string): string {
+    const cat = this.getFileCategory(fileName);
+    switch (cat) {
+      case 'pdf': return 'fa-file-pdf';
+      case 'image': return 'fa-file-image';
+      case 'doc': return 'fa-file-lines';
+      case 'audio': return 'fa-file-audio';
+      default: return 'fa-file';
     }
   }
 
