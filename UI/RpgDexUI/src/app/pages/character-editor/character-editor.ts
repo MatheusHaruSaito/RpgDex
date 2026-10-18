@@ -4,9 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { finalize, firstValueFrom } from 'rxjs';
+import { TranslateService } from '@ngx-translate/core';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
 import { HttpClient } from '@angular/common/http';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 export interface AttrEntry {
   key: string;
@@ -30,6 +32,8 @@ export class CharacterEditor implements OnInit {
   private characterService = inject(CharacterService);
   private cdr = inject(ChangeDetectorRef);
   private location = inject(Location);
+  private translateService = inject(TranslateService);
+  private http = inject(HttpClient);
 
   character: Character | null = null;
   isLoading = true; // Controla o carregamento inicial da ficha
@@ -57,8 +61,6 @@ export class CharacterEditor implements OnInit {
   isEditing = false;
 
   private readonly GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -92,8 +94,12 @@ export class CharacterEditor implements OnInit {
         this.isLoading = false; // Finaliza o carregamento antes do render
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
         this.router.navigate(['/personagens']);
       },
     });
@@ -289,13 +295,10 @@ export class CharacterEditor implements OnInit {
         },
         error: (err) => {
           this.isSaving = false;
-          const body = err?.error;
-          this.errorMessage =
-            (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
-            body?.message ??
-            body?.title ??
-            'Erro ao salvar.';
-          this.cdr.detectChanges();
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.errorMessage = msg;
+            this.cdr.detectChanges();
+          });
         },
       });
   }
@@ -305,8 +308,11 @@ export class CharacterEditor implements OnInit {
       return;
     this.characterService.Delete(this.character!.id).subscribe({
       next: () => this.router.navigate(['/personagens']),
-      error: () => {
-        this.errorMessage = 'Erro ao excluir personagem.';
+      error: (err) => {
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

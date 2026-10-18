@@ -9,6 +9,7 @@ import { Character } from '../../../models/character';
 import { Campaign } from '../../../models/campaign';
 import { CreateJoinCampaignModalComponent } from '../../modals/create-join-campaign-modal/create-join-campaign-modal';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-campaigns',
@@ -181,70 +182,9 @@ export class CampaignsComponent implements OnInit {
   }
 
   private handleApiError(err: any): void {
-    const body = err?.error;
-
-    if (body?.errors && typeof body.errors === 'object') {
-      const errorKeys = Object.keys(body.errors);
-      if (errorKeys.length > 0) {
-        const firstErrorVal = body.errors[errorKeys[0]];
-
-        if (Array.isArray(firstErrorVal) && firstErrorVal.length > 0) {
-          const primaryError = firstErrorVal[0];
-
-          if (typeof primaryError === 'object' && primaryError?.code) {
-            const translationKey = `ERRORS.${primaryError.code}`;
-            this.translateService.get(translationKey).subscribe((translatedText: string) => {
-              const hasTranslation = translatedText !== translationKey;
-              this.setModalError(hasTranslation ? translatedText : primaryError.message);
-            });
-            return;
-          }
-
-          if (typeof primaryError === 'string') {
-            if (primaryError.includes('request field is required')) {
-              this.setModalError('O código da campanha é obrigatório.');
-              return;
-            }
-            this.setModalError(primaryError);
-            return;
-          }
-        }
-      }
-    }
-
-    const errorList = Array.isArray(body?.message)
-      ? body.message
-      : Array.isArray(body?.errors)
-      ? body.errors
-      : [];
-
-    const primaryError = errorList[0];
-
-    if (primaryError?.code) {
-      const translationKey = `ERRORS.${primaryError.code}`;
-      this.translateService.get(translationKey).subscribe((translatedText: string) => {
-        const hasTranslation = translatedText !== translationKey;
-        this.setModalError(hasTranslation ? translatedText : primaryError.message);
-      });
-      return;
-    }
-
-    const fallbackText =
-      (typeof body?.message === 'string' ? body.message : null) ??
-      (typeof body?.detail === 'string' ? body.detail : null) ??
-      (typeof body === 'string' ? body : null);
-
-    if (fallbackText) {
-      this.setModalError(fallbackText);
-    } else {
-      this.translateService.get('ERRORS.COMMON_DEFAULT').subscribe((res: string) => {
-        const defaultMsg =
-          res !== 'ERRORS.COMMON_DEFAULT'
-            ? res
-            : 'Ocorreu um erro ao processar o seu pedido. Tente novamente.';
-        this.setModalError(defaultMsg);
-      });
-    }
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      this.setModalError(msg);
+    });
   }
 
   private setModalError(msg: string): void {

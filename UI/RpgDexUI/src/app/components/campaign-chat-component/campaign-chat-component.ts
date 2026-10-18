@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  inject,
 } from '@angular/core';
 import { ChatMessage } from '../../../models/chatMessage';
 import { Subscription } from 'rxjs';
@@ -15,6 +16,8 @@ import { CampaignChatService } from '../../services/campaign-chat-service';
 import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageRequest';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-campaign-chat-component',
@@ -27,6 +30,12 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   @Input() campaignId!: string;
   @ViewChild('scrollContainer') private scrollContainer!: ElementRef;
   @ViewChild('chatInput') private chatInput!: ElementRef<HTMLInputElement>;
+
+  private chatService = inject(CampaignChatService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
+  private translateService = inject(TranslateService);
 
   messages: ChatMessage[] = [];
   nextCursor?: string;
@@ -43,13 +52,6 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   unreadCount: number = 0;
 
   private chatSubscription!: Subscription;
-
-  constructor(
-    private chatService: CampaignChatService,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,
-  ) {}
 
   ngOnInit(): void {
     const cached = this.authService.currentUserValue;
@@ -221,8 +223,10 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         console.error('Erro ao enviar mensagem:', err);
         this.isSending = false;
         this.newMessageText = textToSend;
-        this.sendError = err?.error?.message ?? 'Erro ao enviar a mensagem.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.sendError = msg;
+          this.cdr.detectChanges();
+        });
         this.focusInput();
       },
     });
