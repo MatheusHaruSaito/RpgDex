@@ -248,6 +248,7 @@
                             class="ce-textarea-quick"
                             placeholder="Escreva suas anotações aqui..."
                             [(ngModel)]="entry.value"
+                            (ngModelChange)="onQuickEditChange()"
                             rows="4"
                           ></textarea>
                         }

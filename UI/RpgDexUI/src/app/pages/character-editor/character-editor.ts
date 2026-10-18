@@ -54,6 +54,9 @@ export class CharacterEditor implements OnInit {
   errorMessage = '';
   successMessage = '';
   isEditing = false;
+  
+  // Variável para gerir o Auto-Save
+  private quickSaveTimeout: any = null;
 
   private readonly GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -128,6 +131,49 @@ export class CharacterEditor implements OnInit {
     this.isEditing = !this.isEditing;
   }
 
+  // ── AUTO-SAVE EM SEGUNDO PLANO (DEBOUNCE) ──
+  private triggerQuickSave(): void {
+    if (this.quickSaveTimeout) {
+      clearTimeout(this.quickSaveTimeout);
+    }
+    // Aguarda 600ms após a última interação para evitar floodar a API com requests
+    this.quickSaveTimeout = setTimeout(() => {
+      this.executeQuickSave();
+    }, 600); 
+  }
+
+  private executeQuickSave(): void {
+    if (!this.character || !this.editForm.name.trim()) return;
+
+    const propertiesObj: Record<string, any> = {};
+    for (const group of this.groups) {
+      const key = group.title.trim() || 'Grupo';
+      propertiesObj[key] = group.entries
+        .filter((e) => e.key.trim())
+        .map((e) => ({ Name: e.key.trim(), Value: e.value, Type: e.type }));
+    }
+
+    const form = new FormData();
+    form.append('id', this.character.id);
+    form.append('name', this.editForm.name.trim());
+    form.append('description', this.editForm.description ?? '');
+    form.append('properties', JSON.stringify(propertiesObj));
+    if (this.selectedIconFile) {
+      form.append('icon', this.selectedIconFile, this.selectedIconFile.name);
+    }
+
+    // Salva silenciosamente e atualiza o estado de "Ponto de Restauro"
+    this.characterService.Update(form as any).subscribe({
+      next: () => this.captureSavedState(),
+      error: (err) => console.error('Erro no Auto-Save da Ficha', err),
+    });
+  }
+
+  // Evento específico para campos de texto dinâmicos (TextArea)
+  onQuickEditChange(): void {
+    if (!this.isEditing) this.triggerQuickSave();
+  }
+
   // ── MANIPULAÇÃO DE TIPOS DE ATRIBUTOS ──
   onChangeType(entry: AttrEntry, newType: CharacterPropertyValueEnum): void {
     entry.type = newType;
@@ -146,6 +192,7 @@ export class CharacterEditor implements OnInit {
 
   toggleBoolean(entry: AttrEntry): void {
     entry.value = this.isTrue(entry.value) ? 'false' : 'true';
+    if (!this.isEditing) this.triggerQuickSave();
     this.cdr.detectChanges();
   }
 
@@ -171,6 +218,7 @@ export class CharacterEditor implements OnInit {
   adjustNumber(entry: AttrEntry, delta: number): void {
     const current = parseInt(entry.value || '0', 10);
     entry.value = String(isNaN(current) ? delta : current + delta);
+    if (!this.isEditing) this.triggerQuickSave();
   }
 
   getResourceCurrent(entry: AttrEntry): number {
@@ -196,6 +244,7 @@ export class CharacterEditor implements OnInit {
   updateResourceCurrent(entry: AttrEntry, event: Event): void {
     const input = event.target as HTMLInputElement;
     this.setResourceCurrent(entry, input.value);
+    if (!this.isEditing) this.triggerQuickSave();
   }
 
   getResourcePercentage(entry: AttrEntry): number {
