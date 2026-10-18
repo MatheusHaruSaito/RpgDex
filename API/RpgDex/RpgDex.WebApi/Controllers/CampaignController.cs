@@ -127,7 +127,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPatch("RestoreMessage")]
-        public async Task<IActionResult> RestoreMessage([FromForm] RestoreMessageRequest request)
+        public async Task<IActionResult> RestoreMessage([FromBody] RestoreMessageRequest request)
         {
             var result = await _campaignService.RestoreMessage(currentUser,request);
             return result.ToIActionResult();
