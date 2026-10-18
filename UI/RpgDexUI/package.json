@@ -26,6 +26,7 @@
     "@ngx-translate/http-loader": "^18.0.0",
     "express": "^5.1.0",
     "jwt-decode": "^4.0.0",
+    "ngx-colors": "^4.0.2",
     "ngx-cookie-service": "^21.3.1",
     "ngx-image-cropper": "^9.1.6",
     "rxjs": "~7.8.0",

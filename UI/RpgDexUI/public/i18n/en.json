@@ -53,6 +53,17 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
 
+    "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
+    "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
+    "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",
+    "CANVAS_ELEMENT_MOVE_FAILED": "Failed to move canvas elements.",
+    "CANVAS_ELEMENT_REORDER_FAILED": "Failed to reorder canvas elements.",
+    "CANVAS_ELEMENT_SET_ACTIVE_STATE_FAILED": "Failed to change canvas element active state.",
+    "CANVAS_ELEMENT_INVALID": "Element data does not match its type.",
+    "CANVAS_ELEMENT_IMAGE_TOO_LARGE": "Image is too large.",
+    "CANVAS_ELEMENT_TOO_MANY_POINTS": "Drawing has too many points.",
+    "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Invalid number of elements in the request.",
+    "CANVAS_ELEMENT_LIMIT_REACHED": "Canvas element limit reached.",
     "VALIDATION_DISPLAYNAME": "Character name is required."
   }
 }
