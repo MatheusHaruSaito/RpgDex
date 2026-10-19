@@ -731,6 +731,288 @@ image-cropper {
   flex-shrink: 0;
 }
 
+/* ── EDIÇÃO DE ATRIBUTOS CUSTOMIZÁVEIS ── */
+.ce-attr-edit-card {
+  background: var(--rpg-surface-tint);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+
+.ce-attr-edit-card:focus-within {
+  border-color: var(--rpg-purple);
+}
+
+.ce-attr-edit-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ce-type-select {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 6px;
+  padding: 4px 8px;
+  outline: none;
+  cursor: pointer;
+}
+
+.ce-attr-edit-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ce-attr-key-input,
+.ce-attr-val-input,
+.ce-input-sm {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 8px 10px;
+  outline: none;
+  color: var(--rpg-text-dark);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ce-attr-key-input {
+  font-weight: 700;
+}
+
+.ce-attr-key-input:focus,
+.ce-attr-val-input:focus,
+.ce-input-sm:focus {
+  border-color: var(--rpg-purple);
+}
+
+.ce-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--rpg-text-body);
+  cursor: pointer;
+}
+
+.ce-resource-edit-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ce-textarea-sm {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 8px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── VISUALIZAÇÃO DE COMPONENTES DENSOS ── */
+.ce-attr-boolean {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.text-success { color: #2e7d32; }
+.text-muted { color: var(--rpg-text-faint); }
+
+.ce-attr-number-view {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btn-step {
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  color: var(--rpg-purple);
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-step:hover {
+  background: var(--rpg-purple);
+  color: white;
+}
+
+/* Barra de Recursos (HP / Mana) */
+.ce-resource-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.ce-resource-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--rpg-text-dark);
+}
+
+.ce-res-input {
+  width: 50px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  text-align: center;
+  border: 1px dashed var(--rpg-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--rpg-purple);
+}
+
+.ce-res-sep, .ce-res-max {
+  color: var(--rpg-text-faint);
+}
+
+.ce-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--rpg-border-light);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ce-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rpg-purple), #80e2ff);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.ce-attr-chip-key,
+.ce-attr-chip-value,
+.ce-attr-text-area-view {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  max-width: 100%;
+}
+
+.ce-attr-text-area-view {
+  font-size: 0.88rem;
+  color: var(--rpg-text-body);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ce-attr-boolean--clickable {
+  cursor: pointer;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.ce-attr-boolean--clickable:hover {
+  background-color: var(--rpg-purple-tint);
+}
+
+.ce-attr-boolean--clickable i {
+  font-size: 1.1rem;
+  transition: transform 0.15s ease;
+}
+
+.ce-attr-boolean--clickable:active i {
+  transform: scale(0.88);
+}
+
+/* ── NOTAS / TEXTO LONGO (RETRÁTIL & EDITÁVEL) ── */
+.ce-textarea-view-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.ce-textarea-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.ce-textarea-header:hover {
+  background: var(--rpg-purple-tint-hover, rgba(158, 116, 208, 0.2));
+}
+
+.ce-textarea-status {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ce-textarea-hint {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem;
+  color: var(--rpg-text-faint);
+  font-style: italic;
+}
+
+.ce-textarea-quick {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--rpg-text-body);
+  line-height: 1.5;
+  background: var(--rpg-surface);
+  border: 1.5px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.ce-textarea-quick:focus {
+  border-color: var(--rpg-purple);
 .fade-in-content {
   animation: fadeInContent 0.3s ease-in-out forwards;
 }
