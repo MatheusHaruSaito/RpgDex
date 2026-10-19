@@ -38,8 +38,10 @@ namespace RpgDex.Application.Services
 
             if (request.Image is not null)
             {
+                Console.WriteLine("NÃO É NULO");
                 try
                 {
+                    Console.WriteLine("AAAA");
                     element.ImageUrl = await fileService.UploadFileAsync(request.Image, Guid.NewGuid().ToString());
                 }
                 catch
@@ -64,6 +66,10 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
             var result = await canvaElementRepository.GetAllElementsByCampaignAsync(campaignId,page,pageSize);
+            foreach(var r in result.elements)
+            {
+                Console.WriteLine(r.ImageUrl);
+            }
             return Result<GetAllCanvasElementResponse>.Success(
                 new GetAllCanvasElementResponse(result.elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
         }
