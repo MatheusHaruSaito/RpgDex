@@ -2,7 +2,7 @@ import { CanvasElementType } from './canvasElementType';
 
 export interface CanvasElementResponse {
   id: string;
-  type: CanvasElementType;
+  elementType: CanvasElementType;
   x: number;
   y: number;
   z: number;

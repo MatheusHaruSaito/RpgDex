@@ -12,7 +12,6 @@ import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsReque
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 
-
 export type ToolMode = 'cursor' | 'draw';
 
 @Component({
@@ -84,13 +83,17 @@ export class CampaignCanvasComponent implements OnInit {
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
+        console.log(res);
         if (res.success && res.data) {
           this.elements = res.data.elements;
           if (this.elements.length > 0) {
-            this.maxZ = Math.max(...this.elements.map(e => e.z));
+            this.maxZ = Math.max(...this.elements.map((e) => e.z));
           }
         }
-      }
+      },
+      error: (e) => {
+        console.log(e);
+      },
     });
   }
 
@@ -103,7 +106,7 @@ export class CampaignCanvasComponent implements OnInit {
       color: el.color,
       content: el.content,
       // Se for imagem e estiver em Base64 (ex: foi recém-cortada ou colada), atualizamos
-      imageBase64: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined
+      imageBase64: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined,
     };
 
     this.canvasElementService.UpdateElement(req).subscribe();
@@ -137,7 +140,8 @@ export class CampaignCanvasComponent implements OnInit {
   // ── CONTROLOS DE TECLADO E CLIPBOARD ──
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
 
     const ctrlOrCmd = event.ctrlKey || event.metaKey;
 
@@ -163,7 +167,8 @@ export class CampaignCanvasComponent implements OnInit {
 
   @HostListener('window:copy', ['$event'])
   onCopy(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
     if (this.selectedElements.length > 0) {
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
@@ -173,7 +178,8 @@ export class CampaignCanvasComponent implements OnInit {
 
   @HostListener('window:cut', ['$event'])
   onCut(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
     if (this.selectedElements.length > 0) {
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
@@ -184,7 +190,8 @@ export class CampaignCanvasComponent implements OnInit {
 
   @HostListener('window:paste', ['$event'])
   onPaste(event: ClipboardEvent): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
+      return;
 
     const items = event.clipboardData?.items;
     const textData = event.clipboardData?.getData('text/plain');
@@ -200,7 +207,7 @@ export class CampaignCanvasComponent implements OnInit {
           parsed.elements.forEach((el: CanvasElementResponse) => {
             const req: CreateCanvaElementRequest = {
               campaignId: this.campaignId,
-              type: el.type,
+              elementType: el.elementType,
               content: el.content,
               x: el.x + 40,
               y: el.y + 40,
@@ -209,15 +216,22 @@ export class CampaignCanvasComponent implements OnInit {
               color: el.color,
               strokeWidth: el.strokeWidth,
               points: el.points,
-              imageBase64: el.type === CanvasElementType.Image ? el.imageUrl : undefined
+              image: el.elementType === CanvasElementType.Image ? el.imageUrl : undefined,
             };
+            console.log('req: ', req);
+            this.canvasElementService.CreateElement(req).subscribe({
+              next: (res) => {
+                console.log(res);
 
-            this.canvasElementService.CreateElement(req).subscribe(res => {
-              if (res.success && res.data) {
-                this.elements.push(res.data);
-                pastedElements.push(res.data);
-                this.selectedElements = pastedElements;
-              }
+                if (res.success && res.data) {
+                  this.elements.push(res.data);
+                  pastedElements.push(res.data);
+                  this.selectedElements = pastedElements;
+                }
+              },
+              error: (e) => {
+                console.log(e);
+              },
             });
           });
           event.preventDefault();
@@ -236,18 +250,18 @@ export class CampaignCanvasComponent implements OnInit {
             reader.onload = (e) => {
               const base64String = e.target?.result as string;
               this.saveState();
-              
+
               const req: CreateCanvaElementRequest = {
                 campaignId: this.campaignId,
-                type: CanvasElementType.Image,
+                elementType: CanvasElementType.Image,
                 x: this.getWorldX(window.innerWidth / 2) - 50,
                 y: this.getWorldY(window.innerHeight / 2) - 50,
                 z: ++this.maxZ,
                 scale: 1,
-                imageBase64: base64String
+                image: base64String,
               };
 
-              this.canvasElementService.CreateElement(req).subscribe(res => {
+              this.canvasElementService.CreateElement(req).subscribe((res) => {
                 if (res.success && res.data) {
                   this.elements.push(res.data);
                   this.setTool('cursor');
@@ -268,17 +282,17 @@ export class CampaignCanvasComponent implements OnInit {
       this.saveState();
       const req: CreateCanvaElementRequest = {
         campaignId: this.campaignId,
-        type: CanvasElementType.Text,
+        elementType: CanvasElementType.Text,
         content: textData,
         x: this.getWorldX(window.innerWidth / 2) - 50,
         y: this.getWorldY(window.innerHeight / 2) - 50,
         z: ++this.maxZ,
         scale: 1,
         color: this.selectedColor,
-        imageBase64: undefined
+        image: undefined,
       };
 
-      this.canvasElementService.CreateElement(req).subscribe(res => {
+      this.canvasElementService.CreateElement(req).subscribe((res) => {
         if (res.success && res.data) {
           this.elements.push(res.data);
           this.setTool('cursor');
@@ -302,17 +316,17 @@ export class CampaignCanvasComponent implements OnInit {
 
     const req: CreateCanvaElementRequest = {
       campaignId: this.campaignId,
-      type: CanvasElementType.Token,
+      elementType: CanvasElementType.Token,
       content: name,
       x: this.getWorldX(window.innerWidth / 2) - 50,
       y: this.getWorldY(window.innerHeight / 2) - 50,
       z: ++this.maxZ,
       scale: 1,
       color: this.selectedColor,
-      imageBase64: undefined
+      image: undefined,
     };
 
-    this.canvasElementService.CreateElement(req).subscribe(res => {
+    this.canvasElementService.CreateElement(req).subscribe((res) => {
       if (res.success && res.data) {
         this.elements.push(res.data);
         this.setTool('cursor');
@@ -328,17 +342,17 @@ export class CampaignCanvasComponent implements OnInit {
 
     const req: CreateCanvaElementRequest = {
       campaignId: this.campaignId,
-      type: CanvasElementType.Text,
+      elementType: CanvasElementType.Text,
       content: text,
       x: this.getWorldX(window.innerWidth / 2) - 50,
       y: this.getWorldY(window.innerHeight / 2) - 50,
       z: ++this.maxZ,
       scale: 1,
       color: this.selectedColor,
-      imageBase64: undefined
+      image: undefined,
     };
 
-    this.canvasElementService.CreateElement(req).subscribe(res => {
+    this.canvasElementService.CreateElement(req).subscribe((res) => {
       if (res.success && res.data) {
         this.elements.push(res.data);
         this.setTool('cursor');
@@ -355,7 +369,7 @@ export class CampaignCanvasComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
-      
+
       const reader = new FileReader();
       reader.onload = () => {
         const base64String = reader.result as string;
@@ -363,15 +377,15 @@ export class CampaignCanvasComponent implements OnInit {
 
         const req: CreateCanvaElementRequest = {
           campaignId: this.campaignId,
-          type: CanvasElementType.Image,
+          elementType: CanvasElementType.Image,
           x: this.getWorldX(window.innerWidth / 2) - 50,
           y: this.getWorldY(window.innerHeight / 2) - 50,
           z: ++this.maxZ,
           scale: 1,
-          imageBase64: base64String // Envia como Base64!
+          image: base64String, // Envia como Base64!
         };
 
-        this.canvasElementService.CreateElement(req).subscribe(res => {
+        this.canvasElementService.CreateElement(req).subscribe((res) => {
           if (res.success && res.data) {
             this.elements.push(res.data);
             this.setTool('cursor');
@@ -388,7 +402,7 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.selectedElements.length > 0) {
       this.saveState();
       this.selectedElements.forEach((el) => {
-        if (el.type !== CanvasElementType.Image) {
+        if (el.elementType !== CanvasElementType.Image) {
           el.color = colorValue;
           this.updateElementAPI(el); // Atualiza no Backend
         }
@@ -401,10 +415,10 @@ export class CampaignCanvasComponent implements OnInit {
   deleteSelected(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
-    
+
     const deleteRequest = {
       campaignId: this.campaignId,
-      items: this.selectedElements.map(el => el.id)
+      items: this.selectedElements.map((el) => el.id),
     };
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
 
@@ -437,7 +451,7 @@ export class CampaignCanvasComponent implements OnInit {
   syncZOrderAPI(): void {
     const req: ReOrderCanvaElementsRequest = {
       campaignId: this.campaignId,
-      items: this.elements.map(el => ({ id: el.id, z: el.z }))
+      items: this.elements.map((el) => ({ id: el.id, z: el.z })),
     };
     this.canvasElementService.ReOrderElement(req).subscribe();
   }
@@ -454,7 +468,10 @@ export class CampaignCanvasComponent implements OnInit {
 
   // ── CORTE DE IMAGEM ──
   startCropping(): void {
-    if (this.selectedElements.length === 1 && this.selectedElements[0].type === CanvasElementType.Image) {
+    if (
+      this.selectedElements.length === 1 &&
+      this.selectedElements[0].elementType === CanvasElementType.Image
+    ) {
       this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
 
@@ -511,9 +528,17 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   // ── CÂMERA E ZOOM ──
-  getWorldX(screenX: number): number { return (screenX - this.panX) / this.scale; }
-  getWorldY(screenY: number): number { return (screenY - this.panY) / this.scale; }
-  centerCamera(): void { this.scale = 1; this.panX = 0; this.panY = 0; }
+  getWorldX(screenX: number): number {
+    return (screenX - this.panX) / this.scale;
+  }
+  getWorldY(screenY: number): number {
+    return (screenY - this.panY) / this.scale;
+  }
+  centerCamera(): void {
+    this.scale = 1;
+    this.panX = 0;
+    this.panY = 0;
+  }
 
   doZoom(newScale: number, clientX: number, clientY: number): void {
     newScale = Math.max(0.2, Math.min(newScale, 4));
@@ -525,8 +550,12 @@ export class CampaignCanvasComponent implements OnInit {
     this.panY = clientY - wy * this.scale;
   }
 
-  zoomIn(): void { this.doZoom(this.scale + 0.2, window.innerWidth / 2, window.innerHeight / 2); }
-  zoomOut(): void { this.doZoom(this.scale - 0.2, window.innerWidth / 2, window.innerHeight / 2); }
+  zoomIn(): void {
+    this.doZoom(this.scale + 0.2, window.innerWidth / 2, window.innerHeight / 2);
+  }
+  zoomOut(): void {
+    this.doZoom(this.scale - 0.2, window.innerWidth / 2, window.innerHeight / 2);
+  }
 
   @HostListener('window:wheel', ['$event'])
   onWheel(event: WheelEvent): void {
@@ -538,19 +567,32 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   // ── SELEÇÃO MÚLTIPLA ──
-  getMin(a: number, b: number): number { return Math.min(a, b); }
-  getAbs(val: number): number { return Math.abs(val); }
+  getMin(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+  getAbs(val: number): number {
+    return Math.abs(val);
+  }
 
   updateSelectionBoxIntersection(): void {
-    const boxWorldX = this.getWorldX(Math.min(this.selectionBox.startX, this.selectionBox.currentX));
-    const boxWorldY = this.getWorldY(Math.min(this.selectionBox.startY, this.selectionBox.currentY));
+    const boxWorldX = this.getWorldX(
+      Math.min(this.selectionBox.startX, this.selectionBox.currentX),
+    );
+    const boxWorldY = this.getWorldY(
+      Math.min(this.selectionBox.startY, this.selectionBox.currentY),
+    );
     const boxWorldW = Math.abs(this.selectionBox.currentX - this.selectionBox.startX) / this.scale;
     const boxWorldH = Math.abs(this.selectionBox.currentY - this.selectionBox.startY) / this.scale;
 
     this.selectedElements = this.elements.filter((el) => {
       const elW = 100 * el.scale;
       const elH = 100 * el.scale;
-      return (el.x < boxWorldX + boxWorldW && el.x + elW > boxWorldX && el.y < boxWorldY + boxWorldH && el.y + elH > boxWorldY);
+      return (
+        el.x < boxWorldX + boxWorldW &&
+        el.x + elW > boxWorldX &&
+        el.y < boxWorldY + boxWorldH &&
+        el.y + elH > boxWorldY
+      );
     });
   }
 
@@ -572,10 +614,10 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.activeTool === 'draw') {
       this.selectedElements = [];
       this.maxZ++;
-      
+
       const newDrawing: CanvasElementResponse = {
         id: 'temp-' + Date.now().toString(),
-        type: CanvasElementType.Drawing,
+        elementType: CanvasElementType.Drawing,
         x: 0,
         y: 0,
         z: this.maxZ,
@@ -637,7 +679,10 @@ export class CampaignCanvasComponent implements OnInit {
     if (!this.isInteracting) return;
 
     if (this.activeTool === 'draw' && this.activeDrawing && this.activeDrawing.points) {
-      this.activeDrawing.points.push({ x: this.getWorldX(event.clientX), y: this.getWorldY(event.clientY) });
+      this.activeDrawing.points.push({
+        x: this.getWorldX(event.clientX),
+        y: this.getWorldY(event.clientY),
+      });
     } else if (this.activeTool === 'cursor') {
       if (this.selectionBox.active) {
         this.selectionBox.currentX = event.clientX;
@@ -663,7 +708,7 @@ export class CampaignCanvasComponent implements OnInit {
   onPointerUp(event: PointerEvent): void {
     if (this.isPanning || this.isInteracting) {
       const currentState = JSON.stringify(this.elements);
-      
+
       if (this.pointerDownState && this.pointerDownState !== currentState) {
         this.history.push(this.pointerDownState);
         if (this.history.length > 30) this.history.shift();
@@ -673,23 +718,31 @@ export class CampaignCanvasComponent implements OnInit {
           const drw = this.activeDrawing;
           const req: CreateCanvaElementRequest = {
             campaignId: this.campaignId,
-            type: CanvasElementType.Drawing,
-            x: drw.x, y: drw.y, z: drw.z, scale: drw.scale,
-            color: drw.color, strokeWidth: drw.strokeWidth, points: drw.points,
-            imageBase64: undefined
+            elementType: CanvasElementType.Drawing,
+            x: drw.x,
+            y: drw.y,
+            z: drw.z,
+            scale: drw.scale,
+            color: drw.color,
+            strokeWidth: drw.strokeWidth,
+            points: drw.points,
+            image: undefined,
           };
-          
-          this.canvasElementService.CreateElement(req).subscribe(res => {
+
+          this.canvasElementService.CreateElement(req).subscribe((res) => {
             if (res.success && res.data) {
-              const idx = this.elements.findIndex(e => e.id === drw.id);
-              if (idx > -1) this.elements[idx] = res.data; 
+              const idx = this.elements.findIndex((e) => e.id === drw.id);
+              if (idx > -1) this.elements[idx] = res.data;
             }
           });
-        } 
-        else if (this.activeTool === 'cursor' && this.selectedElements.length > 0 && !this.selectionBox.active) {
+        } else if (
+          this.activeTool === 'cursor' &&
+          this.selectedElements.length > 0 &&
+          !this.selectionBox.active
+        ) {
           const req: MoveCanvaElementsRequest = {
             campaignId: this.campaignId,
-            items: this.selectedElements.map(el => ({ id: el.id, x: el.x, y: el.y }))
+            items: this.selectedElements.map((el) => ({ id: el.id, x: el.x, y: el.y })),
           };
           this.canvasElementService.MoveElement(req).subscribe();
         }
