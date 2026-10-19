@@ -32,22 +32,16 @@ export class CanvasElementService {
     const params: Record<string, string | number> = { campaignId, page, pageSize };
     return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(this.env, { params });
   }
-  public UpdateElement(
-    request: UpdateCanvaElementRequest,
-  ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.put<ApiResponse<CanvasElementResponse>>(this.env, request);
+  public UpdateElement(request: UpdateCanvaElementRequest): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(this.env, request);
   }
-  public MoveElement(
-    request: MoveCanvaElementsRequest,
-  ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.patch<ApiResponse<CanvasElementResponse>>(`${this.env}/MoveElement`, request);
+  public MoveElement(request: MoveCanvaElementsRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/MoveElement`, request);
   }
-  public ReOrderElement(
-    request: ReOrderCanvaElementsRequest,
-  ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.patch<ApiResponse<CanvasElementResponse>>(
-      `${this.env}/ReOrderElement`,
-      request,
-    );
+  public ReOrderElement(request: ReOrderCanvaElementsRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/ReOrderElement`, request);
+  }
+  public DeactiveElement(request: SetElementActiveStateRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/Deactive`, request);
   }
 }
