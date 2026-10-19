@@ -22,7 +22,7 @@ namespace RpgDex.WebApi.Controllers
             _canvaElementService = canvaElementService;
         }
         [HttpPost]
-        public async Task<IActionResult> CreateElement([FromForm] CreateCanvaElementRequest request)
+        public async Task<IActionResult> CreateElement([FromBody] CreateCanvaElementRequest request)
         {
             var result = await _canvaElementService.CreateElement(currentUser, request);
             return result.ToIActionResult();
@@ -34,7 +34,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateElement([FromForm] UpdateCanvasElementRequest request)
+        public async Task<IActionResult> UpdateElement([FromBody] UpdateCanvasElementRequest request)
         {
             var result = await _canvaElementService.UpdateElement(currentUser, request);
             return result.ToIActionResult();
