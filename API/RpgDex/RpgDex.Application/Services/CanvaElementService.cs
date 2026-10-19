@@ -1,8 +1,12 @@
-﻿using Mapster;
+﻿using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Canvas;
+using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Validators.Canvas;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -13,12 +17,17 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class CanvaElementService(ICanvaElementRepository canvaElementRepository,UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService) : ICanvaElementService
+    public class CanvaElementService(ICanvaElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService,
+        CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator
+        ) : ICanvaElementService
     {
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
-            var(guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var check = createCanvaElementValidator.Validate(request);
+            if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
+            var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
             var count = await canvaElementRepository.CountByCampaignAsync(request.CampaignId);
@@ -61,6 +70,8 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)
         {
+            var check = moveCanvaElementValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
@@ -72,6 +83,9 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request)
         {
+            var check = reOrderCanvaElementValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
+
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
@@ -83,16 +97,21 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<bool>> SetElementActiveState(string userId, SetElementActiveStateRequest request, bool state)
         {
+            var check = setElementActiveStateValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var ok = await canvaElementRepository.SetActiveState(request.CampaignId, request.Id,state);
+            var ok = await canvaElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
         }
 
-        public async Task<Result<CanvasElementResponse>> UpdateElement(string userId,UpdateCanvaElementRequest request)
+        public async Task<Result<CanvasElementResponse>> UpdateElement(string userId,UpdateCanvasElementRequest request)
         {
+            var check = updateCanvasElementValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
+
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 

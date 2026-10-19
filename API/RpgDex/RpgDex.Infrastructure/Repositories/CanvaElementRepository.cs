@@ -102,12 +102,16 @@ namespace RpgDex.Infrastructure.Repositories
             return result.IsAcknowledged && result.MatchedCount == models.Count;
         }
 
-        public async Task<bool> SetActiveState(Guid id,Guid campaignId, bool state)
+        public async Task<bool> SetActiveState(IEnumerable<Guid> ids, Guid campaignId, bool state)
         {
-            var filter = Builders<CanvaElement>.Filter.Where(e => e.Id == id && e.CampaignId == campaignId);
-            var update = Builders<CanvaElement>.Update.Set(e => e.IsActive, state);
-            var result = await _entity.UpdateOneAsync(filter, update);
-            return result.IsAcknowledged && result.MatchedCount > 0;
+            var models = ids.Select(i => new UpdateOneModel<CanvaElement>(
+                    Builders<CanvaElement>.Filter.Where(e => e.Id == i && e.CampaignId == campaignId),
+                    Builders<CanvaElement>.Update.Set(e => e.IsActive,state)))
+                    .ToList();
+
+            var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
+            return result.IsAcknowledged && result.MatchedCount == models.Count;
         }
+
     }
 }
