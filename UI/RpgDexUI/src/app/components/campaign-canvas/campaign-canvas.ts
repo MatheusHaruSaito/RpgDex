@@ -40,6 +40,7 @@ export class CampaignCanvasComponent implements OnInit {
 
   isInteracting: boolean = false;
   isPanning: boolean = false;
+  selectedFile: File | undefined = undefined;
 
   // ── SELEÇÃO E CAIXA DE SELEÇÃO ──
   selectedElements: CanvasElementResponse[] = [];
@@ -81,6 +82,7 @@ export class CampaignCanvasComponent implements OnInit {
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
+        console.log(res)
         if (res.success && res.data) {
           this.elements = res.data.elements;
           if (this.elements.length > 0) {
@@ -99,8 +101,7 @@ export class CampaignCanvasComponent implements OnInit {
       scale: el.scale,
       color: el.color,
       content: el.content,
-      // UpdateCanvaElementRequest usa "imageBase64"
-      imageBase64: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined,
+      image: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined,
     };
 
     this.canvasElementService.UpdateElement(req).subscribe();
@@ -209,8 +210,7 @@ export class CampaignCanvasComponent implements OnInit {
               color: el.color,
               strokeWidth: el.strokeWidth,
               points: el.points,
-              // CreateCanvaElementRequest usa "image" (string base64)
-              image: el.elementType === CanvasElementType.Image ? el.imageUrl : undefined,
+              image: undefined,
             };
 
             this.canvasElementService.CreateElement(req).subscribe((res) => {
@@ -232,30 +232,25 @@ export class CampaignCanvasComponent implements OnInit {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64String = e.target?.result as string;
-              this.saveState();
+            this.saveState();
+            this.selectedFile = file;
 
-              const req: CreateCanvaElementRequest = {
-                campaignId: this.campaignId,
-                elementType: CanvasElementType.Image,
-                x: this.getWorldX(window.innerWidth / 2) - 50,
-                y: this.getWorldY(window.innerHeight / 2) - 50,
-                z: ++this.maxZ,
-                scale: 1,
-                image: base64String,
-              };
+            const formData = new FormData();
+            formData.append('campaignId', this.campaignId);
+            formData.append('elementType', CanvasElementType.Image.toString());
+            formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
+            formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
+            formData.append('z', (++this.maxZ).toString());
+            formData.append('scale', '1');
+            formData.append('image', this.selectedFile, this.selectedFile.name);
 
-              this.canvasElementService.CreateElement(req).subscribe((res) => {
-                if (res.success && res.data) {
-                  this.elements.push(res.data);
-                  this.setTool('cursor');
-                  this.selectedElements = [res.data];
-                }
-              });
-            };
-            reader.readAsDataURL(file);
+            this.canvasElementService.CreateElement(formData as any).subscribe((res) => {
+              if (res.success && res.data) {
+                this.elements.push(res.data);
+                this.setTool('cursor');
+                this.selectedElements = [res.data];
+              }
+            });
             event.preventDefault();
             return;
           }
@@ -320,67 +315,28 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  addText(): void {
+ addText(): void {
     const text = prompt('Digite sua anotação:');
     if (!text) return;
     this.saveState();
 
-    const req: CreateCanvaElementRequest = {
-      campaignId: this.campaignId,
-      elementType: CanvasElementType.Text,
-      content: text,
-      x: this.getWorldX(window.innerWidth / 2) - 50,
-      y: this.getWorldY(window.innerHeight / 2) - 50,
-      z: ++this.maxZ,
-      scale: 1,
-      color: this.selectedColor,
-      image: undefined,
-    };
+    const formData = new FormData();
+    formData.append('campaignId', this.campaignId);
+    formData.append('elementType', CanvasElementType.Text.toString());
+    formData.append('content', text);
+    formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
+    formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
+    formData.append('z', (++this.maxZ).toString());
+    formData.append('scale', '1');
+    formData.append('color', this.selectedColor);
 
-    this.canvasElementService.CreateElement(req).subscribe((res) => {
+    this.canvasElementService.CreateElement(formData as any).subscribe((res) => {
       if (res.success && res.data) {
         this.elements.push(res.data);
         this.setTool('cursor');
         this.selectedElements = [res.data];
       }
     });
-  }
-
-  triggerImageUpload(): void {
-    this.fileInput.nativeElement.click();
-  }
-
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        const base64String = reader.result as string;
-        this.saveState();
-
-        const req: CreateCanvaElementRequest = {
-          campaignId: this.campaignId,
-          elementType: CanvasElementType.Image,
-          x: this.getWorldX(window.innerWidth / 2) - 50,
-          y: this.getWorldY(window.innerHeight / 2) - 50,
-          z: ++this.maxZ,
-          scale: 1,
-          image: base64String, // Envia diretamente como Base64 (string)
-        };
-
-        this.canvasElementService.CreateElement(req).subscribe((res) => {
-          if (res.success && res.data) {
-            this.elements.push(res.data);
-            this.setTool('cursor');
-            this.selectedElements = [res.data];
-          }
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-    input.value = '';
   }
 
   onColorChange(colorValue: string): void {
@@ -403,7 +359,7 @@ export class CampaignCanvasComponent implements OnInit {
 
     const deleteRequest = {
       campaignId: this.campaignId,
-      ids: this.selectedElements.map((el) => el.id), // Alterado de 'items' para 'ids'
+      ids: this.selectedElements.map((el) => el.id),
     };
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
 
@@ -427,7 +383,7 @@ export class CampaignCanvasComponent implements OnInit {
     this.saveState();
     const minZ = Math.min(...this.elements.map((e) => e.z)) - 1;
     this.selectedElements.forEach((el) => {
-      el.z = minZ; // Empurra todos para o fundo
+      el.z = minZ;
     });
     this.sortElements();
     this.syncZOrderAPI();
@@ -478,7 +434,10 @@ export class CampaignCanvasComponent implements OnInit {
       const reader = new FileReader();
       reader.readAsDataURL(event.blob);
       reader.onloadend = () => {
-        this.tempCroppedBase64 = reader.result as string;
+        if (event.objectUrl && event.blob) {
+          this.tempCroppedBase64 = reader.result as string;
+          this.selectedFile = new File([event.blob], 'avatar.png', { type: 'image/png' });
+        }
       };
     } else if (event.objectUrl) {
       this.tempCroppedBase64 = event.objectUrl;
@@ -489,7 +448,7 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.selectedElements.length === 1 && this.tempCroppedBase64) {
       const targetElement = this.selectedElements[0];
       targetElement.imageUrl = this.tempCroppedBase64;
-      this.updateElementAPI(targetElement); // Atualiza no C# com o base64 novo
+      this.updateElementAPI(targetElement);
     }
     this.isCropping = false;
     this.cropImageSource = '';

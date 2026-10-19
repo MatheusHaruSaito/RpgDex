@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Canvas;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -87,6 +88,12 @@ namespace RpgDex.Application.Mapping
             .Map(dest => dest.FilePath, src => string.IsNullOrEmpty(src.FilePath)
                 ? null
                 : $"{baseUrl}/api/File/{src.FilePath}");
+
+            TypeAdapterConfig<CanvaElement, CanvasElementResponse>
+            .NewConfig()
+            .Map(dest => dest.ImageUrl, src => string.IsNullOrEmpty(src.ImageUrl)
+                ? null
+                : $"{baseUrl}/api/File/{src.ImageUrl}");
                 }
         private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
         {
