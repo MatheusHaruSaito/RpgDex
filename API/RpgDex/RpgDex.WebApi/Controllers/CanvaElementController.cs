@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Canvas;
 using RpgDex.Application.Interfaces;
 using RpgDex.WebApi.Extensions;
 using System.Security.Claims;
@@ -33,7 +34,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateElement([FromBody]UpdateCanvaElementRequest request)
+        public async Task<IActionResult> UpdateElement([FromBody]UpdateCanvasElementRequest request)
         {
             var result = await _canvaElementService.UpdateElement(currentUser, request);
             return result.ToIActionResult();
@@ -48,6 +49,12 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> ReOrderElement([FromBody] ReOrderCanvaElementsRequest request)
         {
             var result = await _canvaElementService.ReOrderElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("Deactive")]
+        public async Task<IActionResult> Deactive([FromBody] SetElementActiveStateRequest request)
+        {
+            var result = await _canvaElementService.SetElementActiveState(currentUser, request,false);
             return result.ToIActionResult();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Canvas;
 using RpgDex.Domain.Common;
 
 namespace RpgDex.Application.Interfaces
@@ -7,7 +8,7 @@ namespace RpgDex.Application.Interfaces
     {
         Task<Result<CanvasElementResponse>> CreateElement(string userId,CreateCanvaElementRequest request);
         Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignI, int page = 1, int pageSize = 20);
-        Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvaElementRequest request);
+        Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvasElementRequest request);
         Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request);
         Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request);
         Task<Result<bool>> SetElementActiveState(string userId,SetElementActiveStateRequest request,bool state);

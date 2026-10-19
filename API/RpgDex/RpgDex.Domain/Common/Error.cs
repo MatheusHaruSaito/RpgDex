@@ -98,6 +98,12 @@ namespace RpgDex.Domain.Common
 
         public const string CampaignIconRequired = "CAMPAIGN_VALIDATION_ICON_REQUIRED";
         public const string DocumentFileRequired = "DOCUMENT_VALIDATION_FILE_REQUIRED";
+        public const string CanvasInvalidType = "CANVAS_INVALID_TYPE";
+        public const string CanvasInvalidImage = "CANVAS_INVALID_IMAGE";
+        public const string CanvasInvalidPoints = "CANVAS_INVALID_POINTS";
+        public const string CanvasInvalidValue = "CANVAS_INVALID_VALUE";
+        public const string CanvasInvalidColor = "CANVAS_INVALID_COLOR";
+        public const string CanvasTooManyItems = "CANVAS_TOO_MANY_ITEMS";
     }
     public static class CanvaElementError
     {

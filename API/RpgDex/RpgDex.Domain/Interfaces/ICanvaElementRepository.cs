@@ -16,7 +16,7 @@ namespace RpgDex.Domain.Interfaces
         Task<bool> MoveElementAsync(Guid campaignId,IEnumerable<ElementPosition> items);
         Task<bool> MoveElementAsync(Guid campaignId, ElementPosition item);
         Task<bool> ReorderElementsAsync(Guid campaignId, IEnumerable<ElementOrder> items);
-        Task<bool> SetActiveState(Guid id,Guid campaignId, bool state);
+        Task<bool> SetActiveState(IEnumerable<Guid> ids,Guid campaignId, bool state);
 
         public record GetAllCanvasElementResponse(IEnumerable<CanvaElement> elements, int Count );
     }
