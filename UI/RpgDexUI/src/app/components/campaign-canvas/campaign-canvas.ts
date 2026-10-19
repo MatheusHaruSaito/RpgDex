@@ -418,8 +418,9 @@ export class CampaignCanvasComponent implements OnInit {
 
     const deleteRequest = {
       campaignId: this.campaignId,
-      items: this.selectedElements.map((el) => el.id),
+      ids: this.selectedElements.map((el) => el.id),
     };
+    console.log(deleteRequest);
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
 
     this.elements = this.elements.filter((e) => !this.selectedElements.includes(e));

@@ -9,12 +9,7 @@ import { GetAllCanvasElementResponse } from '../../models/getAllCanvasElementRes
 import { UpdateCanvaElementRequest } from '../../models/updateCanvaElementRequest';
 import { MoveCanvaElementsRequest } from '../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRequest';
-
-
-export interface SetElementActiveStateRequest {
-  campaignId: string;
-  items: string[];
-}
+import { SetElementActiveStateRequest } from '../../models/setElementActiveStateRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -22,12 +17,20 @@ export class CanvasElementService {
 
   constructor(private http: HttpClient) {}
 
-  public CreateElement(request: CreateCanvaElementRequest): Observable<ApiResponse<CanvasElementResponse>> {
+  public CreateElement(
+    request: CreateCanvaElementRequest,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
     return this.http.post<ApiResponse<CanvasElementResponse>>(this.env, request);
   }
 
-  public GetAllElements(campaignId: string, page: string, pageSize: string): Observable<ApiResponse<GetAllCanvasElementResponse>> {
-    return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(`${this.env}/All`, { params: { campaignId, page, pageSize } });
+  public GetAllElements(
+    campaignId: string,
+    page: string,
+    pageSize: string,
+  ): Observable<ApiResponse<GetAllCanvasElementResponse>> {
+    return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(`${this.env}/All`, {
+      params: { campaignId, page, pageSize },
+    });
   }
 
   public UpdateElement(request: UpdateCanvaElementRequest): Observable<ApiResponse<boolean>> {
@@ -44,5 +47,8 @@ export class CanvasElementService {
 
   public DeactiveElement(request: SetElementActiveStateRequest): Observable<ApiResponse<boolean>> {
     return this.http.patch<ApiResponse<boolean>>(`${this.env}/Deactive`, request);
+  }
+  public ActiveElement(request: SetElementActiveStateRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/Active`, request);
   }
 }

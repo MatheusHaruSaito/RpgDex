@@ -57,5 +57,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvaElementService.SetElementActiveState(currentUser, request,false);
             return result.ToIActionResult();
         }
+        [HttpPatch("Active")]
+        public async Task<IActionResult> Active([FromBody] SetElementActiveStateRequest request)
+        {
+            var result = await _canvaElementService.SetElementActiveState(currentUser, request, true);
+            return result.ToIActionResult();
+        }
     }
 }
