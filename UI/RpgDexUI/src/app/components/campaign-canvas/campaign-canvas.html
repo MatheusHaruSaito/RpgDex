@@ -97,7 +97,7 @@
       <strong>Editando:</strong>
       {{
         selectedElements.length === 1
-          ? (selectedElements[0].type | uppercase)
+          ? (getElementTypeName(selectedElements[0].type) | uppercase)
           : selectedElements.length + ' ITENS'
       }}
     </div>
@@ -106,7 +106,7 @@
       <!-- Opções exclusivas para quando há apenas 1 imagem/token selecionado -->
       <ng-container *ngIf="selectedElements.length === 1">
         <button
-          *ngIf="selectedElements[0].type === 'image'"
+          *ngIf="selectedElements[0].type === CanvasElementType.Image"
           class="btn btn-secondary btn-sm"
           (click)="startCropping()"
           title="Cortar Imagem"
@@ -116,7 +116,7 @@
 
         <div
           class="context-range"
-          *ngIf="selectedElements[0].type === 'image' || selectedElements[0].type === 'token'"
+          *ngIf="selectedElements[0].type === CanvasElementType.Image || selectedElements[0].type === CanvasElementType.Token"
         >
           <i class="fa fa-down-left-and-up-right-to-center"></i>
           <input
@@ -126,6 +126,7 @@
             step="0.1"
             [value]="selectedElements[0].scale"
             (input)="updateElementScale($event)"
+            (change)="updateElementAPI(selectedElements[0])"
           />
         </div>
       </ng-container>
@@ -218,7 +219,7 @@
       <ng-container *ngFor="let el of elements">
         <!-- DESENHOS -->
         <svg
-          *ngIf="el.type === 'drawing'"
+          *ngIf="el.type === CanvasElementType.Drawing"
           class="board-element type-drawing"
           [style.z-index]="el.z"
           (pointerdown)="onElementDown($event, el)"
@@ -236,7 +237,7 @@
 
         <!-- TOKEN -->
         <div
-          *ngIf="el.type === 'token'"
+          *ngIf="el.type === CanvasElementType.Token"
           class="board-element type-token"
           [class.is-selected]="selectedElements.includes(el)"
           [style.left.px]="el.x"
@@ -252,7 +253,7 @@
 
         <!-- TEXTO -->
         <div
-          *ngIf="el.type === 'text'"
+          *ngIf="el.type === CanvasElementType.Text"
           class="board-element type-text"
           [class.is-selected]="selectedElements.includes(el)"
           [style.left.px]="el.x"
@@ -266,7 +267,7 @@
 
         <!-- IMAGEM -->
         <div
-          *ngIf="el.type === 'image'"
+          *ngIf="el.type === CanvasElementType.Image"
           class="board-element type-image"
           [class.is-selected]="selectedElements.includes(el)"
           [style.left.px]="el.x"

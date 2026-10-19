@@ -9,7 +9,7 @@ export interface CreateCanvaElementRequest {
   scale: number;
   content?: string;
   color?: string;
-  image: File;
+  imageBase64?: string;
   points?: { x: number; y: number }[];
   strokeWidth?: number;
 }
