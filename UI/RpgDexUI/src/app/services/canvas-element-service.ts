@@ -9,6 +9,7 @@ import { MoveCanvaElementsRequest } from '../../models/moveCanvaElementsRequest'
 import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRequest';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
+import { SetElementActiveStateRequest } from '../../models/setElementActiveStateRequest';
 
 @Injectable({
   providedIn: 'root',
