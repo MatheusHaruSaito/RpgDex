@@ -15,11 +15,11 @@
         (change)="importCharacter($event)"
       />
       
-      <button class="btn btn-secondary" (click)="importInput.click()">
+      <button type="button" class="btn btn-secondary" (click)="importInput.click()">
         <i class="fa fa-file-import"></i> Importar Personagem
       </button>
 
-      <button class="btn btn-primary" (click)="showCreateModal = true">
+      <button type="button" class="btn btn-primary" (click)="showCreateModal = true">
         <i class="fa fa-plus"></i> Novo Personagem
       </button>
     </div>
@@ -34,10 +34,20 @@
       [(ngModel)]="searchQuery"
       (ngModelChange)="onSearch()"
     />
-    <button class="cl-search-clear" *ngIf="searchQuery" (click)="searchQuery = ''; onSearch()">
-      <i class="fa fa-xmark"></i>
-    </button>
+    @if (searchQuery) {
+      <button type="button" class="cl-search-clear" (click)="searchQuery = ''; onSearch()">
+        <i class="fa fa-xmark"></i>
+      </button>
+    }
   </div>
+
+  <!-- MENSAGEM DE ERRO VISUAL DA API -->
+  @if (errorMessage) {
+    <div class="feedback-message error-message" style="margin-bottom: 16px;">
+      <i class="fa fa-circle-exclamation"></i>
+      <span>{{ errorMessage }}</span>
+    </div>
+  }
 
   <div class="cl-table-wrapper">
     <table>
@@ -49,37 +59,71 @@
         </tr>
       </thead>
       <tbody>
-        @for (character of filteredList; track character.id) {
-          <tr (click)="navigateToEditor(character.id)" class="cl-row-clickable">
-            <td>
-              <div class="char-name-cell">
-                <div
-                  class="char-avatar-thumb"
-                  [style.background-image]="
-                    character.iconPath ? 'url(' + character.iconPath + ')' : ''
-                  "
-                >
-                  <i class="fa fa-shield-halved" *ngIf="!character.iconPath"></i>
+        <!-- 1. ESTADO SKELETON (Carregando) -->
+        @if (isLoading) {
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+            <tr>
+              <td>
+                <div class="char-name-cell">
+                  <app-skeleton width="40px" height="40px" radius="50%"></app-skeleton>
+                  <app-skeleton width="140px" height="18px"></app-skeleton>
                 </div>
-                <span class="char-name">{{ character.name }}</span>
-              </div>
-            </td>
-            <td>
-              <span class="char-desc">{{ character.description || 'Nenhuma descrição.' }}</span>
-            </td>
-            <td>
-              <div class="action-btns">
-                <button
-                  class="btn-icon danger"
-                  title="Excluir"
-                  (click)="$event.stopPropagation(); DeleteCharacter(character.id)"
-                >
-                  <i class="fa fa-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        } @empty {
+              </td>
+              <td>
+                <app-skeleton width="80%" height="16px"></app-skeleton>
+              </td>
+              <td>
+                <div class="action-btns">
+                  <app-skeleton width="34px" height="34px" radius="8px"></app-skeleton>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+
+        <!-- 2. LISTA REAL DE PERSONAGENS -->
+        @if (!isLoading && filteredList.length > 0) {
+          @for (character of filteredList; track character.id) {
+            <tr
+              (click)="navigateToEditor(character.id)"
+              class="cl-row-clickable fade-in-content"
+            >
+              <td>
+                <div class="char-name-cell">
+                  <div
+                    class="char-avatar-thumb"
+                    [style.background-image]="
+                      character.iconPath ? 'url(' + character.iconPath + ')' : ''
+                    "
+                  >
+                    @if (!character.iconPath) {
+                      <i class="fa fa-shield-halved"></i>
+                    }
+                  </div>
+                  <span class="char-name">{{ character.name }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="char-desc">{{ character.description || 'Nenhuma descrição.' }}</span>
+              </td>
+              <td>
+                <div class="action-btns">
+                  <button
+                    type="button"
+                    class="btn-icon danger"
+                    title="Excluir"
+                    (click)="$event.stopPropagation(); DeleteCharacter(character.id)"
+                  >
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+
+        <!-- 3. ESTADO VAZIO -->
+        @if (!isLoading && filteredList.length === 0) {
           <tr class="empty-row">
             <td colspan="3">
               <div class="empty-content">

@@ -7,6 +7,6 @@ namespace RpgDex.Domain.Interfaces
     public interface IFileRepository
     {
         Task<string> UploadFileAsync(string fileName, Stream fileStream);
-        Task<byte[]> DownloadFileAsync(string fileId);
+        Task<(byte[] fileBytes, string fileName)> DownloadFileAsync(string fileId);
     }
 }

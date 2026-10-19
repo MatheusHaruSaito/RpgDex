@@ -9,9 +9,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { UserResponse } from '../../../models/userResponse';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 export interface Theme {
   tag: string;
@@ -32,7 +36,7 @@ export interface Theme {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, SkeletonComponent],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -41,17 +45,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   private characterService = inject(CharacterService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   current = signal(0);
   private timer?: any;
 
   isLoggedIn = false;
+  isLoadingUser = true;
+  user: UserResponse | null = null;
+  userName = 'Aventureiro';
+  userAvatarUrl = '';
+
+  // Dados do Dashboard Logado
+  isLoadingCharacters = false;
   characterPreview: Character[] = [];
   characterTotal = 0;
 
   readonly themes: Theme[] = [
     {
-      // TEMA 1: MODERNO (PADRÃO)
       tag: '✦ RPGDex',
       phrase: 'Sua jornada organizada',
       font: "'Nunito', sans-serif",
@@ -67,7 +78,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       band: 'linear-gradient(90deg, #9E74D0, #80E2FF)',
     },
     {
-      // TEMA 2: MEDIEVAL
       tag: '⚔️ Fantasia Medieval',
       phrase: 'Escrito nos pergaminhos',
       font: "'Uncial Antiqua', serif",
@@ -83,7 +93,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       band: 'linear-gradient(90deg, #3d2b1f, #8b4513)',
     },
     {
-      // TEMA 3: CYBERPUNK
       tag: '⚡ Cyberpunk',
       phrase: 'Um final feliz? Para gente como nós? Cidade errada, pessoas erradas.',
       font: "'Orbitron', sans-serif",
@@ -99,7 +108,6 @@ export class HomeComponent implements OnInit, OnDestroy {
       band: 'linear-gradient(90deg, #050505, #ff00aa)',
     },
     {
-      // TEMA 4: TERROR
       tag: '👁️ Terror',
       phrase: 'Já assistiu os filmes de facada?',
       font: "'Creepster', cursive",
@@ -127,30 +135,60 @@ export class HomeComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit() {
-    this.startTimer();
     this.isLoggedIn = this.authService.isLoggedIn();
+
     if (this.isLoggedIn) {
+      this.loadUserData();
       this.loadCharacterPreview();
+    } else {
+      this.startTimer();
     }
   }
 
-  private loadCharacterPreview(): void {
-    this.characterService.GetAllByPage(0, 4).subscribe({
+  private loadUserData(): void {
+    this.isLoadingUser = true;
+    this.authService.GetLoggedUser().subscribe({
       next: (response) => {
-        this.characterTotal = response.data!.characterLenght;
-        this.characterPreview = response.data?.characters ?? [];
+        if (response.data) {
+          this.user = response.data;
+          this.userName = this.user.displayName || this.user.userName || 'Aventureiro';
+          if (this.user.iconPath) {
+            const sep = this.user.iconPath.includes('?') ? '&' : '?';
+            this.userAvatarUrl = `${this.user.iconPath}${sep}t=${new Date().getTime()}`;
+          }
+        }
+        this.isLoadingUser = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: (err) => {
+        this.isLoadingUser = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  private loadCharacterPreview(): void {
+    this.isLoadingCharacters = true;
+    this.characterService.GetAllByPage(1, 6).subscribe({
+      next: (response) => {
+        this.characterTotal = response.data?.characterLenght ?? 0;
+        this.characterPreview = response.data?.characters ?? [];
+        this.isLoadingCharacters = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoadingCharacters = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 
   goToCta(): void {
     this.router.navigate(this.isLoggedIn ? ['/campanhas'] : ['/cadastro']);
-  }
-
-  ngOnDestroy() {
-    this.stopTimer();
   }
 
   selectTheme(index: number) {
@@ -167,5 +205,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private stopTimer() {
     if (this.timer) clearInterval(this.timer);
+  }
+
+  ngOnDestroy() {
+    this.stopTimer();
   }
 }

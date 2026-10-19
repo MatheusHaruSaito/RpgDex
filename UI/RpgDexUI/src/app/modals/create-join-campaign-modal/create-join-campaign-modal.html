@@ -1,119 +1,204 @@
-<div class="modal-backdrop" *ngIf="isOpen" (click)="close()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
 
-    <!-- Header com Selector de Aba -->
-    <div class="modal-header">
-      <div class="tab-selector">
-        <button class="tab-btn" [class.active]="activeTab === 'create'" (click)="activeTab = 'create'">
-          <i class="fa fa-plus"></i> Criar Nova
+      <!-- Header com Seletor de Aba -->
+      <div class="modal-header">
+        <div class="tab-selector">
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab === 'create'"
+            (click)="activeTab = 'create'; errorMessage = ''"
+          >
+            <i class="fa fa-plus"></i> Criar Nova
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab === 'join'"
+            (click)="activeTab = 'join'; errorMessage = ''"
+          >
+            <i class="fa fa-right-to-bracket"></i> Entrar em uma
+          </button>
+        </div>
+        <button type="button" class="btn-icon modal-close" (click)="close()">
+          <i class="fa fa-xmark"></i>
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'join'" (click)="activeTab = 'join'">
-          <i class="fa fa-right-to-bracket"></i> Entrar em uma
-        </button>
       </div>
-      <button class="btn-icon modal-close" (click)="close()"><i class="fa fa-xmark"></i></button>
-    </div>
 
-    <!-- ABA 1: CRIAR CAMPANHA -->
-    <div class="modal-body" *ngIf="activeTab === 'create'">
+      <!-- ABA 1: CRIAR CAMPANHA -->
+      @if (activeTab === 'create') {
+        <div class="modal-body">
+          <p class="modal-tab-intro">
+            Preencha os dados abaixo para fundar sua própria aventura do zero.
+          </p>
 
-      <p class="modal-tab-intro">
-        Preencha os dados abaixo para fundar sua própria aventura do zero.
-      </p>
-
-      <div class="input-group">
-        <label class="input-label">Imagem de Capa <span class="required">*</span></label>
-        <div class="cover-upload" (click)="coverInput.click()" [class.has-preview]="coverPreviewUrl">
-          <img *ngIf="coverPreviewUrl" [src]="coverPreviewUrl" class="cover-preview-img" alt="Capa">
-          <div class="cover-upload-placeholder" *ngIf="!coverPreviewUrl">
-            <i class="fa fa-image"></i>
-            <span>Clique para selecionar</span>
-            <small>PNG, JPG • Máx. 5MB</small>
+          <div class="input-group">
+            <label class="input-label">Imagem de Capa <span class="required">*</span></label>
+            <div
+              class="cover-upload"
+              (click)="coverInput.click()"
+              [class.has-preview]="coverPreviewUrl"
+            >
+              @if (coverPreviewUrl) {
+                <img [src]="coverPreviewUrl" class="cover-preview-img" alt="Capa" />
+                <div class="cover-upload-overlay">
+                  <i class="fa fa-camera"></i> Alterar
+                </div>
+              } @else {
+                <div class="cover-upload-placeholder">
+                  <i class="fa fa-image"></i>
+                  <span>Clique para selecionar</span>
+                  <small>PNG, JPG • Máx. 5MB</small>
+                </div>
+              }
+            </div>
+            <input
+              #coverInput
+              type="file"
+              accept="image/*"
+              class="file-input-hidden"
+              (change)="onFileSelected($event)"
+            />
           </div>
-          <div class="cover-upload-overlay" *ngIf="coverPreviewUrl">
-            <i class="fa fa-camera"></i> Alterar
-          </div>
-        </div>
-        <input #coverInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileSelected($event)">
-      </div>
 
-      <div class="input-group">
-        <label class="input-label">Título <span class="required">*</span></label>
-        <div class="input-field-wrapper">
-          <i class="fa fa-scroll icon-field"></i>
-          <input type="text" placeholder="Ex: A Mina Perdida de Phandelver" [(ngModel)]="newTitle" maxlength="60">
-        </div>
-        <small class="char-counter">{{ newTitle.length }}/60</small>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Descrição</label>
-        <textarea class="input-textarea" placeholder="Fale sobre o cenário, sistema ou tom da campanha..."
-          [(ngModel)]="newDescription" rows="3" maxlength="1000"></textarea>
-        <small class="char-counter">{{ newDescription.length }}/1000</small>
-      </div>
-
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">Senha de Entrada</label>
-          <div class="input-field-wrapper">
-            <i class="fa fa-lock icon-field"></i>
-            <input type="password" placeholder="Deixe vazio para pública" [(ngModel)]="newPassword" maxlength="50">
+          <div class="input-group">
+            <label class="input-label">Título <span class="required">*</span></label>
+            <div class="input-field-wrapper">
+              <i class="fa fa-scroll icon-field"></i>
+              <input
+                type="text"
+                placeholder="Ex: A Mina Perdida de Phandelver"
+                [(ngModel)]="newTitle"
+                maxlength="60"
+              />
+            </div>
+            <small class="char-counter">{{ newTitle.length }}/60</small>
           </div>
-        </div>
-        <div class="input-group input-group--sm">
-          <label class="input-label">Máx. Jogadores</label>
-          <div class="input-field-wrapper">
-            <i class="fa fa-users icon-field"></i>
-            <input type="number" [(ngModel)]="newMaxPlayers" min="1" max="20" (change)="validateMaxPlayers()">
+
+          <div class="input-group">
+            <label class="input-label">Descrição</label>
+            <textarea
+              class="input-textarea"
+              placeholder="Fale sobre o cenário, sistema ou tom da campanha..."
+              [(ngModel)]="newDescription"
+              rows="3"
+              maxlength="1000"
+            ></textarea>
+            <small class="char-counter">{{ newDescription.length }}/1000</small>
           </div>
+
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Senha de Entrada</label>
+              <div class="input-field-wrapper">
+                <i class="fa fa-lock icon-field"></i>
+                <input
+                  type="password"
+                  placeholder="Deixe vazio para pública"
+                  [(ngModel)]="newPassword"
+                  maxlength="50"
+                />
+              </div>
+            </div>
+
+            <div class="input-group input-group--sm">
+              <label class="input-label">Máx. Jogadores</label>
+              <div class="input-field-wrapper">
+                <i class="fa fa-users icon-field"></i>
+                <input
+                  type="number"
+                  [(ngModel)]="newMaxPlayers"
+                  min="1"
+                  max="20"
+                  (change)="validateMaxPlayers()"
+                />
+              </div>
+            </div>
+          </div>
+
+          @if (errorMessage) {
+            <div class="feedback-message error-message">
+              <i class="fa fa-circle-exclamation"></i>
+              <span>{{ errorMessage }}</span>
+            </div>
+          }
         </div>
+      }
+
+      <!-- ABA 2: ENTRAR EM UMA CAMPANHA -->
+      @if (activeTab === 'join') {
+        <div class="modal-body">
+          <p class="modal-tab-intro">
+            Peça ao Mestre o código da campanha e informe abaixo para entrar.
+          </p>
+
+          <div class="input-group">
+            <label class="input-label">Código / ID da Campanha <span class="required">*</span></label>
+            <div class="input-field-wrapper">
+              <i class="fa fa-key icon-field"></i>
+              <input
+                type="text"
+                placeholder="Cole o ID da campanha fornecido pelo Mestre"
+                [(ngModel)]="joinId"
+                maxlength="100"
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Senha de Acesso</label>
+            <div class="input-field-wrapper">
+              <i class="fa fa-lock icon-field"></i>
+              <input
+                type="password"
+                placeholder="Digite a senha (se houver)"
+                [(ngModel)]="joinPassword"
+                maxlength="50"
+              />
+            </div>
+          </div>
+
+          @if (errorMessage) {
+            <div class="feedback-message error-message">
+              <i class="fa fa-circle-exclamation"></i>
+              <span>{{ errorMessage }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- RODAPÉ DINÂMICO -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
+
+        @if (activeTab === 'create') {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitCreate()"
+            [disabled]="!newTitle.trim() || !selectedIconFile"
+          >
+            <i class="fa fa-plus"></i> Criar Campanha
+          </button>
+        }
+
+        @if (activeTab === 'join') {
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="submitJoin()"
+            [disabled]="!joinId.trim()"
+          >
+            <i class="fa fa-right-to-bracket"></i> Entrar na Campanha
+          </button>
+        }
       </div>
 
     </div>
-
-    <!-- ABA 2: ENTRAR EM UMA CAMPANHA -->
-    <div class="modal-body" *ngIf="activeTab === 'join'">
-
-      <p class="modal-tab-intro">
-        Peça ao Mestre o código da campanha e informe abaixo para entrar.
-      </p>
-
-      <div class="input-group">
-        <label class="input-label">Código / ID da Campanha <span class="required">*</span></label>
-        <div class="input-field-wrapper">
-          <i class="fa fa-key icon-field"></i>
-          <input type="text" placeholder="Cole o ID da campanha fornecido pelo Mestre" [(ngModel)]="joinId" maxlength="100">
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Senha de Acesso</label>
-        <div class="input-field-wrapper">
-          <i class="fa fa-lock icon-field"></i>
-          <input type="password" placeholder="Digite a senha (se houver)" [(ngModel)]="joinPassword" maxlength="50">
-        </div>
-      </div>
-
-    </div>
-
-    <!-- RODAPÉ DINÂMICO -->
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="close()">Cancelar</button>
-      
-      <button *ngIf="activeTab === 'create'" class="btn btn-primary" (click)="submitCreate()"
-        [disabled]="!newTitle || !selectedIconFile">
-        <i class="fa fa-plus"></i> Criar Campanha
-      </button>
-
-      <button *ngIf="activeTab === 'join'" class="btn btn-primary" (click)="submitJoin()"
-        [disabled]="!joinId">
-        <i class="fa fa-right-to-bracket"></i> Entrar na Campanha
-      </button>
-    </div>
-
   </div>
-</div>
+}
 
 <!-- SUB-MODAL: CORTE DA IMAGEM -->
 @if (showCropperModal) {
@@ -121,7 +206,7 @@
     <div class="modal-card cropper-card">
       <div class="modal-header">
         <h2 class="modal-title">Ajustar <span>Capa</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <button type="button" class="btn-icon modal-close" (click)="cancelCrop()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>

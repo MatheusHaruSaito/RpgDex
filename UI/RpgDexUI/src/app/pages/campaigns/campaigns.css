@@ -524,12 +524,26 @@
     transform 0.2s ease;
 }
 
-/* Container do Botão Carregar Mais */
 .btn-show-more-container {
   display: flex;
   justify-content: center;
   align-self: center;
   margin-top: 25px;
+}
+
+.fade-in-content {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── RESPONSIVO ── */

@@ -2,16 +2,19 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
 import { Character } from '../../../models/character';
 import { CreateCharacterModal } from '../../modals/create-character-modal/create-character-modal';
 import { CreateCharacter } from '../../../models/createCharacter';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-character-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, CreateCharacterModal],
+  imports: [CommonModule, FormsModule, CreateCharacterModal, SkeletonComponent],
   templateUrl: './character-list.html',
   styleUrl: './character-list.css',
 })
@@ -20,24 +23,36 @@ export class CharacterList implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   characterList: Character[] = [];
   filteredList: Character[] = [];
   searchQuery = '';
   showCreateModal = false;
+  isLoading = true; // Controla o estado de carregamento da lista
+  errorMessage = '';
 
   ngOnInit(): void {
     this.GetAllCharacters();
   }
 
   GetAllCharacters(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
     this.characterService.GetAll().subscribe({
       next: (response) => {
         this.characterList = response.data?.characters ?? [];
         this.onSearch();
+        this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Erro ao buscar personagens:', err),
+      error: (err) => {
+        this.isLoading = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 
@@ -58,12 +73,18 @@ export class CharacterList implements OnInit {
 
   DeleteCharacter(id: string): void {
     if (!confirm('Tem certeza que deseja excluir este personagem?')) return;
+    this.errorMessage = '';
 
     this.characterService.Delete(id).subscribe({
       next: () => {
         this.GetAllCharacters();
       },
-      error: (err) => console.error('Erro ao deletar personagem:', err),
+      error: (err) => {
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 
@@ -97,20 +118,25 @@ export class CharacterList implements OnInit {
           formData.append('icon', iconFile, iconFile.name);
         }
 
+        this.errorMessage = '';
         this.characterService.Post(formData as unknown as CreateCharacter).subscribe({
           next: () => {
-            this.GetAllCharacters(); // ou o nome do seu método de carregar a lista
+            this.GetAllCharacters();
             alert('Personagem importado e salvo com sucesso!');
             input.value = '';
           },
           error: (err) => {
-            console.error('Erro ao salvar personagem importado:', err);
-            alert('Erro ao salvar o personagem na API.');
+            input.value = '';
+            ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+              this.errorMessage = msg;
+              this.cdr.detectChanges();
+            });
           },
         });
       } catch (err) {
         console.error('Erro ao ler o arquivo JSON:', err);
-        alert('Arquivo JSON inválido ou corrompido.');
+        this.errorMessage = 'Arquivo JSON inválido ou corrompido.';
+        this.cdr.detectChanges();
       }
     };
     reader.readAsText(file);

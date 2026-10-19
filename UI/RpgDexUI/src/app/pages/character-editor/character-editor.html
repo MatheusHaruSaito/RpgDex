@@ -27,62 +27,97 @@
         </button>
       </ng-container>
     </div>
+<!-- State: Loading Centralizado -->
+@if (isLoading) {
+  <div class="ce-loading">
+    <i class="fa fa-spinner fa-spin"></i>
+    <span>A carregar a ficha do personagem...</span>
   </div>
+}
 
-  <!-- ── HERO ── -->
-  <div class="ce-hero">
-    <div class="ce-avatar-wrap">
-      <div
-        class="ce-avatar"
-        [style.background-image]="
-          iconPreviewUrl
-            ? 'url(' + iconPreviewUrl + ')'
-            : character.iconPath
-              ? 'url(' + character.iconPath + ')'
-              : ''
-        "
-        [class.ce-avatar--clickable]="isEditing"
-        (click)="isEditing ? iconInput.click() : null"
-      >
-        <i class="fa fa-shield-halved" *ngIf="!iconPreviewUrl && !character.iconPath"></i>
-        <div class="ce-avatar-overlay" *ngIf="isEditing">
-          <i class="fa fa-camera"></i>
-          <span>Alterar foto</span>
+<!-- State: Ficha do Personagem -->
+@if (!isLoading && character) {
+  <div class="ce-wrapper fade-in-content">
+    <!-- ── TOPBAR ── -->
+    <div class="ce-topbar">
+      <div></div>
+      <div class="ce-topbar-actions">
+        <!-- Botões exibidos apenas no modo de EDIÇÃO -->
+        @if (isEditing) {
+          <button type="button" class="btn btn-outline-danger" (click)="confirmDelete()">
+            <i class="fa fa-trash"></i> Excluir
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="toggleEditMode()">
+            <i class="fa fa-eye"></i> Visualizar
+          </button>
+          <button type="button" class="btn btn-primary" (click)="Save()" [disabled]="isSaving">
+            @if (!isSaving) {
+              <span><i class="fa fa-floppy-disk"></i> Salvar</span>
+            } @else {
+              <span><i class="fa fa-spinner fa-spin"></i> Salvando...</span>
+            }
+          </button>
+        }
+
+        <!-- Botões exibidos no modo de VISUALIZAÇÃO -->
+        @if (!isEditing) {
+          <button type="button" class="btn btn-secondary" (click)="downloadCharacter()">
+            <i class="fa fa-download"></i> Baixar Ficha
+          </button>
+          <button type="button" class="btn btn-primary" (click)="toggleEditMode()">
+            <i class="fa fa-pen"></i> Editar Ficha
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ── HERO ── -->
+    <div class="ce-hero">
+      <div class="ce-avatar-wrap">
+        <div
+          class="ce-avatar"
+          [style.background-image]="
+            iconPreviewUrl
+              ? 'url(' + iconPreviewUrl + ')'
+              : character.iconPath
+                ? 'url(' + character.iconPath + ')'
+                : ''
+          "
+          [class.ce-avatar--clickable]="isEditing"
+          (click)="isEditing ? iconInput.click() : null"
+        >
+          @if (!iconPreviewUrl && !character.iconPath) {
+            <i class="fa fa-shield-halved"></i>
+          }
+          @if (isEditing) {
+            <div class="ce-avatar-overlay">
+              <i class="fa fa-camera"></i>
+              <span>Alterar foto</span>
+            </div>
+          }
         </div>
-      </div>
-      <input
-        #iconInput
-        type="file"
-        accept="image/*"
-        class="file-input-hidden"
-        (change)="onIconSelected($event)"
-      />
-    </div>
-    <div class="ce-hero-info">
-      <div class="ce-name-input-wrapper" *ngIf="isEditing">
         <input
-          class="ce-name-input"
-          type="text"
-          placeholder="Nome do personagem"
-          [(ngModel)]="editForm.name"
-          maxlength="60"
+          #iconInput
+          type="file"
+          accept="image/*"
+          class="file-input-hidden"
+          (change)="onIconSelected($event)"
         />
-        <i class="fa fa-pen ce-name-edit-icon"></i>
       </div>
-      <h1 *ngIf="!isEditing" class="ce-name-view">{{ character.name }}</h1>
-      <span class="ce-edit-hint" *ngIf="isEditing">
-        <i class="fa fa-circle-info"></i> Modo edição ativo
-      </span>
-    </div>
-  </div>
 
-  <!-- ── FEEDBACK ── -->
-  <div class="ce-feedback error-message" *ngIf="errorMessage">
-    <i class="fa fa-circle-exclamation"></i> {{ errorMessage }}
-  </div>
-  <div class="ce-feedback success-message" *ngIf="successMessage">
-    <i class="fa fa-circle-check"></i> {{ successMessage }}
-  </div>
+      <div class="ce-hero-info">
+        @if (isEditing) {
+          <div class="ce-name-input-wrapper">
+            <input
+              class="ce-name-input"
+              type="text"
+              placeholder="Nome do personagem"
+              [(ngModel)]="editForm.name"
+              maxlength="60"
+            />
+            <i class="fa fa-pen ce-name-edit-icon"></i>
+          </div>
+        }
 
   <!-- ── CORPO ── -->
   <div class="ce-body">
@@ -122,11 +157,16 @@
           <i class="fa fa-plus"></i> Novo Grupo
         </button>
       </div>
+    }
 
       <div class="ce-groups-empty-view" *ngIf="!isEditing && groups.length === 0">
         <i class="fa fa-layer-group"></i>
         <span>Nenhum atributo registado nesta ficha.</span>
+    @if (successMessage) {
+      <div class="ce-feedback success-message">
+        <i class="fa fa-circle-check"></i> {{ successMessage }}
       </div>
+    }
 
       <div class="ce-groups-empty" *ngIf="isEditing && groups.length === 0">
         <i class="fa fa-layer-group"></i>
@@ -166,7 +206,47 @@
                 <i class="fa fa-xmark"></i>
               </button>
             </div>
+    <!-- ── CORPO ── -->
+    <div class="ce-body">
+      <!-- Coluna esquerda: descrição -->
+      <div class="ce-col ce-col--main">
+        <section class="ce-section">
+          <div class="ce-section-header">
+            <h3 class="ce-section-title"><i class="fa fa-align-left"></i> Descrição</h3>
           </div>
+
+          @if (!isEditing) {
+            <p
+              class="ce-view-text"
+              [class.ce-view-text--empty]="!editForm.description"
+            >
+              {{ editForm.description || 'Nenhuma descrição.' }}
+            </p>
+          }
+
+          @if (isEditing) {
+            <textarea
+              class="ce-textarea"
+              placeholder="Descreva a origem, aparência ou personalidade do personagem..."
+              [(ngModel)]="editForm.description"
+              rows="8"
+              maxlength="2000"
+            ></textarea>
+            <span class="ce-char-count">{{ editForm.description.length || 0 }}/2000</span>
+          }
+        </section>
+      </div>
+
+      <!-- Coluna direita: grupos de atributos -->
+      <div class="ce-col ce-col--attrs">
+        @if (isEditing) {
+          <div class="ce-groups-header">
+            <h3 class="ce-section-title"><i class="fa fa-list-check"></i> Atributos</h3>
+            <button type="button" class="btn btn-secondary btn-add-sm" (click)="addGroup()">
+              <i class="fa fa-plus"></i> Novo grupo
+            </button>
+          </div>
+        }
 
           <div class="ce-attrs-list">
             <p class="ce-attrs-empty" *ngIf="isEditing && group.entries.length === 0">
@@ -365,12 +445,80 @@
   </div>
 </div>
 
-<ng-template #loading>
-  <div class="ce-loading">
-    <i class="fa fa-spinner fa-spin"></i>
-    <span>Carregando personagem...</span>
+              @if (isEditing) {
+                <div class="ce-group-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-add-sm"
+                    (click)="addEntry(group)"
+                    title="Adicionar campo"
+                  >
+                    <i class="fa fa-plus"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon btn-remove-group"
+                    (click)="removeGroup(gIdx)"
+                    title="Remover grupo"
+                  >
+                    <i class="fa fa-xmark"></i>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <div class="ce-attrs-list">
+              @if (isEditing && group.entries.length === 0) {
+                <p class="ce-attrs-empty">
+                  Clique em <strong>+</strong> para adicionar campos.
+                </p>
+              }
+
+              @for (entry of group.entries; track $index; let eIdx = $index) {
+                @if (!isEditing && entry.key.trim()) {
+                  <div class="ce-attr-chip">
+                    <span class="ce-attr-chip-key">{{ entry.key }}</span>
+                    <span class="ce-attr-chip-value">{{ entry.value }}</span>
+                  </div>
+                }
+
+                @if (isEditing) {
+                  <div class="ce-attr-row">
+                    <input
+                      class="ce-attr-key"
+                      type="text"
+                      placeholder="Atributo"
+                      [(ngModel)]="entry.key"
+                      [name]="'key-' + eIdx + '-g' + gIdx"
+                      maxlength="40"
+                    />
+                    <span class="ce-attr-sep">:</span>
+                    <input
+                      class="ce-attr-val"
+                      type="text"
+                      placeholder="Valor"
+                      [(ngModel)]="entry.value"
+                      [name]="'val-' + eIdx + '-g' + gIdx"
+                      maxlength="100"
+                    />
+                    <button
+                      type="button"
+                      class="btn-icon btn-remove-attr"
+                      title="Remover"
+                      (click)="removeEntry(group, eIdx)"
+                    >
+                      <i class="fa fa-xmark"></i>
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          </section>
+        }
+      </div>
+    </div>
   </div>
-</ng-template>
+}
 
 <!-- SUB-MODAL: CORTE DA IMAGEM -->
 @if (showCropperModal) {
@@ -378,7 +526,7 @@
     <div class="modal-card cropper-card">
       <div class="modal-header">
         <h2 class="modal-title">Ajustar <span>Avatar</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <button type="button" class="btn-icon modal-close" (click)="cancelCrop()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>

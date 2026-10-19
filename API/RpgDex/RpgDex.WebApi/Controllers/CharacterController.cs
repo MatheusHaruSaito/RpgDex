@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using RpgDex.Application.Common;
+using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.WebApi.Extensions;

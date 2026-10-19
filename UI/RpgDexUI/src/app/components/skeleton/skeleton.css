@@ -1,0 +1,20 @@
+.skeleton-box {
+  background: linear-gradient(
+    90deg,
+    var(--rpg-border-light, #e0e0e0) 25%,
+    var(--rpg-surface-tint, #f5f5f5) 50%,
+    var(--rpg-border-light, #e0e0e0) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite ease-in-out;
+  display: inline-block;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

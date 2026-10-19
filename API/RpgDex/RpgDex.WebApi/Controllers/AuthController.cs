@@ -1,12 +1,8 @@
 ﻿using AspNet.Security.OAuth.Discord;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using RpgDex.Application.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
@@ -131,6 +127,7 @@ namespace RpgDex.WebApi.Controllers
 
         }
         [HttpPost("ValidateTwoFactor")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateTwoFactor(ValidateTwoFactorRequest request)
         {
             var result = await _authSerice.ValidateTwoFactor(request);
@@ -138,9 +135,10 @@ namespace RpgDex.WebApi.Controllers
         }
 
         [HttpPost("SendTwoFactorAuthEmailRequest")]
-        public async Task<IActionResult> SendTwoFactorAuthEmailRequest()
+        [AllowAnonymous]
+        public async Task<IActionResult> SendTwoFactorAuthEmailRequest(SendTwoFactEmailrequest request)
         {
-            var result = await _authSerice.SendTwoFactorAuthEmailRequest(currentUser);
+            var result = await _authSerice.SendTwoFactorAuthEmailRequest(request);
             return result.ToIActionResult();
         }
 

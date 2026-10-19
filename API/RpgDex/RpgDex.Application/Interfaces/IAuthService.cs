@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Common;
+﻿using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Domain.Entities;
 using System;
@@ -13,7 +13,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<LoginResponse>> LogIn(AuthUserDTO authUser);
         Task<Result<RefreshTokenModel>> ValidateTwoFactor(ValidateTwoFactorRequest request);
         Task<Result<string>> RequestTwoFAActivation(ValidateTwoFactorRequest request);
-        Task<Result<string>> SendTwoFactorAuthEmailRequest(string userId);
+        Task<Result<string>> SendTwoFactorAuthEmailRequest(SendTwoFactEmailrequest request);
         Task<Result<AuthOptionsResponse>> GetUserAuthOptions(string userId);
         Task<Result<RefreshTokenModel>> DiscordSignUp();
         Task<Result<RefreshTokenModel>> GoogleSignUp(GoogleLoginRequest request);

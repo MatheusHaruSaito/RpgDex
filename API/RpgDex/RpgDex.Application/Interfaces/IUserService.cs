@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Common;
+﻿using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;

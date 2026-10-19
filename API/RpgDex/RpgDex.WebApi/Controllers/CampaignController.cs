@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RpgDex.Application.Common;
+using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
@@ -37,7 +37,7 @@ namespace RpgDex.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var result = await _campaignService.GetById(id);
+            var result = await _campaignService.GetById(currentUser,id);
             return result.ToIActionResult();
         }
         [HttpPost]
@@ -109,13 +109,13 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpGet("GetMessages/{campaignId}")]
-        public async Task<IActionResult> GetMessages(Guid campaignId)
+        public async Task<IActionResult> GetMessages([FromRoute] Guid campaignId, [FromQuery] DateTime? beforeSentAt, [FromQuery] int pageSize)
         {
-            var result = await _campaignService.GetChatMessages(campaignId);
+            var result = await _campaignService.GetChatMessages(currentUser, beforeSentAt, pageSize, campaignId);
             return result.ToIActionResult();
         }
         [HttpPatch("Leave")]
-        public async Task<IActionResult> GetMessages(LeaveCampaignRequest request)
+        public async Task<IActionResult> LeaveCampaign(LeaveCampaignRequest request)
         {
             var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();

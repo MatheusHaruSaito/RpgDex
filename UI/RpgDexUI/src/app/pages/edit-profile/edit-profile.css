@@ -564,6 +564,59 @@ image-cropper {
   box-shadow: var(--rpg-shadow-btn-hov);
 }
 
+.edit-side__handle {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 2px;
+}
+
+.field-hint {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.78rem;
+  color: var(--rpg-text-faint);
+  margin-top: 2px;
+}
+
+/* Estilização para o campo desabilitado (userName) */
+.input-group--disabled input {
+  background-color: var(--rpg-surface-tint);
+  color: var(--rpg-text-muted);
+  border-color: var(--rpg-border-light);
+  cursor: not-allowed;
+  padding-right: 40px;
+}
+
+.input-group--disabled input:focus {
+  border-color: var(--rpg-border-light);
+}
+
+.icon-lock-field {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--rpg-text-faint);
+  font-size: 0.88rem;
+  pointer-events: none;
+}
+
+.fade-in-content {
+  animation: fadeInContent 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .desktop-only {

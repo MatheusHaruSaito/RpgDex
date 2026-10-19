@@ -81,6 +81,9 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IDiscordAuthService, DiscordAuthService>();
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
+            services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
+            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+
 
 
             //Identity

@@ -1,5 +1,5 @@
 <div class="login-wrapper">
-  <div class="login-card">
+  <div class="login-card fade-in-content">
     <div class="login-side">
       <div class="login-logo" routerLink="/home">RPGDex</div>
       <div class="login-side__content">
@@ -28,16 +28,18 @@
             placeholder="Email"
             name="email"
             [(ngModel)]="authUserForm.email"
+            (ngModelChange)="onEmailInput($event)"
+            (keydown.space)="$event.preventDefault()"
             autocomplete="username"
+            [disabled]="isAnyLoading"
             required
           />
         </div>
-        
+
         @if (emailInvalid) {
           <span class="field-hint">Informe um email válido.</span>
         }
 
-        <!-- Campo de Senha com Alternância de Visibilidade -->
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
           <input
@@ -46,6 +48,7 @@
             name="password"
             [(ngModel)]="authUserForm.password"
             autocomplete="current-password"
+            [disabled]="isAnyLoading"
             required
           />
           <button
@@ -69,13 +72,11 @@
           </div>
         }
 
-        <button type="submit" class="btn-login" [disabled]="isLoading">
+        <button type="submit" class="btn-login" [disabled]="isAnyLoading">
           @if (!isLoading) {
             <span>ENTRAR</span>
           } @else {
-            <span>
-              <i class="fa fa-spinner fa-spin"></i> Entrando...
-            </span>
+            <span><i class="fa fa-spinner fa-spin"></i> Entrando...</span>
           }
         </button>
       </form>
@@ -88,22 +89,34 @@
         <button
           type="button"
           class="social-btn"
+          [class.loading]="isGoogleLoading"
+          [disabled]="isAnyLoading"
           (click)="loginComGoogle()"
           title="Entrar com Google"
           aria-label="Entrar com Google"
         >
-          <i class="fa-brands fa-google"></i>
+          @if (!isGoogleLoading) {
+            <i class="fa-brands fa-google"></i>
+          } @else {
+            <i class="fa fa-spinner fa-spin"></i>
+          }
         </button>
         <div id="google-btn" style="display: none; position: absolute"></div>
 
         <button
           type="button"
           class="social-btn"
+          [class.loading]="isDiscordLoading"
+          [disabled]="isAnyLoading"
           (click)="onDiscordLogin()"
           title="Entrar com Discord"
           aria-label="Entrar com Discord"
         >
-          <i class="fa-brands fa-discord"></i>
+          @if (!isDiscordLoading) {
+            <i class="fa-brands fa-discord"></i>
+          } @else {
+            <i class="fa fa-spinner fa-spin"></i>
+          }
         </button>
       </div>
 
@@ -113,3 +126,10 @@
     </div>
   </div>
 </div>
+
+<app-two-factor-modal
+  [visible]="showTwoFactorModal"
+  [userEmail]="authUserForm.email"
+  (close)="showTwoFactorModal = false"
+  (authenticated)="onTwoFactorAuthenticated()"
+></app-two-factor-modal>

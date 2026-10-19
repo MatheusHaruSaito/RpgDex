@@ -79,7 +79,15 @@ namespace RpgDex.Application.Mapping
                 .Map(dest => dest.UserIcon, src => string.IsNullOrEmpty(src.UserIcon)
                     ? null
                     : $"{GetApiUrlIfNotFromGoogle(src.UserIcon, baseUrl)}{src.UserIcon}");
-        }
+            //Mappings for UserDocument can be added here if necessary
+            TypeAdapterConfig<UserDocument, UserDocumentResponse>
+            .NewConfig()
+            .Map(dest => dest.Id, src => src.Id)
+            .Map(dest => dest.UserId, src => src.UserId)
+            .Map(dest => dest.FilePath, src => string.IsNullOrEmpty(src.FilePath)
+                ? null
+                : $"{baseUrl}/api/File/{src.FilePath}");
+                }
         private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
         {
             if (VerifyImageUrl(iconPath))

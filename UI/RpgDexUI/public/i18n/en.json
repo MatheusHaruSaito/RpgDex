@@ -28,6 +28,13 @@
     "CAMPAIGN_UPDATE_FAILED": "Failed to update campaign.",
     "CAMPAIGN_CHAT_NOT_FOUND": "Failed to retrieve campaign chat.",
     "CAMPAIGN_SAVE_MESSAGE_FAILED": "Failed to save new chat message.",
+    "CAMPAIGN_IS_NOT_ACTIVE": "Campaign is not active.",
+    "CAMPAIGN_MAX_PLAYERS_REACHED": "The maximum player capacity for this campaign has been reached.",
+    "CAMPAIGN_CHARACTER_ALREADY_IN": "This character is already in the campaign.",
+    "CAMPAIGN_CHARACTER_AWAITING_APPROVAL": "The character is awaiting approval from the Game Master.",
+    "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "The character was not found in the join requests list.",
+    "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
+    "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -39,6 +46,37 @@
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 
-    "VALIDATION_DISPLAYNAME": "Character name is required." 
+    "USER_DOCUMENT_NOT_FOUND": "User document not found.",
+    "USER_DOCUMENT_NOT_OWNED": "You are not the owner of this document.",
+    "USER_DOCUMENT_FILE_REQUIRED": "File is required and cannot be empty.",
+    "USER_DOCUMENT_CREATE_FAILED": "Failed to create user document.",
+    "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
+    "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
+
+    "VALIDATION_PASSWORD_EMPTY": "Password can't be empty",
+    "VALIDATION_PASSWORD_UPPERCASE": "The password must contain at least one uppercase letter",
+    "VALIDATION_PASSWORD_LOWERCASE": "The password must contain at least one lowercase letter",
+    "VALIDATION_PASSWORD_NUMBER": "The password must contain at least one number",
+    "VALIDATION_PASSWORD_SPECIAL": "The password must contain at least one special character",
+    "VALIDATION_USERNAME_EMPTY": "UserName can't be empty",
+    "VALIDATION_USERNAME_MAX_LENGTH": "User Name can't exceed 255 characters",
+    "VALIDATION_USERNAME_NO_SPACES": "UserName cannot contain spaces",
+    "VALIDATION_USERNAME_INVALID_CHARS": "UserName can only contain letters, numbers, and underscores",
+    "CAMPAIGN_VALIDATION_ICON_REQUIRED": "Campaign Image can't be empty",
+    "VALIDATION_INVALID_FILE_EXTENSION": "Icon must be a JPG, JPEG, or PNG file",
+    "VALIDATION_FILE_TOO_LARGE": "Icon file size must not exceed the limit",
+    
+    "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
+    "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
+    "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",
+    "CANVAS_ELEMENT_MOVE_FAILED": "Failed to move canvas elements.",
+    "CANVAS_ELEMENT_REORDER_FAILED": "Failed to reorder canvas elements.",
+    "CANVAS_ELEMENT_SET_ACTIVE_STATE_FAILED": "Failed to change canvas element active state.",
+    "CANVAS_ELEMENT_INVALID": "Element data does not match its type.",
+    "CANVAS_ELEMENT_IMAGE_TOO_LARGE": "Image is too large.",
+    "CANVAS_ELEMENT_TOO_MANY_POINTS": "Drawing has too many points.",
+    "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Invalid number of elements in the request.",
+    "CANVAS_ELEMENT_LIMIT_REACHED": "Canvas element limit reached.",
+    "VALIDATION_DISPLAYNAME": "Character name is required."
   }
 }

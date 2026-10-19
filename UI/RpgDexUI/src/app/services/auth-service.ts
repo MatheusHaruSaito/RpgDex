@@ -72,7 +72,7 @@ export class AuthService {
   public Login(user: LoginUser): Observable<ApiResponse<LoginResponse>> {
     return this.http.post<ApiResponse<LoginResponse>>(`${this.env}/Login`, user).pipe(
       tap((response: ApiResponse<LoginResponse>) => {
-        if (response.success && response.data) {
+        if (response.success && response.data && response.data.accessToken != null) {
           this.cookieService.set(this.JWT_Token, response.data.accessToken, { path: '/' });
           this.cookieService.set(this.REFRESH_Token, response.data.refreshToken, { path: '/' });
           this.currentUserSubject.next(response.data);
@@ -161,13 +161,13 @@ export class AuthService {
   }
 
   public ValidateTwoFactor(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {
+    return this.http.post<ApiResponse<tokenModel>>(`${this.env}/ValidateTwoFactor/`, request);
+  }
+  public SendTwoFactorAuthEmail(request: { email: string }): Observable<ApiResponse<tokenModel>> {
     return this.http.post<ApiResponse<tokenModel>>(
-      `${this.env}/SendTwoFactorAuthEmailRequest/`,
+      `${this.env}/SendTwoFactorAuthEmailRequest`,
       request,
     );
-  }
-  public SendTwoFactorAuthEmail(): Observable<ApiResponse<tokenModel>> {
-    return this.http.post<ApiResponse<tokenModel>>(`${this.env}/SendTwoFactorAuthEmailRequest`, '');
   }
 
   public TwoFAActivation(request: ValidateTwoFactorRequest): Observable<ApiResponse<tokenModel>> {

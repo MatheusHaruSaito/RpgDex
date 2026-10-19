@@ -1,7 +1,7 @@
 <div class="ec-wrapper">
-  <div class="ec-card">
+  <div class="ec-card fade-in-content">
     @if (state === 'waiting') {
-      <!-- Aguardando -->
+      <!-- Aguardando / Loading Centralizado -->
       <div class="ec-state ec-state--waiting">
         <div class="ec-icon-ring ec-icon-ring--purple">
           <i class="fa fa-spinner fa-spin"></i>
@@ -11,7 +11,7 @@
       </div>
     } @else if (state === 'success') {
       <!-- Sucesso -->
-      <div class="ec-state ec-state--success">
+      <div class="ec-state ec-state--success fade-in-content">
         <div class="ec-icon-ring ec-icon-ring--success">
           <i class="fa fa-circle-check"></i>
         </div>
@@ -24,7 +24,7 @@
       </div>
     } @else if (state === 'error') {
       <!-- Erro -->
-      <div class="ec-state ec-state--error">
+      <div class="ec-state ec-state--error fade-in-content">
         <div class="ec-icon-ring ec-icon-ring--error">
           <i class="fa fa-circle-xmark"></i>
         </div>

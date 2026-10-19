@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver.GridFS;
+﻿using MongoDB.Driver;
+using MongoDB.Driver.GridFS;
 using MongoDbGenericRepository;
 using RpgDex.Domain.Interfaces;
 
@@ -14,17 +15,32 @@ namespace RpgDex.Infrastructure.Repositories
             _gridFSBucket = gridFSBucket;
         }
 
-        public async Task<byte[]> DownloadFileAsync(string fileId)
+        public async Task<(byte[] fileBytes, string fileName)> DownloadFileAsync(string fileId)
         {
+
+            if (!MongoDB.Bson.ObjectId.TryParse(fileId, out var objectId))
+            {
+                return (null, null);
+            }
+
             try
             {
-                var objectId = new MongoDB.Bson.ObjectId(fileId);
+                var filter = Builders<GridFSFileInfo>.Filter.Eq("_id", objectId);
+                using var cursor = await _gridFSBucket.FindAsync(filter);
+                var fileInfo = await cursor.FirstOrDefaultAsync();
 
-                return await _gridFSBucket.DownloadAsBytesAsync(objectId);
+                if (fileInfo == null)
+                {
+                    return (null, null);
+                }
+
+                var fileBytes = await _gridFSBucket.DownloadAsBytesAsync(objectId);
+
+                return (fileBytes, fileInfo.Filename);
             }
             catch (GridFSFileNotFoundException)
             {
-                return null;
+                return (null, null);
             }
         }
 

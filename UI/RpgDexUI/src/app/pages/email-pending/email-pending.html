@@ -1,5 +1,5 @@
 <div class="ep-wrapper">
-  <div class="ep-card">
+  <div class="ep-card fade-in-content">
     <div class="ep-icon-ring">
       <i class="fa fa-envelope-circle-check"></i>
     </div>
@@ -7,7 +7,7 @@
     <h1 class="ep-title">Verifique seu email</h1>
     <p class="ep-sub">
       Enviamos um link de confirmação para
-      <strong class="ep-email">{{ email || 'seu email' }}</strong>.
+      <strong class="ep-email">{{ email || 'seu e-mail cadastrado' }}</strong>.
       Clique no link para ativar sua conta.
     </p>
 
@@ -17,14 +17,22 @@
     </div>
 
     <div class="ep-actions">
-      <button type="button" class="ep-btn ep-btn--outline" (click)="resend()" [disabled]="resendCooldown > 0">
-        <i class="fa fa-rotate-right"></i>
-        @if (resendCooldown === 0) {
+      <button
+        type="button"
+        class="ep-btn ep-btn--outline"
+        (click)="resend()"
+        [disabled]="resendCooldown > 0 || !email || isResending"
+      >
+        <i class="fa" [ngClass]="isResending ? 'fa-spinner fa-spin' : 'fa-rotate-right'"></i>
+        @if (isResending) {
+          <span>Enviando...</span>
+        } @else if (resendCooldown === 0) {
           <span>Reenviar email</span>
         } @else {
           <span>Reenviar em {{ resendCooldown }}s</span>
         }
       </button>
+
       <button type="button" class="ep-btn ep-btn--ghost" routerLink="/login">
         <i class="fa fa-arrow-left"></i>
         <span>Voltar ao login</span>
@@ -32,14 +40,14 @@
     </div>
 
     @if (resendSuccess) {
-      <div class="ep-feedback ep-feedback--success">
+      <div class="ep-feedback ep-feedback--success fade-in-content">
         <i class="fa fa-circle-check"></i>
         <span>Email reenviado com sucesso!</span>
       </div>
     }
 
     @if (resendError) {
-      <div class="ep-feedback ep-feedback--error">
+      <div class="ep-feedback ep-feedback--error fade-in-content">
         <i class="fa fa-circle-exclamation"></i>
         <span>{{ resendError }}</span>
       </div>

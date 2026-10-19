@@ -49,9 +49,18 @@ export const routes: Routes = [
   {
     path: 'campanha/:id',
     loadComponent: () =>
-      import('./pages/campaign-detail/campaign-detail').then(
-        (m) => m.CampaignDetailComponent
-      ),
+      import('./pages/campaign-detail/campaign-detail').then((m) => m.CampaignDetailComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'campanha/:id/tabuleiro',
+    loadComponent: () =>
+      import('./components/campaign-canvas/campaign-canvas').then((m) => m.CampaignCanvasComponent),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'biblioteca',
+    loadComponent: () => import('./pages/library/library').then((m) => m.LibraryComponent),
     canActivate: [authGuard],
   },
 

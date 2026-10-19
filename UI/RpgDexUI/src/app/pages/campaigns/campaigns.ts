@@ -1,31 +1,40 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
 import { CampaignService } from '../../services/campaign-service';
 import { Character } from '../../../models/character';
 import { Campaign } from '../../../models/campaign';
 import { CreateJoinCampaignModalComponent } from '../../modals/create-join-campaign-modal/create-join-campaign-modal';
+import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule, RouterModule, CreateJoinCampaignModalComponent],
+  imports: [CommonModule, RouterModule, CreateJoinCampaignModalComponent, SkeletonComponent],
   templateUrl: './campaigns.html',
   styleUrls: ['./campaigns.css'],
 })
 export class CampaignsComponent implements OnInit {
+  @ViewChild(CreateJoinCampaignModalComponent) campaignModal!: CreateJoinCampaignModalComponent;
+
   private characterService = inject(CharacterService);
   private campaignService = inject(CampaignService);
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   myCampaigns: Campaign[] = [];
   myCharacters: Character[] = [];
   currentUserId = '';
+
+  // Estados de carregamento
+  isLoadingCampaigns = true;
+  isLoadingCharacters = true;
 
   showCharactersCount = 5;
 
@@ -41,6 +50,9 @@ export class CampaignsComponent implements OnInit {
     if (this.currentUserId) {
       this.loadCampaigns();
       this.loadCharacters();
+    } else {
+      this.isLoadingCampaigns = false;
+      this.isLoadingCharacters = false;
     }
   }
 
@@ -59,32 +71,38 @@ export class CampaignsComponent implements OnInit {
   }
 
   private loadCampaigns(): void {
+    this.isLoadingCampaigns = true;
     this.campaignService.GetAllByUserPage(0, this.campaingsPerPage).subscribe({
       next: (r) => {
         if (r.data!.campaigns.length > this.campaingsPerPage - 1) {
           this.showMoreButton = true;
         }
         this.myCampaigns = r.data?.campaigns ?? [];
-
+        this.isLoadingCampaigns = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => {
+        this.isLoadingCampaigns = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
   private loadCharacters(): void {
+    this.isLoadingCharacters = true;
     this.characterService.GetAllByPage(1, this.showCharactersCount).subscribe({
       next: (r) => {
         const all = r.data?.characters ?? [];
         const filtered = all.filter((c) => c.userId === this.currentUserId);
 
-        //Criar paginamento na api dps (Refatorar)
-        // Ordena por último acesso e limita aos 5 mais recentes
-        //Fazer o filtro pela api
         this.myCharacters = this.sortByLastAccessed(filtered);
+        this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-      error: () => {},
+      error: () => {
+        this.isLoadingCharacters = false;
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -136,24 +154,43 @@ export class CampaignsComponent implements OnInit {
 
   handleCreateCampaign(formData: FormData): void {
     this.campaignService.Post(formData as any).subscribe({
-      next: () => this.loadCampaigns(),
-      error: () => {},
+      next: () => {
+        this.isModalOpen = false;
+        this.loadCampaigns();
+      },
+      error: (err: any) => {
+        this.handleApiError(err);
+      },
     });
   }
 
   handleJoinCampaign(payload: { campaignId: string; password?: string }): void {
-    this.campaignService
-      .AddPlayer({
-        campaignId: payload.campaignId,
-        password: payload.password,
-      })
-      .subscribe({
-        next: () => {
-          alert('Você entrou na campanha!');
-          this.loadCampaigns();
-        },
-        error: () => alert('Erro ao entrar na campanha. Verifique o ID e Senha.'),
-      });
+    const requestBody = {
+      campaignId: payload.campaignId,
+      password: payload.password ?? '',
+    };
+
+    this.campaignService.AddPlayer(requestBody as any).subscribe({
+      next: () => {
+        this.isModalOpen = false;
+        this.loadCampaigns();
+      },
+      error: (err: any) => {
+        this.handleApiError(err);
+      },
+    });
+  }
+
+  private handleApiError(err: any): void {
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      this.setModalError(msg);
+    });
+  }
+
+  private setModalError(msg: string): void {
+    if (this.campaignModal) {
+      this.campaignModal.setErrorMessage(msg);
+    }
   }
 
   goToCampaignDetail(id: string): void {

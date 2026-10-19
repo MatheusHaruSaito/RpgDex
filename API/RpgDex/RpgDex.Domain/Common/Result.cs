@@ -1,7 +1,7 @@
 ﻿using System;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace RpgDex.Application.Common
+namespace RpgDex.Domain.Common
 {
     public class Result<T>
     {

@@ -344,10 +344,34 @@
   text-decoration: underline;
 }
 
-/* ── VISIBILIDADE & RESPONSIVIDADE ── */
 .desktop-only { display: flex; }
 .mobile-only  { display: none; }
 
+.fade-in-content {
+  animation: fadeInContent 0.3s ease-in-out forwards;
+}
+
+.social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.social-btn.loading {
+  color: var(--rpg-purple);
+  border-color: var(--rpg-purple);
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media (max-width: 768px) {
   .desktop-only { display: none; }

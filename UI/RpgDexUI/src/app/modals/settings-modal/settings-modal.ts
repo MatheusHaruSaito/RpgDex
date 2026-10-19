@@ -10,10 +10,12 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { UserResponse } from '../../../models/userResponse';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
 import { InfoHintComponent } from '../../components/info-hint/info-hint';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-settings-modal',
@@ -25,6 +27,7 @@ import { InfoHintComponent } from '../../components/info-hint/info-hint';
 export class SettingsModalComponent implements OnChanges {
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   @Input() isOpen = false;
   @Input() user: UserResponse | null = null;
@@ -56,7 +59,13 @@ export class SettingsModalComponent implements OnChanges {
           this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error('Erro ao recarregar opções de auth:', err),
+      error: (err) => {
+        console.error('Erro ao recarregar opções de auth:', err);
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 
@@ -81,10 +90,9 @@ export class SettingsModalComponent implements OnChanges {
     this.isSending2FAEmail = true;
     this.settingsMessage = { text: '', type: '' };
 
-    this.authService.SendTwoFactorAuthEmail().subscribe({
+    this.authService.SendTwoFactorAuthEmail({ email: this.user!.email }).subscribe({
       next: (response: any) => {
         this.isSending2FAEmail = false;
-
         const isSuccess = response?.success ?? response?.isSuccess ?? true;
 
         if (isSuccess) {
@@ -95,21 +103,18 @@ export class SettingsModalComponent implements OnChanges {
           };
         } else {
           this.settingsMessage = {
-            text:
-              response?.message || response?.error || 'Erro ao solicitar código de verificação.',
+            text: response?.message || response?.error || 'Erro ao solicitar código de verificação.',
             type: 'error',
           };
         }
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro na requisição do 2FA:', err);
         this.isSending2FAEmail = false;
-        this.settingsMessage = {
-          text: err?.error?.message || 'Erro ao enviar código. Tente novamente.',
-          type: 'error',
-        };
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -154,11 +159,10 @@ export class SettingsModalComponent implements OnChanges {
         },
         error: (err) => {
           this.isActivating2FA = false;
-          this.settingsMessage = {
-            text: err?.error?.message || 'Falha ao validar o código.',
-            type: 'error',
-          };
-          this.cdr.detectChanges();
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.settingsMessage = { text: msg, type: 'error' };
+            this.cdr.detectChanges();
+          });
         },
       });
   }

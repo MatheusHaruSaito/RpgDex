@@ -18,17 +18,14 @@ namespace RpgDex.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetFile(string id)
         {
-            if (string.IsNullOrEmpty(id) || id.Length != 24)
+
+            var (fileBytes, contentType) = await _fileService.DownloadFileAsync(id);
+            if (fileBytes is null || fileBytes.Length == 0)
             {
-                return BadRequest("O ID fornecido é inválido.");
+                return NotFound("File not found.");
             }
 
-            var (fileBytes, extension) = await _fileService.DownloadFileAsync(id);
-            if (fileBytes == null || fileBytes.Length == 0)
-            {
-                return NotFound("Imagem não encontrada.");
-            }
-            return File(fileBytes, extension);
+            return File(fileBytes, contentType);
         }
     }
 }
