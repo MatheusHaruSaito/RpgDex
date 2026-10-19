@@ -25,9 +25,6 @@ namespace RpgDex.Application.Services
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
-            Console.WriteLine(request.ElementType);
-            Console.WriteLine(request.Content);
-
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);

@@ -82,7 +82,6 @@ export class CampaignCanvasComponent implements OnInit {
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
-        console.log(res)
         if (res.success && res.data) {
           this.elements = res.data.elements;
           if (this.elements.length > 0) {
@@ -244,7 +243,7 @@ export class CampaignCanvasComponent implements OnInit {
             formData.append('scale', '1');
             formData.append('image', this.selectedFile, this.selectedFile.name);
 
-            this.canvasElementService.CreateElement(formData as any).subscribe((res) => {
+            this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
               if (res.success && res.data) {
                 this.elements.push(res.data);
                 this.setTool('cursor');
@@ -315,28 +314,70 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
- addText(): void {
+  addText(): void {
     const text = prompt('Digite sua anotação:');
     if (!text) return;
     this.saveState();
 
-    const formData = new FormData();
-    formData.append('campaignId', this.campaignId);
-    formData.append('elementType', CanvasElementType.Text.toString());
-    formData.append('content', text);
-    formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
-    formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
-    formData.append('z', (++this.maxZ).toString());
-    formData.append('scale', '1');
-    formData.append('color', this.selectedColor);
+    const req: CreateCanvaElementRequest = {
+      campaignId: this.campaignId,
+      elementType: CanvasElementType.Text,
+      content: text,
+      x: this.getWorldX(window.innerWidth / 2) - 50,
+      y: this.getWorldY(window.innerHeight / 2) - 50,
+      z: ++this.maxZ,
+      scale: 1,
+      color: this.selectedColor,
+      image: undefined,
+    };
 
-    this.canvasElementService.CreateElement(formData as any).subscribe((res) => {
+    this.canvasElementService.CreateElement(req).subscribe((res) => {
       if (res.success && res.data) {
         this.elements.push(res.data);
         this.setTool('cursor');
         this.selectedElements = [res.data];
       }
     });
+  }
+
+  triggerImageUpload(): void {
+    this.fileInput.nativeElement.click();
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.selectedFile = file;
+
+      // 1. Gera o preview local opcional via FileReader
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.tempCroppedBase64 = reader.result as string;
+        this.saveState();
+      };
+      reader.readAsDataURL(file);
+
+      // 2. Constrói o FormData para envio multipart
+      const formData = new FormData();
+      formData.append('campaignId', this.campaignId);
+      formData.append('elementType', CanvasElementType.Image.toString());
+      formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
+      formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
+      formData.append('z', (++this.maxZ).toString());
+      formData.append('scale', '1');
+      formData.append('image', this.selectedFile, this.selectedFile.name);
+
+      // 3. Envia o FormData para o serviço
+      this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
+        if (res.success && res.data) {
+          this.elements.push(res.data);
+          this.setTool('cursor');
+          this.selectedElements = [res.data];
+        }
+      });
+    }
+    input.value = '';
   }
 
   onColorChange(colorValue: string): void {

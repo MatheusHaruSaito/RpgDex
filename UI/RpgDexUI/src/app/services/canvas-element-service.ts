@@ -18,9 +18,14 @@ export class CanvasElementService {
   constructor(private http: HttpClient) {}
 
   public CreateElement(
-    request: CreateCanvaElementRequest,
+    request: CreateCanvaElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.post<ApiResponse<CanvasElementResponse>>(this.env, request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element`, request);
+  }
+  public CreateImageElement(
+    request: CreateCanvaElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/image`, request);
   }
 
   public GetAllElements(
@@ -34,7 +39,13 @@ export class CanvasElementService {
   }
 
   public UpdateElement(request: UpdateCanvaElementRequest): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(this.env, request);
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/element`, request);
+  }
+
+  public UpdateImageElement(
+    request: UpdateCanvaElementRequest | FormData,
+  ): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/element/image`, request);
   }
 
   public MoveElement(request: MoveCanvaElementsRequest): Observable<ApiResponse<boolean>> {
