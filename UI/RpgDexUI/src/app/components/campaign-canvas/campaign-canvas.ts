@@ -12,6 +12,7 @@ import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsReque
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 
+
 export type ToolMode = 'cursor' | 'draw';
 
 @Component({

@@ -10,6 +10,7 @@ import { UpdateCanvaElementRequest } from '../../models/updateCanvaElementReques
 import { MoveCanvaElementsRequest } from '../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRequest';
 
+
 export interface SetElementActiveStateRequest {
   campaignId: string;
   items: string[];

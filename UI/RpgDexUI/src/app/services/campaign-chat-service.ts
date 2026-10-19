@@ -7,6 +7,8 @@ import { HttpClient } from '@angular/common/http';
 import { CampaignChatMessageRequest } from '../../models/campaignChatMessageRequest';
 import { ApiResponse } from '../../models/apiResponse';
 import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
+
+
 @Injectable({
   providedIn: 'root',
 })
