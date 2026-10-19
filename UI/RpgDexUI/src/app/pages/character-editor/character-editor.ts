@@ -4,12 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { finalize, firstValueFrom } from 'rxjs';
-import { TranslateService } from '@ngx-translate/core';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
 import { HttpClient } from '@angular/common/http';
 import { CharacterPropertyValueEnum } from '../../../models/CharacterPropertyValueEnum';
-import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 export interface AttrEntry {
   key: string;
@@ -35,11 +33,9 @@ export class CharacterEditor implements OnInit {
   private characterService = inject(CharacterService);
   private cdr = inject(ChangeDetectorRef);
   private location = inject(Location);
-  private translateService = inject(TranslateService);
   private http = inject(HttpClient);
 
   character: Character | null = null;
-  isLoading = true; // Controla o carregamento inicial da ficha
   editForm = { name: '', description: '' };
   groups: AttrGroup[] = [];
   showCropperModal = false;
@@ -74,12 +70,10 @@ export class CharacterEditor implements OnInit {
   }
 
   private loadCharacter(id: string): void {
-    this.isLoading = true;
     this.characterService.GetById(id).subscribe({
       next: (res) => {
         this.character = res.data ?? null;
         if (!this.character) {
-          this.isLoading = false;
           this.router.navigate(['/personagens']);
           return;
         }
@@ -92,18 +86,9 @@ export class CharacterEditor implements OnInit {
         this.iconPreviewUrl = '';
         this.captureSavedState();
         this.characterService.PatchLastAccess(id).subscribe();
-
-        this.isLoading = false; // Finaliza o carregamento antes do render
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        this.isLoading = false;
-        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-          this.errorMessage = msg;
-          this.cdr.detectChanges();
-        });
-        this.router.navigate(['/personagens']);
-      },
+      error: () => this.router.navigate(['/personagens']),
     });
   }
 
@@ -443,11 +428,13 @@ export class CharacterEditor implements OnInit {
           }, 3000);
         },
         error: (err) => {
-          this.isSaving = false;
-          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-            this.errorMessage = msg;
-            this.cdr.detectChanges();
-          });
+          const body = err?.error;
+          this.errorMessage =
+            (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
+            body?.message ??
+            body?.title ??
+            'Erro ao salvar.';
+          this.cdr.detectChanges();
         },
       });
   }
@@ -457,20 +444,10 @@ export class CharacterEditor implements OnInit {
       return;
     this.characterService.Delete(this.character!.id).subscribe({
       next: () => this.router.navigate(['/personagens']),
-      error: (err) => {
-        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-          this.errorMessage = msg;
-          this.cdr.detectChanges();
-        });
+      error: () => {
+        this.errorMessage = 'Erro ao excluir personagem.';
       },
     });
-  }
-
-  goBack(): void {
-    if (this.isEditing && this.hasUnsavedChanges) {
-      if (!confirm('Você tem alterações não salvas. Deseja sair mesmo assim?')) return;
-    }
-    this.location.back();
   }
 
   async downloadCharacter(): Promise<void> {
