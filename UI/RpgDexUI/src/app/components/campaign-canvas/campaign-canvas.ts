@@ -28,7 +28,6 @@ export class CampaignCanvasComponent implements OnInit {
   campaignId: string = '';
   canvasElementService = inject(CanvasElementService);
 
-  // Expõe o Enum para o HTML poder utilizá-lo
   public CanvasElementType = CanvasElementType;
 
   // ── CÂMERA E ESTADOS ──
@@ -74,7 +73,6 @@ export class CampaignCanvasComponent implements OnInit {
     this.loadElements();
   }
 
-  // Obtém o nome do tipo para exibir no HTML
   getElementTypeName(type: CanvasElementType): string {
     return CanvasElementType[type] || 'ELEMENTO';
   }
@@ -83,16 +81,12 @@ export class CampaignCanvasComponent implements OnInit {
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
-        console.log(res);
         if (res.success && res.data) {
           this.elements = res.data.elements;
           if (this.elements.length > 0) {
             this.maxZ = Math.max(...this.elements.map((e) => e.z));
           }
         }
-      },
-      error: (e) => {
-        console.log(e);
       },
     });
   }
@@ -105,7 +99,7 @@ export class CampaignCanvasComponent implements OnInit {
       scale: el.scale,
       color: el.color,
       content: el.content,
-      // Se for imagem e estiver em Base64 (ex: foi recém-cortada ou colada), atualizamos
+      // UpdateCanvaElementRequest usa "imageBase64"
       imageBase64: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined,
     };
 
@@ -196,7 +190,6 @@ export class CampaignCanvasComponent implements OnInit {
     const items = event.clipboardData?.items;
     const textData = event.clipboardData?.getData('text/plain');
 
-    // 1. Colar elementos copiados do próprio Canvas
     if (textData && textData.includes('isRpgDexElements')) {
       try {
         const parsed = JSON.parse(textData);
@@ -216,22 +209,16 @@ export class CampaignCanvasComponent implements OnInit {
               color: el.color,
               strokeWidth: el.strokeWidth,
               points: el.points,
+              // CreateCanvaElementRequest usa "image" (string base64)
               image: el.elementType === CanvasElementType.Image ? el.imageUrl : undefined,
             };
-            console.log('req: ', req);
-            this.canvasElementService.CreateElement(req).subscribe({
-              next: (res) => {
-                console.log(res);
 
-                if (res.success && res.data) {
-                  this.elements.push(res.data);
-                  pastedElements.push(res.data);
-                  this.selectedElements = pastedElements;
-                }
-              },
-              error: (e) => {
-                console.log(e);
-              },
+            this.canvasElementService.CreateElement(req).subscribe((res) => {
+              if (res.success && res.data) {
+                this.elements.push(res.data);
+                pastedElements.push(res.data);
+                this.selectedElements = pastedElements;
+              }
             });
           });
           event.preventDefault();
@@ -240,7 +227,6 @@ export class CampaignCanvasComponent implements OnInit {
       } catch (e) {}
     }
 
-    // 2. Colar Imagens (Print Screen, etc)
     if (items) {
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
@@ -277,7 +263,6 @@ export class CampaignCanvasComponent implements OnInit {
       }
     }
 
-    // 3. Colar Texto Puro
     if (textData && textData.trim() !== '') {
       this.saveState();
       const req: CreateCanvaElementRequest = {
@@ -382,7 +367,7 @@ export class CampaignCanvasComponent implements OnInit {
           y: this.getWorldY(window.innerHeight / 2) - 50,
           z: ++this.maxZ,
           scale: 1,
-          image: base64String, // Envia como Base64!
+          image: base64String, // Envia diretamente como Base64 (string)
         };
 
         this.canvasElementService.CreateElement(req).subscribe((res) => {
@@ -404,7 +389,7 @@ export class CampaignCanvasComponent implements OnInit {
       this.selectedElements.forEach((el) => {
         if (el.elementType !== CanvasElementType.Image) {
           el.color = colorValue;
-          this.updateElementAPI(el); // Atualiza no Backend
+          this.updateElementAPI(el);
         }
       });
     }
@@ -418,9 +403,8 @@ export class CampaignCanvasComponent implements OnInit {
 
     const deleteRequest = {
       campaignId: this.campaignId,
-      ids: this.selectedElements.map((el) => el.id),
+      ids: this.selectedElements.map((el) => el.id), // Alterado de 'items' para 'ids'
     };
-    console.log(deleteRequest);
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
 
     this.elements = this.elements.filter((e) => !this.selectedElements.includes(e));

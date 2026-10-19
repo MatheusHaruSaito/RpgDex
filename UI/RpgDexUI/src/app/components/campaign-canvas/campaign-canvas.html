@@ -116,10 +116,7 @@
 
         <div
           class="context-range"
-          *ngIf="
-            selectedElements[0].elementType === CanvasElementType.Image ||
-            selectedElements[0].elementType === CanvasElementType.Token
-          "
+          *ngIf="selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token"
         >
           <i class="fa fa-down-left-and-up-right-to-center"></i>
           <input
