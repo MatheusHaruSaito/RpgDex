@@ -2,7 +2,6 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using RpgDex.Domain.Common;
-using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
@@ -33,7 +32,7 @@ namespace RpgDex.Application.Services
             {
                 Result<UserChartResponse>.Failure(UserError.UserCharNotFound);
             }
-            return Result<UserChartResponse>.Success(result);
+            return Result<UserChartResponse>.Success(result!);
         }
 
         public async Task<Result<string>> UpdateUserProfileAsync(string userId,UpdateUserProfileDTO updatedUser)
