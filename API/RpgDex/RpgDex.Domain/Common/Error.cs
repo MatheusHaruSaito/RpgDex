@@ -66,6 +66,8 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_UPDATE_FAILED", "Failed to update user profile.");
         public static readonly Error BanFailed = new("USER_BAN_FAILED", "Failed to ban the user.");
         public static readonly Error UserIsBanned = new("USER_IS_BANNED", "This user account is banned.");
+        public static readonly Error UserCharNotFound = new("USER_CHART_NOT_FOUND", "User Chart Not Found");
+
         public static Error IdentityError(string description) => new("USER_IDENTITY_ERROR", description);
     }
 

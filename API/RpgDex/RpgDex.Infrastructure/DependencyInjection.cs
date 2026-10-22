@@ -90,6 +90,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IReportTargetResolver, UserReportTargetResolver>();
             services.AddScoped<IReportTargetResolver, CampaignReportTargetResolver>();
             services.AddScoped<IReportTargetResolver, CharacterReportTargetResolver>();
+            services.AddScoped<IUserQueries, UserQueries>();
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

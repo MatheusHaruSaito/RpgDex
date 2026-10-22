@@ -3,6 +3,7 @@ using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RpgDex.Application.Dto.User;
 
 namespace RpgDex.Application.Interfaces
 {
@@ -10,6 +11,8 @@ namespace RpgDex.Application.Interfaces
     {
         Task<Result<string>> UpdateUserProfileAsync(string userId,UpdateUserProfileDTO updatedUser);
         Task<Result<UserResponse>> GetUserById(Guid Id);
+        Task<Result<UserChartResponse>> GetUserChart(DateTime startDate, DateTime endDate);
+
 
     }
 }

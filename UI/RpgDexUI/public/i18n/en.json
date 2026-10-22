@@ -47,6 +47,7 @@
     "USER_BAN_FAILED": "Failed to ban the user.",
     "USER_IS_BANNED": "This user account is banned.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
+    "USER_CHART_NOT_FOUND": "User Chart Not Found",
 
     "USER_DOCUMENT_NOT_FOUND": "User document not found.",
     "USER_DOCUMENT_NOT_OWNED": "You are not the owner of this document.",

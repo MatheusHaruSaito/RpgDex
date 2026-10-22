@@ -5,6 +5,7 @@ using RpgDex.Application.Dto;
 using RpgDex.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using RpgDex.Application.Dto.User;
 
 
 
@@ -26,6 +27,13 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> GetUserById(Guid Id)
         {
             var result = await _userService.GetUserById(Id);
+            return result.ToIActionResult();
+        }
+        [Authorize(Roles ="Admin")]
+        [HttpGet("admin/chart")]
+        public async Task<IActionResult> GetUserChart([FromQuery]DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var result = await _userService.GetUserChart(startDate,endDate);
             return result.ToIActionResult();
         }
         [HttpPut]

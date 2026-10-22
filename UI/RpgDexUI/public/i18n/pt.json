@@ -47,6 +47,7 @@
     "USER_BAN_FAILED": "Falha ao banir usuario",
     "USER_IS_BANNED": "Esta conta esta banida",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
+    "USER_CHART_NOT_FOUND": "Grafico do usuario não encontrado",
 
     "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
     "USER_DOCUMENT_NOT_OWNED": "Não tem permissão para aceder ou modificar este documento.",

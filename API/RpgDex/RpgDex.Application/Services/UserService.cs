@@ -9,10 +9,11 @@ using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RpgDex.Application.Dto.User;
 
 namespace RpgDex.Application.Services
 {
-    public class UserService(UserManager<ApplicationUser> userManager, IFileService fileService, IValidator<UpdateUserProfileDTO> updateUserProfileValidator) : IUserService
+    public class UserService(UserManager<ApplicationUser> userManager, IUserQueries userQueries,IFileService fileService, IValidator<UpdateUserProfileDTO> updateUserProfileValidator) : IUserService
     {
         public async Task<Result<UserResponse>> GetUserById(Guid Id)
         {
@@ -23,6 +24,16 @@ namespace RpgDex.Application.Services
             }
             var userResponse = user.Adapt<UserResponse>();
             return Result<UserResponse>.Success(userResponse);
+        }
+
+        public async Task<Result<UserChartResponse>> GetUserChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await userQueries.GetUserChart(startDate, endDate);
+            if(result is null)
+            {
+                Result<UserChartResponse>.Failure(UserError.UserCharNotFound);
+            }
+            return Result<UserChartResponse>.Success(result);
         }
 
         public async Task<Result<string>> UpdateUserProfileAsync(string userId,UpdateUserProfileDTO updatedUser)
