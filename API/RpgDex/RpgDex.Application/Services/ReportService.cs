@@ -1,6 +1,6 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
-using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Report;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;

@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Dto;
+﻿using RpgDex.Application.Dto.User;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using System;

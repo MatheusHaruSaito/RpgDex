@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace RpgDex.Application.Dto
+namespace RpgDex.Application.Dto.User
 {
     public class CreateUserDTO
     {

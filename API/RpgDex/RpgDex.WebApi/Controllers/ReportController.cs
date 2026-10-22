@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Report;
 using RpgDex.Application.Interfaces;
 using RpgDex.WebApi.Extensions;
 using System.Security.Claims;

@@ -1,8 +1,6 @@
-﻿using RpgDex.Application.Dto;
+﻿using RpgDex.Application.Dto.Report;
 using RpgDex.Domain.Common;
-using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace RpgDex.Application.Interfaces
 {

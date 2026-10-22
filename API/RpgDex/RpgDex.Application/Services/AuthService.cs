@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
