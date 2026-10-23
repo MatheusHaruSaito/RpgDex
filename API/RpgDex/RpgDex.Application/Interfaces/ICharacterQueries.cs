@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Dto.Character;
+﻿using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +7,7 @@ namespace RpgDex.Application.Interfaces
 {
     public interface ICharacterQueries
     {
-        Task<CharacterChartResponse> GetCharacterChart(DateTime startDate, DateTime endDate);
+        Task<ChartResponse> GetCharacterChart(DateTime startDate, DateTime endDate);
 
     }
 }

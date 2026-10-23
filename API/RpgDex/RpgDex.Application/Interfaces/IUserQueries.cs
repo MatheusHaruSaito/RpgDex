@@ -1,4 +1,4 @@
-﻿using RpgDex.Application.Dto.User;
+﻿using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,6 +7,6 @@ namespace RpgDex.Application.Interfaces
 {
     public interface IUserQueries
     {
-        Task<UserChartResponse> GetUserChart(DateTime startDate, DateTime endDate);
+        Task<ChartResponse> GetUserChart(DateTime startDate, DateTime endDate);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using MongoDB.Driver;
 using RpgDex.Application.Dto;
-using RpgDex.Application.Dto.Campaign;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure.Data;
@@ -14,7 +13,7 @@ namespace RpgDex.Infrastructure.Queries
         {
             _entity = ctx.Campaigns;
         }
-        public async Task<CampaignChartResponse> GetCampaignChart(DateTime startDate, DateTime endDate)
+        public async Task<ChartResponse> GetCampaignChart(DateTime startDate, DateTime endDate)
         {
             var filter = Builders<Campaign>.Filter.And(
                    Builders<Campaign>.Filter.Gte(u => u.CreatedAt, startDate),
@@ -36,7 +35,7 @@ namespace RpgDex.Infrastructure.Queries
                 .ToList();
 
 
-            return new CampaignChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
+            return new ChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
         }
     }
 }

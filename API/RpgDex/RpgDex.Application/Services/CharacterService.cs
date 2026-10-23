@@ -1,18 +1,11 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
-using RpgDex.Application.Dto.Character;
-using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Validators;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 
 namespace RpgDex.Application.Services
@@ -169,14 +162,14 @@ namespace RpgDex.Application.Services
             return Result<bool>.Success(true);
         }
 
-        public async Task<Result<CharacterChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate)
+        public async Task<Result<ChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate)
         {
             var result = await characterQueries.GetCharacterChart(startDate, endDate);
             if (result is null)
             {
-                Result<CharacterChartResponse>.Failure(CharacterError.CharacterChartNotFound);
+                Result<ChartResponse>.Failure(CharacterError.CharacterChartNotFound);
             }
-            return Result<CharacterChartResponse>.Success(result!);
+            return Result<ChartResponse>.Success(result!);
         }
     }
 }

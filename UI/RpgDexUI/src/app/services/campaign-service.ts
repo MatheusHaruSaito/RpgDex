@@ -14,7 +14,7 @@ import { UpdateCampaignSettingsRequest } from '../../models/updateCampaignSettin
 import { CampaignSetActiveStateRequest } from '../../models/campaignSetActiveStateRequest';
 import { GetAllCampaignResponse } from '../../models/getAllCampaignResponse';
 import { LeaveCampaignRequest } from '../../models/leaveCampaignRequest';
-import { CampaignChartResponse } from '../../models/campaignChartResponse';
+import { ChartResponse } from '../../models/chartResponse';
 @Injectable({
   providedIn: 'root',
 })
@@ -44,9 +44,9 @@ export class CampaignService {
   public GetCharacterChart(
     startDate: string,
     endDate: string,
-  ): Observable<ApiResponse<CampaignChartResponse>> {
+  ): Observable<ApiResponse<ChartResponse>> {
     const params: Record<string, string> = { startDate, endDate };
-    return this.http.get<ApiResponse<CampaignChartResponse>>(`${this.env}/admin/chart`);
+    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`);
   }
   GetById(Id: String): Observable<ApiResponse<Campaign>> {
     return this.http.get<ApiResponse<Campaign>>(`${this.env}/${Id}`);

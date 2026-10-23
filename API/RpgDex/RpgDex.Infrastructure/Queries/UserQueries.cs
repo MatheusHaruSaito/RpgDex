@@ -1,12 +1,8 @@
 ﻿using MongoDB.Driver;
 using RpgDex.Application.Dto;
-using RpgDex.Application.Dto.User;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RpgDex.Infrastructure.Queries
 {
@@ -17,7 +13,7 @@ namespace RpgDex.Infrastructure.Queries
         {
             _entity = ctx.Users;
         }
-        public async Task<UserChartResponse> GetUserChart(DateTime startDate, DateTime endDate)
+        public async Task<ChartResponse> GetUserChart(DateTime startDate, DateTime endDate)
         {
             var filter = Builders<ApplicationUser>.Filter.And(
                    Builders<ApplicationUser>.Filter.Gte(u => u.CreatedOn, startDate),
@@ -39,7 +35,7 @@ namespace RpgDex.Infrastructure.Queries
                 .ToList();
 
 
-            return new UserChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
+            return new ChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
         }
     }
 }

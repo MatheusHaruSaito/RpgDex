@@ -1,14 +1,12 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using RpgDex.Domain.Common;
+using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using RpgDex.Application.Dto.User;
 
 namespace RpgDex.Application.Services
 {
@@ -25,14 +23,14 @@ namespace RpgDex.Application.Services
             return Result<UserResponse>.Success(userResponse);
         }
 
-        public async Task<Result<UserChartResponse>> GetUserChart(DateTime startDate, DateTime endDate)
+        public async Task<Result<ChartResponse>> GetUserChart(DateTime startDate, DateTime endDate)
         {
             var result = await userQueries.GetUserChart(startDate, endDate);
             if(result is null)
             {
-                Result<UserChartResponse>.Failure(UserError.UserChartNotFound);
+                Result<ChartResponse>.Failure(UserError.UserChartNotFound);
             }
-            return Result<UserChartResponse>.Success(result!);
+            return Result<ChartResponse>.Success(result!);
         }
 
         public async Task<Result<string>> UpdateUserProfileAsync(string userId,UpdateUserProfileDTO updatedUser)

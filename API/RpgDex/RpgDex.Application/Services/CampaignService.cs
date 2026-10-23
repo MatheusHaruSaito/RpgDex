@@ -2,11 +2,8 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
-using RpgDex.Application.Dto.Campaign;
-using RpgDex.Application.Dto.Character;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Validators;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -615,14 +612,14 @@ namespace RpgDex.Application.Services
             await campaignChatService.SendMessage(campaignId, message);
         }
 
-        public async Task<Result<CampaignChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate)
+        public async Task<Result<ChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate)
         {
             var result = await campaignQueries.GetCampaignChart(startDate, endDate);
             if (result is null)
             {
-                Result<CampaignChartResponse>.Failure(CampaignError.ChartNotFound);
+                Result<ChartResponse>.Failure(CampaignError.ChartNotFound);
             }
-            return Result<CampaignChartResponse>.Success(result!);
+            return Result<ChartResponse>.Success(result!);
         }
     }
 }
