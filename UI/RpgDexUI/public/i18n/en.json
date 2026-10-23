@@ -35,6 +35,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "The character was not found in the join requests list.",
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
+    "CAMPAIGN_CHART_NOT_FOUND": "Campaign Chart Not Found",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -43,7 +44,7 @@
     "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
     "CHARACTER_CHART_NOT_FOUND": "Character Chart Not Found",
-    
+
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_BAN_FAILED": "Failed to ban the user.",
     "USER_IS_BANNED": "This user account is banned.",

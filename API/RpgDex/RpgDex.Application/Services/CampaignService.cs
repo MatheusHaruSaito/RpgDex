@@ -2,6 +2,8 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Campaign;
+using RpgDex.Application.Dto.Character;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Validators;
@@ -14,7 +16,7 @@ using static RpgDex.Domain.Entities.Campaign;
 namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
-        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
+        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher, ICampaignQueries campaignQueries,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
         ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
@@ -613,5 +615,14 @@ namespace RpgDex.Application.Services
             await campaignChatService.SendMessage(campaignId, message);
         }
 
+        public async Task<Result<CampaignChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await campaignQueries.GetCampaignChart(startDate, endDate);
+            if (result is null)
+            {
+                Result<CampaignChartResponse>.Failure(CampaignError.ChartNotFound);
+            }
+            return Result<CampaignChartResponse>.Success(result!);
+        }
     }
 }

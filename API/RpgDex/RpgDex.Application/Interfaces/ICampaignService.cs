@@ -3,6 +3,7 @@ using RpgDex.Application.Dto;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RpgDex.Application.Dto.Campaign;
 
 namespace RpgDex.Application.Interfaces
 {
@@ -11,7 +12,7 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<CampaignResponse>> Create(string userId, CreateCampaignRequest request);
         public Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId);
         public Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSizes);
-
+        Task<Result<CampaignChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate);
         Task<Result<CampaignResponse>> GetById(string userId, Guid id);
         public Task<Result<CampaignResponse>> Update(string userId ,UpdateCampaignRequest request);
         public Task<Result<bool>> SetActiveState(string userId, CampaignSetActiveStateRequest request);
