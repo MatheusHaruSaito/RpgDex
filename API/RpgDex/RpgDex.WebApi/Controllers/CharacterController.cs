@@ -82,5 +82,5 @@ namespace RpgDex.WebApi.Controllers
                 var result = await _characterSevice.GetCharacterChart(startDate, endDate);
                 return result.ToIActionResult();
             }
-        }
+    }
     }

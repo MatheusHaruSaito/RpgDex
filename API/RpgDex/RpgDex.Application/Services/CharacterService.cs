@@ -174,7 +174,7 @@ namespace RpgDex.Application.Services
             var result = await characterQueries.GetCharacterChart(startDate, endDate);
             if (result is null)
             {
-                Result<CharacterChartResponse>.Failure(UserError.UserChartNotFound);
+                Result<CharacterChartResponse>.Failure(CharacterError.CharacterChartNotFound);
             }
             return Result<CharacterChartResponse>.Success(result!);
         }
