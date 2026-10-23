@@ -120,7 +120,7 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();
         }
-        [AllowAnonymous]
+        [Authorize(Roles="Admin")]
         [HttpGet("admin/chart")]
         public async Task<IActionResult> GetCampaignChart([FromQuery]DateTime startDate, [FromQuery]DateTime endDate)
         {
