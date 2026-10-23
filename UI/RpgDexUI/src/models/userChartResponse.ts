@@ -1,7 +1,7 @@
-import { UserChartPoint } from './userChartPoint';
+import { ChartPoint } from './ChartPoint';
 
 export interface UserChartResponse {
-  points: UserChartPoint[];
+  points: ChartPoint[];
   total: number;
   usersInRange: number;
 }

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.User;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
@@ -34,11 +35,11 @@ namespace RpgDex.Infrastructure.Queries
 
             var points = groupsTask.Result
                 .OrderBy(g => g.Year).ThenBy(g => g.Month)
-                .Select(g => new UserChartPoint(g.Year,g.Month, g.Count))
+                .Select(g => new ChartPoint(g.Year,g.Month, g.Count))
                 .ToList();
 
 
-            return new UserChartResponse(points, totalTask.Result, points.Sum(p => p.UserCount));
+            return new UserChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
         }
     }
 }

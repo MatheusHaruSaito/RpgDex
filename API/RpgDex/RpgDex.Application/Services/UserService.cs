@@ -30,7 +30,7 @@ namespace RpgDex.Application.Services
             var result = await userQueries.GetUserChart(startDate, endDate);
             if(result is null)
             {
-                Result<UserChartResponse>.Failure(UserError.UserCharNotFound);
+                Result<UserChartResponse>.Failure(UserError.UserChartNotFound);
             }
             return Result<UserChartResponse>.Success(result!);
         }

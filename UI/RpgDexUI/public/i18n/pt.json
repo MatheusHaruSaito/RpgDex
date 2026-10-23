@@ -42,12 +42,13 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Falha ao alterar o estado ativo do personagem.",
     "CHARACTER_UPDATE_FAILED": "Não foi possível atualizar o personagem.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
+    "CHARACTER_CHART_NOT_FOUND": "Gráfico de personagens não enctrado",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
     "USER_BAN_FAILED": "Falha ao banir usuario",
     "USER_IS_BANNED": "Esta conta esta banida",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
-    "USER_CHART_NOT_FOUND": "Grafico do usuario não encontrado",
+    "USER_CHART_NOT_FOUND": "Gráfico do usuario não encontrado",
 
     "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
     "USER_DOCUMENT_NOT_OWNED": "Não tem permissão para aceder ou modificar este documento.",

@@ -42,7 +42,8 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Failed to change character active state.",
     "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
-
+    "CHARACTER_CHART_NOT_FOUND": "Character Chart Not Found",
+    
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_BAN_FAILED": "Failed to ban the user.",
     "USER_IS_BANNED": "This user account is banned.",

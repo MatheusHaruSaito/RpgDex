@@ -59,6 +59,8 @@ namespace RpgDex.Domain.Common
         public static readonly Error SetActiveStateFailed = new("CHARACTER_SET_ACTIVE_STATE_FAILED", "Failed to change character active state.");
         public static readonly Error UpdateFailed = new("CHARACTER_UPDATE_FAILED", "It was not possible to update character.");
         public static readonly Error UpdateLastAccessFailed = new("CHARACTER_UPDATE_LAST_ACCESS_FAILED", "Failed to update last access time.");
+        public static readonly Error CharacterChartNotFound = new("CHARACTER_CHART_NOT_FOUND", "Character Chart Not Found");
+
     }
 
     public static class UserError
@@ -66,7 +68,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_UPDATE_FAILED", "Failed to update user profile.");
         public static readonly Error BanFailed = new("USER_BAN_FAILED", "Failed to ban the user.");
         public static readonly Error UserIsBanned = new("USER_IS_BANNED", "This user account is banned.");
-        public static readonly Error UserCharNotFound = new("USER_CHART_NOT_FOUND", "User Chart Not Found");
+        public static readonly Error UserChartNotFound = new("USER_CHART_NOT_FOUND", "User Chart Not Found");
 
         public static Error IdentityError(string description) => new("USER_IDENTITY_ERROR", description);
     }

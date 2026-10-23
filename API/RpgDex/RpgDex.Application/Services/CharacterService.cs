@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Character;
+using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Validators;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using System;
@@ -17,7 +19,7 @@ namespace RpgDex.Application.Services
 {
     public class CharacterService(ICharacterRepository character, IUserRepository userRepository,
         IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator,
-        IValidator<UpdateCharacterRequest> updateCharacterRequestValidator) : ICharacterService
+        IValidator<UpdateCharacterRequest> updateCharacterRequestValidator, ICharacterQueries characterQueries) : ICharacterService
     {
         private readonly ICharacterRepository _character = character;
 
@@ -165,6 +167,16 @@ namespace RpgDex.Application.Services
                 return Result<bool>.Failure(CharacterError.UpdateLastAccessFailed);
             }
             return Result<bool>.Success(true);
+        }
+
+        public async Task<Result<CharacterChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await characterQueries.GetCharacterChart(startDate, endDate);
+            if (result is null)
+            {
+                Result<CharacterChartResponse>.Failure(UserError.UserChartNotFound);
+            }
+            return Result<CharacterChartResponse>.Success(result!);
         }
     }
 }

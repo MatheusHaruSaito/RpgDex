@@ -32,7 +32,13 @@ export class CharacterService {
       `${this.env}/All/${page}/${pageSize}`,
     );
   }
-
+  public GetCharacterChart(
+    startDate: string,
+    endDate: string,
+  ): Observable<ApiResponse<GetAllCharacterResponse>> {
+    const params: Record<string, string> = { startDate, endDate };
+    return this.http.get<ApiResponse<GetAllCharacterResponse>>(`${this.env}/admin/chart`);
+  }
   public GetById(Id: String): Observable<ApiResponse<Character>> {
     return this.http.get<ApiResponse<Character>>(`${this.env}/${Id}`);
   }

@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Report;
 using RpgDex.Application.Dto.User;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
@@ -7,9 +8,6 @@ using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Extension;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RpgDex.Infrastructure.Resolvers
 {
