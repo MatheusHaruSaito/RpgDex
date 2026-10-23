@@ -28,7 +28,7 @@ namespace RpgDex.WebApi.Controllers
             var result = await _userService.GetUserById(Id);
             return result.ToIActionResult();
         }
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles ="Admin")] 
         [HttpGet("admin/chart")]
         public async Task<IActionResult> GetUserChart([FromQuery]DateTime startDate, [FromQuery] DateTime endDate)
         {
