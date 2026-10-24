@@ -119,5 +119,13 @@ namespace RpgDex.Domain.Common
         public static readonly Error TooManyItems = new("CANVAS_ELEMENT_TOO_MANY_ITEMS", "Invalid number of elements in the request.");
         public static readonly Error LimitReached = new("CANVAS_ELEMENT_LIMIT_REACHED", "Canvas element limit reached.");
     }
+    public static class PlanError
+    {
+        public static readonly Error NotFound = new("PLAN_NOT_FOUND", "Plan not found.");
+    }
+    public static class MercadoPagoOrderError
+    {
+        public static readonly Error CreationFailed = new("MERCADOPAGO_ORDER_CREATION_FAILED", "Failed to create the payment order.");
+    }
 }
 

@@ -24,6 +24,9 @@ namespace RpgDex.Application
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
             services.AddScoped<IUserDocumentService, UserDocumentService>();
             services.AddScoped<ICanvaElementService, CanvaElementService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IPlanService, PlanService>();
+
 
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

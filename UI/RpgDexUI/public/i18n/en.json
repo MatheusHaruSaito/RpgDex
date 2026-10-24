@@ -65,7 +65,7 @@
     "CAMPAIGN_VALIDATION_ICON_REQUIRED": "Campaign Image can't be empty",
     "VALIDATION_INVALID_FILE_EXTENSION": "Icon must be a JPG, JPEG, or PNG file",
     "VALIDATION_FILE_TOO_LARGE": "Icon file size must not exceed the limit",
-    
+
     "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",
@@ -77,6 +77,10 @@
     "CANVAS_ELEMENT_TOO_MANY_POINTS": "Drawing has too many points.",
     "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Invalid number of elements in the request.",
     "CANVAS_ELEMENT_LIMIT_REACHED": "Canvas element limit reached.",
-    "VALIDATION_DISPLAYNAME": "Character name is required."
+    "VALIDATION_DISPLAYNAME": "Character name is required.",
+
+    "PLAN_NOT_FOUND": "Plan not found.",
+
+    "MERCADOPAGO_ORDER_CREATION_FAILED": "Failed to create the payment order."
   }
 }

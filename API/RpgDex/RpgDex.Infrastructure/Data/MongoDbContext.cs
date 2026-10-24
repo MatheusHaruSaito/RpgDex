@@ -1,9 +1,10 @@
-﻿using MongoDB.Driver;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
+using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
-using RpgDex.Domain.Entities;
 
 namespace RpgDex.Infrastructure.Data
 {
@@ -36,6 +37,12 @@ namespace RpgDex.Infrastructure.Data
             _database.GetCollection<ChatMessage>("ChatMessage");
         public IMongoCollection<CanvaElement> CanvaElements =>
             _database.GetCollection<CanvaElement>("CanvaElements");
+        public IMongoCollection<Payment> Payments =>
+            _database.GetCollection<Payment>("Payments");
+        public IMongoCollection<Plan> Plans =>
+            _database.GetCollection<Plan>("Plans");
+        public IMongoCollection<Subscription> Subscriptions =>
+            _database.GetCollection<Subscription>("Subscriptions");
         public IMongoDatabase GetDatabase() => _database;
     }
 }

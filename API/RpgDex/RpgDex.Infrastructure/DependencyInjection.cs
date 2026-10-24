@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using MercadoPago.Config;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -11,9 +12,11 @@ using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using Resend;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
+using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
@@ -83,6 +86,11 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
             services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
+            services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+
 
 
 
@@ -161,6 +169,16 @@ namespace RpgDex.Infrastructure
                     o.SignInScheme = IdentityConstants.ExternalScheme;
                 });
 
+
+
+            services.AddHttpClient();
+            var mpAccessToken = configuration["MercadoPago:AccessToken"]
+                                ?? throw new InvalidOperationException("MercadoPago:AccessToken Not Found");
+            services.AddHttpClient<IMercadoPagoOrderClient, MercadoPagoOrderClient>(c=>
+            {
+                c.BaseAddress = new Uri("https://api.mercadopago.com/");
+                c.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer",mpAccessToken);
+            });
             //Cors
 
             services.Configure<ForwardedHeadersOptions>(o =>

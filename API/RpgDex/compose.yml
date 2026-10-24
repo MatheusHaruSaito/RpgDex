@@ -15,6 +15,14 @@
       - 8080:8080
     volumes:
       - .:/app
+      - /app/RpgDex.Domain/obj
+      - /app/RpgDex.Domain/bin
+      - /app/RpgDex.Application/obj
+      - /app/RpgDex.Application/bin
+      - /app/RpgDex.Infrastructure/obj
+      - /app/RpgDex.Infrastructure/bin
+      - /app/RpgDex.WebApi/obj
+      - /app/RpgDex.WebApi/bin
     working_dir: /app
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -36,6 +44,12 @@
       - EmailSettings__SmtpPort=${EMAIL_SMTP_PORT}
       - EmailSettings__Username=${EMAIL_SMTP_USERNAME}
       - EmailSettings__Password=${EMAIL_SMTP_PASSWORD}
+      - MercadoPago__AccessToken=${MercadoPago_AccessToken}
+      - MercadoPago__WebHookSecret=${MercadoPago_WebHookSecret}
+      - MercadoPago__SuccessUrl=${MercadoPago_SuccessUrl}
+      - MercadoPago__FailureUrl=${MercadoPago_FailureUrl}
+      - MercadoPago__PendingUrl=${MercadoPago_PendingUrl}
+
     depends_on:
       - mongo
       - redis
