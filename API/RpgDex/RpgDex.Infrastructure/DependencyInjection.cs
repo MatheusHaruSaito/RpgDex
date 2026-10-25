@@ -90,6 +90,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
+            services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
 
 
 

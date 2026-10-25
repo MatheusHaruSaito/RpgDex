@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Payment
 {
-    public record MercadoPagoWebhookDto(string Action, string type, MercadoPagoWebHookDataDto? Data);
+    public record MercadoPagoWebhookDto(string? Action, string? Type, MercadoPagoWebHookDataDto? Data);
 }

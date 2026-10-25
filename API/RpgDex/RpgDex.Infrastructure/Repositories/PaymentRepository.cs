@@ -19,6 +19,8 @@ namespace RpgDex.Infrastructure.Repositories
         public async Task<Payment> GetById(Guid id) =>
             await _entity.Find(p => p.Id == id).FirstOrDefaultAsync();
 
+        public async Task<Payment> GetByMpOrderId(string orderId) =>
+            await _entity.Find(p => p.MpOrderId == orderId).FirstOrDefaultAsync();
 
         public async Task Insert(Payment payment) =>
             await _entity.InsertOneAsync(payment);

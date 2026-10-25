@@ -10,5 +10,6 @@ namespace RpgDex.Domain.Enums
         Confirmed,
         Failed,
         Refunded,
+        Unknown,
     }
 }

@@ -8,6 +8,7 @@ namespace RpgDex.Domain.Interfaces
     public interface ISubscriptionRepository
     {
         Task Insert(Subscription subscription);
-        Task<Subscription> GetByUserId(Guid userId);
+        Task<Subscription> GetByUserId(Guid userId); 
+        Task<bool> ExistsByPaymentId(Guid paymentId);
     }
 }

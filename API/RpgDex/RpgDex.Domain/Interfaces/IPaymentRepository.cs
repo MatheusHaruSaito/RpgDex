@@ -11,6 +11,8 @@ namespace RpgDex.Domain.Interfaces
         Task Insert(Payment payment);
         Task<Payment> GetById(Guid id);
         Task<bool> UpdatePaymentStatus(Guid id, PaymentStatus status);
+        Task<Payment> GetByMpOrderId(string orderId);
+
 
     }
 }

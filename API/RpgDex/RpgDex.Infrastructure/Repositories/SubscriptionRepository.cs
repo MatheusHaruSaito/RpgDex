@@ -15,6 +15,10 @@ namespace RpgDex.Infrastructure.Repositories
         {
             _entity = ctx.Subscriptions;
         }
+
+        public async Task<bool> ExistsByPaymentId(Guid paymentId) =>
+            await _entity.Find(s => s.PaymentId == paymentId).FirstOrDefaultAsync() is not null;
+
         public async Task<Subscription> GetByUserId(Guid userId) =>
             await _entity.Find(s => s.UserId == userId).FirstOrDefaultAsync();
 

@@ -46,6 +46,8 @@
       - EmailSettings__Password=${EMAIL_SMTP_PASSWORD}
       - MercadoPago__AccessToken=${MercadoPago_AccessToken}
       - MercadoPago__WebHookSecret=${MercadoPago_WebHookSecret}
+      - MercadoPago__ValidateWebHookSignature=${MercadoPago_ValidateWebHookSignature}
+
       - MercadoPago__SuccessUrl=${MercadoPago_SuccessUrl}
       - MercadoPago__FailureUrl=${MercadoPago_FailureUrl}
       - MercadoPago__PendingUrl=${MercadoPago_PendingUrl}
