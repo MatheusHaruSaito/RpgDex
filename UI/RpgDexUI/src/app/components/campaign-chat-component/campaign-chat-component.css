@@ -511,3 +511,142 @@
   cursor: not-allowed;
   transform: none;
 }
+
+/* ── ABAS DE NAVEGAÇÃO ───────────────────────────────────────── */
+.chat-tabs {
+  display: flex;
+  background: var(--rpg-surface-tint);
+  border-bottom: 1px solid var(--rpg-border);
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--rpg-text-faint);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--rpg-purple);
+  background: rgba(158, 116, 208, 0.05);
+}
+
+.tab-btn.active {
+  color: var(--rpg-purple);
+  border-bottom-color: var(--rpg-purple);
+  background: var(--rpg-surface);
+}
+
+.rolls-count {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+/* ── PAINEL DE ROLAGENS E COMANDOS ────────────────────────────── */
+.rolls-container {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background-color: var(--rpg-bg);
+  min-height: 0;
+}
+
+.rolls-container::-webkit-scrollbar {
+  width: 4px;
+}
+.rolls-container::-webkit-scrollbar-thumb {
+  background: var(--rpg-border);
+  border-radius: 4px;
+}
+
+.roll-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border);
+  border-left: 4px solid var(--rpg-purple);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.roll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roll-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.8rem;
+  color: var(--rpg-purple);
+}
+
+.roll-time {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.68rem;
+  color: var(--rpg-text-faint);
+}
+
+.roll-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.roll-expression {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  color: var(--rpg-text-strong);
+}
+
+.roll-expression code {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.roll-total-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.roll-total-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  color: var(--rpg-text-faint);
+  font-weight: 700;
+}
+
+.roll-total-value {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--rpg-purple);
+}
