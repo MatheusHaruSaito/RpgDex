@@ -10,6 +10,8 @@ import { UpdateCanvaElementRequest } from '../../models/updateCanvaElementReques
 import { MoveCanvaElementsRequest } from '../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRequest';
 import { SetElementActiveStateRequest } from '../../models/setElementActiveStateRequest';
+import { CreateCanvaTokenElementRequest as CreateCanvasTokenElementRequest } from '../../models/createCanvaTokenElementRequest';
+import { QuickCreateCanvaTokenElementRequest } from '../../models/quickCreateCanvaTokenElementRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -27,7 +29,18 @@ export class CanvasElementService {
   ): Observable<ApiResponse<CanvasElementResponse>> {
     return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/image`, request);
   }
-
+  public CreateTokenElement(
+    request: CreateCanvasTokenElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/token`, request);
+  }
+  public QuickCreateTokenElement(
+    request: QuickCreateCanvaTokenElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/token`, request);
+  }
   public GetAllElements(
     campaignId: string,
     page: string,

@@ -33,6 +33,13 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvaElementService.CreateElement(currentUser, request);
             return result.ToIActionResult();
         }
+        [HttpPost("element/token")]
+        public async Task<IActionResult> CreateTokenElement([FromBody] CreateCanvaTokenElementRequest request)
+        {
+            var result = await _canvaElementService.CreateTokenElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+
         [HttpGet("All")]
         public async Task<IActionResult> GetAllElements([FromQuery]Guid campaignId, [FromQuery]int page, [FromQuery]int pageSize)
         {

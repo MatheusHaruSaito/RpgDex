@@ -14,6 +14,7 @@ import { CreateCanvaElementRequest } from '../../../models/createCanvaElementReq
 import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
+import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
 
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
@@ -173,13 +174,13 @@ export class CampaignCanvasComponent implements OnInit {
               if (loaded >= charIds.length) {
                 this.isLoadingCharacters = false;
               }
-            }
+            },
           });
         });
       },
       error: () => {
         this.isLoadingCharacters = false;
-      }
+      },
     });
   }
 
@@ -190,27 +191,20 @@ export class CampaignCanvasComponent implements OnInit {
 
   addCharacterToken(character: Character): void {
     this.saveState();
-
-    const req: CreateCanvaElementRequest = {
+    const req: CreateCanvaTokenElementRequest = {
       campaignId: this.campaignId,
-      elementType: CanvasElementType.Token,
+      characterId: character.id,
       content: character.name,
       x: this.getWorldX(window.innerWidth / 2) - 25,
       y: this.getWorldY(window.innerHeight / 2) - 25,
       z: ++this.maxZ,
       scale: 1,
       color: '#9E74D0',
-      image: undefined,
     };
 
-    this.canvasElementService.CreateElement(req).subscribe((res) => {
+    this.canvasElementService.CreateTokenElement(req).subscribe((res) => {
       if (res.success && res.data) {
         const newEl: ExtendedCanvasElement = res.data;
-        if (character.iconPath) {
-          newEl.imageUrl = character.iconPath;
-          // Salva e sincroniza a URL do avatar no backend
-          this.updateElementAPI(newEl);
-        }
         this.elements.push(newEl);
         this.setTool('cursor');
         this.selectedElements = [newEl];
@@ -305,6 +299,7 @@ export class CampaignCanvasComponent implements OnInit {
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
+        console.log(res);
         if (res.success && res.data) {
           this.elements = res.data.elements.map((el: any) => ({
             ...el,

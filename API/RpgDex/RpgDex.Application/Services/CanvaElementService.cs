@@ -2,6 +2,7 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Canvas;
 using RpgDex.Application.Extension;
@@ -17,14 +18,15 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class CanvaElementService(ICanvaElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService,
-        CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
-        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator
+    public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
+        ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice
         ) : ICanvaElementService
     {
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
+            logger.LogWarning("as {request}", request);
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
@@ -34,7 +36,7 @@ namespace RpgDex.Application.Services
             if (count >= MaxElementsPerCanvas)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
-            var element = request.Adapt<CanvaElement>();
+            var element = request.Adapt<CanvasElement>();
 
             if (request.Image is not null)
             {
@@ -58,14 +60,60 @@ namespace RpgDex.Application.Services
 
         }
 
+        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request)
+        {
+            logger.LogWarning("request: {request}",request);
+            var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+
+            var count = await canvaElementRepository.CountByCampaignAsync(request.CampaignId);
+            if (count >= MaxElementsPerCanvas)
+                return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
+            var element = request.Adapt<CanvasElement>();
+            var character = await characterRepository.GetByIdAsync(request.CharacterId);
+            if (character is null)
+            {
+                return Result<CanvasElementResponse>.Failure(CharacterError.NotFound);
+            }
+            else
+            {
+                if (character.IconPath is not null)
+                    element.ImageUrl = character.IconPath;
+            }
+
+            element.UserId = guidUserId;
+
+            var created = await canvaElementRepository.InsertElementAsync(element);
+            if (created is null)
+                return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
+
+            return Result<CanvasElementResponse>.Success(created.Adapt<CanvasElementResponse>());
+        }
+        public async Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request)
+        {
+            //CreateCharacter
+            Character character = new()
+            {
+                Name = request.Content
+            };
+            var createCharacterResult =await characterSevice.Create(userId,new CreateCharacterRequest(request.CharacterName,null,request.CharacterIcon,null));
+            if (createCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(createCharacterResult.Errors);
+            }
+            //CreateToken
+            return await CreateTokenElement(userId,request.Adapt<CreateCanvaTokenElementRequest>());
+        }
+
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
         {
             var (_, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
-            var result = await canvaElementRepository.GetAllElementsByCampaignAsync(campaignId,page,pageSize);
+            var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId,page,pageSize);
             return Result<GetAllCanvasElementResponse>.Success(
-                new GetAllCanvasElementResponse(result.elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
+                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
         }
 
         public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)

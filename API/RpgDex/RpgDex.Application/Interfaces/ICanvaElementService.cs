@@ -7,7 +7,9 @@ namespace RpgDex.Application.Interfaces
     public interface ICanvaElementService
     {
         Task<Result<CanvasElementResponse>> CreateElement(string userId,CreateCanvaElementRequest request);
-        Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignI, int page = 1, int pageSize = 20);
+        Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request);
+        Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request);
+        Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid     campaignI, int page = 1, int pageSize = 20);
         Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvasElementRequest request);
         Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request);
         Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request);

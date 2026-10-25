@@ -89,7 +89,7 @@ namespace RpgDex.Application.Mapping
                 ? null
                 : $"{baseUrl}/api/File/{src.FilePath}");
 
-            TypeAdapterConfig<CanvaElement, CanvasElementResponse>
+            TypeAdapterConfig<CanvasElement, CanvasElementResponse>
             .NewConfig()
             .Map(dest => dest.ImageUrl, src => string.IsNullOrEmpty(src.ImageUrl)
                 ? null
