@@ -708,6 +708,11 @@ namespace RpgDex.Application.Services
                     Total = x.Total
                 }).ToList()
             };
+
+            if(! await campaignDiceLogRepository.CampaignHasDiceRollLog(campaign.Id))
+            {
+                await campaignDiceLogRepository.Insert(campaign.Id);
+            }
             var result = await campaignDiceLogRepository.AddRollAsync(request.CampaignId, roll);
             if (!result) return Result<bool>.Failure(DiceLogError.AddRollFailed);
             await RpgDexSendMessage(request.CampaignId.ToString(), BuildMessage(roll));

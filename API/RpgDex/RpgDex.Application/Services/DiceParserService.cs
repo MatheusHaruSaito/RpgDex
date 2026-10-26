@@ -27,9 +27,9 @@ namespace RpgDex.Application.Services
 
             var repeat = 1;
             var hashIndex = src.IndexOf('#');
-            var prefix = src[..hashIndex];
             if (hashIndex >= 0)
             {
+                var prefix = src[..hashIndex];
                 if (prefix!= "" && !int.TryParse(prefix, NumberStyles.None, CultureInfo.InvariantCulture, out repeat) || repeat < 1 || repeat > MaxRepeat) return false;
 
 
@@ -69,7 +69,6 @@ namespace RpgDex.Application.Services
                 var value = ParseExpr();
                 if (_pos < tokens.Count) throw new InvalidOperationException();
 
-                var floored = Math.Floor(value);
                 if (Math.Abs(value) > 1_000_000_000m) throw new OverflowException();
 
                 return new DiceEvaluation((double)value, _rolls, _breakdown.ToString());

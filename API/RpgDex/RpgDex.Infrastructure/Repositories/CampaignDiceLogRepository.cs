@@ -25,7 +25,10 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true });
             return result.IsAcknowledged && (result.ModifiedCount > 0 || result.UpsertedId != null);
         }
-
+        public async Task Insert(Guid campaignId) =>
+            await _entity.InsertOneAsync(new CampaignDiceLog() { CampaignId = campaignId, Rolls = new() });
+        public async Task<bool> CampaignHasDiceRollLog(Guid campaignId) =>
+            await _entity.Find(d => d.CampaignId == campaignId).FirstOrDefaultAsync() is not null;
         public async Task<CampaignDiceLog> GetCampaignDiceLog(Guid campaignId)
         {
             return await _entity.Find(c => c.CampaignId == campaignId).FirstOrDefaultAsync();
