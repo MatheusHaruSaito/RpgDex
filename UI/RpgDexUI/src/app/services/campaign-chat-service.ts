@@ -12,7 +12,8 @@ import { RestoreMessageRequest } from '../../models/restoreMessageRequest';
 import { chatCommandList } from '../../models/chatCommandList';
 import { AddRollToLogRequest } from '../../models/addRollToLogRequest';
 import { DiceRollsLogResult } from '../../models/diceRollsLogResult';
-
+import { CommandModel } from '../../models/commandModel';
+import e from 'express';
 @Injectable({
   providedIn: 'root',
 })
@@ -22,7 +23,6 @@ export class CampaignChatService {
   private readonly controller = 'Campaign';
   private readonly env = `${environment.RpxDexApi}/${this.controller}`;
   private COMMAND_PREFIX = '@rpg';
-
   private normalize = (s: string) =>
     s
       .normalize('NFD')
@@ -47,21 +47,18 @@ export class CampaignChatService {
       .then(() => {
         this.hubConnection.invoke('JoinCampaign', campaignId);
       })
-      .catch((err) => console.error('SignalR error', err));
+      .catch((err) => console.error('SingalR error', err));
 
     this.hubConnection.on('ReceiveMessage', (chatMessage: ChatMessage) => {
       this.messageReceived$.next(chatMessage);
     });
   }
-
   public sendMessage(request: CampaignChatMessageRequest): Observable<any> {
     return this.http.post(`${this.env}/SendMessage`, request);
   }
-
   public onMessageReceived(): Observable<ChatMessage> {
     return this.messageReceived$.asObservable();
   }
-
   public getMessages(
     campaignId: string,
     beforeSentAt?: string,
@@ -76,50 +73,37 @@ export class CampaignChatService {
       params,
     });
   }
-
   public stopConnection(campaignId: string): void {
     if (this.hubConnection) {
       this.hubConnection.invoke('LeaveCampaign', campaignId);
       this.hubConnection.stop();
     }
   }
-
   public editMessage(request: EditChatMessageRequest): Observable<any> {
     return this.http.patch(`${this.env}/EditMessage`, request);
   }
-
   public restoreMessage(request: RestoreMessageRequest): Observable<any> {
     return this.http.patch(`${this.env}/RestoreMessage`, request);
   }
-
   public AddRollToLog(request: AddRollToLogRequest): Observable<DiceRollsLogResult[]> {
     return this.http.patch<DiceRollsLogResult[]>(`${this.env}/AddRollToLog`, request);
   }
-
   public get commandPrefix() {
     return this.COMMAND_PREFIX;
   }
-
   tryExecuteCommand(input: string, campId: string): Observable<unknown> | null {
-    const trimmed = input.trim();
-    if (!trimmed.startsWith(this.COMMAND_PREFIX)) return null;
+    const [rawName, ...args] = input.slice(this.COMMAND_PREFIX.length).trim().split(/\s+/);
 
-    const parts = trimmed.slice(this.COMMAND_PREFIX.length).trim().split(/\s+/);
-    const rawName = parts[0] || '';
-    const expression = parts.slice(1).join(' ').trim();
-
-    const command = this.findCommand(rawName) || (rawName.toLowerCase() === 'roll' ? { name: 'roll' } : null);
+    const command = this.findCommand(rawName);
     if (!command) return null;
 
     switch (command.name) {
       case 'roll':
-        if (!expression) return null;
-        return this.AddRollToLog({ campaignId: campId, expression: expression });
+        return this.AddRollToLog({ campaignId: campId, expression: args.join('') });
       default:
         return null;
     }
   }
-
   private findCommand(name: string) {
     const key = this.normalize(name);
     return chatCommandList.find((c) => c.aliases.some((alias) => this.normalize(alias) === key));

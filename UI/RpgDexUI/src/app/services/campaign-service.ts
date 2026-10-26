@@ -76,6 +76,6 @@ export class CampaignService {
     return this.http.put<ApiResponse<String>>(`${this.env}/SetActiveState`, request);
   }
   GetRollsLog(campaignId: string): Observable<DiceRollsLogResult> {
-    return this.http.get<DiceRollsLogResult>(`${this.env}/RestoreMessage/${campaignId}`);
+    return this.http.get<DiceRollsLogResult>(`${this.env}/GetRollsLog/${campaignId}`);
   }
 }

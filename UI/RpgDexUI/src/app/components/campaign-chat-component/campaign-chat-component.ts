@@ -128,7 +128,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   // Identifica se uma mensagem pertence à aba de Dados & Comandos
-  isRollOrCommand(text: string): boolean {
+    isRollOrCommand(text: string): boolean {
     if (!text) return false;
     const trimmed = text.trim();
     const lower = text.toLowerCase();
