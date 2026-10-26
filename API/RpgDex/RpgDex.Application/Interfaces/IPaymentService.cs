@@ -10,5 +10,6 @@ namespace RpgDex.Application.Interfaces
     {
         Task<Result<PaymentInitiateResult>> PaymentInitiate(string userId, CreatePaymentRequest request);
         Task HandleWebHook(MercadoPagoWebhookDto webhook, string signatureHeader, string requestId);
+        Task SyncOrderAsync(string mpOrderId);
     }
 }

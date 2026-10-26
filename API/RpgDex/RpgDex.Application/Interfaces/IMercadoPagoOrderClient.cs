@@ -9,7 +9,7 @@ namespace RpgDex.Application.Interfaces
     {
         Task<MpOrderResponse> CreateAsync(MpCreateOrderRequest request, string idempotencyKey);
 
-        Task<MpOrderResponse> GetAsync(string orderId);
+        Task<MpOrderResponse?> GetAsync(string orderId);
     }
 
     /**

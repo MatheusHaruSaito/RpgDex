@@ -2,6 +2,7 @@
 using RpgDex.Application.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -34,10 +35,10 @@ namespace RpgDex.Application.Services
                 ?? throw new InvalidOperationException("Null reponse on order create in Mercado Pago"); ;
         }
 
-        public async Task<MpOrderResponse> GetAsync(string orderId)
+        public async Task<MpOrderResponse?> GetAsync(string orderId)
         {
             using var response = await _http.GetAsync($"v1/orders/{Uri.EscapeDataString(orderId)}");
-
+            if (response.StatusCode == HttpStatusCode.NotFound) return null;
             await EnsureSuccessAsync(response);
 
             return await response.Content.ReadFromJsonAsync<MpOrderResponse>(JsonOptions)

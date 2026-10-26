@@ -22,6 +22,24 @@ namespace RpgDex.Infrastructure.Repositories
         public async Task<Payment> GetByMpOrderId(string orderId) =>
             await _entity.Find(p => p.MpOrderId == orderId).FirstOrDefaultAsync();
 
+        public async Task<IEnumerable<Payment>> GetPendingAsync(Guid id) =>
+            await _entity.Find(p => p.Status == PaymentStatus.Pending).ToListAsync();
+
+        public async Task<IEnumerable<Payment>> GetPendingAsync(DateTime olderThanUtc, int limit)
+        {
+            var f = Builders<Payment>.Filter;
+            var filter = f.And(
+                f.Eq(p => p.Status, PaymentStatus.Pending),
+                f.Ne(p => p.MpOrderId, null),
+                f.Ne(p => p.MpOrderId, string.Empty),
+                f.Lte(p => p.Date, olderThanUtc));
+
+            return await _entity.Find(filter)
+                .SortByDescending(p => p.Date)
+                .Limit(limit)
+                .ToListAsync();
+        }
+
         public async Task Insert(Payment payment) =>
             await _entity.InsertOneAsync(payment);
 

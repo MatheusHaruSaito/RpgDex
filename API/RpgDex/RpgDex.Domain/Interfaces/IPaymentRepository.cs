@@ -10,9 +10,11 @@ namespace RpgDex.Domain.Interfaces
     {
         Task Insert(Payment payment);
         Task<Payment> GetById(Guid id);
+        Task<IEnumerable<Payment>> GetPendingAsync(DateTime olderThanUtc, int limit);
         Task<bool> UpdatePaymentStatus(Guid id, PaymentStatus status);
         Task<Payment> GetByMpOrderId(string orderId);
 
+        
 
     }
 }

@@ -92,8 +92,9 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
             services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
             services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
+            
 
-
+            services.AddHostedService<SyncPaymentJob>();
             services.AddHostedService<SubscriptionExpiryJob>();
 
             //Identity
