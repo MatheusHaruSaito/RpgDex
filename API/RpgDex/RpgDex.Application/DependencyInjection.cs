@@ -26,6 +26,7 @@ namespace RpgDex.Application
             services.AddScoped<ICanvaElementService, CanvaElementService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IPlanService, PlanService>();
+            services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 
 

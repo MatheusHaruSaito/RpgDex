@@ -10,5 +10,8 @@ namespace RpgDex.Domain.Interfaces
         Task Insert(Subscription subscription);
         Task<Subscription> GetByUserId(Guid userId); 
         Task<bool> ExistsByPaymentId(Guid paymentId);
+        Task<IEnumerable<Subscription>> GetExpiredAsync();
+        Task SetIsActive(Subscription subscription, bool isActive);
+
     }
 }

@@ -16,6 +16,7 @@ using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
+using RpgDex.Infrastructure.Jobs;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
 using RpgDex.Infrastructure.Services;
@@ -93,7 +94,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
 
 
-
+            services.AddHostedService<SubscriptionExpiryJob>();
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

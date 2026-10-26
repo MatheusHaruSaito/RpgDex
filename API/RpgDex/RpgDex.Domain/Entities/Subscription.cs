@@ -16,5 +16,7 @@ namespace RpgDex.Domain.Entities
         public Guid? PaymentId { get; set; }
         public DateTime StartDate { get; set; } = DateTime.UtcNow;
         public DateTime ExpiresAt { get; set; }
+        public bool isActive { get; set; } = true;
+
     }
 }
