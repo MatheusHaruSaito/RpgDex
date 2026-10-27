@@ -22,9 +22,6 @@ import { CharacterService } from '../../services/character-service';
 import { UserService } from '../../services/user-service';
 import { DiceRollsLogResult } from '../../../models/diceRollsLogResult';
 import { DiceRollEntryDto } from '../../../models/diceRollEntryDto';
-import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageRequest';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
@@ -80,13 +77,9 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   private chatSubscription!: Subscription;
 
   constructor(
-    private chatService: CampaignChatService,
     private campaignService: CampaignService,
-    private authService: AuthService,
     private characterService: CharacterService,
     private userService: UserService,
-    private cdr: ChangeDetectorRef,
-    private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
