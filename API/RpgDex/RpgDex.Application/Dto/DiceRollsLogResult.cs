@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record DiceRollsLogResult(Guid UserId, string Expression, List<int> Results, int Total, DateTime CreatedAt);
+    public record DiceRollsLogResult(Guid UserId, string Expression, List<int> Results, double Total, DateTime CreatedAt);
 }
