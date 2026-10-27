@@ -1,4 +1,5 @@
 <div class="chat-container" [class.is-minimized]="isMinimized">
+  <!-- HEADER DO CHAT -->
   <div class="chat-header" (click)="toggleMinimize()">
     <div class="chat-title">
       <i class="fa fa-comments"></i>
@@ -11,99 +12,257 @@
       }
     </div>
 
-    <button class="btn-icon btn-sm" type="button" aria-label="Minimizar ou expandir chat">
-      <i class="fa" [ngClass]="isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-    </button>
+    <div class="chat-header-actions" (click)="$event.stopPropagation()">
+      <button
+        class="btn-icon btn-sm"
+        type="button"
+        (click)="toggleSearch()"
+        title="Pesquisar mensagens"
+      >
+        <i class="fa fa-magnifying-glass"></i>
+      </button>
+      <button
+        class="btn-icon btn-sm"
+        type="button"
+        (click)="toggleMinimize()"
+        aria-label="Minimizar ou expandir chat"
+      >
+        <i class="fa" [ngClass]="isMinimized ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </button>
+    </div>
   </div>
 
-  @if (!isMinimized) {
-    <div class="chat-body">
+  <div class="chat-body" *ngIf="!isMinimized">
+    <!-- NAVEGAÇÃO DE ABAS: GERAL E DADOS/COMANDOS -->
+    <div class="chat-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'chat'"
+        (click)="setTab('chat')"
+      >
+        <i class="fa fa-comments"></i>
+        <span>Geral</span>
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'rolls'"
+        (click)="setTab('rolls')"
+      >
+        <i class="fa fa-dice-d20"></i>
+        <span>Dados & Comandos</span>
+        <span class="rolls-count" *ngIf="rollsList.length > 0">
+          {{ rollsList.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- ABA 1: CONVERSA GERAL -->
+    <ng-container *ngIf="activeTab === 'chat'">
+      <div class="chat-search-bar" *ngIf="showSearchInput">
+        <i class="fa fa-magnifying-glass search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Filtrar mensagens..."
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+        />
+        <button
+          class="btn-clear-search"
+          *ngIf="searchQuery"
+          (click)="searchQuery = ''; onSearchChange()"
+        >
+          <i class="fa fa-xmark"></i>
+        </button>
+      </div>
+
       <div class="messages-container" #scrollContainer>
-        <!-- Estado de Carregamento Inicial -->
-        @if (isInitialLoading) {
-          <div class="chat-empty">
-            <i class="fa fa-spinner fa-spin"></i>
-            <span>Carregando conversas...</span>
-          </div>
-        }
+        <div class="chat-empty" *ngIf="isInitialLoading">
+          <i class="fa fa-spinner fa-spin"></i>
+          <span>Carregando conversas...</span>
+        </div>
 
-        <!-- Estado Vazio -->
-        @if (!isInitialLoading && messages.length === 0) {
-          <div class="chat-empty">
-            <i class="fa fa-comment-dots"></i>
-            <span>Nenhuma mensagem por aqui ainda. Escreva algo!</span>
-          </div>
-        }
+        <div class="chat-empty" *ngIf="!isInitialLoading && chatMessagesOnly.length === 0">
+          <i class="fa fa-comment-dots"></i>
+          <span>Nenhuma mensagem encontrada.</span>
+        </div>
 
-        <!-- Botão para Carregar Histórico -->
-        @if (hasMore && messages.length > 0) {
-          <div class="load-more-container">
-            <button
-              class="btn-load-more"
-              type="button"
-              (click)="loadMoreMessages()"
-              [disabled]="isLoadingMore"
-            >
-              <i class="fa" [ngClass]="isLoadingMore ? 'fa-spinner fa-spin' : 'fa-history'"></i>
-              <span>{{ isLoadingMore ? 'Carregando...' : 'Carregar mensagens anteriores' }}</span>
-            </button>
-          </div>
-        }
-
-        <!-- Lista de Mensagens -->
-        @for (msg of messages; track msg.id || $index) {
-          <div
-            class="message-item"
-            [class.message-mine]="msg.username === currentUsername"
+        <div class="load-more-container" *ngIf="hasMore && chatMessagesOnly.length > 0">
+          <button
+            class="btn-load-more"
+            type="button"
+            (click)="loadMoreMessages()"
+            [disabled]="isLoadingMore"
           >
-            <div
-              class="message-avatar"
-              [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''"
-            >
-              @if (!msg.userIcon) {
-                <i class="fa fa-user"></i>
-              }
+            <i class="fa" [ngClass]="isLoadingMore ? 'fa-spinner fa-spin' : 'fa-history'"></i>
+            <span>{{ isLoadingMore ? 'Carregando...' : 'Carregar mensagens anteriores' }}</span>
+          </button>
+        </div>
+
+        <div
+          *ngFor="let msg of chatMessagesOnly"
+          class="message-item"
+          [class.message-mine]="isMyMessage(msg)"
+        >
+          <div
+            class="message-avatar"
+            [style.background-image]="msg.userIcon ? 'url(' + msg.userIcon + ')' : ''"
+          >
+            <i class="fa fa-user" *ngIf="!msg.userIcon"></i>
+          </div>
+
+          <div class="message-content">
+            <div class="message-meta">
+              <span class="message-author">{{ msg.username }}</span>
+              <span class="message-time" *ngIf="msg.sentAt">
+                {{ msg.sentAt | date: 'HH:mm' }}
+              </span>
             </div>
 
-            <div class="message-content">
-              <div class="message-meta">
-                <span class="message-author">{{ msg.username }}</span>
-                @if (msg.sentAt) {
-                  <span class="message-time">
-                    {{ msg.sentAt | date: 'HH:mm' }}
-                  </span>
-                }
+            <ng-container *ngIf="editingMessageId === msg.id; else displayBubble">
+              <div class="edit-message-box">
+                <input
+                  type="text"
+                  class="edit-message-input"
+                  [(ngModel)]="editingText"
+                  maxlength="500"
+                  (keydown.enter)="saveEdit(msg.id)"
+                  (keydown.escape)="cancelEdit()"
+                />
+                <div class="edit-actions">
+                  <button
+                    type="button"
+                    class="btn-icon-action btn-check"
+                    (click)="saveEdit(msg.id)"
+                  >
+                    <i class="fa fa-check"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-icon-action btn-cancel"
+                    (click)="cancelEdit()"
+                  >
+                    <i class="fa fa-xmark"></i>
+                  </button>
+                </div>
               </div>
-              <div class="message-bubble">
-                {{ msg.data }}
+            </ng-container>
+
+            <ng-template #displayBubble>
+              <div class="message-bubble">{{ msg.data }}</div>
+            </ng-template>
+          </div>
+
+          <div class="message-hover-actions" *ngIf="isMyMessage(msg) && editingMessageId !== msg.id">
+            <button
+              type="button"
+              class="btn-hover-action"
+              (click)="startEditing(msg)"
+              title="Editar"
+            >
+              <i class="fa fa-pen"></i>
+            </button>
+            <button
+              type="button"
+              class="btn-hover-action"
+              (click)="restorePreviousVersion(msg)"
+              title="Restaurar versão anterior"
+            >
+              <i class="fa fa-rotate-left"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ABA 2: DADOS & COMANDOS (EXIBIÇÃO COM NOVO FORMATO VISUAL) -->
+    <ng-container *ngIf="activeTab === 'rolls'">
+      <div class="rolls-container" #rollsScrollContainer>
+        <div class="chat-empty" *ngIf="isLoadingRolls">
+          <i class="fa fa-spinner fa-spin"></i>
+          <span>Carregando histórico de dados...</span>
+        </div>
+
+        <div class="chat-empty" *ngIf="!isLoadingRolls && rollsList.length === 0">
+          <i class="fa fa-dice-d20"></i>
+          <span>Nenhuma rolagem gravada ainda.<br>Use <b>@rpg roll 2d20</b> para rolar!</span>
+        </div>
+
+        <div *ngFor="let roll of rollsList" class="roll-card">
+          <div class="roll-header">
+            <div class="roll-user">
+              <i class="fa fa-dice"></i>
+              <strong>{{ getRollUser(roll) }}</strong>
+            </div>
+            <span class="roll-time" *ngIf="roll.createdAt">
+              {{ roll.createdAt | date: 'HH:mm' }}
+            </span>
+          </div>
+
+          <div class="roll-details">
+            <span class="roll-expression">
+              Fórmula: <code>{{ roll.expression || 'Rolagem' }}</code>
+            </span>
+            <div class="roll-total-box">
+              <span class="roll-total-label">Resultado</span>
+              <span class="roll-total-value">{{ getRollTotal(roll) }}</span>
+            </div>
+          </div>
+
+          <div class="roll-breakdown-list" *ngIf="getRollEntries(roll).length > 0">
+            <div *ngFor="let entry of getRollEntries(roll); let i = index" class="roll-breakdown-item">
+              <div class="breakdown-info">
+                <span class="breakdown-badge" *ngIf="getRollEntries(roll).length > 1">
+                  {{ i + 1 }}º
+                </span>
+                <span class="breakdown-text" *ngIf="entry.breakdown">
+                  {{ entry.breakdown }}
+                </span>
               </div>
+              <span class="breakdown-total" *ngIf="getRollEntries(roll).length > 1">
+                = {{ entry.total }}
+              </span>
             </div>
           </div>
         }
       </div>
+    </ng-container>
 
-      <!-- CONTROLES E FORMULÁRIO -->
-      <div class="chat-controls">
-        <form (ngSubmit)="send()" class="chat-form">
-          <input
-            #chatInput
-            class="chat-input"
-            type="text"
-            name="newMessageText"
-            [(ngModel)]="newMessageText"
-            placeholder="Digite sua mensagem..."
-            maxlength="500"
-            autocomplete="off"
-            [disabled]="isSending"
-          />
-          <button
-            class="btn btn-primary btn-send"
-            type="submit"
-            [disabled]="!newMessageText.trim() || isSending"
-          >
-            <i class="fa" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
-          </button>
-        </form>
+    <!-- FORMULÁRIO DE ENVIO DA MENSAGEM / COMANDO -->
+    <div class="chat-controls">
+      <div class="persona-selector-wrap" *ngIf="myCharacters.length > 0">
+        <label class="persona-label">
+          <i class="fa fa-mask"></i>
+          <span>Enviar como:</span>
+        </label>
+        <select class="persona-select" [(ngModel)]="selectedCharacterId">
+          <option [ngValue]="null">Mestre / Meu Perfil</option>
+          <option *ngFor="let char of myCharacters" [ngValue]="char.id">🎭 {{ char.name }}</option>
+        </select>
+      </div>
+
+      <form (ngSubmit)="send()" class="chat-form">
+        <input
+          #chatInput
+          class="chat-input"
+          type="text"
+          name="newMessageText"
+          [(ngModel)]="newMessageText"
+          [placeholder]="activeTab === 'rolls' ? 'Digite um comando (@rpg roll 2d20)...' : 'Digite sua mensagem...'"
+          maxlength="500"
+          autocomplete="off"
+          [disabled]="isSending"
+        />
+        <button
+          class="btn btn-primary btn-send"
+          type="submit"
+          [disabled]="!newMessageText.trim() || isSending"
+        >
+          <i class="fa" [ngClass]="isSending ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+        </button>
+      </form>
 
         @if (sendError) {
           <div class="chat-error-toast">

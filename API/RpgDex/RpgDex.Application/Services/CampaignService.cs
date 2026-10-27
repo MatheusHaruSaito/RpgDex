@@ -16,7 +16,8 @@ namespace RpgDex.Application.Services
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
         ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator,
+        ICampaignDiceLogRepository campaignDiceLogRepository) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
         {
@@ -516,20 +517,28 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(CampaignError.IsNotActive);
             }
-          
+
             var user = await userRepository.GetByIdAsync(guidUserId);
             if (user is null)
             {
                 return Result<string>.Failure(AuthError.UserNotFound);
             }
-
+            string? icon = user.IconPath;
+            string displayName = user.DisplayName!;
+            if (request.CharacterId is not null)
+            {
+                var character = await characterRepository.GetByIdAsync(request.CharacterId.Value);
+                if (!campaign.CharacterIds.Contains(character.Id)) return Result<string>.Failure(CampaignError.CharacterNotInCampaign);
+                icon = character.IconPath;
+                displayName = character.Name;
+            }
             ChatMessage newMessage = new()
             {
                 Id = Guid.NewGuid(),
                 UserId = user.Id,
-                Username = user.DisplayName,
+                Username = displayName,
                 CampaignId = request.CampaignId,
-                UserIcon = user.IconPath,
+                UserIcon = icon,
                 Data = request.Message,
                 SentAt = DateTime.UtcNow
             };
@@ -540,7 +549,7 @@ namespace RpgDex.Application.Services
 
             return Result<string>.Success($"Message sent by {user.DisplayName} : {request.Message}");
         }
-        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId,DateTime? beforeSentAt ,int pageSize,Guid campaignId)
+        public async Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, Guid campaignId, DateTime? beforeSentAt ,int pageSize, string? dataFilter =null)
         {
             //needs more verification
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
@@ -566,7 +575,7 @@ namespace RpgDex.Application.Services
             }
 
             //var campaignChat = await campaignChatRepository.GetCampaignChat(campaignId);
-            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1)).ToList();
+            var messages = (await campaignChatRepository.GetMessagesPagedAsync(campaignId, beforeSentAt,pageSize+1, dataFilter)).ToList();
             if (messages is null)
             {
                 //var newcampaignChat = await campaignChatRepository.InsertAsync(new CampaignChat(campaignId));
@@ -586,7 +595,7 @@ namespace RpgDex.Application.Services
                 var user = await userRepository.GetByIdAsync(guidUserId);
                 if (user is not null)
                 {
-                    await PlayerJoinChatMessage(campaignId.ToString(), user.DisplayName);
+                    await RpgDexSendMessage(campaignId.ToString(), $"{user.DisplayName} has joined the campaign chat");
                 }
             }
             //var messages = campaignChat.ChatMessages.Adapt<IEnumerable<CampaignChatMessagesResponse>>();
@@ -600,18 +609,155 @@ namespace RpgDex.Application.Services
             );
             return Result<ChatPagedResultDto>.Success(result);
         }
-        public async Task PlayerJoinChatMessage(string campaignId, string UserName)
+        public async Task<Result<string>> EditMessage(string userId, EditChatMessageRequest request)
+        {
+            /// Remember to create the validator
+            ///
+            //var checkCampaignChatMessageValidator = campaignChatMessageValidator.Validate(request);
+            //if (!checkCampaignChatMessageValidator.IsValid) return checkCampaignChatMessageValidator.ReturnErrors<string>();
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+
+            var chatMessage = await campaignChatRepository.GetById(request.MessageId);
+            if(chatMessage is null)
+            {
+                return Result<string>.Failure(CampaignError.MessageNotFound);
+            }
+            chatMessage.Edit(request.NewMessage);
+            await campaignChatRepository.UpdateData(chatMessage);
+
+            await campaignChatService.SendMessage(request.CampaignId.ToString(), chatMessage.Adapt<CampaignChatMessagesResponse>());
+
+            return Result<string>.Success($"Message edited by {user.DisplayName} : {request.NewMessage}");
+        }
+        public async Task<Result<string>> RestoreMessage(string userId,RestoreMessageRequest request)
+        {
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null) return Result<string>.Failure(CampaignError.NotFound);
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<string>.Failure(Error.InvalidUserId);
+            var isGameMaster = campaign.GameMasterId.Equals(guidUserId);
+            if (!isGameMaster && !campaign.IsActive)
+            {
+                return Result<string>.Failure(CampaignError.IsNotActive);
+            }
+
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+
+            var chatMessage = await campaignChatRepository.GetById(request.MessageId);
+            if (chatMessage is null || chatMessage.CampaignId != request.CampaignId)
+            {
+                return Result<string>.Failure(CampaignError.MessageNotFound);
+            }
+            if(chatMessage.UserId != guidUserId)
+                return Result<string>.Failure(CampaignError.MessageForbidden);
+            if (!chatMessage.Restore(request.HistoryIndex))
+                return Result<string>.Failure(CampaignError.FailedToRestoreMessage);
+
+           var result = await campaignChatRepository.UpdateData(chatMessage);
+           if(result is null) return Result<string>.Failure(CampaignError.FailedToRestoreMessage);
+            await campaignChatService.SendMessage(request.CampaignId.ToString(), chatMessage.Adapt<CampaignChatMessagesResponse>());
+
+            return Result<string>.Success($"Message restored");
+        }
+        public async Task<Result<bool>> AddRollToLogAsync(string userId, AddRollToLogRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Expression))
+                return Result<bool>.Failure(DiceLogError.ExpressionRequired);
+
+            var campaign = await campaignRepository.GetByIdAsync(request.CampaignId);
+            if (campaign is null)
+            {
+                return Result<bool>.Failure(CampaignError.NotFound);
+            }
+
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure(Error.InvalidUserId);
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<bool>.Failure(AuthError.UserNotFound);
+            }
+
+            if (!DiceParserService.TryEvaluate(request.Expression, out var evals) || evals is null)
+                return Result<bool>.Failure(DiceLogError.InvalidExpression);
+            var roll = new DiceRoll
+            {
+                UserId = guidUserId,
+                Expression = request.Expression,
+                Entires = evals.Select(x => new DiceRollEntry
+                {
+                    Breakdown = x.Breakdown,
+                    Results = x.Rolls,
+                    Total = x.Total
+                }).ToList()
+            };
+
+            if(! await campaignDiceLogRepository.CampaignHasDiceRollLog(campaign.Id))
+            {
+                await campaignDiceLogRepository.Insert(campaign.Id);
+            }
+            var result = await campaignDiceLogRepository.AddRollAsync(request.CampaignId, roll);
+            if (!result) return Result<bool>.Failure(DiceLogError.AddRollFailed);
+            await RpgDexSendMessage(request.CampaignId.ToString(), BuildMessage(roll));
+            return Result<bool>.Success(result);
+        }
+
+        public async Task<Result<IEnumerable<DiceRollsLogResult>>> GetDiceRollLogAsync(string userId, Guid campaignId)
+        {
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<IEnumerable<DiceRollsLogResult>>.Failure(Error.InvalidUserId);
+            var user = await userRepository.GetByIdAsync(guidUserId);
+            if (user is null)
+            {
+                return Result<IEnumerable<DiceRollsLogResult>>.Failure(AuthError.UserNotFound);
+            }
+            var campaign = await campaignRepository.GetByIdAsync(campaignId);
+            if (campaign is null)
+            {
+                return Result<IEnumerable<DiceRollsLogResult>>.Failure(CampaignError.NotFound);
+            }
+            if (!campaign.IsActive) return Result<IEnumerable<DiceRollsLogResult>>.Failure(CampaignError.IsNotActive);
+
+            if (!campaign.PlayerIds.Contains(guidUserId) && !(campaign.GameMasterId == guidUserId)) return Result<IEnumerable<DiceRollsLogResult>>.Failure(CampaignError.PlayerNotFound);
+            var result = await campaignDiceLogRepository.GetCampaignDiceLog(campaignId);
+            if (result is null) return Result<IEnumerable<DiceRollsLogResult>>.Failure(DiceLogError.LogNotFound);
+            return Result<IEnumerable<DiceRollsLogResult>>.Success(result.Rolls.Adapt<IEnumerable<DiceRollsLogResult>>());
+        }
+        private async Task RpgDexSendMessage(string campaignId,string data)
         {
             var message = new CampaignChatMessagesResponse(
-                Guid.Empty,
+                Guid.NewGuid(),
                 Guid.Empty,
                 "RPG DEX",
                 "",
-                $"{UserName} has joined the campaign chat",
-                DateTime.UtcNow
+                data,
+                DateTime.UtcNow,
+                null
             );
             await campaignChatService.SendMessage(campaignId, message);
         }
+        private static string BuildMessage(DiceRoll roll)
+        {
+            var total = roll.Entires.Select(e => e.Total).Sum();
+            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total,2)}");
+            return $"{string.Join("\n", lines)}\n -> {Math.Round(total)}";
 
+        }
     }
 }

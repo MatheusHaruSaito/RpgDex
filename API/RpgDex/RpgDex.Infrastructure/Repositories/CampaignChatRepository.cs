@@ -5,6 +5,7 @@ using RpgDex.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RpgDex.Infrastructure.Repositories
 {
@@ -25,12 +26,7 @@ namespace RpgDex.Infrastructure.Repositories
             return campaignChat;
         }
 
-        public async Task<ChatMessage> GetCampaignChat(Guid campaignId)
-        {
-            return await _entity.Find(o => o.CampaignId == campaignId).FirstOrDefaultAsync();
-        }
-
-        public async Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20)
+        public async Task<IEnumerable<ChatMessage>> GetMessagesPagedAsync(Guid campaignId, DateTime? beforeSentAt, int pageSize = 20,string? data =null)
         {
             var builder = Builders<ChatMessage>.Filter;
             var filter = builder.Eq(m => m.CampaignId, campaignId);
@@ -39,6 +35,10 @@ namespace RpgDex.Infrastructure.Repositories
             if (beforeSentAt.HasValue)
             {
                 filter &= builder.Lt(m => m.SentAt, beforeSentAt.Value);
+            }
+            if (!string.IsNullOrWhiteSpace(data))
+            {
+                filter &= builder.Regex(m => m.Data, new MongoDB.Bson.BsonRegularExpression(Regex.Escape(data),"i"));
             }
 
             var messages = await _entity.Find(filter)
@@ -51,5 +51,21 @@ namespace RpgDex.Infrastructure.Repositories
             return messages;
         }
 
+        public async Task<ChatMessage?> UpdateData(ChatMessage message)
+        {
+            var filter = Builders<ChatMessage>.Filter.Eq(m => m.Id, message.Id);
+            var update = Builders<ChatMessage>.Update
+                .Push(m => m.History,message.History.Last())
+                .Set(m => m.Version, message.Version)
+                .Set(m => m.EditedAt, message.EditedAt)
+                .Set(m => m.Data, message.Data);
+            var result = await _entity.UpdateOneAsync(filter, update);
+            return result.MatchedCount ==1? message : null;
+        }
+
+        public async Task<ChatMessage> GetById(Guid id)
+        {
+            return await _entity.Find(m => m.Id ==id).FirstOrDefaultAsync();
+        }
     }
 }

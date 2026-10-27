@@ -34,6 +34,8 @@ namespace RpgDex.Infrastructure.Data
             _database.GetCollection<UserDocument>("UserDocuments");
         public IMongoCollection<ChatMessage> ChatMessage =>
             _database.GetCollection<ChatMessage>("ChatMessage");
+        public IMongoCollection<CampaignDiceLog> CampaignDiceLogs =>
+            _database.GetCollection<CampaignDiceLog>("CampaignDiceLogs");
         public IMongoCollection<CanvaElement> CanvaElements =>
             _database.GetCollection<CanvaElement>("CanvaElements");
         public IMongoDatabase GetDatabase() => _database;

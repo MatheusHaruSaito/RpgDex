@@ -109,15 +109,39 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpGet("GetMessages/{campaignId}")]
-        public async Task<IActionResult> GetMessages([FromRoute] Guid campaignId, [FromQuery] DateTime? beforeSentAt, [FromQuery] int pageSize)
+        public async Task<IActionResult> GetMessages([FromRoute] Guid campaignId, [FromQuery] DateTime? beforeSentAt, [FromQuery] int pageSize, [FromQuery] string? data = null)
         {
-            var result = await _campaignService.GetChatMessages(currentUser, beforeSentAt, pageSize, campaignId);
+            var result = await _campaignService.GetChatMessages(currentUser, campaignId, beforeSentAt, pageSize,data);
             return result.ToIActionResult();
         }
         [HttpPatch("Leave")]
         public async Task<IActionResult> LeaveCampaign(LeaveCampaignRequest request)
         {
             var result = await _campaignService.LeaveCampaign(currentUser,request);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("EditMessage")]
+        public async Task<IActionResult> EditMessage([FromBody] EditChatMessageRequest request)
+        {
+            var result = await _campaignService.EditMessage(currentUser,request);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("RestoreMessage")]
+        public async Task<IActionResult> RestoreMessage([FromBody] RestoreMessageRequest request)
+        {
+            var result = await _campaignService.RestoreMessage(currentUser,request);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("AddRollToLog")]
+        public async Task<IActionResult> AddRollToLog([FromBody] AddRollToLogRequest request)
+        {
+            var result = await _campaignService.AddRollToLogAsync(currentUser, request);
+            return result.ToIActionResult();
+        }
+        [HttpGet("GetRollsLog/{campaignId}")]
+        public async Task<IActionResult> GetRollsLog(Guid campaignId)
+        {
+            var result = await _campaignService.GetDiceRollLogAsync(currentUser, campaignId);
             return result.ToIActionResult();
         }
     }
