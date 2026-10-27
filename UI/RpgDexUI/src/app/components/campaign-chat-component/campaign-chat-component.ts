@@ -7,7 +7,6 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,8 +21,6 @@ import { CharacterService } from '../../services/character-service';
 import { UserService } from '../../services/user-service';
 import { DiceRollsLogResult } from '../../../models/diceRollsLogResult';
 import { DiceRollEntryDto } from '../../../models/diceRollEntryDto';
-import { TranslateService } from '@ngx-translate/core';
-import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-campaign-chat-component',
@@ -39,11 +36,6 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   @ViewChild('chatInput') private chatInput!: ElementRef<HTMLInputElement>;
 
   activeTab: 'chat' | 'rolls' = 'chat';
-  private chatService = inject(CampaignChatService);
-  private authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
-  private ngZone = inject(NgZone);
-  private translateService = inject(TranslateService);
 
   messages: ChatMessage[] = [];
   rollsLog: DiceRollsLogResult[] = [];
@@ -77,9 +69,13 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   private chatSubscription!: Subscription;
 
   constructor(
+    private chatService: CampaignChatService,
     private campaignService: CampaignService,
+    private authService: AuthService,
     private characterService: CharacterService,
     private userService: UserService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
   ) {}
 
   ngOnInit(): void {
@@ -421,10 +417,8 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isSending = false;
         this.newMessageText = textToSend;
-        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-          this.sendError = msg;
-          this.cdr.detectChanges();
-        });
+        this.sendError = err?.error?.message ?? 'Erro ao enviar a mensagem.';
+        this.cdr.detectChanges();
         this.focusInput();
       },
     });

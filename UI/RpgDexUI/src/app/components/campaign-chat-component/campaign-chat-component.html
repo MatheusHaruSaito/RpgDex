@@ -5,11 +5,13 @@
       <i class="fa fa-comments"></i>
       <span>Bate-papo da Mesa</span>
 
-      @if (isMinimized && unreadCount > 0) {
-        <span class="chat-unread-badge" title="Novas mensagens">
-          {{ unreadCount }}
-        </span>
-      }
+      <span
+        class="chat-unread-badge"
+        *ngIf="isMinimized && unreadCount > 0"
+        title="Novas mensagens"
+      >
+        {{ unreadCount }}
+      </span>
     </div>
 
     <div class="chat-header-actions" (click)="$event.stopPropagation()">
@@ -139,11 +141,7 @@
                   >
                     <i class="fa fa-check"></i>
                   </button>
-                  <button
-                    type="button"
-                    class="btn-icon-action btn-cancel"
-                    (click)="cancelEdit()"
-                  >
+                  <button type="button" class="btn-icon-action btn-cancel" (click)="cancelEdit()">
                     <i class="fa fa-xmark"></i>
                   </button>
                 </div>
@@ -155,7 +153,10 @@
             </ng-template>
           </div>
 
-          <div class="message-hover-actions" *ngIf="isMyMessage(msg) && editingMessageId !== msg.id">
+          <div
+            class="message-hover-actions"
+            *ngIf="isMyMessage(msg) && editingMessageId !== msg.id"
+          >
             <button
               type="button"
               class="btn-hover-action"
@@ -187,7 +188,7 @@
 
         <div class="chat-empty" *ngIf="!isLoadingRolls && rollsList.length === 0">
           <i class="fa fa-dice-d20"></i>
-          <span>Nenhuma rolagem gravada ainda.<br>Use <b>@rpg roll 2d20</b> para rolar!</span>
+          <span>Nenhuma rolagem gravada ainda.<br />Use <b>@rpg roll 2d20</b> para rolar!</span>
         </div>
 
         <div *ngFor="let roll of rollsList" class="roll-card">
@@ -212,7 +213,10 @@
           </div>
 
           <div class="roll-breakdown-list" *ngIf="getRollEntries(roll).length > 0">
-            <div *ngFor="let entry of getRollEntries(roll); let i = index" class="roll-breakdown-item">
+            <div
+              *ngFor="let entry of getRollEntries(roll); let i = index"
+              class="roll-breakdown-item"
+            >
               <div class="breakdown-info">
                 <span class="breakdown-badge" *ngIf="getRollEntries(roll).length > 1">
                   {{ i + 1 }}º
@@ -226,7 +230,7 @@
               </span>
             </div>
           </div>
-        }
+        </div>
       </div>
     </ng-container>
 
@@ -250,7 +254,11 @@
           type="text"
           name="newMessageText"
           [(ngModel)]="newMessageText"
-          [placeholder]="activeTab === 'rolls' ? 'Digite um comando (@rpg roll 2d20)...' : 'Digite sua mensagem...'"
+          [placeholder]="
+            activeTab === 'rolls'
+              ? 'Digite um comando (@rpg roll 2d20)...'
+              : 'Digite sua mensagem...'
+          "
           maxlength="500"
           autocomplete="off"
           [disabled]="isSending"
@@ -264,13 +272,10 @@
         </button>
       </form>
 
-        @if (sendError) {
-          <div class="chat-error-toast">
-            <i class="fa fa-circle-exclamation"></i>
-            <span>{{ sendError }}</span>
-          </div>
-        }
+      <div class="chat-error-toast" *ngIf="sendError">
+        <i class="fa fa-circle-exclamation"></i>
+        <span>{{ sendError }}</span>
       </div>
     </div>
-  }
+  </div>
 </div>
