@@ -1,7 +1,8 @@
+import { DiceRollEntryDto } from './diceRollEntryDto';
+
 export interface DiceRollsLogResult {
   userId: string;
   expression: string;
-  results: number[];
-  total: number;
+  entires: DiceRollEntryDto[];
   createdAt: Date;
 }

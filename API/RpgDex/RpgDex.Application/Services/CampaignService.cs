@@ -737,7 +737,6 @@ namespace RpgDex.Application.Services
             if (!campaign.PlayerIds.Contains(guidUserId) && !(campaign.GameMasterId == guidUserId)) return Result<IEnumerable<DiceRollsLogResult>>.Failure(CampaignError.PlayerNotFound);
             var result = await campaignDiceLogRepository.GetCampaignDiceLog(campaignId);
             if (result is null) return Result<IEnumerable<DiceRollsLogResult>>.Failure(DiceLogError.LogNotFound);
-
             return Result<IEnumerable<DiceRollsLogResult>>.Success(result.Rolls.Adapt<IEnumerable<DiceRollsLogResult>>());
         }
         private async Task RpgDexSendMessage(string campaignId,string data)
