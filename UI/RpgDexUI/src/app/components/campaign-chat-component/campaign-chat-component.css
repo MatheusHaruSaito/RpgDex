@@ -650,3 +650,49 @@
   font-weight: 800;
   color: var(--rpg-purple);
 }
+
+/* ── DETALHAMENTO DE DADOS (BREAKDOWN SUAVE) ── */
+.roll-breakdown-list {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--rpg-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.roll-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.breakdown-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.breakdown-index,
+.breakdown-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--rpg-text-muted);
+  background: var(--rpg-purple-08);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.breakdown-text {
+  font-family: monospace;
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--rpg-text-body);
+}
+
+.breakdown-total {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--rpg-purple);
+}

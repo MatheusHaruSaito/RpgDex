@@ -16,7 +16,11 @@ import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageR
 import { Character } from '../../../models/character';
 import { AuthService } from '../../services/auth-service';
 import { CampaignChatService } from '../../services/campaign-chat-service';
+import { CampaignService } from '../../services/campaign-service';
 import { CharacterService } from '../../services/character-service';
+import { UserService } from '../../services/user-service';
+import { DiceRollsLogResult } from '../../../models/diceRollsLogResult';
+import { DiceRollEntryDto } from '../../../models/diceRollEntryDto';
 
 @Component({
   selector: 'app-campaign-chat-component',
@@ -34,7 +38,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   activeTab: 'chat' | 'rolls' = 'chat';
 
   messages: ChatMessage[] = [];
-  rollsHistory: any[] = [];
+  rollsLog: DiceRollsLogResult[] = [];
 
   nextCursor?: string;
   hasMore: boolean = true;
@@ -52,6 +56,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   editingText: string = '';
 
   isInitialLoading: boolean = true;
+  isLoadingRolls: boolean = false;
   isLoadingMore: boolean = false;
   isSending: boolean = false;
   sendError: string = '';
@@ -59,12 +64,16 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   isMinimized: boolean = false;
   unreadCount: number = 0;
 
+  usersCache: { [id: string]: any } = {};
+
   private chatSubscription!: Subscription;
 
   constructor(
     private chatService: CampaignChatService,
+    private campaignService: CampaignService,
     private authService: AuthService,
     private characterService: CharacterService,
+    private userService: UserService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
   ) {}
@@ -90,32 +99,31 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
 
     const token = this.authService.Token;
     this.chatService.startConnection(this.campaignId, token);
-    this.initialLoad();
 
-    // Escuta de mensagens via SignalR
+    this.initialLoadChat();
+    this.loadRollsLog();
+
     this.chatSubscription = this.chatService.onMessageReceived().subscribe((msg: any) => {
       this.ngZone.run(() => {
         const normalizedMsg = this.normalizeMessage(msg);
+        const index = normalizedMsg.id
+          ? this.messages.findIndex((m) => m.id === normalizedMsg.id)
+          : -1;
 
-        // Se for rolagem ou comando, insere na aba de dados
-        if (this.isRollOrCommand(normalizedMsg.data)) {
-          this.rollsHistory = [...this.rollsHistory, normalizedMsg];
+        if (index !== -1) {
+          this.messages[index] = normalizedMsg;
+          this.messages = [...this.messages];
         } else {
-          const index = normalizedMsg.id
-            ? this.messages.findIndex((m) => m.id === normalizedMsg.id)
-            : -1;
+          this.messages = [...this.messages, normalizedMsg];
+        }
 
-          if (index !== -1) {
-            this.messages[index] = normalizedMsg;
-            this.messages = [...this.messages];
-          } else {
-            this.messages = [...this.messages, normalizedMsg];
-          }
+        if (this.isRollOrCommand(normalizedMsg)) {
+          this.loadRollsLog();
         }
 
         if (this.isMinimized) {
           this.unreadCount++;
-        } else {
+        } else if (this.activeTab === 'chat') {
           this.scrollToBottom();
         }
         this.cdr.detectChanges();
@@ -124,53 +132,128 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   get chatMessagesOnly(): ChatMessage[] {
-    return this.messages.filter((m) => !this.isRollOrCommand(m.data));
+    return this.messages.filter((m) => !this.isRollOrCommand(m));
   }
 
-  // Identifica se uma mensagem pertence à aba de Dados & Comandos
-    isRollOrCommand(text: string): boolean {
-    if (!text) return false;
+  isRollOrCommand(msg: any): boolean {
+    if (!msg) return false;
+
+    const text = typeof msg === 'string' ? msg : msg.data || '';
+    const username = typeof msg === 'object' ? msg.username || msg.userName || '' : '';
+
     const trimmed = text.trim();
     const lower = text.toLowerCase();
+    const upperUser = username.toUpperCase();
 
-    return (
-      trimmed.startsWith(this.chatService.commandPrefix) ||
+    if (
+      upperUser.includes('RPG DEX') ||
+      upperUser.includes('RPGDEX') ||
+      upperUser.includes('SYSTEM') ||
+      upperUser.includes('BOT')
+    ) {
+      return true;
+    }
+
+    if (trimmed.startsWith(this.chatService.commandPrefix)) {
+      return true;
+    }
+
+    if (
       trimmed.includes('#') ||
       trimmed.includes('🎲') ||
-      /\b\d*d\d+\b/i.test(trimmed) || // Detecta padrões de dados (2d20, 1d6, d20, etc.)
+      trimmed.includes('->') ||
+      /\b\d*d\d+\b/i.test(trimmed) ||
       lower.includes('rolou') ||
       lower.includes('resultado') ||
       lower.includes('rolagem')
-    );
-  }
-
-  // Extrai a expressão da rolagem de forma segura para o card
-  getRollExpression(roll: any): string {
-    if (!roll) return '';
-    if (typeof roll === 'string') return roll;
-    if (roll.expression) return roll.expression;
-    if (roll.data && typeof roll.data === 'string') return roll.data;
-    return roll.message || 'Rolagem de Dados';
-  }
-
-  // Extrai o resultado final da rolagem de forma segura para o card
-  getRollTotal(roll: any): string | number {
-    if (!roll) return '?';
-    if (roll.total !== undefined && roll.total !== null) return roll.total;
-    if (roll.result !== undefined && roll.result !== null) return roll.result;
-    if (roll.value !== undefined && roll.value !== null) return roll.value;
-
-    if (typeof roll.data === 'string') {
-      const match = roll.data.match(/(?:=|\:)\s*(\d+)/);
-      if (match) return match[1];
+    ) {
+      return true;
     }
-    return '?';
+
+    return false;
+  }
+
+  getRollUser(roll: any): string {
+    if (!roll) return 'Jogador';
+
+    const userId = roll.userId || roll.UserId;
+    if (userId) {
+      const cached = this.usersCache[userId];
+      if (cached) {
+        return cached.displayName || cached.userName || cached.username || 'Jogador';
+      }
+      this.fetchUser(userId);
+    }
+
+    return 'Jogador';
+  }
+
+  private fetchUser(userId: string): void {
+    if (!userId || this.usersCache[userId]) return;
+    this.userService.GetById(userId).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.usersCache[userId] = res.data;
+          this.cdr.detectChanges();
+        }
+      },
+    });
+  }
+
+  getRollEntries(roll: any): DiceRollEntryDto[] {
+    if (!roll) return [];
+    return roll.entires || roll.Entires || [];
+  }
+
+  getRollTotal(roll: any): number {
+    if (!roll) return 0;
+    const entries = this.getRollEntries(roll);
+    if (entries.length > 0) {
+      return entries.reduce((acc, entry) => acc + (entry.total ?? 0), 0);
+    }
+    return roll.total ?? roll.Total ?? 0;
   }
 
   setTab(tab: 'chat' | 'rolls'): void {
     this.activeTab = tab;
+    if (tab === 'rolls') {
+      this.loadRollsLog();
+    }
     this.cdr.detectChanges();
     setTimeout(() => this.scrollToBottom(), 50);
+    this.focusInput();
+  }
+
+  loadRollsLog(): void {
+    if (!this.campaignId) return;
+    this.isLoadingRolls = true;
+
+    this.campaignService.GetRollsLog(this.campaignId).subscribe({
+      next: (res: any) => {
+        const data = res?.data ?? res;
+        this.rollsLog = Array.isArray(data) ? data : [];
+        this.isLoadingRolls = false;
+        this.cdr.detectChanges();
+
+        this.rollsLog.forEach((roll) => {
+          const uId = roll.userId || (roll as any).UserId;
+          if (uId) this.fetchUser(uId);
+        });
+
+        if (this.activeTab === 'rolls') {
+          setTimeout(() => this.scrollToBottom(), 50);
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao buscar log de rolagens:', err);
+        this.isLoadingRolls = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  get rollsList(): any[] {
+    return this.rollsLog;
   }
 
   private normalizeMessage(msg: any): ChatMessage {
@@ -213,18 +296,14 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     });
   }
 
-  initialLoad(): void {
+  initialLoadChat(): void {
     this.isInitialLoading = true;
     const filter = this.searchQuery.trim() ? this.searchQuery.trim() : undefined;
 
     this.chatService.getMessages(this.campaignId, undefined, 30, filter).subscribe({
       next: (r) => {
         const rawItems = r.data?.items ?? [];
-        const normalized = rawItems.map((item) => this.normalizeMessage(item));
-
-        this.messages = normalized.filter((m) => !this.isRollOrCommand(m.data));
-        this.rollsHistory = normalized.filter((m) => this.isRollOrCommand(m.data));
-
+        this.messages = rawItems.map((item) => this.normalizeMessage(item));
         this.nextCursor = r.data?.nextCursor;
         this.hasMore = r.data?.hasMore ?? false;
         this.isInitialLoading = false;
@@ -240,14 +319,14 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   onSearchChange(): void {
-    this.initialLoad();
+    this.initialLoadChat();
   }
 
   toggleSearch(): void {
     this.showSearchInput = !this.showSearchInput;
     if (!this.showSearchInput) {
       this.searchQuery = '';
-      this.initialLoad();
+      this.initialLoadChat();
     }
   }
 
@@ -267,12 +346,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         const rawOlder = res.data.items || [];
         const olderMessages = rawOlder.map((item) => this.normalizeMessage(item));
 
-        const olderChats = olderMessages.filter((m) => !this.isRollOrCommand(m.data));
-        const olderRolls = olderMessages.filter((m) => this.isRollOrCommand(m.data));
-
-        this.messages = [...olderChats, ...this.messages];
-        this.rollsHistory = [...olderRolls, ...this.rollsHistory];
-
+        this.messages = [...olderMessages, ...this.messages];
         this.nextCursor = res.data.nextCursor;
         this.hasMore = res.data.hasMore;
         this.isLoadingMore = false;
@@ -305,26 +379,16 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         ? this.selectedCharacterId
         : null;
 
-    // Se o texto for um comando (@rpg)
     if (textToSend.startsWith(commandPrefix)) {
       const commandExec = this.chatService.tryExecuteCommand(textToSend, this.campaignId);
 
       if (commandExec) {
         commandExec.subscribe({
-          next: (res: any) => {
+          next: () => {
             this.isSending = false;
-            this.activeTab = 'rolls'; // Redireciona para a aba de rolagens
-
-            // Desembrulha o resultado HTTP corretamente (evita inserir objetos de wrapper genéricos)
-            const rawData = res?.data ?? res;
-            if (Array.isArray(rawData)) {
-              rawData.forEach((item) => this.rollsHistory.push(item));
-            } else if (rawData && typeof rawData === 'object' && ('total' in rawData || 'expression' in rawData)) {
-              this.rollsHistory.push(rawData);
-            }
-
+            this.activeTab = 'rolls';
+            this.loadRollsLog();
             this.cdr.detectChanges();
-            this.scrollToBottom();
             this.focusInput();
           },
           error: (err) => {
@@ -338,7 +402,6 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Envio de mensagem convencional
     const request: CampaignChatMessageRequest = {
       campaignId: this.campaignId,
       characterId: charId,
@@ -348,8 +411,8 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     this.chatService.sendMessage(request).subscribe({
       next: () => {
         this.isSending = false;
-        this.focusInput();
         this.cdr.detectChanges();
+        this.focusInput();
       },
       error: (err) => {
         this.isSending = false;
@@ -407,7 +470,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     if (!this.isMinimized) {
       this.unreadCount = 0;
       this.scrollToBottom();
-      setTimeout(() => this.focusInput(), 0);
+      this.focusInput();
     }
   }
 
@@ -427,7 +490,11 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   private focusInput(): void {
-    this.chatInput?.nativeElement?.focus();
+    setTimeout(() => {
+      if (this.chatInput && this.chatInput.nativeElement) {
+        this.chatInput.nativeElement.focus();
+      }
+    }, 50);
   }
 
   ngOnDestroy(): void {
