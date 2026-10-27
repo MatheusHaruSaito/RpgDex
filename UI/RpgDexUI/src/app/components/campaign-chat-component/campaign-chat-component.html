@@ -5,13 +5,11 @@
       <i class="fa fa-comments"></i>
       <span>Bate-papo da Mesa</span>
 
-      <span
-        class="chat-unread-badge"
-        *ngIf="isMinimized && unreadCount > 0"
-        title="Novas mensagens"
-      >
-        {{ unreadCount }}
-      </span>
+      @if (isMinimized && unreadCount > 0) {
+        <span class="chat-unread-badge" title="Novas mensagens">
+          {{ unreadCount }}
+        </span>
+      }
     </div>
 
     <div class="chat-header-actions" (click)="$event.stopPropagation()">
@@ -228,7 +226,7 @@
               </span>
             </div>
           </div>
-        </div>
+        }
       </div>
     </ng-container>
 
@@ -266,10 +264,13 @@
         </button>
       </form>
 
-      <div class="chat-error-toast" *ngIf="sendError">
-        <i class="fa fa-circle-exclamation"></i>
-        <span>{{ sendError }}</span>
+        @if (sendError) {
+          <div class="chat-error-toast">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ sendError }}</span>
+          </div>
+        }
       </div>
     </div>
-  </div>
+  }
 </div>

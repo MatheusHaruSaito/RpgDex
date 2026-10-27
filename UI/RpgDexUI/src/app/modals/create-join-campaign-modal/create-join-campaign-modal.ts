@@ -2,6 +2,8 @@ import { Component, EventEmitter, Input, Output, ChangeDetectorRef, inject } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
+import { TranslateService } from '@ngx-translate/core';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-create-join-campaign-modal',
@@ -12,6 +14,7 @@ import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 })
 export class CreateJoinCampaignModalComponent {
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   @Input() isOpen = false;
   @Input() activeTab: 'create' | 'join' = 'create';
@@ -49,6 +52,12 @@ export class CreateJoinCampaignModalComponent {
     this.cdr.detectChanges();
   }
 
+  public handleError(err: any): void {
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      this.setErrorMessage(msg);
+    });
+  }
+
   validateMaxPlayers(): void {
     if (this.newMaxPlayers < 1) this.newMaxPlayers = 1;
     if (this.newMaxPlayers > 20) this.newMaxPlayers = 20;
@@ -57,6 +66,12 @@ export class CreateJoinCampaignModalComponent {
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        this.setErrorMessage('A imagem deve ter no máximo 5MB.');
+        return;
+      }
+      this.errorMessage = '';
       this.imageChangedEvent = event;
       this.showCropperModal = true;
       this.cdr.detectChanges();
@@ -87,22 +102,22 @@ export class CreateJoinCampaignModalComponent {
   }
 
   submitCreate(): void {
-    if (!this.newTitle || !this.selectedIconFile) return;
+    if (!this.newTitle.trim() || !this.selectedIconFile) return;
     this.errorMessage = '';
 
     const form = new FormData();
-    form.append('title', this.newTitle.substring(0, 60));
+    form.append('title', this.newTitle.trim().substring(0, 60));
     form.append('maxPlayers', this.newMaxPlayers.toString());
     form.append('icon', this.selectedIconFile, this.selectedIconFile.name);
     form.append('nextSession', new Date('1999-01-01T00:00:00').toISOString());
-    if (this.newDescription) form.append('description', this.newDescription.substring(0, 1000));
+    if (this.newDescription) form.append('description', this.newDescription.trim().substring(0, 1000));
     if (this.newPassword) form.append('password', this.newPassword.substring(0, 50));
 
     this.onCreate.emit(form);
   }
 
   submitJoin(): void {
-    if (!this.joinId) return;
+    if (!this.joinId.trim()) return;
     this.errorMessage = '';
 
     this.onJoin.emit({

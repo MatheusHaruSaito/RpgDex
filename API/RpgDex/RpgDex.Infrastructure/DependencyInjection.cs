@@ -85,6 +85,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
             services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
             services.AddScoped<ICharacterQueries, CharacterQueries>();
+            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
 
 
 

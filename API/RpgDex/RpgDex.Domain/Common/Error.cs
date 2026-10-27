@@ -86,6 +86,48 @@ namespace RpgDex.Domain.Common
         public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
         public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
         public static readonly Error InvalidExpression = new("DICE_LOG_INVALID_EXPRESSION", "Invalid dice expression.");
+    public static class ValidationErrorCodes
+    {
+        public const string GeneralEmpty = "VALIDATION_EMPTY";
+        public const string GeneralMaxLength = "VALIDATION_MAX_LENGTH";
+        public const string InvalidEmail = "VALIDATION_INVALID_EMAIL";
+        public const string FileTooLarge = "VALIDATION_FILE_TOO_LARGE";
+        public const string InvalidFileExtension = "VALIDATION_INVALID_FILE_EXTENSION";
+
+        public const string PasswordEmpty = "VALIDATION_PASSWORD_EMPTY";
+        public const string PasswordUppercase = "VALIDATION_PASSWORD_UPPERCASE";
+        public const string PasswordLowercase = "VALIDATION_PASSWORD_LOWERCASE";
+        public const string PasswordNumber = "VALIDATION_PASSWORD_NUMBER";
+        public const string PasswordSpecial = "VALIDATION_PASSWORD_SPECIAL";
+
+        public const string UserNameEmpty = "VALIDATION_USERNAME_EMPTY";
+        public const string UserNameMaxLength = "VALIDATION_USERNAME_MAX_LENGTH";
+        public const string UserNameNoSpaces = "VALIDATION_USERNAME_NO_SPACES";
+        public const string UserNameInvalidChars = "VALIDATION_USERNAME_INVALID_CHARS";
+        public const string DisplayNameEmpty = "VALIDATION_DISPLAYNAME_EMPTY";
+
+        public const string CampaignIconRequired = "CAMPAIGN_VALIDATION_ICON_REQUIRED";
+        public const string DocumentFileRequired = "DOCUMENT_VALIDATION_FILE_REQUIRED";
+        public const string CanvasInvalidType = "CANVAS_INVALID_TYPE";
+        public const string CanvasInvalidImage = "CANVAS_INVALID_IMAGE";
+        public const string CanvasInvalidPoints = "CANVAS_INVALID_POINTS";
+        public const string CanvasInvalidValue = "CANVAS_INVALID_VALUE";
+        public const string CanvasInvalidColor = "CANVAS_INVALID_COLOR";
+        public const string CanvasTooManyItems = "CANVAS_TOO_MANY_ITEMS";
+    }
+    public static class CanvaElementError
+    {
+        public static readonly Error NotFound = new("CANVAS_ELEMENT_NOT_FOUND", "Canvas element not found.");
+        public static readonly Error CreateFailed = new("CANVAS_ELEMENT_CREATE_FAILED", "Failed to create canvas element.");
+        public static readonly Error UpdateFailed = new("CANVAS_ELEMENT_UPDATE_FAILED", "Failed to update canvas element.");
+        public static readonly Error MoveFailed = new("CANVAS_ELEMENT_MOVE_FAILED", "Failed to move canvas elements.");
+        public static readonly Error ReorderFailed = new("CANVAS_ELEMENT_REORDER_FAILED", "Failed to reorder canvas elements.");
+        public static readonly Error SetActiveStateFailed = new("CANVAS_ELEMENT_SET_ACTIVE_STATE_FAILED", "Failed to change canvas element active state.");
+        public static readonly Error InvalidElement = new("CANVAS_ELEMENT_INVALID", "Element data does not match its type.");
+        public static readonly Error ImageTooLarge = new("CANVAS_ELEMENT_IMAGE_TOO_LARGE", "Image is too large.");
+        public static readonly Error TooManyPoints = new("CANVAS_ELEMENT_TOO_MANY_POINTS", "Drawing has too many points.");
+        public static readonly Error TooManyItems = new("CANVAS_ELEMENT_TOO_MANY_ITEMS", "Invalid number of elements in the request.");
+        public static readonly Error LimitReached = new("CANVAS_ELEMENT_LIMIT_REACHED", "Canvas element limit reached.");
     }
 }
 

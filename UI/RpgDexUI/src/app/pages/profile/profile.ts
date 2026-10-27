@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { CampaignService } from '../../services/campaign-service';
@@ -10,6 +11,7 @@ import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
 import { SettingsModalComponent } from '../../modals/settings-modal/settings-modal';
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 const THEME_KEY = 'rpgdex-theme';
 
@@ -33,6 +35,7 @@ export class ProfileComponent implements OnInit {
   private campaignService = inject(CampaignService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   user: UserResponse | null = null;
   authOptions: AuthOptionsResponse | null = null;
@@ -95,9 +98,10 @@ export class ProfileComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Erro ao carregar usuário', err);
         this.isLoadingUser = false;
-        this.logout();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.logout();
+        });
       },
     });
   }
@@ -110,7 +114,11 @@ export class ProfileComponent implements OnInit {
           this.cdr.detectChanges();
         }
       },
-      error: (err) => console.error('Erro ao carregar opções de autenticação', err),
+      error: (err) => {
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
+      },
     });
   }
 
@@ -124,9 +132,10 @@ export class ProfileComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao carregar personagens', err);
         this.isLoadingCharacters = false;
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -168,9 +177,10 @@ export class ProfileComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao carregar campanhas', err);
         this.isLoadingCampaigns = false;
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
       },
     });
   }
