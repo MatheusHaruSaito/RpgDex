@@ -86,6 +86,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
         public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
         public static readonly Error InvalidExpression = new("DICE_LOG_INVALID_EXPRESSION", "Invalid dice expression.");
+    }
     public static class ValidationErrorCodes
     {
         public const string GeneralEmpty = "VALIDATION_EMPTY";
