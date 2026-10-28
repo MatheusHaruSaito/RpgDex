@@ -95,7 +95,7 @@ namespace RpgDex.Application.Services
             //CreateCharacter
             Character character = new()
             {
-                Name = request.Content
+                Name = request.Content,
             };
             var createCharacterResult =await characterSevice.Create(userId,new CreateCharacterRequest(character.Name, null,request.CharacterIcon,null));
             if (createCharacterResult.IsFailure)
@@ -105,12 +105,13 @@ namespace RpgDex.Application.Services
             //Add To Campaign
             //Add To Npc List, this is just for testing
             //change this when implement npcs
-            var addCharacterResult =await campaignService.AddCharacter(userId, new(request.CampaignId, character.Id));
+            var characterId = createCharacterResult.Value!.Id;
+            var addCharacterResult =await campaignService.AddCharacter(userId, new(request.CampaignId, characterId));
             if (addCharacterResult.IsFailure)
             {
                 return Result<CanvasElementResponse>.Failure(addCharacterResult.Errors);
             }
-            var accpetCharacterResult = await campaignService.AcceptCharacter(userId, new(request.CampaignId, character.Id,true));
+            var accpetCharacterResult = await campaignService.AcceptCharacter(userId, new(request.CampaignId, characterId, true));
             if (accpetCharacterResult.IsFailure)
             {
                 return Result<CanvasElementResponse>.Failure(accpetCharacterResult.Errors);
