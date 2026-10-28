@@ -117,7 +117,8 @@ namespace RpgDex.Application.Services
                 return Result<CanvasElementResponse>.Failure(accpetCharacterResult.Errors);
             }
             //CreateToken
-            return await CreateTokenElement(userId,request.Adapt<CreateCanvaTokenElementRequest>());
+            var requestAdapted =request.Adapt<CreateCanvaTokenElementRequest>() with { CharacterId = characterId};
+            return await CreateTokenElement(userId, requestAdapted);
         }
 
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
