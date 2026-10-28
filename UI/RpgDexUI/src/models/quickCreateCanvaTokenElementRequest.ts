@@ -1,5 +1,5 @@
 export interface QuickCreateCanvaTokenElementRequest {
-  characterIcon: File;
+  characterIcon?: File;
   campaignId: string;
   x: number;
   y: number;
