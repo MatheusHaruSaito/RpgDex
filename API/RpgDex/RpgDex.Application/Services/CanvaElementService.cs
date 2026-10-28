@@ -92,6 +92,8 @@ namespace RpgDex.Application.Services
         }
         public async Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request)
         {
+            var (userGuidId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
             //CreateCharacter
             Character character = new()
             {
