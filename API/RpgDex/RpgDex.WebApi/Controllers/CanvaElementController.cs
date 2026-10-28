@@ -39,6 +39,12 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvaElementService.CreateTokenElement(currentUser, request);
             return result.ToIActionResult();
         }
+        [HttpPost("element/token/quick")]
+        public async Task<IActionResult> QuickCreateCharacterTokenElement([FromForm] QuickCreateCanvaTokenElementRequest request)
+        {
+            var result = await _canvaElementService.QuickCreateTokenElement(currentUser, request);
+            return result.ToIActionResult();
+        }
 
         [HttpGet("All")]
         public async Task<IActionResult> GetAllElements([FromQuery]Guid campaignId, [FromQuery]int page, [FromQuery]int pageSize)

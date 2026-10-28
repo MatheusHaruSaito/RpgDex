@@ -39,7 +39,10 @@ export class CanvasElementService {
     request: QuickCreateCanvaTokenElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {
     console.log(request);
-    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/token`, request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(
+      `${this.env}/element/token/quick`,
+      request,
+    );
   }
   public GetAllElements(
     campaignId: string,
