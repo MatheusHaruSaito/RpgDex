@@ -20,7 +20,7 @@ namespace RpgDex.Application.Services
 {
     public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
-        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService
         ) : ICanvaElementService
     {
         private const int MaxElementsPerCanvas = 500;
@@ -97,10 +97,23 @@ namespace RpgDex.Application.Services
             {
                 Name = request.Content
             };
-            var createCharacterResult =await characterSevice.Create(userId,new CreateCharacterRequest(request.CharacterName,null,request.CharacterIcon,null));
+            var createCharacterResult =await characterSevice.Create(userId,new CreateCharacterRequest(character.Name, null,request.CharacterIcon,null));
             if (createCharacterResult.IsFailure)
             {
                 return Result<CanvasElementResponse>.Failure(createCharacterResult.Errors);
+            }
+            //Add To Campaign
+            //Add To Npc List, this is just for testing
+            //change this when implement npcs
+            var addCharacterResult =await campaignService.AddCharacter(userId, new(request.CampaignId, character.Id));
+            if (addCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(addCharacterResult.Errors);
+            }
+            var accpetCharacterResult = await campaignService.AcceptCharacter(userId, new(request.CampaignId, character.Id,true));
+            if (accpetCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(accpetCharacterResult.Errors);
             }
             //CreateToken
             return await CreateTokenElement(userId,request.Adapt<CreateCanvaTokenElementRequest>());

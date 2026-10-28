@@ -6,5 +6,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record QuickCreateCanvaTokenElementRequest(IFormFile CharacterIcon, Guid CampaignId, Guid CharacterId, double X, double Y, int Z, double Scale, string Content, string? Color, CanvasElementType ElementType = CanvasElementType.Token);
+    public record QuickCreateCanvaTokenElementRequest(IFormFile CharacterIcon, Guid CampaignId, double X, double Y, int Z, double Scale, string Content, string? Color, CanvasElementType ElementType = CanvasElementType.Token);
 }
