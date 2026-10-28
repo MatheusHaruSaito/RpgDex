@@ -44,10 +44,10 @@ namespace RpgDex.Application.Services
                 {
                     Email = user.Email,
                     FirstName = user.UserName,
-                    Identification = new MpOrderIdentification
-                    {
-                        Number = "12345678909"
-                    }
+                    //Identification = new MpOrderIdentification
+                    //{
+                    //    Number = "12345678909"
+                    //}
                 },
                 Items =
                 [

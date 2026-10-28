@@ -154,7 +154,7 @@ namespace RpgDex.Application.Interfaces
     {
         [JsonPropertyName("email")] public required string Email { get; init; }
         [JsonPropertyName("first_name")] public required string FirstName { get; init; }
-        [JsonPropertyName("identification")] public required MpOrderIdentification Identification { get; init; }
+        //[JsonPropertyName("identification")] public required MpOrderIdentification? Identification { get; init; }
     }
     public sealed class MpOrderIdentification
     {

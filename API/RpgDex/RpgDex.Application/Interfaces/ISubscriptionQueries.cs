@@ -7,6 +7,6 @@ namespace RpgDex.Domain.Interfaces
 {
     public interface ISubscriptionQueries
     {
-        Task<PlanLimitsDTO?> GetPlanLimits(Guid id);
+        Task<PlanLimitsDTO?> GetPlanLimitsByUserId(Guid id);
     }
 }
