@@ -1,9 +1,11 @@
-﻿using FluentValidation;
+﻿using DnsClient.Internal;
+using FluentValidation;
 using Mapster;
-using RpgDex.Domain.Common;
+using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using SharpCompress.Common;
@@ -13,7 +15,8 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class UserDocumentService(IUserDocumentRepository userDocumentRepository,IFileService fileService,
+    public class UserDocumentService(IUserDocumentRepository userDocumentRepository, IFileService fileService,
+        IUserDocumentQueries userDocumentQueries,
         IValidator<CreateUserDocumentRequest> createUserDocumentValidator,
         IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator) : IUserDocumentService
     {
