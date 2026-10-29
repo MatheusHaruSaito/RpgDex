@@ -14,7 +14,7 @@ using static RpgDex.Domain.Entities.Campaign;
 namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
-        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
+        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher, ISubscriptionService subscriptionService,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
         ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator) : ICampaignService
     {
@@ -50,6 +50,12 @@ namespace RpgDex.Application.Services
             if (!checkCreateCampaignRequest.IsValid) return checkCreateCampaignRequest.ReturnErrors<CampaignResponse>();
 
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
+            var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+            var campaigns = await campaignRepository.GetAllAsync(guidUserId, 1, 20);
+            if(campaigns.campaignLenght > userLimits!.Value.CampaignQty)
+            {
+               return Result<CampaignResponse>.Failure(CampaignError.QuantityExceed);
+            }
 
             var userExisits = await userRepository.GetByIdAsync(guidUserId);
             if (userExisits is null)

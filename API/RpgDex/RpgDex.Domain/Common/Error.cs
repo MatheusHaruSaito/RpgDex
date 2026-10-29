@@ -49,6 +49,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error CharacterNotInRequests = new("CAMPAIGN_CHARACTER_NOT_IN_REQUESTS", "Character is not in the request list.");
         public static readonly Error CharacterNotInCampaign = new("CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN", "Character is not in the campaign.");
         public static readonly Error PlayerNotInCampaign = new("CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN", "Player is not in campaign.");
+        public static readonly Error QuantityExceed = new("CAMPAIGN_QUANTITY_EXCEED", "Failed to create campaign, maximum campaign reached"); 
     }
 
     public static class CharacterError

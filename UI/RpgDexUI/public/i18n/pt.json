@@ -35,6 +35,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "O personagem não se encontra na lista de pedidos de adesão.",
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "O personagem não faz parte desta campanha.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "O jogador não faz parte desta campanha.",
+    "CAMPAIGN_QUANTITY_EXCEED": "Falha ao criar campanha, capacidade maxima atingida",
 
     "CHARACTER_NOT_FOUND": "Personagem não encontrado.",
     "CHARACTER_NOT_OWNED": "Este personagem não pertence ao utilizador autenticado.",

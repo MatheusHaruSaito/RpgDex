@@ -35,6 +35,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "The character was not found in the join requests list.",
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
+    "CAMPAIGN_QUANTITY_EXCEED": "Failed to create campaign, maximum campaign reached",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
