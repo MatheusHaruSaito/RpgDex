@@ -52,7 +52,7 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var campaigns = await campaignRepository.GetAllAsync(guidUserId, 1, 20);
-            if(campaigns.campaignLenght > userLimits!.Value.CampaignQty)
+            if(campaigns.campaignLenght > userLimits.Value!.CampaignQty)
             {
                return Result<CampaignResponse>.Failure(CampaignError.QuantityExceed);
             }
