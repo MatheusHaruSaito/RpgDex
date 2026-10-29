@@ -16,7 +16,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class UserDocumentService(IUserDocumentRepository userDocumentRepository, IFileService fileService,
-        IUserDocumentQueries userDocumentQueries, ISubscriptionService subscriptionService, ILogger<UserDocumentService> logger,
+        IUserDocumentQueries userDocumentQueries, ISubscriptionService subscriptionService,
         IValidator<CreateUserDocumentRequest> createUserDocumentValidator,
         IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator) : IUserDocumentService
     {
@@ -105,6 +105,15 @@ namespace RpgDex.Application.Services
 
             if(request.File is not null && request.File.Length > 0)
             {
+                var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+                var documentsStorageSize = await userDocumentQueries.GetDocumentStorageInMbByUserId(userGuidId);
+                var documentsSizeTotal = (documentsStorageSize + request.File.Length / 1024m / 1024m) - userDocument.FileSize / 1024m / 1024m;
+
+                if (documentsSizeTotal > userLimits.Value!.DocumentsSpaceMB)
+                {
+                    return Result<UserDocumentResponse>.Failure(UserDocumentError.LimitExceed);
+                }
+
                 try
                 {
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(request.File.FileName);
