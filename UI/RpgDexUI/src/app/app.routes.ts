@@ -1,3 +1,4 @@
+// app.routes.ts
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home';
 import { UserLoginComponent } from './pages/user-login/user-login.component';
@@ -8,6 +9,7 @@ import { CampaignsComponent } from './pages/campaigns/campaigns';
 import { ProfileComponent } from './pages/profile/profile';
 import { EditProfileComponent } from './pages/edit-profile/edit-profile';
 import { authGuard } from './guards/auth.guard';
+import { adminGuard } from './guards/admin-guard';
 import { EmailConfirmation } from './pages/email-confirmation/email-confirmation';
 import { EmailPending } from './pages/email-pending/email-pending';
 import { DiscordAuth } from './callbacks/discord-auth/discord-auth';
@@ -61,6 +63,12 @@ export const routes: Routes = [
         (m) => m.LibraryComponent
       ),
     canActivate: [authGuard],
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./pages/admin/admin').then((m) => m.AdminComponent),
+    canActivate: [adminGuard],
   },
 
   { path: '**', redirectTo: '/home' },

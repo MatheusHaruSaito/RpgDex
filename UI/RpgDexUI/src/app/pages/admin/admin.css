@@ -1,0 +1,250 @@
+.admin-layout {
+  display: flex;
+  min-height: calc(100vh - 80px);
+  background-color: #f4f5f8;
+  padding: 24px;
+  gap: 24px;
+  box-sizing: border-box;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* ── SIDEBAR LATERAL ── */
+.admin-sidebar {
+  width: 220px;
+  background: #ffffff;
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 20px 16px;
+  box-sizing: border-box;
+}
+
+.sidebar-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-tab-btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #1a1a1a;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.admin-tab-btn:hover {
+  background: #f0f0f0;
+}
+
+.admin-tab-btn.active {
+  background: #a3f7bf; /* Verde claro do mockup */
+  border-color: #1a1a1a;
+}
+
+/* ── PAINEL DE CONTEÚDO PRINCIPAL ── */
+.admin-content {
+  flex: 1;
+  background: #ffffff;
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+/* ── ABA DE REPORTES ── */
+.reports-header-box {
+  display: inline-block;
+  border: 2px solid #1a1a1a;
+  padding: 6px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.reports-header-box h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.reports-split-view {
+  display: flex;
+  gap: 24px;
+  min-height: 500px;
+}
+
+.reports-list-panel {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-card {
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  background: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.report-card:hover,
+.report-card.active {
+  background: #f4f4f4;
+  border-width: 3px;
+}
+
+.report-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+}
+
+.report-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.report-detail-panel {
+  flex: 1;
+  border: 2px solid #1a1a1a;
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.report-meta {
+  font-size: 0.85rem;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+}
+
+.report-body-box {
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 180px;
+}
+
+.report-target-card {
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fafafa;
+}
+
+.target-info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.target-avatar-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+  overflow: hidden;
+}
+
+.target-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.report-actions-drawer {
+  position: absolute;
+  right: -120px;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 2px solid #1a1a1a;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-action-admin {
+  padding: 8px 12px;
+  border: 2px solid #1a1a1a;
+  border-radius: 6px;
+  background: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-action-admin.danger {
+  background: #ff7575;
+  color: white;
+}
+
+.btn-action-admin.secondary {
+  background: #eeeeee;
+}
+
+/* ── ABA DE USUÁRIOS E GRÁFICOS ── */
+.chart-container-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chart-filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-date-input {
+  border: 2px solid #1a1a1a;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 700;
+}
+
+.chart-canvas-wrapper {
+  border: 2px solid #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.admin-svg-chart {
+  width: 100%;
+  height: 200px;
+}
+
+.metrics-cards-row {
+  display: flex;
+  gap: 24px;
+}
+
+.metric-card {
+  border: 2px solid #1a1a1a;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.metric-card.active-green {
+  background: #a3f7bf;
+}
+
+.metric-card.gray {
+  background: #efefef;
+}

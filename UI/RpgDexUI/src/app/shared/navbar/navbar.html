@@ -1,3 +1,4 @@
+<!-- navbar.html -->
 <header class="site-header">
   <nav class="main-nav" aria-label="Navegação principal">
     <a class="logo" routerLink="/home" (click)="closeMenu()">RPGDex</a>
@@ -30,6 +31,9 @@
         @if (authService.isLoggedIn()) {
           <li><a routerLink="/campanhas" routerLinkActive="active" (click)="closeMenu()">Jogar</a></li>
           <li><a routerLink="/biblioteca" routerLinkActive="active" (click)="closeMenu()">Biblioteca</a></li>
+          @if (authService.isUserAdmin()) {
+            <li><a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a></li>
+          }
         }
       </ul>
 
