@@ -1,111 +1,137 @@
-<div class="admin-layout">
-  <!-- SIDEBAR DE NAVEGAÇÃO DAS ABAS -->
-  <aside class="admin-sidebar">
-    <div class="sidebar-buttons">
-      <button
-        class="admin-tab-btn"
-        [class.active]="activeTab === 'reportes'"
-        (click)="setTab('reportes')"
-      >
-        Reportes
-      </button>
+<div class="admin-wrapper">
+  <div class="admin-container">
 
-      <button
-        class="admin-tab-btn"
-        [class.active]="activeTab === 'usuarios'"
-        (click)="setTab('usuarios')"
-      >
-        Usuários
-      </button>
-
-      <button
-        class="admin-tab-btn"
-        [class.active]="activeTab === 'personagens'"
-        (click)="setTab('personagens')"
-      >
-        Personagens
-      </button>
-
-      <button
-        class="admin-tab-btn"
-        [class.active]="activeTab === 'campanhas'"
-        (click)="setTab('campanhas')"
-      >
-        Campanhas
-      </button>
-
-      <button
-        class="admin-tab-btn"
-        [class.active]="activeTab === 'pagamentos'"
-        (click)="setTab('pagamentos')"
-      >
-        Pagamentos
-      </button>
-    </div>
-  </aside>
-
-  <!-- CONTEÚDO PRINCIPAL -->
-  <main class="admin-content">
-    <!-- 1. ABA DE REPORTES -->
-    <ng-container *ngIf="activeTab === 'reportes'">
-      <div class="reports-header-box">
-        <h3>Reportes abertos : {{ totalOpenReports }}</h3>
+    <!-- HEADER E NAVEGAÇÃO DO PAINEL -->
+    <header class="admin-header-card">
+      <div class="admin-title-group">
+        <h1>
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Painel do Administrador</span>
+        </h1>
+        <p>Gestão de denúncias, monitoramento de métricas e controle de usuários.</p>
       </div>
 
+      <nav class="admin-nav-tabs">
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'reportes'"
+          (click)="setTab('reportes')"
+        >
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Reportes</span>
+        </button>
+
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'usuarios'"
+          (click)="setTab('usuarios')"
+        >
+          <i class="fa-solid fa-users"></i>
+          <span>Usuários</span>
+        </button>
+
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'personagens'"
+          (click)="setTab('personagens')"
+        >
+          <i class="fa-solid fa-id-card"></i>
+          <span>Personagens</span>
+        </button>
+
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'campanhas'"
+          (click)="setTab('campanhas')"
+        >
+          <i class="fa-solid fa-dice-d20"></i>
+          <span>Campanhas</span>
+        </button>
+
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'pagamentos'"
+          (click)="setTab('pagamentos')"
+        >
+          <i class="fa-solid fa-credit-card"></i>
+          <span>Pagamentos</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- 1. ABA DE REPORTES -->
+    <ng-container *ngIf="activeTab === 'reportes'">
       <div class="reports-split-view">
-        <!-- PAINEL ESQUERDO: LISTA DE REPORTES -->
+
+        <!-- PAINEL DA ESQUERDA: LISTA -->
         <div class="reports-list-panel">
-          <div *ngIf="isLoadingReports" class="loading-state">
-            <i class="fa fa-spinner fa-spin"></i> Carregando denúncias...
+          <div *ngIf="isLoadingReports" class="admin-empty-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <p>Carregando denúncias...</p>
           </div>
 
-          <div *ngIf="!isLoadingReports && reports.length === 0" class="empty-state">
-            <p>Nenhum reporte aberto encontrado.</p>
+          <div *ngIf="!isLoadingReports && reports.length === 0" class="admin-empty-state">
+            <i class="fa-solid fa-circle-check"></i>
+            <p>Nenhuma denúncia aberta pendente!</p>
           </div>
 
           <div
             *ngFor="let rep of reports"
-            class="report-card"
+            class="report-item-card"
             [class.active]="selectedReport?.id === rep.id"
             (click)="selectReport(rep.id)"
           >
-            <h4>{{ rep.title }}</h4>
-            <p>{{ rep.description }}</p>
+            <div class="report-item-header">
+              <h4 class="report-item-title">{{ rep.title }}</h4>
+              <span class="badge">Aberto</span>
+            </div>
+            <p class="report-item-desc">{{ rep.description }}</p>
           </div>
         </div>
 
-        <!-- PAINEL DIREITO: DETALHES DO REPORTE SELECIONADO -->
-        <div class="report-detail-panel" *ngIf="selectedReport">
-          <div class="report-meta">
-            <span>
-              reportado por :
-              <strong>{{ selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName }}</strong>
-            </span>
-            <span class="report-date">
-              DATA DE REPORTADO: {{ selectedReport.createdAt | date: 'dd/MM/yyyy HH:mm' }}
-            </span>
+        <!-- PAINEL DA DIREITA: DETALHES -->
+        <div class="report-detail-card" *ngIf="selectedReport">
+          <div class="report-meta-header">
+            <div class="report-owner-info">
+              <i class="fa-solid fa-user-ninja"></i>
+              <span>Reportado por: <strong>{{ selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName }}</strong></span>
+            </div>
+            <div class="report-date-tag">
+              <i class="fa-regular fa-clock"></i>
+              <span>{{ selectedReport.createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+            </div>
           </div>
 
-          <div class="report-body-box">
+          <div class="report-content-body">
             <h2>{{ selectedReport.title }}</h2>
-            <div class="report-description-text">
+            <div class="report-description-box">
               {{ selectedReport.description }}
             </div>
           </div>
 
-          <!-- TARGET DO REPORTE -->
-          <div class="report-target-card" *ngIf="selectedReport.target">
+          <!-- DETALHES DO TARGET -->
+          <div class="report-target-box" *ngIf="selectedReport.target">
             <!-- TARGET: USUÁRIO -->
             <ng-container *ngIf="selectedReport.reportType === ReportType.UserReport">
-              <div class="target-badge">Jogador reportado</div>
-              <div class="target-info-row">
-                <div class="target-avatar-circle">
-                  <img
-                    [src]="selectedReport.target.iconPath || 'assets/default-avatar.png'"
-                    alt="Foto do Usuário"
-                  />
+              <span class="target-badge-label">
+                <i class="fa-solid fa-user"></i> Jogador Reportado
+              </span>
+              <div class="target-profile-row">
+                <img
+                  *ngIf="selectedReport.target.iconPath"
+                  [src]="selectedReport.target.iconPath"
+                  class="target-avatar"
+                  alt="Avatar"
+                />
+                <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
+                  <i class="fa-solid fa-user"></i>
                 </div>
-                <div class="target-details">
+                <div class="target-details-text">
                   <h4>{{ selectedReport.target.displayName }}</h4>
                   <p>&#64;{{ selectedReport.target.userName }}</p>
                 </div>
@@ -114,92 +140,104 @@
 
             <!-- TARGET: CAMPANHA -->
             <ng-container *ngIf="selectedReport.reportType === ReportType.CampaignReport">
-              <div class="target-badge">Campanha reportada</div>
-              <div class="target-info-row">
-                <div class="target-avatar-circle">
-                  <img
-                    [src]="selectedReport.target.iconPath || 'assets/default-campaign.png'"
-                    alt="Foto da Campanha"
-                  />
+              <span class="target-badge-label">
+                <i class="fa-solid fa-map-location-dot"></i> Campanha Reportada
+              </span>
+              <div class="target-profile-row">
+                <img
+                  *ngIf="selectedReport.target.iconPath"
+                  [src]="selectedReport.target.iconPath"
+                  class="target-avatar"
+                  alt="Avatar da Campanha"
+                />
+                <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
+                  <i class="fa-solid fa-dice-d20"></i>
                 </div>
-                <div class="target-details">
+                <div class="target-details-text">
                   <h4>{{ selectedReport.target.title }}</h4>
-                  <p>{{ selectedReport.target.description || 'Sem descrição' }}</p>
-                  <p class="target-sub-info">
-                    Mestre: {{ selectedReport.target.gameMaster?.displayName }} | Mensagens: {{ selectedReport.target.messagesCount }}
-                  </p>
+                  <p>{{ selectedReport.target.description || 'Sem descrição cadastrada' }}</p>
+                  <p>Mestre: {{ selectedReport.target.gameMaster?.displayName }} | Mensagens: {{ selectedReport.target.messagesCount }}</p>
                 </div>
               </div>
             </ng-container>
 
             <!-- TARGET: PERSONAGEM -->
             <ng-container *ngIf="selectedReport.reportType === ReportType.CharacterReport">
-              <div class="target-badge">Personagem reportado</div>
-              <div class="target-info-row">
-                <div class="target-avatar-circle">
-                  <img
-                    [src]="selectedReport.target.iconPath || 'assets/default-avatar.png'"
-                    alt="Foto do Personagem"
-                  />
+              <span class="target-badge-label">
+                <i class="fa-solid fa-shield-halved"></i> Personagem Reportado
+              </span>
+              <div class="target-profile-row">
+                <img
+                  *ngIf="selectedReport.target.iconPath"
+                  [src]="selectedReport.target.iconPath"
+                  class="target-avatar"
+                  alt="Avatar do Personagem"
+                />
+                <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
+                  <i class="fa-solid fa-user-shield"></i>
                 </div>
-                <div class="target-details">
+                <div class="target-details-text">
                   <h4>{{ selectedReport.target.name }}</h4>
-                  <p>{{ selectedReport.target.description || 'Sem descrição' }}</p>
+                  <p>{{ selectedReport.target.description || 'Sem descrição cadastrada' }}</p>
                 </div>
               </div>
             </ng-container>
           </div>
 
-          <!-- DRAWER DE AÇÕES DE ADMIN -->
-          <div class="report-actions-drawer">
-            <button class="btn-action-admin danger" (click)="punishUser(selectedReport.id)">
-              Penalizar
+          <!-- AÇÕES DO REPORTE -->
+          <div class="report-action-buttons">
+            <button type="button" class="btn btn-outline-danger" (click)="punishUser(selectedReport.id)">
+              <i class="fa-solid fa-gavel"></i>
+              <span>Penalizar Alvo</span>
             </button>
-            <button class="btn-action-admin secondary" (click)="closeReport(selectedReport.id)">
-              Fechar Report
+
+            <button type="button" class="btn btn-secondary" (click)="closeReport(selectedReport.id)">
+              <i class="fa-solid fa-check"></i>
+              <span>Encerrar Denúncia</span>
             </button>
           </div>
         </div>
+
       </div>
     </ng-container>
 
     <!-- 2. ABA DE USUÁRIOS -->
     <ng-container *ngIf="activeTab === 'usuarios'">
-      <div class="chart-container-card">
-        <div class="chart-filters">
-          <input
-            type="date"
-            [(ngModel)]="startDate"
-            (change)="loadUserChart()"
-            class="admin-date-input"
-          />
+      <div class="metrics-card-panel">
+        <div class="chart-filter-row">
+          <label>Período de análise:</label>
+          <input type="date" [(ngModel)]="startDate" (change)="loadUserChart()" class="admin-date-input" />
           <span>até</span>
-          <input
-            type="date"
-            [(ngModel)]="endDate"
-            (change)="loadUserChart()"
-            class="admin-date-input"
-          />
+          <input type="date" [(ngModel)]="endDate" (change)="loadUserChart()" class="admin-date-input" />
         </div>
 
-        <div class="chart-canvas-wrapper">
+        <div class="chart-svg-container">
           <svg viewBox="0 0 700 200" class="admin-svg-chart">
             <path
               [attr.d]="getSvgPoints(userChartData)"
               fill="none"
-              stroke="#FF5C6C"
+              stroke="var(--rpg-purple)"
               stroke-width="4"
               stroke-linecap="round"
             />
           </svg>
         </div>
 
-        <div class="metrics-cards-row">
-          <div class="metric-card active-green">
-            Existem Tantos usuários: {{ userChartData?.total ?? 0 }}
+        <div class="metrics-summary-grid">
+          <div class="stat-widget">
+            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+            <div class="stat-info">
+              <span>Total Registrado</span>
+              <h3>{{ userChartData?.total ?? 0 }} Usuários</h3>
+            </div>
           </div>
-          <div class="metric-card gray">
-            Usuários registrados no período: {{ userChartData?.totalInRange ?? 0 }}
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
+            <div class="stat-info">
+              <span>Cadastros no Período</span>
+              <h3>{{ userChartData?.totalInRange ?? 0 }} Novos</h3>
+            </div>
           </div>
         </div>
       </div>
@@ -207,21 +245,27 @@
 
     <!-- 3. ABA DE PERSONAGENS -->
     <ng-container *ngIf="activeTab === 'personagens'">
-      <div class="chart-container-card">
-        <h3>Métricas de Personagens Criados</h3>
-        <div class="chart-canvas-wrapper">
+      <div class="metrics-card-panel">
+        <h2>Crescimento de Personagens</h2>
+        <div class="chart-svg-container">
           <svg viewBox="0 0 700 200" class="admin-svg-chart">
             <path
               [attr.d]="getSvgPoints(characterChartData)"
               fill="none"
-              stroke="#9E74D0"
+              stroke="var(--rpg-cyan)"
               stroke-width="4"
+              stroke-linecap="round"
             />
           </svg>
         </div>
-        <div class="metrics-cards-row">
-          <div class="metric-card active-green">
-            Total de Personagens: {{ characterChartData?.total ?? 0 }}
+
+        <div class="metrics-summary-grid">
+          <div class="stat-widget">
+            <div class="stat-icon"><i class="fa-solid fa-id-card"></i></div>
+            <div class="stat-info">
+              <span>Total de Fichas</span>
+              <h3>{{ characterChartData?.total ?? 0 }} Personagens</h3>
+            </div>
           </div>
         </div>
       </div>
@@ -229,21 +273,27 @@
 
     <!-- 4. ABA DE CAMPANHAS -->
     <ng-container *ngIf="activeTab === 'campanhas'">
-      <div class="chart-container-card">
-        <h3>Métricas de Campanhas</h3>
-        <div class="chart-canvas-wrapper">
+      <div class="metrics-card-panel">
+        <h2>Estatísticas de Campanhas</h2>
+        <div class="chart-svg-container">
           <svg viewBox="0 0 700 200" class="admin-svg-chart">
             <path
               [attr.d]="getSvgPoints(campaignChartData)"
               fill="none"
-              stroke="#48C78E"
+              stroke="var(--rpg-purple-dark)"
               stroke-width="4"
+              stroke-linecap="round"
             />
           </svg>
         </div>
-        <div class="metrics-cards-row">
-          <div class="metric-card active-green">
-            Total de Campanhas: {{ campaignChartData?.total ?? 0 }}
+
+        <div class="metrics-summary-grid">
+          <div class="stat-widget">
+            <div class="stat-icon"><i class="fa-solid fa-dice-d20"></i></div>
+            <div class="stat-info">
+              <span>Mesas Criadas</span>
+              <h3>{{ campaignChartData?.total ?? 0 }} Campanhas</h3>
+            </div>
           </div>
         </div>
       </div>
@@ -251,13 +301,27 @@
 
     <!-- 5. ABA DE PAGAMENTOS -->
     <ng-container *ngIf="activeTab === 'pagamentos'">
-      <div class="chart-container-card">
-        <h3>Painel de Planos e Assinaturas</h3>
-        <div class="metrics-cards-row">
-          <div class="metric-card active-green">Plano Free Ativo</div>
-          <div class="metric-card gray">Plano Premium Integrado</div>
+      <div class="metrics-card-panel">
+        <h2>Painel de Assinaturas & Planos</h2>
+        <div class="metrics-summary-grid">
+          <div class="stat-widget">
+            <div class="stat-icon"><i class="fa-solid fa-certificate"></i></div>
+            <div class="stat-info">
+              <span>Plano Gratuito</span>
+              <h3>Plano Free Ativo</h3>
+            </div>
+          </div>
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-gem"></i></div>
+            <div class="stat-info">
+              <span>Assinantes Premium</span>
+              <h3>Premium Habilitado</h3>
+            </div>
+          </div>
         </div>
       </div>
     </ng-container>
-  </main>
+
+  </div>
 </div>

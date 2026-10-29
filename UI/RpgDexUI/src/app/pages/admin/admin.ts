@@ -93,7 +93,7 @@ export class AdminComponent implements OnInit {
   }
 
   punishUser(reportId: string): void {
-    if (confirm('Deseja aplicar uma penalidade relacionada com este reporte?')) {
+    if (confirm('Deseja aplicar uma penalidade relacionada a este reporte?')) {
       this.reportService.PunishUser({ reportId }).subscribe({
         next: (res) => {
           if (res.success) {

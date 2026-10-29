@@ -1,250 +1,420 @@
-.admin-layout {
-  display: flex;
+.admin-wrapper {
   min-height: calc(100vh - 80px);
-  background-color: #f4f5f8;
-  padding: 24px;
-  gap: 24px;
+  padding: 40px 20px 80px;
   box-sizing: border-box;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   font-family: 'Nunito', sans-serif;
 }
 
-/* ── SIDEBAR LATERAL ── */
-.admin-sidebar {
-  width: 220px;
-  background: #ffffff;
-  border: 2px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 20px 16px;
-  box-sizing: border-box;
-}
-
-.sidebar-buttons {
+/* ── HEADER DA PÁGINA ADMIN ── */
+.admin-header-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 28px 36px;
+  box-shadow: var(--rpg-shadow-md);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.admin-tab-btn {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #1a1a1a;
-  border-radius: 8px;
-  background: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #1a1a1a;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.admin-tab-btn:hover {
-  background: #f0f0f0;
-}
-
-.admin-tab-btn.active {
-  background: #a3f7bf; /* Verde claro do mockup */
-  border-color: #1a1a1a;
-}
-
-/* ── PAINEL DE CONTEÚDO PRINCIPAL ── */
-.admin-content {
-  flex: 1;
-  background: #ffffff;
-  border: 2px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 24px;
-  box-sizing: border-box;
-}
-
-/* ── ABA DE REPORTES ── */
-.reports-header-box {
-  display: inline-block;
-  border: 2px solid #1a1a1a;
-  padding: 6px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.reports-header-box h3 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-}
-
-.reports-split-view {
-  display: flex;
-  gap: 24px;
-  min-height: 500px;
-}
-
-.reports-list-panel {
-  width: 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.report-card {
-  border: 2px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 16px;
-  cursor: pointer;
-  background: #ffffff;
-  transition: background 0.2s ease;
-}
-
-.report-card:hover,
-.report-card.active {
-  background: #f4f4f4;
-  border-width: 3px;
-}
-
-.report-card h4 {
-  margin: 0 0 8px 0;
-  font-size: 1.1rem;
-}
-
-.report-card p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.report-detail-panel {
-  flex: 1;
-  border: 2px solid #1a1a1a;
-  border-radius: 16px;
-  padding: 24px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
-.report-meta {
-  font-size: 0.85rem;
-  color: #333;
+.admin-title-group h1 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--rpg-text-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-title-group h1 i {
+  color: var(--rpg-purple);
+}
+
+.admin-title-group p {
+  color: var(--rpg-text-muted);
+  margin: 4px 0 0 0;
+  font-size: 0.95rem;
+}
+
+/* ── ABAS DE NAVEGAÇÃO SUPERIOR / LATERAL ── */
+.admin-nav-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--rpg-surface-tint);
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--rpg-border-light);
+}
+
+.admin-tab-btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--rpg-text-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+}
+
+.admin-tab-btn.active {
+  background: var(--rpg-purple);
+  color: #ffffff;
+  box-shadow: var(--rpg-shadow-btn);
+}
+
+/* ── LAYOUT DE REPORTES (SPLIT VIEW) ── */
+.reports-split-view {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Lista de Cards à Esquerda */
+.reports-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-item-card {
+  background: var(--rpg-surface);
+  border: 2px solid var(--rpg-border-light);
+  border-radius: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-item-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--rpg-purple-soft);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.report-item-card.active {
+  border-color: var(--rpg-purple);
+  background: var(--rpg-purple-tint);
+  box-shadow: var(--rpg-shadow-card);
+}
+
+.report-item-header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
 }
 
-.report-body-box {
-  border: 2px solid #1a1a1a;
+.report-item-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.report-item-desc {
+  font-size: 0.85rem;
+  color: var(--rpg-text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Painel Detalhado do Reporte à Direita */
+.report-detail-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--rpg-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.report-meta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--rpg-border-light);
+  padding-bottom: 16px;
+}
+
+.report-owner-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--rpg-text-body);
+}
+
+.report-owner-info strong {
+  color: var(--rpg-purple);
+  font-weight: 700;
+}
+
+.report-date-tag {
+  font-size: 0.82rem;
+  color: var(--rpg-text-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-content-body h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--rpg-text-dark);
+  margin: 0 0 10px 0;
+}
+
+.report-description-box {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
   border-radius: 12px;
-  padding: 16px;
-  min-height: 180px;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  color: var(--rpg-text-strong);
+  line-height: 1.6;
 }
 
-.report-target-card {
-  border: 2px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 16px;
-  background: #fafafa;
+/* Card do Alvo Reportado */
+.report-target-box {
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.target-info-row {
+.target-badge-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rpg-purple);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  width: max-content;
+}
+
+.target-profile-row {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.target-avatar-circle {
-  width: 50px;
-  height: 50px;
+.target-avatar {
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  border: 2px solid #1a1a1a;
-  overflow: hidden;
-}
-
-.target-avatar-circle img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
+  border: 2px solid var(--rpg-purple);
+  flex-shrink: 0;
 }
 
-.report-actions-drawer {
-  position: absolute;
-  right: -120px;
-  top: 24px;
+.target-avatar-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--rpg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.target-details-text h4 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+}
+
+.target-details-text p {
+  font-size: 0.88rem;
+  color: var(--rpg-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.report-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--rpg-border-light);
+  padding-top: 20px;
+}
+
+/* ── ABA DE DASHBOARD & MÉTRICAS ── */
+.metrics-card-panel {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--rpg-shadow-md);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  background: #ffffff;
-  border: 2px solid #1a1a1a;
-  padding: 12px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  gap: 24px;
 }
 
-.btn-action-admin {
-  padding: 8px 12px;
-  border: 2px solid #1a1a1a;
-  border-radius: 6px;
-  background: #ffffff;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-action-admin.danger {
-  background: #ff7575;
-  color: white;
-}
-
-.btn-action-admin.secondary {
-  background: #eeeeee;
-}
-
-/* ── ABA DE USUÁRIOS E GRÁFICOS ── */
-.chart-container-card {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.chart-filters {
+.chart-filter-row {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .admin-date-input {
-  border: 2px solid #1a1a1a;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-family: inherit;
-  font-weight: 700;
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--rpg-text-strong);
+  transition: border-color 0.2s ease;
 }
 
-.chart-canvas-wrapper {
-  border: 2px solid #1a1a1a;
-  border-radius: 12px;
-  padding: 20px;
-  background: #ffffff;
+.admin-date-input:focus {
+  border-color: var(--rpg-purple);
+  outline: none;
+}
+
+.chart-svg-container {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border);
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
 }
 
 .admin-svg-chart {
   width: 100%;
-  height: 200px;
+  height: 220px;
 }
 
-.metrics-cards-row {
+.metrics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.stat-widget {
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 14px;
+  padding: 20px;
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 16px;
 }
 
-.metric-card {
-  border: 2px solid #1a1a1a;
-  padding: 16px 24px;
-  border-radius: 8px;
-  font-size: 1.2rem;
+.stat-widget.success {
+  background: var(--rpg-success-bg);
+  border-color: var(--rpg-success-border);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--rpg-purple);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.stat-widget.success .stat-icon {
+  background: var(--rpg-success);
+}
+
+.stat-info span {
+  font-size: 0.82rem;
+  color: var(--rpg-text-muted);
+  font-weight: 700;
+  display: block;
+}
+
+.stat-info h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.5rem;
   font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
 }
 
-.metric-card.active-green {
-  background: #a3f7bf;
+/* Estados vazios / carregamento */
+.admin-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--rpg-text-muted);
 }
 
-.metric-card.gray {
-  background: #efefef;
+.admin-empty-state i {
+  font-size: 2.5rem;
+  color: var(--rpg-purple-soft);
+  margin-bottom: 12px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .reports-split-view {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-header-card {
+    padding: 20px;
+  }
+  .report-detail-card, .metrics-card-panel {
+    padding: 20px;
+  }
+  .report-action-buttons {
+    flex-direction: column;
+  }
+  .report-action-buttons .btn {
+    width: 100%;
+  }
 }
