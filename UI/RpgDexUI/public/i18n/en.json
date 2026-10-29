@@ -52,6 +52,7 @@
     "USER_DOCUMENT_CREATE_FAILED": "Failed to create user document.",
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
+    "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Failed to upload file, maximum storage exceed",
 
     "VALIDATION_PASSWORD_EMPTY": "Password can't be empty",
     "VALIDATION_PASSWORD_UPPERCASE": "The password must contain at least one uppercase letter",

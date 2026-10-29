@@ -52,6 +52,7 @@
     "USER_DOCUMENT_CREATE_FAILED": "Falha ao criar o documento do utilizador.",
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
+    "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Falha ao enviar o ficheiro, limite maximo atingido",
 
     "VALIDATION_PASSWORD_EMPTY": "A senha não pode estar vazia.",
     "VALIDATION_PASSWORD_UPPERCASE": "A senha deve conter pelo menos uma letra maiúscula.",

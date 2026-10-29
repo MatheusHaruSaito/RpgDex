@@ -75,6 +75,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error CreateFailed = new("USER_DOCUMENT_CREATE_FAILED", "Failed to create user document.");
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
+        public static readonly Error LimitExceed = new("USER_DOCUMENT_LIMIT_SIZE_EXCEED", "Failed to upload file, maximum storage exceed"); 
     }
     public static class ValidationErrorCodes
     {

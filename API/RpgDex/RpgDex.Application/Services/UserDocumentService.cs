@@ -16,7 +16,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class UserDocumentService(IUserDocumentRepository userDocumentRepository, IFileService fileService,
-        IUserDocumentQueries userDocumentQueries,
+        IUserDocumentQueries userDocumentQueries, ISubscriptionService subscriptionService, ILogger<UserDocumentService> logger,
         IValidator<CreateUserDocumentRequest> createUserDocumentValidator,
         IValidator<UpdateUserDocumentRequest> updateUserDocumentValidator) : IUserDocumentService
     {
@@ -25,6 +25,16 @@ namespace RpgDex.Application.Services
             var checkCreateUserDocumentValidator = createUserDocumentValidator.Validate(request);
             if (!checkCreateUserDocumentValidator.IsValid) return checkCreateUserDocumentValidator.ReturnErrors<UserDocumentResponse>();
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<UserDocumentResponse>.Failure(Error.InvalidUserId);
+
+
+            var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+            var documentsStorageSize = await userDocumentQueries.GetDocumentStorageInMbByUserId(userGuidId);
+            var documentsSizeTotal = documentsStorageSize + request.File.Length / 1024m / 1024m;
+            if (documentsSizeTotal > userLimits.Value!.DocumentsSpaceMB)
+            {
+                return Result<UserDocumentResponse>.Failure(UserDocumentError.LimitExceed);
+            }
+
             if (request?.File == null || request.File.Length == 0) return Result<UserDocumentResponse>.Failure(UserDocumentError.FileRequired);
             try
             {
@@ -48,8 +58,10 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<IEnumerable<UserDocumentResponse>>> GetAllByUserId(string userId, int page, int pageSize)
         {
-            if (!Guid.TryParse(userId, out var userGuidId)) return Result<IEnumerable<UserDocumentResponse>>.Failure(Error.InvalidUserId);
 
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<IEnumerable<UserDocumentResponse>>.Failure(Error.InvalidUserId);
+            var documentsStorageSize = await userDocumentQueries.GetDocumentStorageInMbByUserId(userGuidId);
+            logger.LogError("Document Size Exceed Plan Limits {documentsStorageSize}", documentsStorageSize);
             var result = await userDocumentRepository.GetAllAsync(userGuidId, page, pageSize);
             return Result<IEnumerable<UserDocumentResponse>>.Success(result.Adapt<IEnumerable<UserDocumentResponse>>());
         }
