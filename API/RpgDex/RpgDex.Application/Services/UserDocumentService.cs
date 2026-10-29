@@ -60,8 +60,7 @@ namespace RpgDex.Application.Services
         {
 
             if (!Guid.TryParse(userId, out var userGuidId)) return Result<IEnumerable<UserDocumentResponse>>.Failure(Error.InvalidUserId);
-            var documentsStorageSize = await userDocumentQueries.GetDocumentStorageInMbByUserId(userGuidId);
-            logger.LogError("Document Size Exceed Plan Limits {documentsStorageSize}", documentsStorageSize);
+
             var result = await userDocumentRepository.GetAllAsync(userGuidId, page, pageSize);
             return Result<IEnumerable<UserDocumentResponse>>.Success(result.Adapt<IEnumerable<UserDocumentResponse>>());
         }
