@@ -32,7 +32,7 @@ namespace RpgDex.Infrastructure.Queries
                     .Project(p => new PlanLimitsDTO(
                         p.HasEarlyAccess,
                         p.CharacterPerCampaignQty,
-                        p.CharacterPerUser,
+                        p.CharacterPerUserQty,
                         p.CampaignQty,
                         p.DocumentsSpaceMB,
                         p.CanvasSpaceMb)).FirstOrDefaultAsync();

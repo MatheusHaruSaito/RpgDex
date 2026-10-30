@@ -29,7 +29,8 @@ namespace RpgDex.Application.Services
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
 
-            if (!await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            var imageSize = request.Image is null ? 0m : request.Image.Length;
+            if (await CheckCanvasStorageAsync(userId, request.CampaignId, imageSize)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
@@ -42,7 +43,7 @@ namespace RpgDex.Application.Services
                 try
                 {
                     element.ImageUrl = await fileService.UploadFileAsync(request.Image, Guid.NewGuid().ToString());
-                    elementSize += request.Image.Length;
+                    elementSize += imageSize;
 
                 }
                 catch
@@ -66,7 +67,7 @@ namespace RpgDex.Application.Services
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
-            if (!await CheckCanvasStorageAsync(userId, request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (await CheckCanvasStorageAsync(userId, request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
 
             var element = request.Adapt<CanvasElement>();
@@ -95,7 +96,7 @@ namespace RpgDex.Application.Services
         {
             var (userGuidId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
-            if (!await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             //CreateCharacter
             Character character = new()
@@ -213,11 +214,15 @@ namespace RpgDex.Application.Services
             return Result<CanvasElementResponse>.Success(element.Adapt<CanvasElementResponse>());
 
         }
-        private async Task<bool> CheckCanvasStorageAsync(string userId, Guid campaignId)
+        private async Task<bool> CheckCanvasStorageAsync(string userId, Guid campaignId, decimal? imageLenghtOffset=0)
         {
             var campaignStorageSize = await canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
             var limits = await subscriptionService.GetSubscritptionLimits(userId);
-            if (campaignStorageSize > limits.Value!.CanvasSpaceMb)
+            var imageInMb = imageLenghtOffset / 1024m / 1024m;
+            logger.LogWarning("limit: {CanvasSpaceMb}", limits.Value!.CanvasSpaceMb);
+            logger.LogWarning("canvasSpace: {campaignStorageSize}", campaignStorageSize + imageInMb);
+
+            if ((campaignStorageSize + imageInMb) <= limits.Value!.CanvasSpaceMb)
             {
                 return false;
             }
