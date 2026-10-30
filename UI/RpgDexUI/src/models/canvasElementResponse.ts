@@ -12,4 +12,5 @@ export interface CanvasElementResponse {
   imageUrl?: string;
   points?: { x: number; y: number }[];
   strokeWidth?: number;
+  characterId?: string;
 }
