@@ -19,23 +19,22 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
+    public class CanvaElementService(ICanvasElementRepository canvasElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
-        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService
-        ) : ICanvaElementService
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
+        ISubscriptionService subscriptionService) : ICanvaElementService
     {
-        private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
+
+            if (!await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
-            var count = await canvaElementRepository.CountByCampaignAsync(request.CampaignId);
-            if (count >= MaxElementsPerCanvas)
-                return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
-
+            var count = await canvasElementRepository.CountByCampaignAsync(request.CampaignId);
             var element = request.Adapt<CanvasElement>();
             decimal elementSize = element.ToBson().Length;
             if (request.Image is not null)
@@ -54,7 +53,7 @@ namespace RpgDex.Application.Services
             element.ElementSize = elementSize / 1024m / 1024m;
             element.UserId = guidUserId;
 
-            var created = await canvaElementRepository.InsertElementAsync(element);
+            var created = await canvasElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
 
@@ -62,14 +61,13 @@ namespace RpgDex.Application.Services
 
         }
 
-        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0)
+        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0,bool checkLimit = false)
         {
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
-            var count = await canvaElementRepository.CountByCampaignAsync(request.CampaignId);
-            if (count >= MaxElementsPerCanvas)
-                return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (!await CheckCanvasStorageAsync(userId, request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
 
             var element = request.Adapt<CanvasElement>();
             decimal elementSize = element.ToBson().Length;
@@ -87,7 +85,7 @@ namespace RpgDex.Application.Services
 
             element.UserId = guidUserId;
             element.ElementSize = elementSize / 1024m / 1024m;
-            var created = await canvaElementRepository.InsertElementAsync(element);
+            var created = await canvasElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
 
@@ -97,6 +95,8 @@ namespace RpgDex.Application.Services
         {
             var (userGuidId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+            if (!await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
             //CreateCharacter
             Character character = new()
             {
@@ -126,7 +126,7 @@ namespace RpgDex.Application.Services
             if (request.CharacterIcon is not null)
             imageSize = request.CharacterIcon.Length;
             var requestAdapted =request.Adapt<CreateCanvaTokenElementRequest>() with { CharacterId = characterId};
-            return await CreateTokenElement(userId, requestAdapted, imageSize);
+            return await CreateTokenElement(userId, requestAdapted, imageSize,true);
         }
 
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
@@ -147,7 +147,7 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var positions = request.Items.Select(i => new ElementPosition(i.Id, i.X, i.Y));
-            var ok = await canvaElementRepository.MoveElementAsync(request.CampaignId, positions);
+            var ok = await canvasElementRepository.MoveElementAsync(request.CampaignId, positions);
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.MoveFailed);
         }
@@ -161,7 +161,7 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var orders = request.Items.Select(i => new ElementOrder(i.Id, i.Z));
-            var ok = await canvaElementRepository.ReorderElementsAsync(request.CampaignId, orders);
+            var ok = await canvasElementRepository.ReorderElementsAsync(request.CampaignId, orders);
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
         }
@@ -173,7 +173,7 @@ namespace RpgDex.Application.Services
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var ok = await canvaElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
+            var ok = await canvasElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
         }
@@ -186,7 +186,7 @@ namespace RpgDex.Application.Services
             var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
-            var element = await canvaElementRepository.GetByIdAsync(request.CampaignId, request.Id);
+            var element = await canvasElementRepository.GetByIdAsync(request.CampaignId, request.Id);
             if (element is null) return Result<CanvasElementResponse>.Failure(CanvaElementError.NotFound);
 
             if (request.Image is not null)
@@ -207,11 +207,21 @@ namespace RpgDex.Application.Services
             element.Points = request.Points;
             element.StrokeWidth = request.StrokeWidth;
 
-            var ok = await canvaElementRepository.UpdateElementAsync(element);
+            var ok = await canvasElementRepository.UpdateElementAsync(element);
             if (!ok) return Result<CanvasElementResponse>.Failure(CanvaElementError.UpdateFailed);
 
             return Result<CanvasElementResponse>.Success(element.Adapt<CanvasElementResponse>());
 
+        }
+        private async Task<bool> CheckCanvasStorageAsync(string userId, Guid campaignId)
+        {
+            var campaignStorageSize = await canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
+            var limits = await subscriptionService.GetSubscritptionLimits(userId);
+            if (campaignStorageSize > limits.Value!.CanvasSpaceMb)
+            {
+                return false;
+            }
+            return true;
         }
         private async Task<(Guid UserId, Error? Error)> CheckAccessAsync(string userId, Guid campaignId, bool gameMasterOnly = false)
         {
