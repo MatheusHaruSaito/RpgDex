@@ -102,7 +102,7 @@ namespace RpgDex.Infrastructure.Repositories
         public async Task<decimal> GetCanvasSizeByCampaignIdAsync(Guid campaignId)
         {
             var result = await _entity.Aggregate()
-                .Match(c => c.CampaignId == campaignId)
+                .Match(c => c.CampaignId == campaignId && c.IsActive)
                 .Group(c => c.CampaignId, g => new { TotalSize = g.Sum(x => x.ElementSize) })
                 .FirstOrDefaultAsync();
             return result?.TotalSize??0;
