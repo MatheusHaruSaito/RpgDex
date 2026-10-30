@@ -14,8 +14,10 @@ namespace RpgDex.Application.Services
         private static readonly PlanLimitsDTO FreeLimits = new(
             HasEarlyAccess: false,
             CharacterPerCampaignQty: 10,
+            CharacterPerUser: 15,
             CampaignQty: 3,
-            DocumentsSpaceMB: 10);
+            DocumentsSpaceMB: 10,
+            CanvasSpaceMb: 30);
         public async Task ExpireOverdueAsync()
         {
             var expired = await subscriptionRepository.GetExpiredAsync();
@@ -32,7 +34,7 @@ namespace RpgDex.Application.Services
 
             if(result is null)
             {
-                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterPerCampaignQty, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB);
+                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterPerCampaignQty, FreeLimits.CharacterPerUser, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB, FreeLimits.CanvasSpaceMb);
                 return Result<PlanLimitsDTO>.Success(freeLimit);
             }
             return Result<PlanLimitsDTO>.Success(result);
