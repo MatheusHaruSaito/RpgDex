@@ -86,7 +86,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
-            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+            services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
