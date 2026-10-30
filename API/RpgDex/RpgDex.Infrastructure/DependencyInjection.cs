@@ -93,6 +93,8 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
             services.AddScoped<IUserDocumentQueries, UserDocumentQueries>();
             services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
+            services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
+            services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
 
 
             services.AddHostedService<SyncPaymentJob>();

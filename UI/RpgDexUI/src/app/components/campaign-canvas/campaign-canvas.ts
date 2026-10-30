@@ -7,12 +7,27 @@ import { NgxColorsModule } from 'ngx-colors';
 import { CanvasElementResponse } from '../../../models/canvasElementResponse';
 import { CanvasElementType } from '../../../models/canvasElementType';
 import { CanvasElementService } from '../../services/canvas-element-service';
+import { CampaignService } from '../../services/campaign-service';
+import { CharacterService } from '../../services/character-service';
+import { Character } from '../../../models/character';
 import { CreateCanvaElementRequest } from '../../../models/createCanvaElementRequest';
 import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
+import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
 
-export type ToolMode = 'cursor' | 'draw';
+export type ToolMode = 'cursor' | 'draw' | 'eraser';
+
+export interface ExtendedCanvasElement extends CanvasElementResponse {
+  isLocked?: boolean;
+  hideName?: boolean;
+}
+
+interface EraserTrailPoint {
+  x: number;
+  y: number;
+  id: number;
+}
 
 @Component({
   selector: 'app-campaign-canvas',
@@ -27,8 +42,9 @@ export class CampaignCanvasComponent implements OnInit {
 
   campaignId: string = '';
   canvasElementService = inject(CanvasElementService);
+  campaignService = inject(CampaignService);
+  characterService = inject(CharacterService);
 
-  // Expõe o Enum para o HTML poder utilizá-lo
   public CanvasElementType = CanvasElementType;
 
   // ── CÂMERA E ESTADOS ──
@@ -41,30 +57,47 @@ export class CampaignCanvasComponent implements OnInit {
 
   isInteracting: boolean = false;
   isPanning: boolean = false;
+  selectedFile: File | undefined = undefined;
+
+  // ── RASTRO DA BORRACHA ──
+  eraserTrail: EraserTrailPoint[] = [];
 
   // ── SELEÇÃO E CAIXA DE SELEÇÃO ──
-  selectedElements: CanvasElementResponse[] = [];
+  selectedElements: ExtendedCanvasElement[] = [];
   selectionBox = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
 
-  activeDrawing: CanvasElementResponse | null = null;
+  activeDrawing: ExtendedCanvasElement | null = null;
   lastPointer = { x: 0, y: 0 };
   maxZ: number = 10;
 
-  elements: CanvasElementResponse[] = [];
+  elements: ExtendedCanvasElement[] = [];
 
   // ── HISTÓRICO (UNDO / REDO) ──
   history: string[] = [];
   redoHistory: string[] = [];
   pointerDownState: string = '';
 
-  // ── CORES ──
+  // ── CORES (NGX-COLORS) ──
   selectedColor: string = '#9E74D0';
+
+  // ── PERSONAGENS E MODAL DE TOKENS ──
+  isTokenModalOpen: boolean = false;
+  tokenModalTab: 'campaign' | 'custom' = 'campaign';
+  isLoadingCharacters: boolean = false;
+  campaignCharacters: Character[] = [];
+
+  // Form Token Personalizado
+  customTokenName: string = '';
+  customTokenColor: string = '#9E74D0';
+  customTokenImagePreview: string | null = null;
+  customTokenFile: File | undefined = undefined;
 
   // ── CROPPER ESTADOS ──
   isCropping: boolean = false;
   isRoundCrop: boolean = false;
   tempCroppedBase64: string = '';
   cropImageSource: string = '';
+  isCroppingCustomToken: boolean = false;
 
   constructor(private route: ActivatedRoute) {}
 
@@ -74,45 +107,244 @@ export class CampaignCanvasComponent implements OnInit {
     this.loadElements();
   }
 
-  // Obtém o nome do tipo para exibir no HTML
   getElementTypeName(type: CanvasElementType): string {
     return CanvasElementType[type] || 'ELEMENTO';
   }
 
-  // ── INTEGRAÇÃO COM BACKEND: CARREGAR ──
+  hasTokenSelected(): boolean {
+    return this.selectedElements.some((el) => el.elementType === CanvasElementType.Token);
+  }
+
+  areAllSelectedTokensHidden(): boolean {
+    const tokens = this.selectedElements.filter((el) => el.elementType === CanvasElementType.Token);
+    return tokens.length > 0 && tokens.every((t) => t.hideName);
+  }
+
+  toggleSelectedTokenNames(): void {
+    if (!this.hasTokenSelected()) return;
+    this.saveState();
+
+    const shouldHide = !this.areAllSelectedTokensHidden();
+
+    this.selectedElements.forEach((el) => {
+      if (el.elementType === CanvasElementType.Token) {
+        el.hideName = shouldHide;
+        this.updateElementAPI(el);
+      }
+    });
+  }
+
+  // ── TRAVAR / DESTRAVAR ELEMENTO ──
+  toggleLockSelected(): void {
+    if (this.selectedElements.length === 0) return;
+    this.saveState();
+    this.selectedElements.forEach((el) => {
+      el.isLocked = !el.isLocked;
+    });
+  }
+
+  // ── CARREGAR PERSONAGENS DA CAMPANHA ──
+  loadCampaignCharacters(): void {
+    if (!this.campaignId) return;
+    this.isLoadingCharacters = true;
+    this.campaignCharacters = [];
+
+    this.campaignService.GetById(this.campaignId).subscribe({
+      next: (res) => {
+        const charIds = res.data?.characterIds ?? [];
+        if (charIds.length === 0) {
+          this.isLoadingCharacters = false;
+          return;
+        }
+
+        let loaded = 0;
+        charIds.forEach((id) => {
+          this.characterService.GetById(id).subscribe({
+            next: (cRes) => {
+              if (cRes.data) {
+                this.campaignCharacters.push(cRes.data);
+              }
+              loaded++;
+              if (loaded >= charIds.length) {
+                this.isLoadingCharacters = false;
+              }
+            },
+            error: () => {
+              loaded++;
+              if (loaded >= charIds.length) {
+                this.isLoadingCharacters = false;
+              }
+            },
+          });
+        });
+      },
+      error: () => {
+        this.isLoadingCharacters = false;
+      },
+    });
+  }
+
+  openTokenModal(): void {
+    this.isTokenModalOpen = true;
+    this.loadCampaignCharacters();
+  }
+
+  // ── CRIAR TOKEN A PARTIR DE PERSONAGEM DA CAMPANHA ──
+  addCharacterToken(character: Character): void {
+    this.saveState();
+    const req: CreateCanvaTokenElementRequest = {
+      campaignId: this.campaignId,
+      characterId: character.id,
+      content: character.name,
+      x: this.getWorldX(window.innerWidth / 2) - 25,
+      y: this.getWorldY(window.innerHeight / 2) - 25,
+      z: ++this.maxZ,
+      scale: 1,
+      color: '#9E74D0',
+    };
+
+    this.canvasElementService.CreateTokenElement(req).subscribe((res) => {
+      if (res.success && res.data) {
+        const newEl: ExtendedCanvasElement = res.data;
+        this.elements.push(newEl);
+        this.setTool('cursor');
+        this.selectedElements = [newEl];
+        this.isTokenModalOpen = false;
+      }
+    });
+  }
+
+  onCustomTokenImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      this.customTokenFile = file;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.customTokenImagePreview = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  clearCustomTokenImage(): void {
+    this.customTokenImagePreview = null;
+    this.customTokenFile = undefined;
+  }
+
+  // ── CRIAR TOKEN PERSONALIZADO (COM E SEM IMAGEM) ──
+  createCustomToken(): void {
+    if (!this.customTokenName.trim()) {
+      alert('Por favor, digite um nome para o token.');
+      return;
+    }
+
+    this.saveState();
+
+    const targetX = this.getWorldX(window.innerWidth / 2) - 25;
+    const targetY = this.getWorldY(window.innerHeight / 2) - 25;
+    const targetZ = ++this.maxZ;
+
+    if (this.customTokenFile) {
+      // Token com foto -> QuickCreateTokenElement via FormData
+      const formData = new FormData();
+      formData.append('CharacterIcon', this.customTokenFile, this.customTokenFile.name);
+      formData.append('CampaignId', this.campaignId);
+      formData.append('X', targetX.toString());
+      formData.append('Y', targetY.toString());
+      formData.append('Z', targetZ.toString());
+      formData.append('Scale', '1');
+      formData.append('Content', this.customTokenName.trim());
+      formData.append('Color', this.customTokenColor);
+      formData.append('ElementType', CanvasElementType.Token.toString());
+
+      this.canvasElementService.QuickCreateTokenElement(formData as any).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            const newEl: ExtendedCanvasElement = {
+              ...res.data,
+              imageUrl: res.data.imageUrl || this.customTokenImagePreview || undefined,
+            };
+            this.elements.push(newEl);
+            this.setTool('cursor');
+            this.selectedElements = [newEl];
+
+            this.customTokenName = '';
+            this.clearCustomTokenImage();
+            this.isTokenModalOpen = false;
+          }
+        },
+        error: (err) => {
+          console.error('Erro ao criar token personalizado:', err);
+        },
+      });
+    } else {
+      // Token apenas com texto/cor -> CreateElement padrão
+      const req: CreateCanvaElementRequest = {
+        campaignId: this.campaignId,
+        elementType: CanvasElementType.Token,
+        content: this.customTokenName.trim(),
+        x: targetX,
+        y: targetY,
+        z: targetZ,
+        scale: 1,
+        color: this.customTokenColor,
+        image: undefined,
+      };
+
+      this.canvasElementService.CreateElement(req).subscribe({
+        next: (res) => {
+          if (res.success && res.data) {
+            const newEl: ExtendedCanvasElement = res.data;
+            this.elements.push(newEl);
+            this.setTool('cursor');
+            this.selectedElements = [newEl];
+
+            this.customTokenName = '';
+            this.clearCustomTokenImage();
+            this.isTokenModalOpen = false;
+          }
+        },
+        error: (err) => {
+          console.error('Erro ao criar token sem imagem:', err);
+        },
+      });
+    }
+  }
+
+  // ── INTEGRAÇÃO COM BACKEND: CARREGAR ELEMENTOS ──
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
-        console.log(res);
         if (res.success && res.data) {
-          this.elements = res.data.elements;
+          this.elements = res.data.elements.map((el: any) => ({
+            ...el,
+            imageUrl: el.imageUrl || el.image || undefined,
+          }));
           if (this.elements.length > 0) {
             this.maxZ = Math.max(...this.elements.map((e) => e.z));
           }
         }
       },
-      error: (e) => {
-        console.log(e);
-      },
     });
   }
 
-  // ── INTEGRAÇÃO COM BACKEND: ATUALIZAR UM ELEMENTO (Update) ──
-  updateElementAPI(el: CanvasElementResponse): void {
+  // ── INTEGRAÇÃO COM BACKEND: ATUALIZAR ELEMENTO ──
+  updateElementAPI(el: ExtendedCanvasElement): void {
     const req: UpdateCanvaElementRequest = {
       id: el.id,
       campaignId: this.campaignId,
       scale: el.scale,
       color: el.color,
       content: el.content,
-      // Se for imagem e estiver em Base64 (ex: foi recém-cortada ou colada), atualizamos
-      imageBase64: this.isBase64Url(el.imageUrl || '') ? el.imageUrl : undefined,
+      image: el.imageUrl || undefined,
     };
 
     this.canvasElementService.UpdateElement(req).subscribe();
   }
 
-  // ── SISTEMA DE DESFAZER E REFAZER ──
+  // ── DESFAZER E REFAZER ──
   saveState(): void {
     this.history.push(JSON.stringify(this.elements));
     if (this.history.length > 30) this.history.shift();
@@ -137,7 +369,7 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  // ── CONTROLOS DE TECLADO E CLIPBOARD ──
+  // ── TECLADO E CLIPBOARD (CTRL+C / CTRL+V CORRIGIDOS) ──
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
@@ -196,43 +428,66 @@ export class CampaignCanvasComponent implements OnInit {
     const items = event.clipboardData?.items;
     const textData = event.clipboardData?.getData('text/plain');
 
-    // 1. Colar elementos copiados do próprio Canvas
     if (textData && textData.includes('isRpgDexElements')) {
       try {
         const parsed = JSON.parse(textData);
         if (parsed.isRpgDexElements && Array.isArray(parsed.elements)) {
           this.saveState();
-          const pastedElements: CanvasElementResponse[] = [];
+          const pastedElements: ExtendedCanvasElement[] = [];
 
-          parsed.elements.forEach((el: CanvasElementResponse) => {
-            const req: CreateCanvaElementRequest = {
-              campaignId: this.campaignId,
-              elementType: el.elementType,
-              content: el.content,
-              x: el.x + 40,
-              y: el.y + 40,
-              z: ++this.maxZ,
-              scale: el.scale,
-              color: el.color,
-              strokeWidth: el.strokeWidth,
-              points: el.points,
-              image: el.elementType === CanvasElementType.Image ? el.imageUrl : undefined,
-            };
-            console.log('req: ', req);
-            this.canvasElementService.CreateElement(req).subscribe({
-              next: (res) => {
-                console.log(res);
+          parsed.elements.forEach((el: ExtendedCanvasElement) => {
+            // ── 1. TOKEN COM PERSONAGEM VINCULADO ──
+            if (el.elementType === CanvasElementType.Token && el.characterId) {
+              const req: CreateCanvaTokenElementRequest = {
+                campaignId: this.campaignId,
+                characterId: el.characterId,
+                content: el.content,
+                x: el.x + 40,
+                y: el.y + 40,
+                z: ++this.maxZ,
+                scale: el.scale,
+                color: el.color,
+              };
 
+              this.canvasElementService.CreateTokenElement(req).subscribe((res) => {
                 if (res.success && res.data) {
-                  this.elements.push(res.data);
-                  pastedElements.push(res.data);
-                  this.selectedElements = pastedElements;
+                  const newEl: ExtendedCanvasElement = {
+                    ...res.data,
+                    imageUrl: res.data.imageUrl || el.imageUrl,
+                  };
+                  this.elements.push(newEl);
+                  pastedElements.push(newEl);
+                  this.selectedElements = [...pastedElements];
                 }
-              },
-              error: (e) => {
-                console.log(e);
-              },
-            });
+              });
+            } else {
+              // ── 2. IMAGEM, DRAWING OU TOKEN PERSONALIZADO ──
+              const req: CreateCanvaElementRequest = {
+                campaignId: this.campaignId,
+                elementType: el.elementType,
+                content: el.content,
+                x: el.x + 40,
+                y: el.y + 40,
+                z: ++this.maxZ,
+                scale: el.scale,
+                color: el.color,
+                strokeWidth: el.strokeWidth,
+                points: el.points,
+                image: undefined,
+              };
+
+              this.canvasElementService.CreateElement(req).subscribe((res) => {
+                if (res.success && res.data) {
+                  const newEl: ExtendedCanvasElement = {
+                    ...res.data,
+                    imageUrl: res.data.imageUrl || el.imageUrl,
+                  };
+                  this.elements.push(newEl);
+                  pastedElements.push(newEl);
+                  this.selectedElements = [...pastedElements];
+                }
+              });
+            }
           });
           event.preventDefault();
           return;
@@ -240,36 +495,30 @@ export class CampaignCanvasComponent implements OnInit {
       } catch (e) {}
     }
 
-    // 2. Colar Imagens (Print Screen, etc)
     if (items) {
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const base64String = e.target?.result as string;
-              this.saveState();
+            this.saveState();
+            this.selectedFile = file;
 
-              const req: CreateCanvaElementRequest = {
-                campaignId: this.campaignId,
-                elementType: CanvasElementType.Image,
-                x: this.getWorldX(window.innerWidth / 2) - 50,
-                y: this.getWorldY(window.innerHeight / 2) - 50,
-                z: ++this.maxZ,
-                scale: 1,
-                image: base64String,
-              };
+            const formData = new FormData();
+            formData.append('campaignId', this.campaignId);
+            formData.append('elementType', CanvasElementType.Image.toString());
+            formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
+            formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
+            formData.append('z', (++this.maxZ).toString());
+            formData.append('scale', '1');
+            formData.append('image', this.selectedFile, this.selectedFile.name);
 
-              this.canvasElementService.CreateElement(req).subscribe((res) => {
-                if (res.success && res.data) {
-                  this.elements.push(res.data);
-                  this.setTool('cursor');
-                  this.selectedElements = [res.data];
-                }
-              });
-            };
-            reader.readAsDataURL(file);
+            this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
+              if (res.success && res.data) {
+                this.elements.push(res.data);
+                this.setTool('cursor');
+                this.selectedElements = [res.data];
+              }
+            });
             event.preventDefault();
             return;
           }
@@ -277,7 +526,6 @@ export class CampaignCanvasComponent implements OnInit {
       }
     }
 
-    // 3. Colar Texto Puro
     if (textData && textData.trim() !== '') {
       this.saveState();
       const req: CreateCanvaElementRequest = {
@@ -303,36 +551,10 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  // ── FERRAMENTAS & ADIÇÃO (CREATE API) ──
+  // ── FERRAMENTAS ──
   setTool(tool: ToolMode): void {
     this.activeTool = tool;
     this.selectedElements = [];
-  }
-
-  addToken(): void {
-    const name = prompt('Nome do Token:');
-    if (!name) return;
-    this.saveState();
-
-    const req: CreateCanvaElementRequest = {
-      campaignId: this.campaignId,
-      elementType: CanvasElementType.Token,
-      content: name,
-      x: this.getWorldX(window.innerWidth / 2) - 50,
-      y: this.getWorldY(window.innerHeight / 2) - 50,
-      z: ++this.maxZ,
-      scale: 1,
-      color: this.selectedColor,
-      image: undefined,
-    };
-
-    this.canvasElementService.CreateElement(req).subscribe((res) => {
-      if (res.success && res.data) {
-        this.elements.push(res.data);
-        this.setTool('cursor');
-        this.selectedElements = [res.data];
-      }
-    });
   }
 
   addText(): void {
@@ -369,70 +591,104 @@ export class CampaignCanvasComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      this.selectedFile = file;
 
       const reader = new FileReader();
       reader.onload = () => {
-        const base64String = reader.result as string;
+        this.tempCroppedBase64 = reader.result as string;
         this.saveState();
-
-        const req: CreateCanvaElementRequest = {
-          campaignId: this.campaignId,
-          elementType: CanvasElementType.Image,
-          x: this.getWorldX(window.innerWidth / 2) - 50,
-          y: this.getWorldY(window.innerHeight / 2) - 50,
-          z: ++this.maxZ,
-          scale: 1,
-          image: base64String, // Envia como Base64!
-        };
-
-        this.canvasElementService.CreateElement(req).subscribe((res) => {
-          if (res.success && res.data) {
-            this.elements.push(res.data);
-            this.setTool('cursor');
-            this.selectedElements = [res.data];
-          }
-        });
       };
       reader.readAsDataURL(file);
+
+      const formData = new FormData();
+      formData.append('campaignId', this.campaignId);
+      formData.append('elementType', CanvasElementType.Image.toString());
+      formData.append('x', (this.getWorldX(window.innerWidth / 2) - 50).toString());
+      formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
+      formData.append('z', (++this.maxZ).toString());
+      formData.append('scale', '1');
+      formData.append('image', this.selectedFile, this.selectedFile.name);
+
+      this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
+        if (res.success && res.data) {
+          this.elements.push(res.data);
+          this.setTool('cursor');
+          this.selectedElements = [res.data];
+        }
+      });
     }
     input.value = '';
   }
 
   onColorChange(colorValue: string): void {
+    this.selectedColor = colorValue;
     if (this.selectedElements.length > 0) {
       this.saveState();
       this.selectedElements.forEach((el) => {
-        if (el.elementType !== CanvasElementType.Image) {
+        if (el.elementType !== CanvasElementType.Image && !el.isLocked) {
           el.color = colorValue;
-          this.updateElementAPI(el); // Atualiza no Backend
+          this.updateElementAPI(el);
         }
       });
     }
-    this.selectedColor = colorValue;
   }
 
-  // ── EDIÇÃO, REORDENAMENTO E EXCLUSÃO ──
+  // ── EDIÇÃO E EXCLUSÃO ──
   deleteSelected(): void {
-    if (this.selectedElements.length === 0) return;
+    const deletable = this.selectedElements.filter((e) => !e.isLocked);
+    if (deletable.length === 0) return;
     this.saveState();
 
     const deleteRequest = {
       campaignId: this.campaignId,
-      ids: this.selectedElements.map((el) => el.id),
+      ids: deletable.map((el) => el.id),
     };
-    console.log(deleteRequest);
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
 
-    this.elements = this.elements.filter((e) => !this.selectedElements.includes(e));
+    this.elements = this.elements.filter((e) => !deletable.includes(e));
     this.selectedElements = [];
+  }
+
+  // ── BORRACHA ──
+  eraseDrawingsAt(wx: number, wy: number): void {
+    const eraseRadius = 16;
+
+    const trailPoint: EraserTrailPoint = { x: wx, y: wy, id: Date.now() + Math.random() };
+    this.eraserTrail.push(trailPoint);
+    setTimeout(() => {
+      this.eraserTrail = this.eraserTrail.filter((p) => p.id !== trailPoint.id);
+    }, 350);
+
+    const drawingsToErase = this.elements.filter(
+      (el) =>
+        el.elementType === CanvasElementType.Drawing &&
+        !el.isLocked &&
+        el.points &&
+        el.points.some((p) => Math.hypot(p.x - wx, p.y - wy) <= eraseRadius),
+    );
+
+    if (drawingsToErase.length > 0) {
+      this.saveState();
+      const idsToErase = drawingsToErase.map((el) => el.id);
+
+      const deleteRequest = {
+        campaignId: this.campaignId,
+        ids: idsToErase,
+      };
+      this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
+
+      this.elements = this.elements.filter((e) => !idsToErase.includes(e.id));
+    }
   }
 
   bringForward(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
     this.selectedElements.forEach((el) => {
-      this.maxZ++;
-      el.z = this.maxZ;
+      if (!el.isLocked) {
+        this.maxZ++;
+        el.z = this.maxZ;
+      }
     });
     this.sortElements();
     this.syncZOrderAPI();
@@ -443,7 +699,9 @@ export class CampaignCanvasComponent implements OnInit {
     this.saveState();
     const minZ = Math.min(...this.elements.map((e) => e.z)) - 1;
     this.selectedElements.forEach((el) => {
-      el.z = minZ; // Empurra todos para o fundo
+      if (!el.isLocked) {
+        el.z = minZ;
+      }
     });
     this.sortElements();
     this.syncZOrderAPI();
@@ -458,7 +716,7 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   updateElementScale(event: Event): void {
-    if (this.selectedElements.length !== 1) return;
+    if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
     const input = event.target as HTMLInputElement;
     this.selectedElements[0].scale = parseFloat(input.value);
   }
@@ -471,11 +729,15 @@ export class CampaignCanvasComponent implements OnInit {
   startCropping(): void {
     if (
       this.selectedElements.length === 1 &&
-      this.selectedElements[0].elementType === CanvasElementType.Image
+      (this.selectedElements[0].elementType === CanvasElementType.Image ||
+        this.selectedElements[0].elementType === CanvasElementType.Token) &&
+      !this.selectedElements[0].isLocked &&
+      this.selectedElements[0].imageUrl
     ) {
       this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
 
+      this.isCroppingCustomToken = false;
       this.isCropping = true;
       this.cropImageSource = '';
       this.tempCroppedBase64 = '';
@@ -487,6 +749,20 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
+  startCroppingCustomTokenImage(): void {
+    if (this.customTokenImagePreview) {
+      this.isCroppingCustomToken = true;
+      this.isCropping = true;
+      this.cropImageSource = '';
+      this.tempCroppedBase64 = '';
+
+      setTimeout(() => {
+        this.cropImageSource = this.customTokenImagePreview!;
+        this.tempCroppedBase64 = this.customTokenImagePreview!;
+      }, 10);
+    }
+  }
+
   imageCropped(event: ImageCroppedEvent): void {
     if (event.base64 && event.base64.length > 10) {
       this.tempCroppedBase64 = event.base64;
@@ -494,7 +770,10 @@ export class CampaignCanvasComponent implements OnInit {
       const reader = new FileReader();
       reader.readAsDataURL(event.blob);
       reader.onloadend = () => {
-        this.tempCroppedBase64 = reader.result as string;
+        if (event.objectUrl && event.blob) {
+          this.tempCroppedBase64 = reader.result as string;
+          this.selectedFile = new File([event.blob], 'avatar.png', { type: 'image/png' });
+        }
       };
     } else if (event.objectUrl) {
       this.tempCroppedBase64 = event.objectUrl;
@@ -502,19 +781,27 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   saveCrop(): void {
-    if (this.selectedElements.length === 1 && this.tempCroppedBase64) {
+    if (this.isCroppingCustomToken) {
+      if (this.tempCroppedBase64) {
+        this.customTokenImagePreview = this.tempCroppedBase64;
+      }
+    } else if (this.selectedElements.length === 1 && this.tempCroppedBase64) {
       const targetElement = this.selectedElements[0];
       targetElement.imageUrl = this.tempCroppedBase64;
-      this.updateElementAPI(targetElement); // Atualiza no C# com o base64 novo
+      this.updateElementAPI(targetElement);
     }
     this.isCropping = false;
+    this.isCroppingCustomToken = false;
     this.cropImageSource = '';
   }
 
   cancelCrop(): void {
     this.isCropping = false;
+    this.isCroppingCustomToken = false;
     this.cropImageSource = '';
-    this.history.pop();
+    if (!this.isCroppingCustomToken) {
+      this.history.pop();
+    }
   }
 
   setCropShape(isRound: boolean): void {
@@ -597,7 +884,7 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── INTERAÇÃO DE PONTEIRO (DRAG & DROP API) ──
+  // ── INTERAÇÃO DE PONTEIRO ──
   onPointerDown(event: PointerEvent): void {
     if ((event.target as HTMLElement).closest('.canvas-ui')) return;
     (event.target as Element).setPointerCapture(event.pointerId);
@@ -616,7 +903,7 @@ export class CampaignCanvasComponent implements OnInit {
       this.selectedElements = [];
       this.maxZ++;
 
-      const newDrawing: CanvasElementResponse = {
+      const newDrawing: ExtendedCanvasElement = {
         id: 'temp-' + Date.now().toString(),
         elementType: CanvasElementType.Drawing,
         x: 0,
@@ -629,7 +916,9 @@ export class CampaignCanvasComponent implements OnInit {
       };
       this.elements.push(newDrawing);
       this.activeDrawing = newDrawing;
-    } else {
+    } else if (this.activeTool === 'eraser') {
+      this.eraseDrawingsAt(this.getWorldX(event.clientX), this.getWorldY(event.clientY));
+    } else if (this.activeTool === 'cursor') {
       if (!(event.target as HTMLElement).closest('.board-element')) {
         this.selectedElements = [];
         this.selectionBox.active = true;
@@ -641,8 +930,15 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  onElementDown(event: PointerEvent, element: CanvasElementResponse): void {
+  onElementDown(event: PointerEvent, element: ExtendedCanvasElement): void {
     if (event.button === 1 || event.button === 2) return;
+
+    if (this.activeTool === 'eraser') {
+      event.stopPropagation();
+      this.eraseDrawingsAt(this.getWorldX(event.clientX), this.getWorldY(event.clientY));
+      return;
+    }
+
     if (this.activeTool !== 'cursor') return;
 
     event.stopPropagation();
@@ -679,11 +975,13 @@ export class CampaignCanvasComponent implements OnInit {
 
     if (!this.isInteracting) return;
 
+    const wx = this.getWorldX(event.clientX);
+    const wy = this.getWorldY(event.clientY);
+
     if (this.activeTool === 'draw' && this.activeDrawing && this.activeDrawing.points) {
-      this.activeDrawing.points.push({
-        x: this.getWorldX(event.clientX),
-        y: this.getWorldY(event.clientY),
-      });
+      this.activeDrawing.points.push({ x: wx, y: wy });
+    } else if (this.activeTool === 'eraser') {
+      this.eraseDrawingsAt(wx, wy);
     } else if (this.activeTool === 'cursor') {
       if (this.selectionBox.active) {
         this.selectionBox.currentX = event.clientX;
@@ -695,8 +993,10 @@ export class CampaignCanvasComponent implements OnInit {
 
         if (this.selectedElements.length > 0) {
           this.selectedElements.forEach((el) => {
-            el.x += deltaX / this.scale;
-            el.y += deltaY / this.scale;
+            if (!el.isLocked) {
+              el.x += deltaX / this.scale;
+              el.y += deltaY / this.scale;
+            }
           });
         }
       }
@@ -741,11 +1041,14 @@ export class CampaignCanvasComponent implements OnInit {
           this.selectedElements.length > 0 &&
           !this.selectionBox.active
         ) {
-          const req: MoveCanvaElementsRequest = {
-            campaignId: this.campaignId,
-            items: this.selectedElements.map((el) => ({ id: el.id, x: el.x, y: el.y })),
-          };
-          this.canvasElementService.MoveElement(req).subscribe();
+          const movable = this.selectedElements.filter((e) => !e.isLocked);
+          if (movable.length > 0) {
+            const req: MoveCanvaElementsRequest = {
+              campaignId: this.campaignId,
+              items: movable.map((el) => ({ id: el.id, x: el.x, y: el.y })),
+            };
+            this.canvasElementService.MoveElement(req).subscribe();
+          }
         }
       }
     }

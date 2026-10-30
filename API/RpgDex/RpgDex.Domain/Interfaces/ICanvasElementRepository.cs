@@ -6,18 +6,18 @@ using System.Text;
 
 namespace RpgDex.Domain.Interfaces
 {
-    public interface ICanvaElementRepository
+    public interface ICanvasElementRepository
     {
-        Task<CanvaElement> InsertElementAsync(CanvaElement canvaElement);
+        Task<CanvasElement> InsertElementAsync(CanvasElement canvaElement);
         Task<int> CountByCampaignAsync(Guid campaignId);
-        Task<GetAllCanvasElementResponse> GetAllElementsByCampaignAsync(Guid campaignId, int page=1, int pageSize=20);
-        Task<CanvaElement> GetByIdAsync(Guid campaignId,Guid id);
-        Task<bool> UpdateElementAsync(CanvaElement newElement);
+        Task<CanvasElement> GetByIdAsync(Guid campaignId,Guid id);
+        Task<decimal> GetCanvasSizeByCampaignIdAsync(Guid campaignId);
+        Task<bool> UpdateElementAsync(CanvasElement newElement);
         Task<bool> MoveElementAsync(Guid campaignId,IEnumerable<ElementPosition> items);
         Task<bool> MoveElementAsync(Guid campaignId, ElementPosition item);
         Task<bool> ReorderElementsAsync(Guid campaignId, IEnumerable<ElementOrder> items);
         Task<bool> SetActiveState(IEnumerable<Guid> ids,Guid campaignId, bool state);
 
-        public record GetAllCanvasElementResponse(IEnumerable<CanvaElement> elements, int Count );
+        public record GetAllCanvasElementResponse(IEnumerable<CanvasElement> elements, int Count );
     }
 }

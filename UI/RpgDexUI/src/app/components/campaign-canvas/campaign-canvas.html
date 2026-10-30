@@ -31,23 +31,24 @@
 
     <div class="canvas-brand"><i class="fa fa-chess-board"></i> Tabuleiro Virtual</div>
 
-    <!-- Ocupa espaço fantasma para centralizar o título do tabuleiro -->
     <div style="width: 150px"></div>
   </div>
 
   <!-- TOOLBAR PRINCIPAL (LATERAL) -->
   <div class="canvas-ui canvas-toolbar">
+    <!-- Seletor de Cores (ngx-colors) -->
     <div class="toolbar-group color-picker-wrap">
       <div
         ngx-colors-trigger
         [(ngModel)]="selectedColor"
         (ngModelChange)="onColorChange($event)"
-        title="Escolher Cor"
+        title="Escolher Cor da Ferramenta"
         class="color-preview-btn"
         [style.backgroundColor]="selectedColor"
       ></div>
     </div>
 
+    <!-- Ferramentas de Seleção, Desenho e Borracha Arrastável -->
     <div class="toolbar-group">
       <button
         class="tool-btn"
@@ -65,10 +66,18 @@
       >
         <i class="fa fa-pen"></i>
       </button>
+      <button
+        class="tool-btn"
+        [class.active]="activeTool === 'eraser'"
+        (click)="setTool('eraser')"
+        title="Borracha (Arraste para apagar rabiscos)"
+      >
+        <i class="fa fa-eraser"></i>
+      </button>
     </div>
 
     <div class="toolbar-group">
-      <button class="tool-btn action" (click)="addToken()" title="Adicionar Token">
+      <button class="tool-btn action" (click)="openTokenModal()" title="Gerenciar & Adicionar Tokens">
         <i class="fa fa-user-astronaut"></i>
       </button>
       <button class="tool-btn action" (click)="addText()" title="Adicionar Anotação">
@@ -89,6 +98,7 @@
   </div>
 
   <!-- MENU DE CONTEXTO DO ELEMENTO(S) SELECIONADO(S) -->
+<!-- MENU DE CONTEXTO DO ELEMENTO(S) SELECIONADO(S) -->
   <div
     class="canvas-ui context-menu"
     *ngIf="selectedElements.length > 0 && activeTool === 'cursor'"
@@ -103,10 +113,31 @@
     </div>
 
     <div class="context-actions">
-      <!-- Opções exclusivas para quando há apenas 1 imagem/token selecionado -->
-      <ng-container *ngIf="selectedElements.length === 1">
+      <!-- Botão para Ocultar/Exibir Nomes (Funciona com 1 ou múltiplos Tokens) -->
+      <button
+        *ngIf="hasTokenSelected()"
+        class="btn btn-secondary btn-sm layer-btn"
+        (click)="toggleSelectedTokenNames()"
+        [title]="areAllSelectedTokensHidden() ? 'Exibir nomes dos tokens selecionados' : 'Ocultar nomes dos tokens selecionados'"
+      >
+        <i class="fa" [ngClass]="areAllSelectedTokensHidden() ? 'fa-eye' : 'fa-eye-slash'"></i>
+        {{ areAllSelectedTokensHidden() ? 'Exibir Nomes' : 'Ocultar Nomes' }}
+      </button>
+
+      <!-- Botão de Travar / Destravar Elemento(s) -->
+      <button
+        class="btn btn-secondary btn-sm layer-btn"
+        (click)="toggleLockSelected()"
+        [title]="selectedElements[0]?.isLocked ? 'Destravar elemento' : 'Travar elemento contra movimentações'"
+      >
+        <i class="fa" [ngClass]="selectedElements[0]?.isLocked ? 'fa-lock-open' : 'fa-lock'"></i>
+        {{ selectedElements[0]?.isLocked ? 'Destravar' : 'Travar' }}
+      </button>
+
+      <ng-container *ngIf="selectedElements.length === 1 && !selectedElements[0].isLocked">
+        <!-- Cortar Imagem de Imagens ou Tokens -->
         <button
-          *ngIf="selectedElements[0].elementType === CanvasElementType.Image"
+          *ngIf="(selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token) && selectedElements[0].imageUrl"
           class="btn btn-secondary btn-sm"
           (click)="startCropping()"
           title="Cortar Imagem"
@@ -116,10 +147,7 @@
 
         <div
           class="context-range"
-          *ngIf="
-            selectedElements[0].elementType === CanvasElementType.Image ||
-            selectedElements[0].elementType === CanvasElementType.Token
-          "
+          *ngIf="selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token"
         >
           <i class="fa fa-down-left-and-up-right-to-center"></i>
           <input
@@ -134,8 +162,8 @@
         </div>
       </ng-container>
 
-      <!-- Controle de Camadas e Ações em Massa -->
       <button
+        *ngIf="!selectedElements[0]?.isLocked"
         class="btn btn-secondary btn-sm layer-btn"
         (click)="bringForward()"
         title="Trazer para a Frente"
@@ -143,6 +171,7 @@
         <i class="fa fa-arrow-up"></i> Frente
       </button>
       <button
+        *ngIf="!selectedElements[0]?.isLocked"
         class="btn btn-secondary btn-sm layer-btn"
         (click)="sendBackward()"
         title="Enviar para Trás"
@@ -152,10 +181,10 @@
 
       <div class="divider"></div>
 
-      <!-- Excluir -->
       <button
         class="btn-icon context-icon-btn danger"
         (click)="deleteSelected()"
+        [disabled]="selectedElements[0]?.isLocked"
         title="Apagar (Del)"
       >
         <i class="fa fa-trash"></i>
@@ -173,12 +202,148 @@
     [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
   ></div>
 
+  <!-- MODAL DE TOKENS -->
+  <div class="token-modal-backdrop" *ngIf="isTokenModalOpen">
+    <div class="token-modal-card">
+      <div class="token-modal-header">
+        <h3><i class="fa fa-user-astronaut"></i> Tokens & Personagens</h3>
+        <button class="token-close-btn" (click)="isTokenModalOpen = false">&times;</button>
+      </div>
+
+      <div class="token-modal-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="tokenModalTab === 'campaign'"
+          (click)="tokenModalTab = 'campaign'"
+        >
+          <i class="fa fa-users"></i> Personagens da Campanha
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="tokenModalTab === 'custom'"
+          (click)="tokenModalTab = 'custom'"
+        >
+          <i class="fa fa-plus-circle"></i> Token Personalizado
+        </button>
+      </div>
+
+      <div class="token-modal-body">
+        <div *ngIf="tokenModalTab === 'campaign'" class="tab-content">
+          <div class="loading-state" *ngIf="isLoadingCharacters">
+            <i class="fa fa-spinner fa-spin"></i> Carregando personagens da mesa...
+          </div>
+
+          <div
+            class="empty-state"
+            *ngIf="!isLoadingCharacters && campaignCharacters.length === 0"
+          >
+            <i class="fa fa-id-card-clip"></i>
+            <p>Nenhum personagem vinculado a esta campanha ainda.</p>
+          </div>
+
+          <div class="character-tokens-grid" *ngIf="!isLoadingCharacters && campaignCharacters.length > 0">
+            <div class="character-token-card" *ngFor="let char of campaignCharacters">
+              <div
+                class="char-avatar-circle"
+                [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
+              >
+                <i class="fa fa-user" *ngIf="!char.iconPath"></i>
+              </div>
+              <div class="char-token-info">
+                <h4>{{ char.name }}</h4>
+                <p>{{ char.description || 'Personagem da mesa' }}</p>
+              </div>
+              <button class="btn btn-primary btn-sm" (click)="addCharacterToken(char)">
+                <i class="fa fa-plus"></i> Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="tokenModalTab === 'custom'" class="tab-content">
+          <div class="custom-token-form">
+            <div class="form-group">
+              <label>Nome do Token / PNJ:</label>
+              <input
+                type="text"
+                class="rpg-input"
+                [(ngModel)]="customTokenName"
+                placeholder="Ex: Goblim Arqueiro, Guarda, NPC..."
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Cor de Borda / Fundo:</label>
+              <div class="color-picker-row">
+                <div
+                  ngx-colors-trigger
+                  [(ngModel)]="customTokenColor"
+                  class="color-preview-btn"
+                  [style.backgroundColor]="customTokenColor"
+                ></div>
+                <span class="color-hex-text">{{ customTokenColor }}</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Imagem do Token (Opcional):</label>
+              <div class="image-upload-preview">
+                <div
+                  class="preview-circle"
+                  [style.background-color]="customTokenColor"
+                  [style.background-image]="customTokenImagePreview ? 'url(' + customTokenImagePreview + ')' : ''"
+                >
+                  <i class="fa fa-image" *ngIf="!customTokenImagePreview"></i>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  (click)="customFileInput.click()"
+                >
+                  <i class="fa fa-upload"></i> {{ customTokenImagePreview ? 'Alterar Imagem' : 'Carregar Imagem' }}
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-secondary btn-sm"
+                  *ngIf="customTokenImagePreview"
+                  (click)="startCroppingCustomTokenImage()"
+                >
+                  <i class="fa fa-crop-simple"></i> Cortar
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  *ngIf="customTokenImagePreview"
+                  (click)="clearCustomTokenImage()"
+                >
+                  Remover
+                </button>
+                <input
+                  type="file"
+                  #customFileInput
+                  hidden
+                  accept="image/*"
+                  (change)="onCustomTokenImageSelected($event)"
+                />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary" (click)="createCustomToken()">
+                <i class="fa fa-check"></i> Criar Token no Canva
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL DE CORTE DE IMAGEM -->
   <div class="cropper-backdrop" *ngIf="isCropping">
     <div class="cropper-card">
       <div class="cropper-header">
         <h3>Ajustar Imagem</h3>
-        <!-- Controle de Formato -->
         <div class="crop-shape-toggles">
           <button class="shape-btn" [class.active]="!isRoundCrop" (click)="setCropShape(false)">
             <i class="fa fa-square"></i> Quadrado
@@ -219,6 +384,19 @@
     >
       <div class="grid-bg"></div>
 
+      <!-- RASTRO VISUAL DA BORRACHA -->
+      <svg class="board-element type-drawing" style="z-index: 9999; pointer-events: none;">
+        <circle
+          *ngFor="let p of eraserTrail"
+          [attr.cx]="p.x"
+          [attr.cy]="p.y"
+          r="14"
+          fill="rgba(158, 116, 208, 0.35)"
+          stroke="#9E74D0"
+          stroke-width="2"
+        />
+      </svg>
+
       <ng-container *ngFor="let el of elements">
         <!-- DESENHOS -->
         <svg
@@ -243,6 +421,8 @@
           *ngIf="el.elementType === CanvasElementType.Token"
           class="board-element type-token"
           [class.is-selected]="selectedElements.includes(el)"
+          [class.is-locked]="el.isLocked"
+          [class.name-hidden]="el.hideName"
           [style.left.px]="el.x"
           [style.top.px]="el.y"
           [style.z-index]="el.z"
@@ -250,7 +430,9 @@
           [style.background-color]="el.color"
           (pointerdown)="onElementDown($event, el)"
         >
-          <span class="token-initial">{{ el.content?.charAt(0) }}</span>
+          <i class="fa fa-lock element-lock-badge" *ngIf="el.isLocked"></i>
+          <img *ngIf="el.imageUrl" [src]="el.imageUrl" class="token-avatar-img" draggable="false" />
+          <span *ngIf="!el.imageUrl" class="token-initial">{{ el.content?.charAt(0) }}</span>
           <div class="token-name-tag">{{ el.content }}</div>
         </div>
 
@@ -259,12 +441,14 @@
           *ngIf="el.elementType === CanvasElementType.Text"
           class="board-element type-text"
           [class.is-selected]="selectedElements.includes(el)"
+          [class.is-locked]="el.isLocked"
           [style.left.px]="el.x"
           [style.top.px]="el.y"
           [style.z-index]="el.z"
           [style.color]="el.color"
           (pointerdown)="onElementDown($event, el)"
         >
+          <i class="fa fa-lock element-lock-badge" *ngIf="el.isLocked"></i>
           {{ el.content }}
         </div>
 
@@ -273,12 +457,14 @@
           *ngIf="el.elementType === CanvasElementType.Image"
           class="board-element type-image"
           [class.is-selected]="selectedElements.includes(el)"
+          [class.is-locked]="el.isLocked"
           [style.left.px]="el.x"
           [style.top.px]="el.y"
           [style.z-index]="el.z"
           [style.transform]="'scale(' + el.scale + ')'"
           (pointerdown)="onElementDown($event, el)"
         >
+          <i class="fa fa-lock element-lock-badge" *ngIf="el.isLocked"></i>
           <img [src]="el.imageUrl" draggable="false" />
         </div>
       </ng-container>

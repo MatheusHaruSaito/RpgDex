@@ -4,7 +4,7 @@ export interface UpdateCanvaElementRequest {
   scale: number;
   content?: string;
   color?: string;
-  imageBase64?: string;
+  image?: string;
   points?: { x: number; y: number }[];
   strokeWidth?: number;
 }

@@ -21,20 +21,45 @@ namespace RpgDex.WebApi.Controllers
         {
             _canvaElementService = canvaElementService;
         }
-        [HttpPost]
+        [HttpPost("element")]   
         public async Task<IActionResult> CreateElement([FromBody] CreateCanvaElementRequest request)
         {
             var result = await _canvaElementService.CreateElement(currentUser, request);
             return result.ToIActionResult();
         }
+        [HttpPost("element/image")]
+        public async Task<IActionResult> CreateImageElement([FromForm] CreateCanvaElementRequest request)
+        {
+            var result = await _canvaElementService.CreateElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+        [HttpPost("element/token")]
+        public async Task<IActionResult> CreateTokenElement([FromBody] CreateCanvaTokenElementRequest request)
+        {
+            var result = await _canvaElementService.CreateTokenElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+        [HttpPost("element/token/quick")]
+        public async Task<IActionResult> QuickCreateCharacterTokenElement([FromForm] QuickCreateCanvaTokenElementRequest request)
+        {
+            var result = await _canvaElementService.QuickCreateTokenElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+
         [HttpGet("All")]
         public async Task<IActionResult> GetAllElements([FromQuery]Guid campaignId, [FromQuery]int page, [FromQuery]int pageSize)
         {
             var result = await _canvaElementService.GetAllElements(currentUser, campaignId,page,pageSize);
             return result.ToIActionResult();
         }
-        [HttpPut]
+        [HttpPut("element")]
         public async Task<IActionResult> UpdateElement([FromBody] UpdateCanvasElementRequest request)
+        {
+            var result = await _canvaElementService.UpdateElement(currentUser, request);
+            return result.ToIActionResult();
+        }
+        [HttpPut("element/image")]
+        public async Task<IActionResult> UpdateImageElement([FromForm] UpdateCanvasElementRequest request)
         {
             var result = await _canvaElementService.UpdateElement(currentUser, request);
             return result.ToIActionResult();

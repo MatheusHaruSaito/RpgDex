@@ -10,6 +10,8 @@ import { UpdateCanvaElementRequest } from '../../models/updateCanvaElementReques
 import { MoveCanvaElementsRequest } from '../../models/moveCanvaElementsRequest';
 import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRequest';
 import { SetElementActiveStateRequest } from '../../models/setElementActiveStateRequest';
+import { CreateCanvaTokenElementRequest as CreateCanvasTokenElementRequest } from '../../models/createCanvaTokenElementRequest';
+import { QuickCreateCanvaTokenElementRequest } from '../../models/quickCreateCanvaTokenElementRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -18,11 +20,30 @@ export class CanvasElementService {
   constructor(private http: HttpClient) {}
 
   public CreateElement(
-    request: CreateCanvaElementRequest,
+    request: CreateCanvaElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {
-    return this.http.post<ApiResponse<CanvasElementResponse>>(this.env, request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element`, request);
   }
-
+  public CreateImageElement(
+    request: CreateCanvaElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/image`, request);
+  }
+  public CreateTokenElement(
+    request: CreateCanvasTokenElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/token`, request);
+  }
+  public QuickCreateTokenElement(
+    request: QuickCreateCanvaTokenElementRequest | FormData,
+  ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
+    return this.http.post<ApiResponse<CanvasElementResponse>>(
+      `${this.env}/element/token/quick`,
+      request,
+    );
+  }
   public GetAllElements(
     campaignId: string,
     page: string,
@@ -34,7 +55,13 @@ export class CanvasElementService {
   }
 
   public UpdateElement(request: UpdateCanvaElementRequest): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(this.env, request);
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/element`, request);
+  }
+
+  public UpdateImageElement(
+    request: UpdateCanvaElementRequest | FormData,
+  ): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${this.env}/element/image`, request);
   }
 
   public MoveElement(request: MoveCanvaElementsRequest): Observable<ApiResponse<boolean>> {
