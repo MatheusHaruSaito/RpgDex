@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
@@ -98,5 +99,13 @@ namespace RpgDex.Infrastructure.Repositories
             return result.IsAcknowledged && result.MatchedCount == models.Count;
         }
 
+        public async Task<decimal> GetCanvasSizeByCampaignIdAsync(Guid campaignId)
+        {
+            var result = await _entity.Aggregate()
+                .Match(c => c.CampaignId == campaignId)
+                .Group(c => c.CampaignId, g => new { TotalSize = g.Sum(x => x.ElementSize) })
+                .FirstOrDefaultAsync();
+            return result?.TotalSize??0;
+        }
     }
 }

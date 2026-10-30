@@ -3,6 +3,7 @@ using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Canvas;
 using RpgDex.Application.Extension;
@@ -37,19 +38,21 @@ namespace RpgDex.Application.Services
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             var element = request.Adapt<CanvasElement>();
-
+            decimal elementSize = element.ToBson().Length;
             if (request.Image is not null)
             {
                 try
                 {
                     element.ImageUrl = await fileService.UploadFileAsync(request.Image, Guid.NewGuid().ToString());
+                    elementSize += request.Image.Length;
+
                 }
                 catch
                 {
                     return Result<CanvasElementResponse>.Failure(Error.UploadImageFailed);
                 }
             }
-
+            element.ElementSize = elementSize / 1024m / 1024m;
             element.UserId = guidUserId;
 
             var created = await canvaElementRepository.InsertElementAsync(element);
@@ -60,7 +63,7 @@ namespace RpgDex.Application.Services
 
         }
 
-        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request)
+        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0)
         {
             logger.LogWarning("request: {request}",request);
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
@@ -71,6 +74,8 @@ namespace RpgDex.Application.Services
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             var element = request.Adapt<CanvasElement>();
+            decimal elementSize = element.ToBson().Length;
+            elementSize += imageSize;
             var character = await characterRepository.GetByIdAsync(request.CharacterId);
             if (character is null)
             {
@@ -83,7 +88,7 @@ namespace RpgDex.Application.Services
             }
 
             element.UserId = guidUserId;
-
+            element.ElementSize = elementSize / 1024m / 1024m;
             var created = await canvaElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
@@ -119,8 +124,11 @@ namespace RpgDex.Application.Services
                 return Result<CanvasElementResponse>.Failure(accpetCharacterResult.Errors);
             }
             //CreateToken
+            var imageSize = 0m;
+            if (request.CharacterIcon is not null)
+            imageSize = request.CharacterIcon.Length;
             var requestAdapted =request.Adapt<CreateCanvaTokenElementRequest>() with { CharacterId = characterId};
-            return await CreateTokenElement(userId, requestAdapted);
+            return await CreateTokenElement(userId, requestAdapted, imageSize);
         }
 
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
@@ -130,7 +138,7 @@ namespace RpgDex.Application.Services
 
             var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId,page,pageSize);
             return Result<GetAllCanvasElementResponse>.Success(
-                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
+                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb));
         }
 
         public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)

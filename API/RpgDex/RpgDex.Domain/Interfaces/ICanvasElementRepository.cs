@@ -11,6 +11,7 @@ namespace RpgDex.Domain.Interfaces
         Task<CanvasElement> InsertElementAsync(CanvasElement canvaElement);
         Task<int> CountByCampaignAsync(Guid campaignId);
         Task<CanvasElement> GetByIdAsync(Guid campaignId,Guid id);
+        Task<decimal> GetCanvasSizeByCampaignIdAsync(Guid campaignId);
         Task<bool> UpdateElementAsync(CanvasElement newElement);
         Task<bool> MoveElementAsync(Guid campaignId,IEnumerable<ElementPosition> items);
         Task<bool> MoveElementAsync(Guid campaignId, ElementPosition item);
