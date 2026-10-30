@@ -27,7 +27,6 @@ namespace RpgDex.Application.Services
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
         {
-            logger.LogWarning("as {request}", request);
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
@@ -65,7 +64,6 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0)
         {
-            logger.LogWarning("request: {request}",request);
             var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
