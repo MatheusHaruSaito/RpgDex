@@ -33,11 +33,11 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
             var imageSize = request.Image is null ? 0m : request.Image.Length;
-            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId, imageSize)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
-
-            var count = await canvasElementRepository.CountByCampaignAsync(request.CampaignId);
             var element = request.Adapt<CanvasElement>();
+
             decimal elementSize = element.ToBson().Length;
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId, imageSize+elementSize)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
             if (request.Image is not null)
             {
                 try
@@ -66,13 +66,12 @@ namespace RpgDex.Application.Services
         {
             var (guidUserId, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
-
-            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
-
-
             var element = request.Adapt<CanvasElement>();
             decimal elementSize = element.ToBson().Length;
             elementSize += imageSize;
+
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId, elementSize) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
             var character = await characterRepository.GetByIdAsync(request.CharacterId);
             if (character is null)
             {
@@ -96,7 +95,7 @@ namespace RpgDex.Application.Services
         {
             var (userGuidId, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
-            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId, request.Adapt<CanvasElement>().ToBson().Length)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             //CreateCharacter
             Character character = new()
@@ -132,12 +131,14 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
         {
-            var (_, _, accessError) = await CheckAccessAsync(userId, campaignId);
+            var (_, gmId, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
+
+            var limits = await subscriptionService.GetSubscritptionLimits(gmId.ToString());
 
             var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId,page,pageSize);
             return Result<GetAllCanvasElementResponse>.Success(
-                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb));
+                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb, limits.Value!.CanvasSpaceMb));
         }
 
         public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)
@@ -221,8 +222,6 @@ namespace RpgDex.Application.Services
             var campaignStorageSize = await canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
             var limits = await subscriptionService.GetSubscritptionLimits(userId);
             var imageInMb = imageLenghtOffset / 1024m / 1024m;
-            logger.LogWarning("limit: {CanvasSpaceMb}", limits.Value!.CanvasSpaceMb);
-            logger.LogWarning("canvasSpace: {campaignStorageSize}", campaignStorageSize + imageInMb);
 
             if ((campaignStorageSize + imageInMb) <= limits.Value!.CanvasSpaceMb)
             {

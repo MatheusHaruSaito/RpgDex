@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record GetAllCanvasElementResponse(IEnumerable<CanvasElementResponse> Elements, decimal CanvasSizeMb);
+    public record GetAllCanvasElementResponse(IEnumerable<CanvasElementResponse> Elements, decimal CanvasSizeMb,int CampaignStorageCapaity);
 }

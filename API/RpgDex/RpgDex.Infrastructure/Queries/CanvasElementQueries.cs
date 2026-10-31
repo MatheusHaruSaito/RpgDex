@@ -73,8 +73,8 @@ namespace RpgDex.Infrastructure.Queries
                     e.Points, e.StrokeWidth,
                     e.CharacterId);
             }).ToList();
-            var count = await _canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
-            return new(items, (decimal)count);
+            var storageSize = await _canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
+            return new(items, (decimal)storageSize,0);
         }
     }
 }

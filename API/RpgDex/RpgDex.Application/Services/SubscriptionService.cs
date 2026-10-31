@@ -34,7 +34,7 @@ namespace RpgDex.Application.Services
 
             if(result is null)
             {
-                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterPerCampaignQty, FreeLimits.CharacterPerUserQty, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB, 1);
+                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterPerCampaignQty, FreeLimits.CharacterPerUserQty, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB, FreeLimits.CanvasSpaceMb);
                 return Result<PlanLimitsDTO>.Success(freeLimit);
             }
             return Result<PlanLimitsDTO>.Success(result);
