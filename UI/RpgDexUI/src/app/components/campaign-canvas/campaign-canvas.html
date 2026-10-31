@@ -1,18 +1,20 @@
 <div class="canvas-fullscreen-wrapper">
-  <!-- BARRA SUPERIOR -->
+  <!-- BARRA SUPERIOR (TOPBAR GRID) -->
   <div class="canvas-ui canvas-topbar">
-    <div style="display: flex; gap: 8px; align-items: center">
+    <div class="topbar-left canvas-panel">
       <button
-        class="btn btn-secondary btn-sm"
+        class="tool-btn tool-btn--text"
         [routerLink]="['/campanha', campaignId]"
-        style="margin-right: 8px"
+        title="Voltar para a Campanha"
       >
-        <i class="fa fa-arrow-left"></i> Voltar
+        <i class="fa fa-arrow-left"></i> <span class="hide-mobile">Voltar</span>
       </button>
 
-      <!-- Controlos de Histórico -->
+      <div class="panel-divider"></div>
+
+      <!-- Histórico -->
       <button
-        class="btn btn-secondary btn-sm"
+        class="tool-btn"
         (click)="undo()"
         [disabled]="history.length === 0"
         title="Desfazer (Ctrl+Z)"
@@ -20,7 +22,7 @@
         <i class="fa fa-rotate-left"></i>
       </button>
       <button
-        class="btn btn-secondary btn-sm"
+        class="tool-btn"
         (click)="redo()"
         [disabled]="redoHistory.length === 0"
         title="Refazer (Ctrl+Y)"
@@ -29,26 +31,31 @@
       </button>
     </div>
 
-    <div class="canvas-brand"><i class="fa fa-chess-board"></i> Tabuleiro Virtual</div>
-
-    <div style="width: 150px"></div>
+    <div class="topbar-right">
+      <div class="canvas-brand canvas-panel">
+        <i class="fa fa-chess-board"></i>
+        <span class="hide-mobile">Tabuleiro Virtual</span>
+      </div>
+    </div>
   </div>
 
-  <!-- TOOLBAR PRINCIPAL (LATERAL) -->
+  <!-- TOOLBAR LATERAL DE FERRAMENTAS -->
   <div class="canvas-ui canvas-toolbar">
-    <!-- Seletor de Cores (ngx-colors) -->
-    <div class="toolbar-group color-picker-wrap">
-      <div
-        ngx-colors-trigger
-        [(ngModel)]="selectedColor"
-        (ngModelChange)="onColorChange($event)"
-        title="Escolher Cor da Ferramenta"
-        class="color-preview-btn"
-        [style.backgroundColor]="selectedColor"
-      ></div>
+    <!-- Seletor de Cores -->
+    <div class="toolbar-group">
+      <div class="color-swatch" title="Escolher Cor da Ferramenta">
+        <input
+          type="color"
+          [(ngModel)]="selectedColor"
+          [ngModelOptions]="{standalone: true}"
+          (ngModelChange)="onColorChange($event)"
+          class="color-native-input"
+        />
+        <div class="color-preview-btn" [style.backgroundColor]="selectedColor"></div>
+      </div>
     </div>
 
-    <!-- Ferramentas de Seleção, Desenho e Borracha Arrastável -->
+    <!-- Ferramentas Principais -->
     <div class="toolbar-group">
       <button
         class="tool-btn"
@@ -70,37 +77,38 @@
         class="tool-btn"
         [class.active]="activeTool === 'eraser'"
         (click)="setTool('eraser')"
-        title="Borracha (Arraste para apagar rabiscos)"
+        title="Borracha"
       >
         <i class="fa fa-eraser"></i>
       </button>
     </div>
 
+    <!-- Adicionar Elementos -->
     <div class="toolbar-group">
-      <button class="tool-btn action" (click)="openTokenModal()" title="Gerenciar & Adicionar Tokens">
+      <button class="tool-btn" (click)="openTokenModal()" title="Gerenciar Tokens">
         <i class="fa fa-user-astronaut"></i>
       </button>
-      <button class="tool-btn action" (click)="addText()" title="Adicionar Anotação">
+      <button class="tool-btn" (click)="addText()" title="Adicionar Anotação">
         <i class="fa fa-font"></i>
       </button>
-      <button class="tool-btn action" (click)="triggerImageUpload()" title="Adicionar Imagem">
+      <button class="tool-btn" (click)="triggerImageUpload()" title="Adicionar Imagem">
         <i class="fa fa-image"></i>
       </button>
       <input type="file" #fileInput hidden accept="image/*" (change)="onImageSelected($event)" />
     </div>
 
+    <!-- Zoom -->
     <div class="toolbar-group">
-      <button class="tool-btn" (click)="zoomIn()"><i class="fa fa-plus"></i></button>
+      <button class="tool-btn" (click)="zoomIn()" title="Aumentar Zoom"><i class="fa fa-plus"></i></button>
       <span class="zoom-text">{{ scale * 100 | number: '1.0-0' }}%</span>
-      <button class="tool-btn" (click)="zoomOut()"><i class="fa fa-minus"></i></button>
-      <button class="tool-btn" (click)="centerCamera()"><i class="fa fa-expand"></i></button>
+      <button class="tool-btn" (click)="zoomOut()" title="Diminuir Zoom"><i class="fa fa-minus"></i></button>
+      <button class="tool-btn" (click)="centerCamera()" title="Resetar Câmera"><i class="fa fa-expand"></i></button>
     </div>
   </div>
 
-  <!-- MENU DE CONTEXTO DO ELEMENTO(S) SELECIONADO(S) -->
-<!-- MENU DE CONTEXTO DO ELEMENTO(S) SELECIONADO(S) -->
+  <!-- MENU DE CONTEXTO DO ELEMENTO SELECIONADO -->
   <div
-    class="canvas-ui context-menu"
+    class="canvas-ui canvas-panel context-menu"
     *ngIf="selectedElements.length > 0 && activeTool === 'cursor'"
   >
     <div class="context-info">
@@ -113,36 +121,33 @@
     </div>
 
     <div class="context-actions">
-      <!-- Botão para Ocultar/Exibir Nomes (Funciona com 1 ou múltiplos Tokens) -->
       <button
         *ngIf="hasTokenSelected()"
-        class="btn btn-secondary btn-sm layer-btn"
+        class="tool-btn tool-btn--text"
         (click)="toggleSelectedTokenNames()"
-        [title]="areAllSelectedTokensHidden() ? 'Exibir nomes dos tokens selecionados' : 'Ocultar nomes dos tokens selecionados'"
+        [title]="areAllSelectedTokensHidden() ? 'Exibir nomes' : 'Ocultar nomes'"
       >
         <i class="fa" [ngClass]="areAllSelectedTokensHidden() ? 'fa-eye' : 'fa-eye-slash'"></i>
-        {{ areAllSelectedTokensHidden() ? 'Exibir Nomes' : 'Ocultar Nomes' }}
+        <span class="hide-mobile">{{ areAllSelectedTokensHidden() ? 'Exibir' : 'Ocultar' }}</span>
       </button>
 
-      <!-- Botão de Travar / Destravar Elemento(s) -->
       <button
-        class="btn btn-secondary btn-sm layer-btn"
+        class="tool-btn tool-btn--text"
         (click)="toggleLockSelected()"
-        [title]="selectedElements[0]?.isLocked ? 'Destravar elemento' : 'Travar elemento contra movimentações'"
+        [title]="selectedElements[0]?.isLocked ? 'Destravar' : 'Travar'"
       >
         <i class="fa" [ngClass]="selectedElements[0]?.isLocked ? 'fa-lock-open' : 'fa-lock'"></i>
-        {{ selectedElements[0]?.isLocked ? 'Destravar' : 'Travar' }}
+        <span class="hide-mobile">{{ selectedElements[0]?.isLocked ? 'Destravar' : 'Travar' }}</span>
       </button>
 
       <ng-container *ngIf="selectedElements.length === 1 && !selectedElements[0].isLocked">
-        <!-- Cortar Imagem de Imagens ou Tokens -->
         <button
           *ngIf="(selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token) && selectedElements[0].imageUrl"
-          class="btn btn-secondary btn-sm"
+          class="tool-btn tool-btn--text"
           (click)="startCropping()"
           title="Cortar Imagem"
         >
-          <i class="fa fa-crop-simple"></i> Cortar
+          <i class="fa fa-crop-simple"></i> <span class="hide-mobile">Cortar</span>
         </button>
 
         <div
@@ -157,35 +162,34 @@
             step="0.1"
             [value]="selectedElements[0].scale"
             (input)="updateElementScale($event)"
-            (change)="updateElementAPI(selectedElements[0])"
           />
         </div>
       </ng-container>
 
       <button
         *ngIf="!selectedElements[0]?.isLocked"
-        class="btn btn-secondary btn-sm layer-btn"
+        class="tool-btn"
         (click)="bringForward()"
-        title="Trazer para a Frente"
+        title="Trazer para a frente"
       >
-        <i class="fa fa-arrow-up"></i> Frente
+        <i class="fa fa-arrow-up"></i>
       </button>
       <button
         *ngIf="!selectedElements[0]?.isLocked"
-        class="btn btn-secondary btn-sm layer-btn"
+        class="tool-btn"
         (click)="sendBackward()"
-        title="Enviar para Trás"
+        title="Enviar para trás"
       >
-        <i class="fa fa-arrow-down"></i> Fundo
+        <i class="fa fa-arrow-down"></i>
       </button>
 
-      <div class="divider"></div>
+      <div class="panel-divider"></div>
 
       <button
-        class="btn-icon context-icon-btn danger"
+        class="tool-btn danger"
         (click)="deleteSelected()"
         [disabled]="selectedElements[0]?.isLocked"
-        title="Apagar (Del)"
+        title="Apagar elemento"
       >
         <i class="fa fa-trash"></i>
       </button>
@@ -201,6 +205,40 @@
     [style.width.px]="getAbs(selectionBox.currentX - selectionBox.startX)"
     [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
   ></div>
+
+  <!-- MODAL DE ADICIONAR TEXTO -->
+  <div class="token-modal-backdrop" *ngIf="isTextModalOpen">
+    <div class="token-modal-card text-modal-card">
+      <div class="token-modal-header">
+        <h3><i class="fa fa-font"></i> Adicionar Anotação</h3>
+        <button class="token-close-btn" (click)="isTextModalOpen = false">&times;</button>
+      </div>
+
+      <div class="token-modal-body">
+        <div class="custom-token-form">
+          <div class="form-group">
+            <label>Sua Anotação / Texto:</label>
+            <textarea
+              rows="4"
+              class="rpg-input text-area-input"
+              [(ngModel)]="customTextContent"
+              [ngModelOptions]="{standalone: true}"
+              placeholder="Digite aqui sua anotação ou aviso para a mesa..."
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-secondary" style="margin-right: 10px;" (click)="isTextModalOpen = false">
+              Cancelar
+            </button>
+            <button class="btn btn-primary" (click)="confirmAddText()">
+              <i class="fa fa-check"></i> Adicionar ao Canva
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL DE TOKENS -->
   <div class="token-modal-backdrop" *ngIf="isTokenModalOpen">
@@ -268,6 +306,7 @@
                 type="text"
                 class="rpg-input"
                 [(ngModel)]="customTokenName"
+                [ngModelOptions]="{standalone: true}"
                 placeholder="Ex: Goblim Arqueiro, Guarda, NPC..."
               />
             </div>
@@ -275,12 +314,15 @@
             <div class="form-group">
               <label>Cor de Borda / Fundo:</label>
               <div class="color-picker-row">
-                <div
-                  ngx-colors-trigger
-                  [(ngModel)]="customTokenColor"
-                  class="color-preview-btn"
-                  [style.backgroundColor]="customTokenColor"
-                ></div>
+                <div class="color-swatch">
+                  <input
+                    type="color"
+                    [(ngModel)]="customTokenColor"
+                    [ngModelOptions]="{standalone: true}"
+                    class="color-native-input"
+                  />
+                  <div class="color-preview-btn" [style.backgroundColor]="customTokenColor"></div>
+                </div>
                 <span class="color-hex-text">{{ customTokenColor }}</span>
               </div>
             </div>
@@ -300,7 +342,7 @@
                   class="btn btn-secondary btn-sm"
                   (click)="customFileInput.click()"
                 >
-                  <i class="fa fa-upload"></i> {{ customTokenImagePreview ? 'Alterar Imagem' : 'Carregar Imagem' }}
+                  <i class="fa fa-upload"></i> {{ customTokenImagePreview ? 'Alterar' : 'Carregar' }}
                 </button>
                 <button
                   type="button"
@@ -376,7 +418,7 @@
     </div>
   </div>
 
-  <!-- ÁREA DE VISUALIZAÇÃO INFINITA -->
+  <!-- ÁREA DE VISUALIZAÇÃO INFINITA (CANVAS WORLD) -->
   <div class="canvas-viewport" #canvasContainer (pointerdown)="onPointerDown($event)">
     <div
       class="canvas-world"
@@ -458,6 +500,7 @@
           class="board-element type-image"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
+          [class.is-round-image]="el.isRound"
           [style.left.px]="el.x"
           [style.top.px]="el.y"
           [style.z-index]="el.z"

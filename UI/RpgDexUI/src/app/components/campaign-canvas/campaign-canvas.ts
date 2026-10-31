@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
-import { NgxColorsModule } from 'ngx-colors';
 import { CanvasElementResponse } from '../../../models/canvasElementResponse';
 import { CanvasElementType } from '../../../models/canvasElementType';
 import { CanvasElementService } from '../../services/canvas-element-service';
@@ -21,6 +20,7 @@ export type ToolMode = 'cursor' | 'draw' | 'eraser';
 export interface ExtendedCanvasElement extends CanvasElementResponse {
   isLocked?: boolean;
   hideName?: boolean;
+  isRound?: boolean;
 }
 
 interface EraserTrailPoint {
@@ -32,7 +32,7 @@ interface EraserTrailPoint {
 @Component({
   selector: 'app-campaign-canvas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent, NgxColorsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent],
   templateUrl: './campaign-canvas.html',
   styleUrls: ['./campaign-canvas.css'],
 })
@@ -77,8 +77,12 @@ export class CampaignCanvasComponent implements OnInit {
   redoHistory: string[] = [];
   pointerDownState: string = '';
 
-  // ── CORES (NGX-COLORS) ──
+  // ── CORES ──
   selectedColor: string = '#9E74D0';
+
+  // ── MODAL DE TEXTO PERSONALIZADO ──
+  isTextModalOpen: boolean = false;
+  customTextContent: string = '';
 
   // ── PERSONAGENS E MODAL DE TOKENS ──
   isTokenModalOpen: boolean = false;
@@ -98,6 +102,7 @@ export class CampaignCanvasComponent implements OnInit {
   tempCroppedBase64: string = '';
   cropImageSource: string = '';
   isCroppingCustomToken: boolean = false;
+  croppedBlob: Blob | null = null;
 
   constructor(private route: ActivatedRoute) {}
 
@@ -134,7 +139,6 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── TRAVAR / DESTRAVAR ELEMENTO ──
   toggleLockSelected(): void {
     if (this.selectedElements.length === 0) return;
     this.saveState();
@@ -189,7 +193,7 @@ export class CampaignCanvasComponent implements OnInit {
     this.loadCampaignCharacters();
   }
 
-  // ── CRIAR TOKEN A PARTIR DE PERSONAGEM DA CAMPANHA ──
+  // ── CRIAR TOKEN DE PERSONAGEM DA CAMPANHA ──
   addCharacterToken(character: Character): void {
     this.saveState();
     const req: CreateCanvaTokenElementRequest = {
@@ -231,9 +235,10 @@ export class CampaignCanvasComponent implements OnInit {
   clearCustomTokenImage(): void {
     this.customTokenImagePreview = null;
     this.customTokenFile = undefined;
+    this.croppedBlob = null;
   }
 
-  // ── CRIAR TOKEN PERSONALIZADO (COM E SEM IMAGEM) ──
+  // ── CRIAR TOKEN PERSONALIZADO ──
   createCustomToken(): void {
     if (!this.customTokenName.trim()) {
       alert('Por favor, digite um nome para o token.');
@@ -247,9 +252,8 @@ export class CampaignCanvasComponent implements OnInit {
     const targetZ = ++this.maxZ;
 
     if (this.customTokenFile) {
-      // Token com foto -> QuickCreateTokenElement via FormData
       const formData = new FormData();
-      formData.append('CharacterIcon', this.customTokenFile, this.customTokenFile.name);
+      formData.append('CharacterIcon', this.customTokenFile, this.customTokenFile.name || 'token-icon.png');
       formData.append('CampaignId', this.campaignId);
       formData.append('X', targetX.toString());
       formData.append('Y', targetY.toString());
@@ -264,7 +268,7 @@ export class CampaignCanvasComponent implements OnInit {
           if (res.success && res.data) {
             const newEl: ExtendedCanvasElement = {
               ...res.data,
-              imageUrl: res.data.imageUrl || this.customTokenImagePreview || undefined,
+              imageUrl: res.data.imageUrl || (res.data as any).image || this.customTokenImagePreview || undefined,
             };
             this.elements.push(newEl);
             this.setTool('cursor');
@@ -275,12 +279,9 @@ export class CampaignCanvasComponent implements OnInit {
             this.isTokenModalOpen = false;
           }
         },
-        error: (err) => {
-          console.error('Erro ao criar token personalizado:', err);
-        },
+        error: (err) => console.error('Erro ao criar token personalizado:', err),
       });
     } else {
-      // Token apenas com texto/cor -> CreateElement padrão
       const req: CreateCanvaElementRequest = {
         campaignId: this.campaignId,
         elementType: CanvasElementType.Token,
@@ -306,21 +307,60 @@ export class CampaignCanvasComponent implements OnInit {
             this.isTokenModalOpen = false;
           }
         },
-        error: (err) => {
-          console.error('Erro ao criar token sem imagem:', err);
-        },
+        error: (err) => console.error('Erro ao criar token sem imagem:', err),
       });
     }
   }
 
-  // ── INTEGRAÇÃO COM BACKEND: CARREGAR ELEMENTOS ──
+  // ── MODAL DE TEXTO PERSONALIZADO ──
+  addText(): void {
+    this.customTextContent = '';
+    this.isTextModalOpen = true;
+  }
+
+  confirmAddText(): void {
+    if (!this.customTextContent.trim()) {
+      alert('Por favor, digite o conteúdo do texto.');
+      return;
+    }
+    this.saveState();
+
+    const req: CreateCanvaElementRequest = {
+      campaignId: this.campaignId,
+      elementType: CanvasElementType.Text,
+      content: this.customTextContent.trim(),
+      x: this.getWorldX(window.innerWidth / 2) - 50,
+      y: this.getWorldY(window.innerHeight / 2) - 50,
+      z: ++this.maxZ,
+      scale: 1,
+      color: this.selectedColor,
+      image: undefined,
+    };
+
+    this.canvasElementService.CreateElement(req).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.elements.push(res.data);
+          this.setTool('cursor');
+          this.selectedElements = [res.data];
+          this.isTextModalOpen = false;
+          this.customTextContent = '';
+        }
+      },
+      error: (err) => console.error('Erro ao criar texto:', err),
+    });
+  }
+
+  // ── CARREGAR ELEMENTOS DO BACKEND ──
   loadElements(): void {
     this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.elements = res.data.elements.map((el: any) => ({
             ...el,
+            scale: Number(el.scale) || 1,
             imageUrl: el.imageUrl || el.image || undefined,
+            isRound: el.content === 'round' || el.isRound === true,
           }));
           if (this.elements.length > 0) {
             this.maxZ = Math.max(...this.elements.map((e) => e.z));
@@ -330,18 +370,36 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── INTEGRAÇÃO COM BACKEND: ATUALIZAR ELEMENTO ──
+  // ── ATUALIZAR ELEMENTO API ──
   updateElementAPI(el: ExtendedCanvasElement): void {
+    if (!el || !el.id || el.id.startsWith('temp-')) return;
+
+    const imageToUpdate = el.imageUrl && el.imageUrl.startsWith('data:image') ? undefined : el.imageUrl;
+
     const req: UpdateCanvaElementRequest = {
       id: el.id,
       campaignId: this.campaignId,
       scale: el.scale,
-      color: el.color,
-      content: el.content,
-      image: el.imageUrl || undefined,
+      color: el.color || '#9E74D0',
+      content: el.content || (el.isRound ? 'round' : 'square'),
+      image: imageToUpdate,
     };
 
-    this.canvasElementService.UpdateElement(req).subscribe();
+    this.canvasElementService.UpdateElement(req).subscribe({
+      error: (err) => console.error('Erro ao atualizar elemento no Canva:', err),
+    });
+  }
+
+  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND ──
+  updateElementScale(event: Event): void {
+    if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
+    const input = event.target as HTMLInputElement;
+    const newScale = parseFloat(input.value);
+    
+    if (isNaN(newScale)) return;
+
+    this.selectedElements[0].scale = newScale;
+    this.updateElementAPI(this.selectedElements[0]);
   }
 
   // ── DESFAZER E REFAZER ──
@@ -369,7 +427,7 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  // ── TECLADO E CLIPBOARD (CTRL+C / CTRL+V CORRIGIDOS) ──
+  // ── TECLADO E CLIPBOARD ──
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
@@ -436,7 +494,6 @@ export class CampaignCanvasComponent implements OnInit {
           const pastedElements: ExtendedCanvasElement[] = [];
 
           parsed.elements.forEach((el: ExtendedCanvasElement) => {
-            // ── 1. TOKEN COM PERSONAGEM VINCULADO ──
             if (el.elementType === CanvasElementType.Token && el.characterId) {
               const req: CreateCanvaTokenElementRequest = {
                 campaignId: this.campaignId,
@@ -453,7 +510,7 @@ export class CampaignCanvasComponent implements OnInit {
                 if (res.success && res.data) {
                   const newEl: ExtendedCanvasElement = {
                     ...res.data,
-                    imageUrl: res.data.imageUrl || el.imageUrl,
+                    imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
                   };
                   this.elements.push(newEl);
                   pastedElements.push(newEl);
@@ -461,7 +518,6 @@ export class CampaignCanvasComponent implements OnInit {
                 }
               });
             } else {
-              // ── 2. IMAGEM, DRAWING OU TOKEN PERSONALIZADO ──
               const req: CreateCanvaElementRequest = {
                 campaignId: this.campaignId,
                 elementType: el.elementType,
@@ -480,7 +536,8 @@ export class CampaignCanvasComponent implements OnInit {
                 if (res.success && res.data) {
                   const newEl: ExtendedCanvasElement = {
                     ...res.data,
-                    imageUrl: res.data.imageUrl || el.imageUrl,
+                    imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
+                    isRound: el.isRound,
                   };
                   this.elements.push(newEl);
                   pastedElements.push(newEl);
@@ -510,6 +567,7 @@ export class CampaignCanvasComponent implements OnInit {
             formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
             formData.append('z', (++this.maxZ).toString());
             formData.append('scale', '1');
+            formData.append('content', 'square');
             formData.append('image', this.selectedFile, this.selectedFile.name);
 
             this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
@@ -557,32 +615,6 @@ export class CampaignCanvasComponent implements OnInit {
     this.selectedElements = [];
   }
 
-  addText(): void {
-    const text = prompt('Digite sua anotação:');
-    if (!text) return;
-    this.saveState();
-
-    const req: CreateCanvaElementRequest = {
-      campaignId: this.campaignId,
-      elementType: CanvasElementType.Text,
-      content: text,
-      x: this.getWorldX(window.innerWidth / 2) - 50,
-      y: this.getWorldY(window.innerHeight / 2) - 50,
-      z: ++this.maxZ,
-      scale: 1,
-      color: this.selectedColor,
-      image: undefined,
-    };
-
-    this.canvasElementService.CreateElement(req).subscribe((res) => {
-      if (res.success && res.data) {
-        this.elements.push(res.data);
-        this.setTool('cursor');
-        this.selectedElements = [res.data];
-      }
-    });
-  }
-
   triggerImageUpload(): void {
     this.fileInput.nativeElement.click();
   }
@@ -593,13 +625,6 @@ export class CampaignCanvasComponent implements OnInit {
       const file = input.files[0];
       this.selectedFile = file;
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.tempCroppedBase64 = reader.result as string;
-        this.saveState();
-      };
-      reader.readAsDataURL(file);
-
       const formData = new FormData();
       formData.append('campaignId', this.campaignId);
       formData.append('elementType', CanvasElementType.Image.toString());
@@ -607,6 +632,7 @@ export class CampaignCanvasComponent implements OnInit {
       formData.append('y', (this.getWorldY(window.innerHeight / 2) - 50).toString());
       formData.append('z', (++this.maxZ).toString());
       formData.append('scale', '1');
+      formData.append('content', 'square');
       formData.append('image', this.selectedFile, this.selectedFile.name);
 
       this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
@@ -621,11 +647,13 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   onColorChange(colorValue: string): void {
+    if (this.selectedColor === colorValue) return;
     this.selectedColor = colorValue;
+
     if (this.selectedElements.length > 0) {
       this.saveState();
       this.selectedElements.forEach((el) => {
-        if (el.elementType !== CanvasElementType.Image && !el.isLocked) {
+        if (el.elementType !== CanvasElementType.Image && !el.isLocked && el.color !== colorValue) {
           el.color = colorValue;
           this.updateElementAPI(el);
         }
@@ -633,7 +661,6 @@ export class CampaignCanvasComponent implements OnInit {
     }
   }
 
-  // ── EDIÇÃO E EXCLUSÃO ──
   deleteSelected(): void {
     const deletable = this.selectedElements.filter((e) => !e.isLocked);
     if (deletable.length === 0) return;
@@ -649,7 +676,6 @@ export class CampaignCanvasComponent implements OnInit {
     this.selectedElements = [];
   }
 
-  // ── BORRACHA ──
   eraseDrawingsAt(wx: number, wy: number): void {
     const eraseRadius = 16;
 
@@ -715,12 +741,6 @@ export class CampaignCanvasComponent implements OnInit {
     this.canvasElementService.ReOrderElement(req).subscribe();
   }
 
-  updateElementScale(event: Event): void {
-    if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
-    const input = event.target as HTMLInputElement;
-    this.selectedElements[0].scale = parseFloat(input.value);
-  }
-
   sortElements(): void {
     this.elements.sort((a, b) => a.z - b.z);
   }
@@ -737,10 +757,12 @@ export class CampaignCanvasComponent implements OnInit {
       this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
 
+      this.isRoundCrop = !!this.selectedElements[0].isRound;
       this.isCroppingCustomToken = false;
       this.isCropping = true;
       this.cropImageSource = '';
       this.tempCroppedBase64 = '';
+      this.croppedBlob = null;
 
       setTimeout(() => {
         this.cropImageSource = currentImage;
@@ -755,6 +777,7 @@ export class CampaignCanvasComponent implements OnInit {
       this.isCropping = true;
       this.cropImageSource = '';
       this.tempCroppedBase64 = '';
+      this.croppedBlob = null;
 
       setTimeout(() => {
         this.cropImageSource = this.customTokenImagePreview!;
@@ -764,17 +787,11 @@ export class CampaignCanvasComponent implements OnInit {
   }
 
   imageCropped(event: ImageCroppedEvent): void {
-    if (event.base64 && event.base64.length > 10) {
+    if (event.blob) {
+      this.croppedBlob = event.blob;
+    }
+    if (event.base64) {
       this.tempCroppedBase64 = event.base64;
-    } else if (event.blob) {
-      const reader = new FileReader();
-      reader.readAsDataURL(event.blob);
-      reader.onloadend = () => {
-        if (event.objectUrl && event.blob) {
-          this.tempCroppedBase64 = reader.result as string;
-          this.selectedFile = new File([event.blob], 'avatar.png', { type: 'image/png' });
-        }
-      };
     } else if (event.objectUrl) {
       this.tempCroppedBase64 = event.objectUrl;
     }
@@ -784,12 +801,89 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.isCroppingCustomToken) {
       if (this.tempCroppedBase64) {
         this.customTokenImagePreview = this.tempCroppedBase64;
+        if (this.croppedBlob) {
+          this.customTokenFile = new File([this.croppedBlob], 'token-cropped.png', { type: 'image/png' });
+        }
       }
-    } else if (this.selectedElements.length === 1 && this.tempCroppedBase64) {
+    } else if (this.selectedElements.length === 1 && (this.croppedBlob || this.tempCroppedBase64)) {
       const targetElement = this.selectedElements[0];
-      targetElement.imageUrl = this.tempCroppedBase64;
-      this.updateElementAPI(targetElement);
+      const oldId = targetElement.id;
+      const isRound = this.isRoundCrop;
+      const currentScale = targetElement.scale || 1;
+
+      if (this.croppedBlob) {
+        const croppedFile = new File([this.croppedBlob], 'cropped-element.png', { type: 'image/png' });
+        const formData = new FormData();
+        formData.append('campaignId', this.campaignId);
+        formData.append('CampaignId', this.campaignId);
+        formData.append('elementType', targetElement.elementType.toString());
+        formData.append('ElementType', targetElement.elementType.toString());
+        formData.append('x', targetElement.x.toString());
+        formData.append('X', targetElement.x.toString());
+        formData.append('y', targetElement.y.toString());
+        formData.append('Y', targetElement.y.toString());
+        formData.append('z', targetElement.z.toString());
+        formData.append('Z', targetElement.z.toString());
+        formData.append('scale', currentScale.toString());
+        formData.append('Scale', currentScale.toString());
+        formData.append('content', isRound ? 'round' : 'square');
+        formData.append('Content', isRound ? 'round' : 'square');
+        formData.append('image', croppedFile, croppedFile.name);
+
+        this.canvasElementService.CreateImageElement(formData as any).subscribe({
+          next: (res) => {
+            if (res.success && res.data) {
+              // Desativa a imagem antiga para não duplicar no backend
+              if (oldId && !oldId.startsWith('temp-')) {
+                this.canvasElementService.DeactiveElement({
+                  campaignId: this.campaignId,
+                  ids: [oldId],
+                }).subscribe();
+              }
+
+              const newUrl = res.data.imageUrl || (res.data as any).image;
+
+              const newEl: ExtendedCanvasElement = {
+                ...res.data,
+                x: targetElement.x,
+                y: targetElement.y,
+                z: targetElement.z,
+                scale: currentScale,
+                imageUrl: newUrl,
+                isRound: isRound,
+                content: isRound ? 'round' : 'square',
+                isLocked: targetElement.isLocked,
+                hideName: targetElement.hideName,
+              };
+
+              // Garante que posição e o formato fiquem salvos
+              this.canvasElementService.MoveElement({
+                campaignId: this.campaignId,
+                items: [{ id: newEl.id, x: newEl.x, y: newEl.y }],
+              }).subscribe();
+
+              // Atualização final para persistir a escala e propriedades do elemento
+              this.updateElementAPI(newEl);
+
+              const index = this.elements.findIndex((e) => e.id === oldId);
+              if (index > -1) {
+                this.elements[index] = newEl;
+              } else {
+                this.elements.push(newEl);
+              }
+              this.selectedElements = [newEl];
+            }
+          },
+          error: (err) => console.error('Erro ao persistir imagem cortada:', err),
+        });
+      } else {
+        // Se só alterou o formato (quadrado/redondo)
+        targetElement.isRound = isRound;
+        targetElement.content = isRound ? 'round' : 'square';
+        this.updateElementAPI(targetElement);
+      }
     }
+
     this.isCropping = false;
     this.isCroppingCustomToken = false;
     this.cropImageSource = '';
@@ -799,6 +893,7 @@ export class CampaignCanvasComponent implements OnInit {
     this.isCropping = false;
     this.isCroppingCustomToken = false;
     this.cropImageSource = '';
+    this.croppedBlob = null;
     if (!this.isCroppingCustomToken) {
       this.history.pop();
     }
@@ -873,8 +968,9 @@ export class CampaignCanvasComponent implements OnInit {
     const boxWorldH = Math.abs(this.selectionBox.currentY - this.selectionBox.startY) / this.scale;
 
     this.selectedElements = this.elements.filter((el) => {
-      const elW = 100 * el.scale;
-      const elH = 100 * el.scale;
+      const elScale = el.scale || 1;
+      const elW = 100 * elScale;
+      const elH = 100 * elScale;
       return (
         el.x < boxWorldX + boxWorldW &&
         el.x + elW > boxWorldX &&
