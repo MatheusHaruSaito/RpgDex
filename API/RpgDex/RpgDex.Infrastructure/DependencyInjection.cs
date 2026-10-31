@@ -95,6 +95,9 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
             services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
+            services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
+            services.AddScoped<ICharacterQueries, CharacterQueries>();
+            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
 
 
             services.AddHostedService<SyncPaymentJob>();

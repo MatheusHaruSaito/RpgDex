@@ -44,6 +44,9 @@ namespace RpgDex.Domain.Common
         public static readonly Error SaveMessageFailed = new("CAMPAIGN_SAVE_MESSAGE_FAILED", "Failed to save new chat message.");
         public static readonly Error IsNotActive = new("CAMPAIGN_IS_NOT_ACTIVE", "Campaign is not active.");
         public static readonly Error MaxPlayersReached = new("CAMPAIGN_MAX_PLAYERS_REACHED", "Failed to add player to campaign / max player capacity.");
+        public static readonly Error MessageNotFound = new("CAMPAIGN_CHAT_MESSAGE_NOT_FOUND", "Chat message not found");
+        public static readonly Error MessageForbidden = new("CAMPAIGN_CHAT_MESSAGE_FORBIDDEN", "Player is not the author of this message");
+        public static readonly Error FailedToRestoreMessage = new("CAMPAIGN_CHAT_MESSAGE_RESTORE", "Failed to Restore Message");
         public static readonly Error CharacterAlreadyInCampaign = new("CAMPAIGN_CHARACTER_ALREADY_IN", "Character already in campaign.");
         public static readonly Error CharacterAwaitingApproval = new("CAMPAIGN_CHARACTER_AWAITING_APPROVAL", "Character awaiting approval.");
         public static readonly Error CharacterNotInRequests = new("CAMPAIGN_CHARACTER_NOT_IN_REQUESTS", "Character is not in the request list.");
@@ -77,6 +80,14 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
         public static readonly Error LimitExceed = new("USER_DOCUMENT_LIMIT_SIZE_EXCEED", "Failed to upload file, maximum storage exceed"); 
+    }
+
+    public static class DiceLogError
+    {
+        public static readonly Error AddRollFailed = new("DICE_LOG_ADD_ROLL_FAILED", "Failed to save dice roll to the campaign log.");
+        public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
+        public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
+        public static readonly Error InvalidExpression = new("DICE_LOG_INVALID_EXPRESSION", "Invalid dice expression.");
     }
     public static class ValidationErrorCodes
     {

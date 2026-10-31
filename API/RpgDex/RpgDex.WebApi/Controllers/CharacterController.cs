@@ -2,9 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using RpgDex.Domain.Common;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
+using RpgDex.Domain.Common;
 using RpgDex.WebApi.Extensions;
 using System.Security.Claims;
 
@@ -41,6 +42,13 @@ namespace RpgDex.WebApi.Controllers
             public async Task<IActionResult> GetAllByUserId(int page = 1, int pageSize = 3)
             {
             var result = await _characterSevice.GetAllByUserIdAsync(currentUser,page,pageSize);
+                return result.ToIActionResult();
+
+            }
+            [HttpGet("All/campaign")]
+            public async Task<IActionResult> GetAllFromCampaign([FromQuery]Guid campaignId)
+            {
+                var result = await _characterSevice.GetAllFromCampaign(currentUser,campaignId);
                 return result.ToIActionResult();
 
             }
