@@ -11,25 +11,26 @@ using RpgDex.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 
 namespace RpgDex.Application.Services
 {
-    public class CharacterService(ICharacterRepository character, IUserRepository userRepository,
-        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator,
+    public class CharacterService(ICharacterRepository characterRepository, IUserRepository userRepository,
+        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator, ISubscriptionService subscritpionService,
         IValidator<UpdateCharacterRequest> updateCharacterRequestValidator, ICharacterQueries characterQueries) : ICharacterService
     {
-        private readonly ICharacterRepository _character = character;
 
         public async Task<Result<CharacterResponse>> Create(string userId,CreateCharacterRequest request)
         {
             var checkCharacterValid = createCharacterRequestValidator.Validate(request);
             if (!checkCharacterValid.IsValid) return checkCharacterValid.ReturnErrors<CharacterResponse>();
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CharacterResponse>.Failure(Error.InvalidUserId);
+
+            if (await CheckCharacterLimit(guidUserId)) return Result<CharacterResponse>.Failure(CharacterError.LimitExceed);
             //Converts request to character
             var character = request.Adapt<Character>();
             character.Id = Guid.NewGuid();
-
-            if (!Guid.TryParse(userId, out var guidUserId)) return Result<CharacterResponse>.Failure(Error.InvalidUserId);
 
             //Verifies if user exists
             var user = await userRepository.GetByIdAsync(guidUserId);
@@ -53,7 +54,7 @@ namespace RpgDex.Application.Services
             }
             
             // push character to database
-            var response = await _character.InsertAsync(character);
+            var response = await characterRepository.InsertAsync(character);
 
             //push character to user list
             var data = await userRepository.PushCharacterAsync(guidUserId, response.Id);
@@ -65,11 +66,11 @@ namespace RpgDex.Application.Services
         public async Task<Result<CharacterResponse>> SetActiveState(Guid Id, bool ActiveState)
         {
             //Verifies if character exists
-            var characterFound = await _character.GetByIdAsync(Id);
+            var characterFound = await characterRepository.GetByIdAsync(Id);
             if(characterFound is null) return Result<CharacterResponse>.Failure(CharacterError.NotFound);
 
             //Verifies if character is deactivated
-            bool modified = await _character.SetActiveState(Id,ActiveState);
+            bool modified = await characterRepository.SetActiveState(Id,ActiveState);
             if (!modified) return Result<CharacterResponse>.Failure(CharacterError.SetActiveStateFailed);
 
             //Verifies if the character is removed
@@ -86,7 +87,7 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
-            var result =  await _character.GetAllByUserIdAsync(guidUserId,page,pageSize);
+            var result =  await characterRepository.GetAllByUserIdAsync(guidUserId,page,pageSize);
             if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
 
             var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
@@ -109,7 +110,7 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
-            var result = await _character.GetAllByUserIdAsync(guidUserId);
+            var result = await characterRepository.GetAllByUserIdAsync(guidUserId);
             if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
             var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
             return Result<GetAllCharacterResponse>.Success(response);
@@ -117,7 +118,7 @@ namespace RpgDex.Application.Services
         public async Task<Result<CharacterResponse>> GetByIdAsync(Guid Id)
         {
             //Return a character
-            var data = await _character.GetByIdAsync(Id);
+            var data = await characterRepository.GetByIdAsync(Id);
             if(data is null)
             {
                 return Result<CharacterResponse>.Failure(CharacterError.NotFound);
@@ -136,7 +137,7 @@ namespace RpgDex.Application.Services
 
             //Verifies if Character is really from user
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<bool>.Failure(Error.InvalidUserId);
-            var characterFound = await _character.GetByIdAsync(request.Id);
+            var characterFound = await characterRepository.GetByIdAsync(request.Id);
 
             if (!guidUserId.Equals(characterFound.UserId)) return Result<bool>.Failure(CharacterError.CharacterNotOwned);
 
@@ -159,7 +160,7 @@ namespace RpgDex.Application.Services
             }
 
 
-            var response = await _character.UpdateAsync(updateCharacter);
+            var response = await characterRepository.UpdateAsync(updateCharacter);
             //Verifies if character was updated
             if (!response) return Result<bool>.Failure(CharacterError.UpdateFailed);
             return Result<bool>.Success(response);
@@ -167,11 +168,11 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<bool>> UpdateLastAccess(Guid id)
         {
-            var character = await _character.GetByIdAsync(id);
+            var character = await characterRepository.GetByIdAsync(id);
             if (character is null) return Result<bool>.Failure(CharacterError.NotFound);
 
 
-            var isSuccess = await _character.UpdateLastAccessAsync(id,DateTime.Now);
+            var isSuccess = await characterRepository.UpdateLastAccessAsync(id,DateTime.Now);
             if (!isSuccess)
             {
                 return Result<bool>.Failure(CharacterError.UpdateLastAccessFailed);
@@ -179,6 +180,17 @@ namespace RpgDex.Application.Services
             return Result<bool>.Success(true);
         }
 
-
+        private async Task<bool> CheckCharacterLimit(Guid userId)
+        {
+            var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
+            var characterCount = await characterRepository.GetCharactersCountByUserId(userId);
+            Console.WriteLine("Limit: {0}", limit.Value!.CharacterQty);
+            Console.WriteLine("character count: {0}", characterCount);
+            if (characterCount < limit.Value!.CharacterQty)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -46,7 +46,8 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Failed to change character active state.",
     "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
-
+    "CHARACTER_QUANTITY_EXCEED": "Failed to create character, maximum character quantity exceed",
+    
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
 

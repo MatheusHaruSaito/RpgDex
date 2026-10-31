@@ -31,8 +31,7 @@ namespace RpgDex.Infrastructure.Queries
                     .Find(p => p.Id == planId)
                     .Project(p => new PlanLimitsDTO(
                         p.HasEarlyAccess,
-                        p.CharacterPerCampaignQty,
-                        p.CharacterPerUserQty,
+                        p.CharacterQty,
                         p.CampaignQty,
                         p.DocumentsSpaceMB,
                         p.CanvasSpaceMb)).FirstOrDefaultAsync();

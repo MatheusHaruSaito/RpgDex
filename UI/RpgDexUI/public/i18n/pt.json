@@ -46,6 +46,7 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Falha ao alterar o estado ativo do personagem.",
     "CHARACTER_UPDATE_FAILED": "Não foi possível atualizar o personagem.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
+    "CHARACTER_QUANTITY_EXCEED": "Falha ao criar personagem, limite de personagens atingido",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",

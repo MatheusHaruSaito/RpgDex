@@ -13,8 +13,7 @@ namespace RpgDex.Application.Services
     {
         private static readonly PlanLimitsDTO FreeLimits = new(
             HasEarlyAccess: false,
-            CharacterPerCampaignQty: 10,
-            CharacterPerUserQty: 15,
+            CharacterQty: 10,
             CampaignQty: 3,
             DocumentsSpaceMB: 10,
             CanvasSpaceMb: 15);
@@ -34,7 +33,7 @@ namespace RpgDex.Application.Services
 
             if(result is null)
             {
-                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterPerCampaignQty, FreeLimits.CharacterPerUserQty, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB, FreeLimits.CanvasSpaceMb);
+                var freeLimit = new PlanLimitsDTO(FreeLimits.HasEarlyAccess, FreeLimits.CharacterQty, FreeLimits.CampaignQty, FreeLimits.DocumentsSpaceMB, FreeLimits.CanvasSpaceMb);
                 return Result<PlanLimitsDTO>.Success(freeLimit);
             }
             return Result<PlanLimitsDTO>.Success(result);

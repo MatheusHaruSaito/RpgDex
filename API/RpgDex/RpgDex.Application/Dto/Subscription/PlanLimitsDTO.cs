@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Subscription
 {
-    public record PlanLimitsDTO(bool HasEarlyAccess, int CharacterPerCampaignQty, int CharacterPerUserQty, int CampaignQty, int DocumentsSpaceMB, int CanvasSpaceMb);
+    public record PlanLimitsDTO(bool HasEarlyAccess, int CharacterQty, int CampaignQty, int DocumentsSpaceMB, int CanvasSpaceMb);
 }

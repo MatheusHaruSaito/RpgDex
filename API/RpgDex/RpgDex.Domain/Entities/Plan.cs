@@ -15,8 +15,7 @@ namespace RpgDex.Domain.Entities
         public string Description { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public bool HasEarlyAccess { get; set; }
-        public int CharacterPerCampaignQty { get; set; }
-        public int CharacterPerUserQty { get; set; }
+        public int CharacterQty { get; set; }
         public int CampaignQty { get; set; }
         public int DocumentsSpaceMB { get; set; }
         public int CanvasSpaceMb { get; set; }
