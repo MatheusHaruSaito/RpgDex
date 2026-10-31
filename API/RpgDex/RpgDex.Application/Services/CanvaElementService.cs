@@ -29,11 +29,11 @@ namespace RpgDex.Application.Services
             var check = createCanvaElementValidator.Validate(request);
             if(!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
 
-            var imageSize = request.Image is null ? 0m : request.Image.Length;
-            if (await CheckCanvasStorageAsync(userId, request.CampaignId, imageSize)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
-
-            var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (guidUserId, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+
+            var imageSize = request.Image is null ? 0m : request.Image.Length;
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId, imageSize)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             var count = await canvasElementRepository.CountByCampaignAsync(request.CampaignId);
             var element = request.Adapt<CanvasElement>();
@@ -64,10 +64,10 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0,bool checkLimit = false)
         {
-            var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (guidUserId, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
 
-            if (await CheckCanvasStorageAsync(userId, request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId) & checkLimit) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
 
             var element = request.Adapt<CanvasElement>();
@@ -94,9 +94,9 @@ namespace RpgDex.Application.Services
         }
         public async Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request)
         {
-            var (userGuidId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (userGuidId, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
-            if (await CheckCanvasStorageAsync(userId, request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
             //CreateCharacter
             Character character = new()
@@ -132,7 +132,7 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
         {
-            var (_, accessError) = await CheckAccessAsync(userId, campaignId);
+            var (_, _, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
             var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId,page,pageSize);
@@ -144,7 +144,7 @@ namespace RpgDex.Application.Services
         {
             var check = moveCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
-            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var positions = request.Items.Select(i => new ElementPosition(i.Id, i.X, i.Y));
@@ -158,7 +158,7 @@ namespace RpgDex.Application.Services
             var check = reOrderCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
 
-            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var orders = request.Items.Select(i => new ElementOrder(i.Id, i.Z));
@@ -171,7 +171,7 @@ namespace RpgDex.Application.Services
         {
             var check = setElementActiveStateValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
-            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var ok = await canvasElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
@@ -184,8 +184,10 @@ namespace RpgDex.Application.Services
             var check = updateCanvasElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<CanvasElementResponse>();
 
-            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            var (_, gmId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+            if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
 
             var element = await canvasElementRepository.GetByIdAsync(request.CampaignId, request.Id);
             if (element is null) return Result<CanvasElementResponse>.Failure(CanvaElementError.NotFound);
@@ -228,24 +230,24 @@ namespace RpgDex.Application.Services
             }
             return true;
         }
-        private async Task<(Guid UserId, Error? Error)> CheckAccessAsync(string userId, Guid campaignId, bool gameMasterOnly = false)
+        private async Task<(Guid UserId,Guid GmId, Error? Error)> CheckAccessAsync(string userId, Guid campaignId, bool gameMasterOnly = false)
         {
             if (!Guid.TryParse(userId, out var guidUserId))
-                return (Guid.Empty, Error.InvalidUserId);
+                return (Guid.Empty, Guid.Empty, Error.InvalidUserId);
 
             var user = await userManager.FindByIdAsync(userId);
-            if (user is null) return (guidUserId, AuthError.UserNotFound);
+            if (user is null) return (guidUserId, Guid.Empty, AuthError.UserNotFound);
 
             var campaign = await campaignRepository.GetByIdAsync(campaignId);
-            if (campaign is null) return (guidUserId, CampaignError.NotFound);
-            if (!campaign.IsActive) return (guidUserId, CampaignError.IsNotActive);
+            if (campaign is null) return (guidUserId, Guid.Empty, CampaignError.NotFound);
+            if (!campaign.IsActive) return (guidUserId, Guid.Empty, CampaignError.IsNotActive);
 
             var isGm = campaign.GameMasterId == guidUserId;
-            if (gameMasterOnly && !isGm) return (guidUserId, CampaignError.NotGameMaster);
+            if (gameMasterOnly && !isGm) return (guidUserId, Guid.Empty, CampaignError.NotGameMaster);
             if (!isGm && !campaign.PlayerIds.Contains(guidUserId))
-                return (guidUserId, CampaignError.PlayerNotInCampaign);
+                return (guidUserId, campaign.GameMasterId, CampaignError.PlayerNotInCampaign);
 
-            return (guidUserId, null);
+            return (guidUserId, campaign.GameMasterId, null);
         }
     }
 }
