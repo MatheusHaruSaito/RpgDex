@@ -184,8 +184,7 @@ namespace RpgDex.Application.Services
         {
             var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
             var characterCount = await characterRepository.GetCharactersCountByUserId(userId);
-            Console.WriteLine("Limit: {0}", limit.Value!.CharacterQty);
-            Console.WriteLine("character count: {0}", characterCount);
+
             if (characterCount < limit.Value!.CharacterQty)
             {
                 return false;
