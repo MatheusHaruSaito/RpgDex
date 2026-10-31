@@ -67,10 +67,9 @@ namespace RpgDex.Application.Services
             var campaign = request.Adapt<Campaign>();
             campaign.GameMasterId = guidUserId;
             campaign.SetPasswordHash(HashPassword(campaign, request.Password));
-            //Temporary, change when subscriptions are defined
-            if (request.MaxPlayers > 15)
+            if (request.MaxPlayers > 20)
             {
-                campaign.MaxPlayers = 15;
+                campaign.MaxPlayers = 20;
             }
             //Save Icon, if it exists
             if (request.Icon is not null)
