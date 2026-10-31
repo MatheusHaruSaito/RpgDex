@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
 using RpgDex.WebApi.Extensions;
+using RpgDex.WebApi.Filters;
 using System.Security.Claims;
 
 namespace RpgDex.WebApi.Controllers
@@ -10,6 +11,7 @@ namespace RpgDex.WebApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EarlyAccess]
     public class UserDocumentController(IUserDocumentService userDocumentService) : ControllerBase
     {
         private string currentUserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;

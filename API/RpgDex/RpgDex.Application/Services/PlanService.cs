@@ -13,7 +13,7 @@ namespace RpgDex.Application.Services
 {
     public class PlanService(IPlanRepository planRepository) : IPlanService
     {
-        public async Task<Result<PlanResponse>> AddPlan([FromBody]CreatePlanRequest request)
+        public async Task<Result<PlanResponse>> AddPlan(CreatePlanRequest request)
         {
             await planRepository.Insert(request.Adapt<Plan>());
             return Result<PlanResponse>.Success(request.Adapt<PlanResponse>());

@@ -19,9 +19,9 @@ namespace RpgDex.Infrastructure.Queries
             _entity = ctx.Subscriptions;
             _planEntity = ctx.Plans;
         }
-        public async Task<PlanLimitsDTO?> GetPlanLimitsByUserId(Guid id)
+        public async Task<PlanLimitsDTO?> GetPlanLimitsByUserId(Guid userId)
         {
-            var planId = await _entity.Find(p => p.Id == id)
+            var planId = await _entity.Find(p => p.UserId == userId & p.isActive)
                 .Project(s => s.PlanId)
                 .FirstOrDefaultAsync();
             if (planId == Guid.Empty)

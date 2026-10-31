@@ -40,5 +40,17 @@ namespace RpgDex.Application.Services
 
 
         }
+
+        public async Task<bool> HasEarlyAccess(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuidId)) return false;
+            var result = await subscriptionQueries.GetPlanLimitsByUserId(userGuidId);
+
+            if (result is null)
+            {           
+                return FreeLimits.HasEarlyAccess;
+            }
+            return result.HasEarlyAccess;
+        }
     }
 }
