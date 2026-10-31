@@ -88,5 +88,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvaElementService.SetElementActiveState(currentUser, request, true);
             return result.ToIActionResult();
         }
+        [HttpPatch("ScaleElement")]
+        public async Task<IActionResult> ScaleElement([FromBody] ScaleCanvasElementsRequest request)
+        {
+            var result = await _canvaElementService.ScaleElement(currentUser, request);
+            return result.ToIActionResult();
+        }
     }
 }

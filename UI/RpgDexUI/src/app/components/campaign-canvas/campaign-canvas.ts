@@ -253,7 +253,11 @@ export class CampaignCanvasComponent implements OnInit {
 
     if (this.customTokenFile) {
       const formData = new FormData();
-      formData.append('CharacterIcon', this.customTokenFile, this.customTokenFile.name || 'token-icon.png');
+      formData.append(
+        'CharacterIcon',
+        this.customTokenFile,
+        this.customTokenFile.name || 'token-icon.png',
+      );
       formData.append('CampaignId', this.campaignId);
       formData.append('X', targetX.toString());
       formData.append('Y', targetY.toString());
@@ -268,7 +272,11 @@ export class CampaignCanvasComponent implements OnInit {
           if (res.success && res.data) {
             const newEl: ExtendedCanvasElement = {
               ...res.data,
-              imageUrl: res.data.imageUrl || (res.data as any).image || this.customTokenImagePreview || undefined,
+              imageUrl:
+                res.data.imageUrl ||
+                (res.data as any).image ||
+                this.customTokenImagePreview ||
+                undefined,
             };
             this.elements.push(newEl);
             this.setTool('cursor');
@@ -374,7 +382,8 @@ export class CampaignCanvasComponent implements OnInit {
   updateElementAPI(el: ExtendedCanvasElement): void {
     if (!el || !el.id || el.id.startsWith('temp-')) return;
 
-    const imageToUpdate = el.imageUrl && el.imageUrl.startsWith('data:image') ? undefined : el.imageUrl;
+    const imageToUpdate =
+      el.imageUrl && el.imageUrl.startsWith('data:image') ? undefined : el.imageUrl;
 
     const req: UpdateCanvaElementRequest = {
       id: el.id,
@@ -395,9 +404,9 @@ export class CampaignCanvasComponent implements OnInit {
     if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
     const input = event.target as HTMLInputElement;
     const newScale = parseFloat(input.value);
-    
-    if (isNaN(newScale)) return;
 
+    if (isNaN(newScale)) return;
+    console.log(newScale);
     this.selectedElements[0].scale = newScale;
     this.updateElementAPI(this.selectedElements[0]);
   }
@@ -802,7 +811,9 @@ export class CampaignCanvasComponent implements OnInit {
       if (this.tempCroppedBase64) {
         this.customTokenImagePreview = this.tempCroppedBase64;
         if (this.croppedBlob) {
-          this.customTokenFile = new File([this.croppedBlob], 'token-cropped.png', { type: 'image/png' });
+          this.customTokenFile = new File([this.croppedBlob], 'token-cropped.png', {
+            type: 'image/png',
+          });
         }
       }
     } else if (this.selectedElements.length === 1 && (this.croppedBlob || this.tempCroppedBase64)) {
@@ -812,7 +823,9 @@ export class CampaignCanvasComponent implements OnInit {
       const currentScale = targetElement.scale || 1;
 
       if (this.croppedBlob) {
-        const croppedFile = new File([this.croppedBlob], 'cropped-element.png', { type: 'image/png' });
+        const croppedFile = new File([this.croppedBlob], 'cropped-element.png', {
+          type: 'image/png',
+        });
         const formData = new FormData();
         formData.append('campaignId', this.campaignId);
         formData.append('CampaignId', this.campaignId);
@@ -835,10 +848,12 @@ export class CampaignCanvasComponent implements OnInit {
             if (res.success && res.data) {
               // Desativa a imagem antiga para não duplicar no backend
               if (oldId && !oldId.startsWith('temp-')) {
-                this.canvasElementService.DeactiveElement({
-                  campaignId: this.campaignId,
-                  ids: [oldId],
-                }).subscribe();
+                this.canvasElementService
+                  .DeactiveElement({
+                    campaignId: this.campaignId,
+                    ids: [oldId],
+                  })
+                  .subscribe();
               }
 
               const newUrl = res.data.imageUrl || (res.data as any).image;
@@ -857,10 +872,12 @@ export class CampaignCanvasComponent implements OnInit {
               };
 
               // Garante que posição e o formato fiquem salvos
-              this.canvasElementService.MoveElement({
-                campaignId: this.campaignId,
-                items: [{ id: newEl.id, x: newEl.x, y: newEl.y }],
-              }).subscribe();
+              this.canvasElementService
+                .MoveElement({
+                  campaignId: this.campaignId,
+                  items: [{ id: newEl.id, x: newEl.x, y: newEl.y }],
+                })
+                .subscribe();
 
               // Atualização final para persistir a escala e propriedades do elemento
               this.updateElementAPI(newEl);

@@ -65,7 +65,9 @@
     "CAMPAIGN_VALIDATION_ICON_REQUIRED": "A imagem da campanha é obrigatória.",
     "VALIDATION_INVALID_FILE_EXTENSION": "O ícone deve ser um ficheiro JPG, JPEG, PNG ou WEBP.",
     "VALIDATION_FILE_TOO_LARGE": "O tamanho do ficheiro do ícone excede o limite permitido.",
-    
+    "CANVAS_DUPLICATED_ITEMS": "O mesmo elemento foi enviado mais de uma vez",
+    "CANVAS_INVALID_SCALE": "A escala deve estar entre 0,1 e 10",
+
     "CANVAS_ELEMENT_NOT_FOUND": "Elemento do canvas não encontrado.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Falha ao criar o elemento do canvas.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Falha ao atualizar o elemento do canvas.",

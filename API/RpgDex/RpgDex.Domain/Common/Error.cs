@@ -104,6 +104,8 @@ namespace RpgDex.Domain.Common
         public const string CanvasInvalidValue = "CANVAS_INVALID_VALUE";
         public const string CanvasInvalidColor = "CANVAS_INVALID_COLOR";
         public const string CanvasTooManyItems = "CANVAS_TOO_MANY_ITEMS";
+        public const string CanvasEmptyItems = "CANVAS_EMPTY_ITEMS";
+        public const string CanvasDuplicatedItems = "CANVAS_DUPLICATED_ITEMS";
     }
     public static class CanvaElementError
     {

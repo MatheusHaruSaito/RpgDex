@@ -107,5 +107,18 @@ namespace RpgDex.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
             return result?.TotalSize??0;
         }
+
+        public async Task<bool> ScaleElement(Guid campaignId, IEnumerable<ElementScale> items)
+        {
+            var models = items.Select(i => new UpdateOneModel<CanvasElement>(
+                Builders<CanvasElement>.Filter.Where(e => e.Id == i.Id && e.CampaignId == campaignId),
+                Builders<CanvasElement>.Update.Set(e => e.Scale, i.Scale)))
+                .ToList();
+
+            if (models.Count == 0) return true;
+
+            var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
+            return result.IsAcknowledged && result.MatchedCount == models.Count;
+        }
     }
 }

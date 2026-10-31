@@ -21,7 +21,8 @@ namespace RpgDex.Application.Services
 {
     public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
-        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
+        ScaleCanvasElementsRequestValidator scaleCamvasElementValidator
         ) : ICanvaElementService
     {
         private const int MaxElementsPerCanvas = 500;
@@ -165,7 +166,19 @@ namespace RpgDex.Application.Services
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
         }
+        public async Task<Result<bool>> ScaleElement(string userId, ScaleCanvasElementsRequest request)
+        {
+            var check = scaleCamvasElementValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
 
+            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            var scales = request.Items.Select(i => new ElementScale(i.Id, i.Scale));
+            var ok = await canvaElementRepository.ScaleElement(request.CampaignId, scales);
+
+            return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
+        }
         public async Task<Result<bool>> SetElementActiveState(string userId, SetElementActiveStateRequest request, bool state)
         {
             var check = setElementActiveStateValidator.Validate(request);
