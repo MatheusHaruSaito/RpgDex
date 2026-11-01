@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -11,9 +12,11 @@ namespace RpgDex.Infrastructure.Repositories
     public class CanvasElementRepository : ICanvasElementRepository
     {
         private readonly IMongoCollection<CanvasElement> _entity;
-        public CanvasElementRepository(MongoDbContext ctx)
+        private readonly ILogger<CanvasElementRepository> _logger;
+        public CanvasElementRepository(MongoDbContext ctx, ILogger<CanvasElementRepository> logger)
         {
             _entity = ctx.CanvasElements;
+            _logger = logger;
         }
         public async Task<CanvasElement> GetByIdAsync(Guid campaignId, Guid id)
         {
@@ -119,6 +122,23 @@ namespace RpgDex.Infrastructure.Repositories
 
             var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
             return result.IsAcknowledged && result.MatchedCount == models.Count;
+        }
+        public async Task<IEnumerable<Guid>> GetTokensIdsByCharacterId(Guid characterId)
+            => await _entity.Find(c=> c.CharacterId == characterId & c.IsActive).Project(c => c.Id).ToListAsync();
+        public async Task<bool> SetActiveStateByCharacterId(IEnumerable<Guid> Ids, bool state)
+        {
+            var ids = Ids.Distinct().Select(id => (Guid?)id).ToList();
+            if (ids.Count == 0) return true;
+
+            var filter = Builders<CanvasElement>.Filter.In(e => e.Id, ids);
+            var update = Builders<CanvasElement>.Update.Set(e => e.IsActive, state);
+
+            var result = await _entity.UpdateManyAsync(filter, update);
+
+            _logger.LogWarning("Ack={Ack} Matched={Matched} Modified={Modified}",
+                result.IsAcknowledged, result.MatchedCount, result.ModifiedCount);
+
+            return result.IsAcknowledged && result.MatchedCount > 0;
         }
     }
 }
