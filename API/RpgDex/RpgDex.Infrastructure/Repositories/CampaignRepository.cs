@@ -5,6 +5,7 @@ using RpgDex.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace RpgDex.Infrastructure.Repositories
 {
@@ -84,6 +85,21 @@ namespace RpgDex.Infrastructure.Repositories
             var isPlayerAndActive = Builders<Campaign>.Filter.AnyEq("PlayerIds", userId)
                 & Builders<Campaign>.Filter.Eq(c=> c.IsActive, true);
             return isGameMaster | isPlayerAndActive;
+        }
+
+        public async Task<bool> RemoveCharacterFromCampaigns(Guid characterId)
+        {
+            var filter = Builders<Campaign>.Filter.Or(
+                Builders<Campaign>.Filter.AnyEq("CharacterIds", characterId),
+                Builders<Campaign>.Filter.AnyEq("CharacterRequests", characterId));
+
+            var update = Builders<Campaign>.Update
+                .Pull("CharacterIds", characterId)
+                .Pull("CharacterRequests", characterId);
+
+            var result = await _entity.UpdateManyAsync(filter, update);
+
+            return result.IsAcknowledged;
         }
     }
 }
