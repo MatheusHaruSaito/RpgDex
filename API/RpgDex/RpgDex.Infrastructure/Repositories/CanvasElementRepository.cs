@@ -12,11 +12,9 @@ namespace RpgDex.Infrastructure.Repositories
     public class CanvasElementRepository : ICanvasElementRepository
     {
         private readonly IMongoCollection<CanvasElement> _entity;
-        private readonly ILogger<CanvasElementRepository> _logger;
-        public CanvasElementRepository(MongoDbContext ctx, ILogger<CanvasElementRepository> logger)
+        public CanvasElementRepository(MongoDbContext ctx)
         {
             _entity = ctx.CanvasElements;
-            _logger = logger;
         }
         public async Task<CanvasElement> GetByIdAsync(Guid campaignId, Guid id)
         {
@@ -134,9 +132,6 @@ namespace RpgDex.Infrastructure.Repositories
             var update = Builders<CanvasElement>.Update.Set(e => e.IsActive, state);
 
             var result = await _entity.UpdateManyAsync(filter, update);
-
-            _logger.LogWarning("Ack={Ack} Matched={Matched} Modified={Modified}",
-                result.IsAcknowledged, result.MatchedCount, result.ModifiedCount);
 
             return result.IsAcknowledged && result.MatchedCount > 0;
         }

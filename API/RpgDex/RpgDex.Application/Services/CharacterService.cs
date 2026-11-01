@@ -16,7 +16,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class CharacterService(ICharacterRepository character, IUserRepository userRepository,
-        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator, ICanvasElementRepository canvasElementRepository,
+        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator, ICanvasElementRepository canvasElementRepository, ICampaignRepository campaignRepository,
         IValidator<UpdateCharacterRequest> updateCharacterRequestValidator) : ICharacterService
     {
         private readonly ICharacterRepository _character = character;
@@ -184,6 +184,8 @@ namespace RpgDex.Application.Services
             if (!tokensDeleted) return (false, CanvaElementError.SetActiveStateFailed);
             //Delete From Both Campaign List
 
+            var characterRemoved = await campaignRepository.RemoveCharacterFromCampaigns(characterId);
+            if(!characterRemoved) return (false, CampaignError.CharacterRemoveFailed);
             return (true, null);
         }
     }
