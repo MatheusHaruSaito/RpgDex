@@ -14,6 +14,7 @@ import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsReque
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
+import { ScaleElementRequest } from '../../../models/scaleElementRequest'; // Nova interface importada
 
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
@@ -399,16 +400,29 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND ──
+  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND (UTILIZANDO O NOVO SERVIÇO) ──
   updateElementScale(event: Event): void {
     if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
     const input = event.target as HTMLInputElement;
     const newScale = parseFloat(input.value);
 
     if (isNaN(newScale)) return;
-    console.log(newScale);
+
     this.selectedElements[0].scale = newScale;
-    this.updateElementAPI(this.selectedElements[0]);
+
+    const req: ScaleElementRequest = {
+      campaignId: this.campaignId,
+      items: [
+        {
+          id: this.selectedElements[0].id,
+          scale: newScale,
+        },
+      ],
+    };
+
+    this.canvasElementService.ScaleElement(req).subscribe({
+      error: (err) => console.error('Erro ao escalonar elemento no Canva:', err),
+    });
   }
 
   // ── DESFAZER E REFAZER ──
@@ -846,7 +860,6 @@ export class CampaignCanvasComponent implements OnInit {
         this.canvasElementService.CreateImageElement(formData as any).subscribe({
           next: (res) => {
             if (res.success && res.data) {
-              // Desativa a imagem antiga para não duplicar no backend
               if (oldId && !oldId.startsWith('temp-')) {
                 this.canvasElementService
                   .DeactiveElement({
@@ -871,7 +884,6 @@ export class CampaignCanvasComponent implements OnInit {
                 hideName: targetElement.hideName,
               };
 
-              // Garante que posição e o formato fiquem salvos
               this.canvasElementService
                 .MoveElement({
                   campaignId: this.campaignId,
@@ -879,7 +891,6 @@ export class CampaignCanvasComponent implements OnInit {
                 })
                 .subscribe();
 
-              // Atualização final para persistir a escala e propriedades do elemento
               this.updateElementAPI(newEl);
 
               const index = this.elements.findIndex((e) => e.id === oldId);
@@ -894,7 +905,6 @@ export class CampaignCanvasComponent implements OnInit {
           error: (err) => console.error('Erro ao persistir imagem cortada:', err),
         });
       } else {
-        // Se só alterou o formato (quadrado/redondo)
         targetElement.isRound = isRound;
         targetElement.content = isRound ? 'round' : 'square';
         this.updateElementAPI(targetElement);

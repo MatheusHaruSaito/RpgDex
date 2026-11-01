@@ -14,7 +14,7 @@ import { UpdateCampaignSettingsRequest } from '../../models/updateCampaignSettin
 import { CampaignSetActiveStateRequest } from '../../models/campaignSetActiveStateRequest';
 import { GetAllCampaignResponse } from '../../models/getAllCampaignResponse';
 import { LeaveCampaignRequest } from '../../models/leaveCampaignRequest';
-import { RemovecharacterFromCapaignRequest } from '../../models/removecharacterFromCapaignRequest';
+import { RemoveCharacterFromCapaignRequest } from '../../models/removecharacterFromCapaignRequest';
 @Injectable({
   providedIn: 'root',
 })
@@ -59,7 +59,7 @@ export class CampaignService {
   AcceptCharacter(request: AcceptCharacterToCampaignRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/AcceptCharacter`, request);
   }
-  RemoveCharacter(request: RemovecharacterFromCapaignRequest): Observable<ApiResponse<String>> {
+  RemoveCharacter(request: RemoveCharacterFromCapaignRequest): Observable<ApiResponse<String>> {
     return this.http.patch<ApiResponse<String>>(`${this.env}/RemoveCharacter`, request);
   }
   RemovePlayer(request: RemovePlayerFromCampaignRequest): Observable<ApiResponse<String>> {
