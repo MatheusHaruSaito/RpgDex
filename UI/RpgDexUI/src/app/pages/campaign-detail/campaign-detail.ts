@@ -52,7 +52,7 @@ export class CampaignDetailComponent implements OnInit {
   currentUserId = '';
   campaign?: Campaign;
 
-  isLoading = true; 
+  isLoading = true;
   isGameMaster = false;
   isPlayerInCampaign = false;
 
@@ -328,6 +328,25 @@ export class CampaignDetailComponent implements OnInit {
       .subscribe({
         next: () => {
           this.showFeedback(approve ? 'Personagem aprovado na campanha!' : 'Solicitação recusada.');
+          this.loadCampaign(true);
+        },
+        error: (err) => this.handleApiError(err),
+      });
+  }
+
+  removeCharacter(characterId: string): void {
+    if (!this.campaign || !this.isGameMaster) return;
+
+    if (!confirm('Tem certeza de que deseja remover este personagem da campanha?')) return;
+
+    this.campaignService
+      .RemoveCharacter({
+        campaignId: this.campaign.id,
+        characterId: characterId,
+      })
+      .subscribe({
+        next: () => {
+          this.showFeedback('Personagem removido com sucesso!');
           this.loadCampaign(true);
         },
         error: (err) => this.handleApiError(err),
