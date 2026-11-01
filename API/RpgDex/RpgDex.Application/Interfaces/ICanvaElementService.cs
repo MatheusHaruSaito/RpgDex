@@ -13,6 +13,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvasElementRequest request);
         Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request);
         Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request);
+        Task<Result<bool>> ScaleElement(string userId, ScaleCanvasElementsRequest request);
         Task<Result<bool>> SetElementActiveState(string userId,SetElementActiveStateRequest request,bool state);
 
     }

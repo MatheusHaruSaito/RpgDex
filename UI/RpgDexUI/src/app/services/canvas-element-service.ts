@@ -12,6 +12,7 @@ import { ReOrderCanvaElementsRequest } from '../../models/reorderCanvaElementsRe
 import { SetElementActiveStateRequest } from '../../models/setElementActiveStateRequest';
 import { CreateCanvaTokenElementRequest as CreateCanvasTokenElementRequest } from '../../models/createCanvaTokenElementRequest';
 import { QuickCreateCanvaTokenElementRequest } from '../../models/quickCreateCanvaTokenElementRequest';
+import { ScaleElementRequest } from '../../models/scaleElementRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -77,5 +78,8 @@ export class CanvasElementService {
   }
   public ActiveElement(request: SetElementActiveStateRequest): Observable<ApiResponse<boolean>> {
     return this.http.patch<ApiResponse<boolean>>(`${this.env}/Active`, request);
+  }
+  public ScaleElement(request: ScaleElementRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/ScaleElement`, request);
   }
 }
