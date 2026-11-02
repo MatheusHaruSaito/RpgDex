@@ -1,0 +1,11 @@
+<div class="status-card success container">
+  <div class="status-icon">🎉</div>
+  <h1>Pagamento Concluído!</h1>
+  <p>A tua assinatura foi ativada com sucesso. Os recursos do teu novo plano já estão disponíveis no RPGDex.</p>
+  
+  <div *ngIf="paymentId" class="payment-ref">
+    Identificador da Transação: <span>{{ paymentId }}</span>
+  </div>
+
+  <a routerLink="/home" class="btn btn-primary">Voltar ao RPGDex</a>
+</div>

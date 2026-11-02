@@ -22,6 +22,37 @@ export const routes: Routes = [
   { path: 'auth/callback', component: DiscordAuth },
 
   {
+    path: 'planos',
+    loadComponent: () => import('./pages/plans/plans').then((m) => m.PlansComponent),
+    canActivate: [authGuard],
+  },
+
+  {
+    path: 'payment/success',
+    loadComponent: () =>
+      import('./callbacks/payment-success/payment-success').then(
+        (m) => m.PaymentSuccessComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment/failure',
+    loadComponent: () =>
+      import('./callbacks/payment-failure/payment-failure').then(
+        (m) => m.PaymentFailureComponent
+      ),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'payment/pending',
+    loadComponent: () =>
+      import('./callbacks/payment-pending/payment-pending').then(
+        (m) => m.PaymentPendingComponent
+      ),
+    canActivate: [authGuard],
+  },
+
+  {
     path: 'perfil',
     component: ProfileComponent,
     canActivate: [authGuard],

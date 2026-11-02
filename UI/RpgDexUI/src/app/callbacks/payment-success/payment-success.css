@@ -1,0 +1,42 @@
+.status-card {
+  max-width: 480px;
+  margin: 80px auto;
+  background: var(--rpg-surface);
+  border: 2px solid var(--rpg-border-light);
+  border-radius: 16px;
+  padding: 36px;
+  text-align: center;
+  box-shadow: var(--rpg-shadow-card);
+}
+
+.status-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+}
+
+.status-card h1 {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  color: var(--rpg-purple);
+}
+
+.status-card p {
+  color: var(--rpg-text-body);
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.payment-ref {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--rpg-text-muted);
+  margin-bottom: 24px;
+}
+
+.payment-ref span {
+  color: var(--rpg-purple);
+  font-weight: bold;
+}

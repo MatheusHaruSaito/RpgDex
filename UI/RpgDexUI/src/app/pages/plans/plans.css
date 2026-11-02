@@ -1,0 +1,159 @@
+.plans-container {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+
+.plans-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.plans-header h1 {
+  font-size: 2.3rem;
+  color: var(--rpg-purple);
+  margin-bottom: 8px;
+}
+
+.plans-header p {
+  color: var(--rpg-text-muted);
+  font-size: 1.05rem;
+}
+
+.error-banner {
+  background: var(--rpg-error-bg);
+  border: 1px solid var(--rpg-error-border);
+  color: var(--rpg-error);
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 0;
+  color: var(--rpg-text-muted);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--rpg-border);
+  border-top-color: var(--rpg-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+}
+
+.plan-card {
+  background: var(--rpg-surface);
+  border: 2px solid var(--rpg-border-light);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--rpg-shadow-card);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--rpg-purple);
+  box-shadow: var(--rpg-shadow-md);
+}
+
+.plan-card.featured {
+  border-color: var(--rpg-purple);
+  box-shadow: var(--rpg-shadow-md);
+}
+
+.early-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: var(--rpg-purple);
+  color: var(--rpg-text-light);
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 4px 12px;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.plan-title {
+  font-size: 1.4rem;
+  color: var(--rpg-text-dark);
+  margin: 0 0 8px 0;
+}
+
+.plan-description {
+  color: var(--rpg-text-body);
+  font-size: 0.9rem;
+  min-height: 40px;
+  margin-bottom: 20px;
+}
+
+.plan-price {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.plan-price .currency {
+  font-size: 1.1rem;
+  color: var(--rpg-purple);
+  font-weight: bold;
+}
+
+.plan-price .value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+}
+
+.plan-price .duration {
+  color: var(--rpg-text-muted);
+  font-size: 0.85rem;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px 0;
+  flex-grow: 1;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: var(--rpg-text-body);
+  font-size: 0.95rem;
+}
+
+.plan-features strong {
+  color: var(--rpg-text-strong);
+}
+
+.feature-icon {
+  font-size: 1.1rem;
+}
+
+.btn-checkout {
+  width: 100%;
+}
