@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure.Settings;
 using RpgDex.WebApi.Extensions;
@@ -16,31 +17,33 @@ namespace RpgDex.WebApi.Controllers
     [Authorize]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authSerice;
+        private readonly IAuthService _authService;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApiSettings _settings;
+        private readonly ILinkTicketService _linkTicketService;
         private  string currentUser => User.FindFirst(ClaimTypes.NameIdentifier).Value;
         private string[] authRedirectWhitelist = ["/","/perfil"];
 
-        public AuthController(IAuthService authSerice, SignInManager<ApplicationUser> signInManager, IOptions<ApiSettings> settings)
+        public AuthController(IAuthService authSerice, SignInManager<ApplicationUser> signInManager, IOptions<ApiSettings> settings, ILinkTicketService linkTicketService)
         {
-            _authSerice = authSerice;
+            _authService = authSerice;
             _signInManager = signInManager;
             _settings = settings.Value;
+            _linkTicketService = linkTicketService;
         }
         [HttpPost]
         [AllowAnonymous]
 
         public async Task<IActionResult> Register(CreateUserDTO user)
         {
-            var result = await _authSerice.RegisterUser(user);
+            var result = await _authService.RegisterUser(user);
             return result.ToIActionResult();
         }
         [HttpPost("Login")]
         [AllowAnonymous]
         public async Task<IActionResult> LogIn(AuthUserDTO user)
         {
-            var result = await _authSerice.LogIn(user);
+            var result = await _authService.LogIn(user);
             return result.ToIActionResult();
 
         }
@@ -49,7 +52,7 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> RefreshToken(RefreshTokenModel refreshToken)
         {
 
-            var result = await _authSerice.RefreshTokenAsync(refreshToken);
+            var result = await _authService.RefreshTokenAsync(refreshToken);
             return result.ToIActionResult();
         }
 
@@ -58,7 +61,7 @@ namespace RpgDex.WebApi.Controllers
 
         public async Task<IActionResult> ValidateEmailByToken(ValidateEmailByTokenRequest request)
         {
-            var result = await _authSerice.ValidateEmailByTokenAsync(request);
+            var result = await _authService.ValidateEmailByTokenAsync(request);
             return result.ToIActionResult();
         }
 
@@ -67,7 +70,7 @@ namespace RpgDex.WebApi.Controllers
 
         public async Task<IActionResult> ResendEmailVerification(ResendEmailVerificationRequest request)
         {
-            var result = await _authSerice.ResendEmailVerificationAsync(request);
+            var result = await _authService.ResendEmailVerificationAsync(request);
             return result.ToIActionResult();
         }
         [HttpPost("Google/SignUp")]
@@ -75,11 +78,23 @@ namespace RpgDex.WebApi.Controllers
 
         public async Task<IActionResult> GoogleSingUp(GoogleLoginRequest request)
         {
-            var result = await _authSerice.GoogleSignUp(request);
+            var result = await _authService.GoogleSignUp(request);
             return result.ToIActionResult();
 
         }
+        [HttpPost("link/google")]
+        public async Task<IActionResult> LinkGoogle([FromBody] GoogleLoginRequest request)
+        {
+            var result = await _authService.LinkGoogleAccount(currentUser, request);
+            return result.ToIActionResult();
+        }
 
+        [HttpPost("unlink/google")]
+        public async Task<IActionResult> UnlinkGoogle()
+        {
+            var result = await _authService.UnlinkGoogleAsync(currentUser);
+            return result.ToIActionResult();
+        }
         [HttpGet("discord")]
         [AllowAnonymous]
         public IActionResult DiscordLogin([FromQuery] string? redirectUri)
@@ -102,7 +117,7 @@ namespace RpgDex.WebApi.Controllers
 
         public async Task<IActionResult> DiscordSignUp([FromQuery] string? customRedirect)
         {
-            var result = await _authSerice.DiscordSignUp();
+            var result = await _authService.DiscordSignUp();
 
             if (result.IsFailure)
             {
@@ -117,12 +132,69 @@ namespace RpgDex.WebApi.Controllers
             };
 
             return Redirect($"{_settings.UIBaseUrl}/auth/callback?token={token}&refreshToken={refreshToken}&redirectPage={filteredRedirect()}");
-        } 
+        }
+        [Authorize]
+        [HttpPost("link/discord/start")]
+        public IActionResult StartDiscordLink()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var ticket = _linkTicketService.Create(userId);
+
+            var url = Url.Action(nameof(DiscordLink), "Auth", new { ticket }, Request.Scheme);
+            return Ok(new { success = true, data = new { url } });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("link/discord")]
+        public IActionResult DiscordLink([FromQuery] string ticket)
+        {
+            var userId = _linkTicketService.Validate(ticket);
+            if (userId is null)
+                return Redirect($"{_settings.UIBaseUrl}/profile?error=LINK_TICKET_INVALID");
+
+            var redirectUrl = Url.Action(nameof(DiscordLinkCallback), "Auth");
+
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
+                DiscordAuthenticationDefaults.AuthenticationScheme,
+                redirectUrl);
+            properties.Items["linkUserId"] = userId;
+
+            return Challenge(properties, DiscordAuthenticationDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("link/discord/callback")]
+        public async Task<IActionResult> DiscordLinkCallback()
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+
+            if (info?.AuthenticationProperties is null
+                || !info.AuthenticationProperties.Items.TryGetValue("linkUserId", out var userId)
+                || string.IsNullOrEmpty(userId))
+            {
+                return Redirect($"{_settings.UIBaseUrl}/profile?error=LINK_TICKET_INVALID");
+            }
+
+            var result = await _authService.LinkDiscordAccount(userId);
+
+            if (result.IsFailure)
+            {
+                var error = Uri.EscapeDataString(result.Errors.ToString()!);
+                return Redirect($"{_settings.UIBaseUrl}/profile?error={error}");
+            }
+
+            return Redirect($"{_settings.UIBaseUrl}/profile?linked=discord");
+        }
+        [HttpGet("unlink/discord")]
+        public async Task<IActionResult> UnlinkDiscord()
+        {
+            var result = await _authService.UnlinkDiscordAsync(currentUser);
+            return result.ToIActionResult();
+        }
 
         [HttpGet("AuthOptions")]
         public async Task<IActionResult> GetUserAuthOptions()
         {
-            var result = await _authSerice.GetUserAuthOptions(currentUser);
+            var result = await _authService.GetUserAuthOptions(currentUser);
             return result.ToIActionResult();
 
         }
@@ -130,7 +202,7 @@ namespace RpgDex.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ValidateTwoFactor(ValidateTwoFactorRequest request)
         {
-            var result = await _authSerice.ValidateTwoFactor(request);
+            var result = await _authService.ValidateTwoFactor(request);
             return result.ToIActionResult();
         }
 
@@ -138,14 +210,14 @@ namespace RpgDex.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SendTwoFactorAuthEmailRequest(SendTwoFactEmailrequest request)
         {
-            var result = await _authSerice.SendTwoFactorAuthEmailRequest(request);
+            var result = await _authService.SendTwoFactorAuthEmailRequest(request);
             return result.ToIActionResult();
         }
 
         [HttpPost("ActiveTwoFactorAuth")]
         public async Task<IActionResult> RequestTwoFAActivation(ValidateTwoFactorRequest request)
         {
-            var result = await _authSerice.RequestTwoFAActivation(request);
+            var result = await _authService.RequestTwoFAActivation(request);
             return result.ToIActionResult();
         }
     }

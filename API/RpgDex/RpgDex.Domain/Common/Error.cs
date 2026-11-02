@@ -25,7 +25,14 @@ namespace RpgDex.Domain.Common
         public static readonly Error TokenGenerationFailed = new("AUTH_TOKEN_GENERATION_FAILED", "Could not generate a new token.");
         public static readonly Error UserCreationFailed = new("AUTH_USER_CREATION_FAILED", "An error occurred while creating the user.");
         public static readonly Error AccountLinkingFailed = new("AUTH_ACCOUNT_LINKING_FAILED", "An error occurred while linking the external account.");
-        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email.");
+        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email."); 
+        public static readonly Error AccountAlreadyLinked = new("AUTH_ACCOUNT_ALREADY_LINKED", "The account is already linked to an user."); 
+        public static readonly Error UserAlreadyHasGoogle = new("AUTH_USER_ALREADY_HAS_GOOGLE", "The user already has a Google account linked.");
+        public static readonly Error GoogleNotLinked = new("AUTH_GOOGLE_NOT_LINKED", "The user does not have a Google account linked."); 
+        public static readonly Error CannotRemoveLastLogin = new("AUTH_CANNOT_REMOVE_LAST_LOGIN", "Cannot remove the last login method."); 
+        public static readonly Error DiscordLinkedToAnotherUser = new("AUTH_DISCORD_LINKED_TO_ANOTHER_USER", "The Discord account is already linked to another user."); 
+        public static readonly Error UserAlreadyHasDiscord = new("AUTH_USER_ALREADY_HAS_DISCORD", "The user already has a Discord account linked."); 
+        public static readonly Error DiscordNotLinked = new("AUTH_DISCORD_NOT_LINKED", "The user does not have a Discord account linked."); 
     }
 
     public static class CampaignError
