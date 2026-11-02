@@ -22,10 +22,10 @@ import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsReque
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
-import { ScaleElementRequest } from '../../../models/scaleElementRequest'; // Nova interface importada
+import { CampaignChatComponent } from '../../components/campaign-chat-component/campaign-chat-component';
+import { ScaleElementRequest } from '../../../models/scaleElementRequest';
 import { AuthService } from '../../services/auth-service';
 import { Subscription } from 'rxjs';
-
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
 export interface ExtendedCanvasElement extends CanvasElementResponse {
@@ -43,7 +43,7 @@ interface EraserTrailPoint {
 @Component({
   selector: 'app-campaign-canvas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent, CampaignChatComponent],
   templateUrl: './campaign-canvas.html',
   styleUrls: ['./campaign-canvas.css'],
 })
@@ -59,7 +59,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   public CanvasElementType = CanvasElementType;
 
-  // ── CÂMERA E ESTADOS ──
   scale: number = 1;
   panX: number = 0;
   panY: number = 0;
@@ -71,10 +70,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   isPanning: boolean = false;
   selectedFile: File | undefined = undefined;
 
-  // ── RASTRO DA BORRACHA ──
   eraserTrail: EraserTrailPoint[] = [];
 
-  // ── SELEÇÃO E CAIXA DE SELEÇÃO ──
   selectedElements: ExtendedCanvasElement[] = [];
   selectionBox = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
 
@@ -84,31 +81,25 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   elements: ExtendedCanvasElement[] = [];
 
-  // ── HISTÓRICO (UNDO / REDO) ──
   history: string[] = [];
   redoHistory: string[] = [];
   pointerDownState: string = '';
 
-  // ── CORES ──
   selectedColor: string = '#9E74D0';
 
-  // ── MODAL DE TEXTO PERSONALIZADO ──
   isTextModalOpen: boolean = false;
   customTextContent: string = '';
 
-  // ── PERSONAGENS E MODAL DE TOKENS ──
   isTokenModalOpen: boolean = false;
   tokenModalTab: 'campaign' | 'custom' = 'campaign';
   isLoadingCharacters: boolean = false;
   campaignCharacters: Character[] = [];
 
-  // Form Token Personalizado
   customTokenName: string = '';
   customTokenColor: string = '#9E74D0';
   customTokenImagePreview: string | null = null;
   customTokenFile: File | undefined = undefined;
 
-  // ── CROPPER ESTADOS ──
   isCropping: boolean = false;
   isRoundCrop: boolean = false;
   tempCroppedBase64: string = '';
@@ -120,6 +111,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.campaignId = this.route.snapshot.paramMap.get('id') ?? '';
+    console.log('[Canvas] Initialized. Campaign ID:', this.campaignId);
     this.centerCamera();
     this.loadElements();
     this.canvasElementService
@@ -129,11 +121,9 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       });
 
     this.CanvasSubscription = this.canvasElementService.onElementsMoved().subscribe((elements) => {
-
       console.log('Elements moved:', elements);
     });
     this.CanvasSubscription = this.canvasElementService.onElementsScaled().subscribe((elements) => {
-
       console.log('Elements scaled:', elements);
     });
   }
@@ -176,7 +166,28 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── CARREGAR PERSONAGENS DA CAMPANHA ──
+  get visibleElements(): ExtendedCanvasElement[] {
+    const margin = 400;
+
+    const minX = this.getWorldX(0) - margin;
+    const maxX = this.getWorldX(window.innerWidth) + margin;
+    const minY = this.getWorldY(0) - margin;
+    const maxY = this.getWorldY(window.innerHeight) + margin;
+
+    const filtered = this.elements.filter((el) => {
+      if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+        return el.points.some((p) => p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY);
+      }
+
+      const elScale = el.scale || 1;
+      const size = 150 * elScale;
+
+      return el.x + size >= minX && el.x <= maxX && el.y + size >= minY && el.y <= maxY;
+    });
+
+    return filtered;
+  }
+
   loadCampaignCharacters(): void {
     if (!this.campaignId) return;
     this.isLoadingCharacters = true;
@@ -185,6 +196,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.campaignService.GetById(this.campaignId).subscribe({
       next: (res) => {
         const charIds = res.data?.characterIds ?? [];
+        console.log('[Canvas] Campaign characters loaded IDs:', charIds);
         if (charIds.length === 0) {
           this.isLoadingCharacters = false;
           return;
@@ -202,7 +214,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 this.isLoadingCharacters = false;
               }
             },
-            error: () => {
+            error: (err) => {
+              console.error('[Canvas] Error fetching character:', id, err);
               loaded++;
               if (loaded >= charIds.length) {
                 this.isLoadingCharacters = false;
@@ -211,7 +224,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           });
         });
       },
-      error: () => {
+      error: (err) => {
+        console.error('[Canvas] Error loading campaign characters:', err);
         this.isLoadingCharacters = false;
       },
     });
@@ -222,7 +236,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.loadCampaignCharacters();
   }
 
-  // ── CRIAR TOKEN DE PERSONAGEM DA CAMPANHA ──
   addCharacterToken(character: Character): void {
     this.saveState();
     const req: CreateCanvaTokenElementRequest = {
@@ -236,14 +249,20 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       color: '#9E74D0',
     };
 
-    this.canvasElementService.CreateTokenElement(req).subscribe((res) => {
-      if (res.success && res.data) {
-        const newEl: ExtendedCanvasElement = res.data;
-        this.elements.push(newEl);
-        this.setTool('cursor');
-        this.selectedElements = [newEl];
-        this.isTokenModalOpen = false;
-      }
+    console.log('[Canvas] Creating character token request:', req);
+
+    this.canvasElementService.CreateTokenElement(req).subscribe({
+      next: (res) => {
+        console.log('[Canvas] CreateTokenElement response:', res);
+        if (res.success && res.data) {
+          const newEl: ExtendedCanvasElement = res.data;
+          this.elements.push(newEl);
+          this.setTool('cursor');
+          this.selectedElements = [newEl];
+          this.isTokenModalOpen = false;
+        }
+      },
+      error: (err) => console.error('[Canvas] Error creating character token:', err),
     });
   }
 
@@ -267,7 +286,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.croppedBlob = null;
   }
 
-  // ── CRIAR TOKEN PERSONALIZADO ──
   createCustomToken(): void {
     if (!this.customTokenName.trim()) {
       alert('Por favor, digite um nome para o token.');
@@ -296,8 +314,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       formData.append('Color', this.customTokenColor);
       formData.append('ElementType', CanvasElementType.Token.toString());
 
+      console.log('[Canvas] QuickCreateTokenElement sending FormData');
+
       this.canvasElementService.QuickCreateTokenElement(formData as any).subscribe({
         next: (res) => {
+          console.log('[Canvas] QuickCreateTokenElement response:', res);
           if (res.success && res.data) {
             const newEl: ExtendedCanvasElement = {
               ...res.data,
@@ -316,7 +337,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             this.isTokenModalOpen = false;
           }
         },
-        error: (err) => console.error('Erro ao criar token personalizado:', err),
+        error: (err) => console.error('[Canvas] Erro ao criar token personalizado:', err),
       });
     } else {
       const req: CreateCanvaElementRequest = {
@@ -331,8 +352,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         image: undefined,
       };
 
+      console.log('[Canvas] CreateElement token request:', req);
+
       this.canvasElementService.CreateElement(req).subscribe({
         next: (res) => {
+          console.log('[Canvas] CreateElement token response:', res);
           if (res.success && res.data) {
             const newEl: ExtendedCanvasElement = res.data;
             this.elements.push(newEl);
@@ -344,12 +368,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             this.isTokenModalOpen = false;
           }
         },
-        error: (err) => console.error('Erro ao criar token sem imagem:', err),
+        error: (err) => console.error('[Canvas] Erro ao criar token sem imagem:', err),
       });
     }
   }
 
-  // ── MODAL DE TEXTO PERSONALIZADO ──
   addText(): void {
     this.customTextContent = '';
     this.isTextModalOpen = true;
@@ -374,8 +397,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       image: undefined,
     };
 
+    console.log('[Canvas] Creating text element request:', req);
+
     this.canvasElementService.CreateElement(req).subscribe({
       next: (res) => {
+        console.log('[Canvas] CreateElement text response:', res);
         if (res.success && res.data) {
           this.elements.push(res.data);
           this.setTool('cursor');
@@ -384,32 +410,66 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           this.customTextContent = '';
         }
       },
-      error: (err) => console.error('Erro ao criar texto:', err),
+      error: (err) => console.error('[Canvas] Erro ao criar texto:', err),
     });
   }
 
-  // ── CARREGAR ELEMENTOS DO BACKEND ──
   loadElements(): void {
-    this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
+    if (!this.campaignId) {
+      console.warn('[Canvas] loadElements abandoado: campaignId vazio!');
+      return;
+    }
+
+    const buffer = 2000;
+    const minX = this.getWorldX(0) - buffer;
+    const maxX = this.getWorldX(window.innerWidth) + buffer;
+    const minY = this.getWorldY(0) - buffer;
+    const maxY = this.getWorldY(window.innerHeight) + buffer;
+
+    console.log('[Canvas] Chamando GetAllElements com params:', {
+      campaignId: this.campaignId,
+      minX,
+      minY,
+      maxX,
+      maxY,
+    });
+
+    this.canvasElementService.GetAllElements(this.campaignId, minX, minY, maxX, maxY).subscribe({
       next: (res) => {
+        console.log('[Canvas] Resposta bruta de GetAllElements:', res);
+
         if (res.success && res.data) {
+          console.log(
+            '[Canvas] Total de elementos retornados pelo backend:',
+            res.data.elements?.length,
+          );
+
           this.elements = res.data.elements.map((el: any) => ({
             ...el,
             scale: Number(el.scale) || 1,
             imageUrl: el.imageUrl || el.image || undefined,
             isRound: el.content === 'round' || el.isRound === true,
           }));
+
+          console.log('[Canvas] Elementos carregados na memória local:', this.elements);
+
           if (this.elements.length > 0) {
             this.maxZ = Math.max(...this.elements.map((e) => e.z));
+            console.log('[Canvas] MaxZ atualizado para:', this.maxZ);
           }
+        } else {
+          console.warn('[Canvas] GetAllElements retornou sem dados ou com falha:', res);
         }
       },
+      error: (err) => console.error('[Canvas] Erro HTTP em GetAllElements:', err),
     });
   }
 
-  // ── ATUALIZAR ELEMENTO API ──
   updateElementAPI(el: ExtendedCanvasElement): void {
-    if (!el || !el.id || el.id.startsWith('temp-')) return;
+    if (!el || !el.id || el.id.startsWith('temp-')) {
+      console.warn('[Canvas] Ignorando updateElementAPI para elemento temporário ou inválido:', el);
+      return;
+    }
 
     const imageToUpdate =
       el.imageUrl && el.imageUrl.startsWith('data:image') ? undefined : el.imageUrl;
@@ -423,12 +483,14 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       image: imageToUpdate,
     };
 
+    console.log('[Canvas] Enviando UpdateElement:', req);
+
     this.canvasElementService.UpdateElement(req).subscribe({
-      error: (err) => console.error('Erro ao atualizar elemento no Canva:', err),
+      next: (res) => console.log('[Canvas] Resposta de UpdateElement:', res),
+      error: (err) => console.error('[Canvas] Erro ao atualizar elemento no Canva:', err),
     });
   }
 
-  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND (UTILIZANDO O NOVO SERVIÇO) ──
   updateElementScale(event: Event): void {
     if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
     const input = event.target as HTMLInputElement;
@@ -448,12 +510,14 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       ],
     };
 
+    console.log('[Canvas] Enviando ScaleElement:', req);
+
     this.canvasElementService.ScaleElement(req).subscribe({
-      error: (err) => console.error('Erro ao escalonar elemento no Canva:', err),
+      next: (res) => console.log('[Canvas] Resposta ScaleElement:', res),
+      error: (err) => console.error('[Canvas] Erro ao escalonar elemento no Canva:', err),
     });
   }
 
-  // ── DESFAZER E REFAZER ──
   saveState(): void {
     this.history.push(JSON.stringify(this.elements));
     if (this.history.length > 30) this.history.shift();
@@ -478,7 +542,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── TECLADO E CLIPBOARD ──
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
@@ -557,16 +620,20 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 color: el.color,
               };
 
-              this.canvasElementService.CreateTokenElement(req).subscribe((res) => {
-                if (res.success && res.data) {
-                  const newEl: ExtendedCanvasElement = {
-                    ...res.data,
-                    imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                  };
-                  this.elements.push(newEl);
-                  pastedElements.push(newEl);
-                  this.selectedElements = [...pastedElements];
-                }
+              this.canvasElementService.CreateTokenElement(req).subscribe({
+                next: (res) => {
+                  console.log('[Canvas] CreateTokenElement paste response:', res);
+                  if (res.success && res.data) {
+                    const newEl: ExtendedCanvasElement = {
+                      ...res.data,
+                      imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
+                    };
+                    this.elements.push(newEl);
+                    pastedElements.push(newEl);
+                    this.selectedElements = [...pastedElements];
+                  }
+                },
+                error: (err) => console.error('[Canvas] Erro ao colar token:', err),
               });
             } else {
               const req: CreateCanvaElementRequest = {
@@ -583,17 +650,21 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 image: undefined,
               };
 
-              this.canvasElementService.CreateElement(req).subscribe((res) => {
-                if (res.success && res.data) {
-                  const newEl: ExtendedCanvasElement = {
-                    ...res.data,
-                    imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                    isRound: el.isRound,
-                  };
-                  this.elements.push(newEl);
-                  pastedElements.push(newEl);
-                  this.selectedElements = [...pastedElements];
-                }
+              this.canvasElementService.CreateElement(req).subscribe({
+                next: (res) => {
+                  console.log('[Canvas] CreateElement paste response:', res);
+                  if (res.success && res.data) {
+                    const newEl: ExtendedCanvasElement = {
+                      ...res.data,
+                      imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
+                      isRound: el.isRound,
+                    };
+                    this.elements.push(newEl);
+                    pastedElements.push(newEl);
+                    this.selectedElements = [...pastedElements];
+                  }
+                },
+                error: (err) => console.error('[Canvas] Erro ao colar elemento:', err),
               });
             }
           });
@@ -621,12 +692,18 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             formData.append('content', 'square');
             formData.append('image', this.selectedFile, this.selectedFile.name);
 
-            this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
-              if (res.success && res.data) {
-                this.elements.push(res.data);
-                this.setTool('cursor');
-                this.selectedElements = [res.data];
-              }
+            console.log('[Canvas] CreateImageElement colando imagem de clipboard');
+
+            this.canvasElementService.CreateImageElement(formData as any).subscribe({
+              next: (res) => {
+                console.log('[Canvas] CreateImageElement clipboard response:', res);
+                if (res.success && res.data) {
+                  this.elements.push(res.data);
+                  this.setTool('cursor');
+                  this.selectedElements = [res.data];
+                }
+              },
+              error: (err) => console.error('[Canvas] Erro ao colar imagem:', err),
             });
             event.preventDefault();
             return;
@@ -649,18 +726,21 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         image: undefined,
       };
 
-      this.canvasElementService.CreateElement(req).subscribe((res) => {
-        if (res.success && res.data) {
-          this.elements.push(res.data);
-          this.setTool('cursor');
-          this.selectedElements = [res.data];
-        }
+      this.canvasElementService.CreateElement(req).subscribe({
+        next: (res) => {
+          console.log('[Canvas] CreateElement text paste response:', res);
+          if (res.success && res.data) {
+            this.elements.push(res.data);
+            this.setTool('cursor');
+            this.selectedElements = [res.data];
+          }
+        },
+        error: (err) => console.error('[Canvas] Erro ao colar texto:', err),
       });
       event.preventDefault();
     }
   }
 
-  // ── FERRAMENTAS ──
   setTool(tool: ToolMode): void {
     this.activeTool = tool;
     this.selectedElements = [];
@@ -686,12 +766,18 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       formData.append('content', 'square');
       formData.append('image', this.selectedFile, this.selectedFile.name);
 
-      this.canvasElementService.CreateImageElement(formData as any).subscribe((res) => {
-        if (res.success && res.data) {
-          this.elements.push(res.data);
-          this.setTool('cursor');
-          this.selectedElements = [res.data];
-        }
+      console.log('[Canvas] Enviando imagem via CreateImageElement');
+
+      this.canvasElementService.CreateImageElement(formData as any).subscribe({
+        next: (res) => {
+          console.log('[Canvas] Resposta de CreateImageElement:', res);
+          if (res.success && res.data) {
+            this.elements.push(res.data);
+            this.setTool('cursor');
+            this.selectedElements = [res.data];
+          }
+        },
+        error: (err) => console.error('[Canvas] Erro ao enviar imagem:', err),
       });
     }
     input.value = '';
@@ -721,7 +807,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       campaignId: this.campaignId,
       ids: deletable.map((el) => el.id),
     };
-    this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
+    console.log('[Canvas] Desativando elementos:', deleteRequest);
+
+    this.canvasElementService.DeactiveElement(deleteRequest).subscribe({
+      next: (res) => console.log('[Canvas] Resposta de DeactiveElement:', res),
+      error: (err) => console.error('[Canvas] Erro ao desativar elementos:', err),
+    });
 
     this.elements = this.elements.filter((e) => !deletable.includes(e));
     this.selectedElements = [];
@@ -752,7 +843,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         campaignId: this.campaignId,
         ids: idsToErase,
       };
-      this.canvasElementService.DeactiveElement(deleteRequest).subscribe();
+      console.log('[Canvas] Apagando desenhos:', deleteRequest);
+
+      this.canvasElementService.DeactiveElement(deleteRequest).subscribe({
+        next: (res) => console.log('[Canvas] Resposta apagar desenhos:', res),
+        error: (err) => console.error('[Canvas] Erro ao apagar desenhos:', err),
+      });
 
       this.elements = this.elements.filter((e) => !idsToErase.includes(e.id));
     }
@@ -789,14 +885,17 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       campaignId: this.campaignId,
       items: this.elements.map((el) => ({ id: el.id, z: el.z })),
     };
-    this.canvasElementService.ReOrderElement(req).subscribe();
+    console.log('[Canvas] Enviando ReOrderElement:', req);
+    this.canvasElementService.ReOrderElement(req).subscribe({
+      next: (res) => console.log('[Canvas] Resposta ReOrderElement:', res),
+      error: (err) => console.error('[Canvas] Erro ao reordenar Z:', err),
+    });
   }
 
   sortElements(): void {
     this.elements.sort((a, b) => a.z - b.z);
   }
 
-  // ── CORTE DE IMAGEM ──
   startCropping(): void {
     if (
       this.selectedElements.length === 1 &&
@@ -885,8 +984,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         formData.append('Content', isRound ? 'round' : 'square');
         formData.append('image', croppedFile, croppedFile.name);
 
+        console.log('[Canvas] Salvando recorte de imagem...');
+
         this.canvasElementService.CreateImageElement(formData as any).subscribe({
           next: (res) => {
+            console.log('[Canvas] Resposta do recorte:', res);
             if (res.success && res.data) {
               if (oldId && !oldId.startsWith('temp-')) {
                 this.canvasElementService
@@ -930,7 +1032,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
               this.selectedElements = [newEl];
             }
           },
-          error: (err) => console.error('Erro ao persistir imagem cortada:', err),
+          error: (err) => console.error('[Canvas] Erro ao persistir imagem cortada:', err),
         });
       } else {
         targetElement.isRound = isRound;
@@ -965,7 +1067,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     return url ? url.startsWith('data:image') : false;
   }
 
-  // ── CÂMERA E ZOOM ──
   getWorldX(screenX: number): number {
     return (screenX - this.panX) / this.scale;
   }
@@ -1004,7 +1105,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.doZoom(newScale, event.clientX, event.clientY);
   }
 
-  // ── SELEÇÃO MÚLTIPLA ──
   getMin(a: number, b: number): number {
     return Math.min(a, b);
   }
@@ -1035,7 +1135,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── INTERAÇÃO DE PONTEIRO ──
   onPointerDown(event: PointerEvent): void {
     if ((event.target as HTMLElement).closest('.canvas-ui')) return;
     (event.target as Element).setPointerCapture(event.pointerId);
@@ -1181,11 +1280,17 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             image: undefined,
           };
 
-          this.canvasElementService.CreateElement(req).subscribe((res) => {
-            if (res.success && res.data) {
-              const idx = this.elements.findIndex((e) => e.id === drw.id);
-              if (idx > -1) this.elements[idx] = res.data;
-            }
+          console.log('[Canvas] Salvando desenho no backend:', req);
+
+          this.canvasElementService.CreateElement(req).subscribe({
+            next: (res) => {
+              console.log('[Canvas] Resposta da criação do desenho:', res);
+              if (res.success && res.data) {
+                const idx = this.elements.findIndex((e) => e.id === drw.id);
+                if (idx > -1) this.elements[idx] = res.data;
+              }
+            },
+            error: (err) => console.error('[Canvas] Erro ao salvar desenho:', err),
           });
         } else if (
           this.activeTool === 'cursor' &&
@@ -1198,7 +1303,13 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
               campaignId: this.campaignId,
               items: movable.map((el) => ({ id: el.id, x: el.x, y: el.y })),
             };
-            this.canvasElementService.MoveElement(req).subscribe();
+
+            console.log('[Canvas] Salvando movimentação no backend:', req);
+
+            this.canvasElementService.MoveElement(req).subscribe({
+              next: (res) => console.log('[Canvas] Resposta de MoveElement:', res),
+              error: (err) => console.error('[Canvas] Erro ao mover elementos:', err),
+            });
           }
         }
       }
