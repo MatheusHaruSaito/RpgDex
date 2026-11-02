@@ -14,7 +14,8 @@ import { MoveCanvaElementsRequest } from '../../../models/moveCanvaElementsReque
 import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElementsRequest';
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
-import { ScaleElementRequest } from '../../../models/scaleElementRequest'; // Nova interface importada
+import { CampaignChatComponent } from '../../components/campaign-chat-component/campaign-chat-component';
+import { ScaleElementRequest } from '../../../models/scaleElementRequest';
 
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
@@ -33,7 +34,7 @@ interface EraserTrailPoint {
 @Component({
   selector: 'app-campaign-canvas',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent],
+  imports: [CommonModule, RouterModule, FormsModule, ImageCropperComponent, CampaignChatComponent],
   templateUrl: './campaign-canvas.html',
   styleUrls: ['./campaign-canvas.css'],
 })
@@ -145,6 +146,32 @@ export class CampaignCanvasComponent implements OnInit {
     this.saveState();
     this.selectedElements.forEach((el) => {
       el.isLocked = !el.isLocked;
+    });
+  }
+
+  // ── GETTER DE ELEMENTOS VISÍVEIS (RENDER CULLING) ──
+  get visibleElements(): ExtendedCanvasElement[] {
+    const margin = 300;
+
+    const minX = this.getWorldX(0) - margin;
+    const maxX = this.getWorldX(window.innerWidth) + margin;
+    const minY = this.getWorldY(0) - margin;
+    const maxY = this.getWorldY(window.innerHeight) + margin;
+
+    return this.elements.filter((el) => {
+      if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+        return el.points.some((p) => p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY);
+      }
+
+      const elScale = el.scale || 1;
+      const size = 100 * elScale;
+
+      return (
+        el.x + size >= minX &&
+        el.x <= maxX &&
+        el.y + size >= minY &&
+        el.y <= maxY
+      );
     });
   }
 
@@ -360,9 +387,17 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── CARREGAR ELEMENTOS DO BACKEND ──
+  // ── CARREGAR ELEMENTOS DO BACKEND (BOUNDING BOX) ──
   loadElements(): void {
-    this.canvasElementService.GetAllElements(this.campaignId, '1', '1000').subscribe({
+    if (!this.campaignId) return;
+
+    const buffer = 2000;
+    const minX = this.getWorldX(0) - buffer;
+    const maxX = this.getWorldX(window.innerWidth) + buffer;
+    const minY = this.getWorldY(0) - buffer;
+    const maxY = this.getWorldY(window.innerHeight) + buffer;
+
+    this.canvasElementService.GetAllElements(this.campaignId, minX, minY, maxX, maxY).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.elements = res.data.elements.map((el: any) => ({
@@ -400,7 +435,7 @@ export class CampaignCanvasComponent implements OnInit {
     });
   }
 
-  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND (UTILIZANDO O NOVO SERVIÇO) ──
+  // ── SALVAR ALTERAÇÃO DE ESCALA NO BACKEND ──
   updateElementScale(event: Event): void {
     if (this.selectedElements.length !== 1 || this.selectedElements[0].isLocked) return;
     const input = event.target as HTMLInputElement;

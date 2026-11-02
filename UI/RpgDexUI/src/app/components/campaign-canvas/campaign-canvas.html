@@ -161,7 +161,7 @@
             max="5"
             step="0.1"
             [value]="selectedElements[0].scale"
-            (input)="updateElementScale($event)"
+            (change)="updateElementScale($event)"
           />
         </div>
       </ng-container>
@@ -439,7 +439,8 @@
         />
       </svg>
 
-      <ng-container *ngFor="let el of elements">
+      <!-- RENDER CULLING DA MESA (Apenas elementos visíveis) -->
+      <ng-container *ngFor="let el of visibleElements">
         <!-- DESENHOS -->
         <svg
           *ngIf="el.elementType === CanvasElementType.Drawing"
@@ -514,3 +515,5 @@
     </div>
   </div>
 </div>
+
+<app-campaign-chat-component [campaignId]="campaignId"></app-campaign-chat-component>
