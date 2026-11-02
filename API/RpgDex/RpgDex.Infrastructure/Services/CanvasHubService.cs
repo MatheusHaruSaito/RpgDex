@@ -22,7 +22,7 @@ namespace RpgDex.Infrastructure.Services
             => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementsScaled", evt.Elements);
         
         public Task SetActiveElements(string campaignId, SetActiveElementsEvent evt)
-            => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementsSetActive", new { ids = evt.ElementIds, state = evt.State });
+            => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementsActiveChanged", new { ids = evt.ElementIds, state = evt.State });
 
         private IClientProxy Target(string campaignId, string? exceptConnectionId)
             => exceptConnectionId is null

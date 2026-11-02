@@ -21,8 +21,8 @@ export class CanvasElementService {
   private currentCampaignId?: string;
   private hubConnection?: signalR.HubConnection;
 
-  private readonly elementsMoved$ = new Subject<MoveCanvaElementsRequest[]>();
-  private readonly elementsScaled$ = new Subject<ScaleElementRequest[]>();
+  private readonly elementsMoved$ = new Subject<{ id: string; x: number; y: number }[]>();
+  private readonly elementsScaled$ = new Subject<{ id: string; scale: number }[]>();
   private readonly elementAdded$ = new Subject<CanvasElementResponse>();
   private readonly reordered$ = new Subject<{ id: string; z: number }[]>();
   private readonly activeChanged$ = new Subject<{ ids: string[]; state: boolean }>();
@@ -41,22 +41,22 @@ export class CanvasElementService {
       .withAutomaticReconnect()
       .build();
 
-    this.hubConnection.on('ElementsMoved', (elements: MoveCanvaElementsRequest[]) => {
+    this.hubConnection.on('ElementsMoved', (elements: { id: string; x: number; y: number }[]) => {
       this.elementsMoved$.next(elements);
     });
 
-    this.hubConnection.on('ElementsScaled', (elements: ScaleElementRequest[]) =>
+    this.hubConnection.on('ElementsScaled', (elements: { id: string; scale: number }[]) =>
       this.elementsScaled$.next(elements),
     );
-    this.hubConnection.on('ElementAdded', (el: CanvasElementResponse) =>
-      this.elementAdded$.next(el),
+    this.hubConnection.on('ElementAdded', (elements: CanvasElementResponse) =>
+      this.elementAdded$.next(elements),
     );
-    this.hubConnection.on('ElementsReordered', (items: { id: string; z: number }[]) =>
-      this.reordered$.next(items),
+    this.hubConnection.on('ElementsReOrdered', (elements: { id: string; z: number }[]) =>
+      this.reordered$.next(elements),
     );
-    this.hubConnection.on('ElementsActiveChanged', (p: { ids: string[]; state: boolean }) =>
-      this.activeChanged$.next(p),
-    );
+    this.hubConnection.on('ElementsActiveChanged', (elements: { ids: string[]; state: boolean }) => {
+      this.activeChanged$.next(elements);
+    });
     this.hubConnection.onreconnected(() => {
       this.hubConnection!.invoke('JoinCampaignCanvas', this.currentCampaignId).catch((err) =>
         console.error('Rejoin canvas error', err),
@@ -83,14 +83,22 @@ export class CanvasElementService {
       this.currentCampaignId = undefined;
     }
   }
-  public onElementsMoved(): Observable<MoveCanvaElementsRequest[]> {
+  public onElementsMoved(): Observable<{ id: string; x: number; y: number }[]> {
     return this.elementsMoved$.asObservable();
   }
 
-  public onElementsScaled(): Observable<ScaleElementRequest[]> {
+  public onElementsScaled(): Observable<{ id: string; scale: number }[]> {
     return this.elementsScaled$.asObservable();
   }
-
+  public onCreateElement(): Observable<CanvasElementResponse> {
+    return this.elementAdded$.asObservable();
+  }
+  public onElementsActiveChanged(): Observable<{ ids: string[]; state: boolean }> {
+    return this.activeChanged$.asObservable();
+  }
+  public onElementsReOrdered(): Observable<{ id: string; z: number }[]> {
+    return this.reordered$.asObservable();
+  }
   public CreateElement(
     request: CreateCanvaElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {

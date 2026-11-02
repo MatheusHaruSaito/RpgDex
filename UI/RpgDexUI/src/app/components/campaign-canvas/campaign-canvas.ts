@@ -106,7 +106,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   cropImageSource: string = '';
   isCroppingCustomToken: boolean = false;
   croppedBlob: Blob | null = null;
-  private CanvasSubscription!: Subscription;
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
@@ -120,16 +119,46 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         console.error('Error starting canvas connection', err);
       });
 
-    this.CanvasSubscription = this.canvasElementService.onElementsMoved().subscribe((elements) => {
-      console.log('Elements moved:', elements);
+    this.canvasElementService.onElementsMoved().subscribe((elements) => {
+      elements.forEach((moved) => {
+        const el = this.elements.find((e) => e.id === moved.id);
+        if (el) {
+          el.x = moved.x;
+          el.y = moved.y;
+        }
+      });
     });
-    this.CanvasSubscription = this.canvasElementService.onElementsScaled().subscribe((elements) => {
-      console.log('Elements scaled:', elements);
+    this.canvasElementService.onElementsScaled().subscribe((elements) => {
+      elements.forEach((moved) => {
+        console.log('Element scaled event received:', moved);
+        const el = this.elements.find((e) => e.id === moved.id);
+        if (el) {
+          el.scale = moved.scale;
+        }
+      });
+    });
+    this.canvasElementService.onElementsReOrdered().subscribe((elements) => {
+      elements.forEach((reordered) => {
+        console.log('Element reordered event received:', reordered);
+        const el = this.elements.find((e) => e.id === reordered.id);
+        if (el) {
+          el.z = reordered.z;
+        }
+      });
+    });
+    this.canvasElementService.onCreateElement().subscribe((elements) => {
+      this.elements.push(elements);
+    });
+    this.canvasElementService.onElementsActiveChanged().subscribe(({ ids, state }) => {
+      console.log('Elements active state changed:', { ids, state });
+      if (!state) {
+        this.elements = this.elements.filter((e) => !ids.includes(e.id));
+        this.selectedElements = this.selectedElements.filter((e) => !ids.includes(e.id));
+      }
     });
   }
   ngOnDestroy() {
     this.canvasElementService.stopConnection();
-    this.CanvasSubscription.unsubscribe();
   }
   getElementTypeName(type: CanvasElementType): string {
     return CanvasElementType[type] || 'ELEMENTO';

@@ -97,8 +97,11 @@ namespace RpgDex.Application.Services
             var created = await canvaElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
-
-            return Result<CanvasElementResponse>.Success(created.Adapt<CanvasElementResponse>());
+            var result = created.Adapt<CanvasElementResponse>();
+            await canvasHubService.AddElement(
+                request.CampaignId.ToString(),
+                new CreateElementEvent(result, request.ExceptConnectionId));
+            return Result<CanvasElementResponse>.Success(result);
         }
         public async Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request)
         {
@@ -207,6 +210,10 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var ok = await canvaElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
+
+            await canvasHubService.SetActiveElements(
+                request.CampaignId.ToString(),
+                new SetActiveElementsEvent(request.Ids, state, request.ExceptConnectionId));
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
         }
