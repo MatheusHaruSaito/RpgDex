@@ -1,4 +1,12 @@
-import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +23,8 @@ import { ReOrderCanvaElementsRequest } from '../../../models/reorderCanvaElement
 import { UpdateCanvaElementRequest } from '../../../models/updateCanvaElementRequest';
 import { CreateCanvaTokenElementRequest } from '../../../models/createCanvaTokenElementRequest';
 import { ScaleElementRequest } from '../../../models/scaleElementRequest'; // Nova interface importada
+import { AuthService } from '../../services/auth-service';
+import { Subscription } from 'rxjs';
 
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
@@ -37,7 +47,7 @@ interface EraserTrailPoint {
   templateUrl: './campaign-canvas.html',
   styleUrls: ['./campaign-canvas.css'],
 })
-export class CampaignCanvasComponent implements OnInit {
+export class CampaignCanvasComponent implements OnInit, OnDestroy {
   @ViewChild('canvasContainer') canvasContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -45,6 +55,7 @@ export class CampaignCanvasComponent implements OnInit {
   canvasElementService = inject(CanvasElementService);
   campaignService = inject(CampaignService);
   characterService = inject(CharacterService);
+  authService = inject(AuthService);
 
   public CanvasElementType = CanvasElementType;
 
@@ -104,15 +115,32 @@ export class CampaignCanvasComponent implements OnInit {
   cropImageSource: string = '';
   isCroppingCustomToken: boolean = false;
   croppedBlob: Blob | null = null;
-
+  private CanvasSubscription!: Subscription;
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.campaignId = this.route.snapshot.paramMap.get('id') ?? '';
     this.centerCamera();
     this.loadElements();
-  }
+    this.canvasElementService
+      .startConnection(this.campaignId, () => this.authService.Token)
+      .catch((err) => {
+        console.error('Error starting canvas connection', err);
+      });
 
+    this.CanvasSubscription = this.canvasElementService.onElementsMoved().subscribe((elements) => {
+
+      console.log('Elements moved:', elements);
+    });
+    this.CanvasSubscription = this.canvasElementService.onElementsScaled().subscribe((elements) => {
+
+      console.log('Elements scaled:', elements);
+    });
+  }
+  ngOnDestroy() {
+    this.canvasElementService.stopConnection();
+    this.CanvasSubscription.unsubscribe();
+  }
   getElementTypeName(type: CanvasElementType): string {
     return CanvasElementType[type] || 'ELEMENTO';
   }

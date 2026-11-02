@@ -8,7 +8,6 @@ import { CampaignChatMessageRequest } from '../../models/campaignChatMessageRequ
 import { ApiResponse } from '../../models/apiResponse';
 import { ChatPagedResultDto } from '../../models/chatPagedResultDto';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -32,7 +31,7 @@ export class CampaignChatService {
     this.hubConnection
       .start()
       .then(() => {
-        this.hubConnection.invoke('JoinCampaign', campaignId);
+        this.hubConnection.invoke('JoinCampaignChat', campaignId);
       })
       .catch((err) => console.error('SingalR error', err));
 
@@ -60,7 +59,7 @@ export class CampaignChatService {
   }
   public stopConnection(campaignId: string): void {
     if (this.hubConnection) {
-      this.hubConnection.invoke('LeaveCampaign', campaignId);
+      this.hubConnection.invoke('LeaveCampaignChat', campaignId);
       this.hubConnection.stop();
     }
   }

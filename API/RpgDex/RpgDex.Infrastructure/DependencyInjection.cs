@@ -85,6 +85,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
             services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
+            services.AddScoped<ICanvasHubService, CanvasHubService>();
 
 
 

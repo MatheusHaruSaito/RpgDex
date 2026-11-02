@@ -5,15 +5,15 @@ using System.Text;
 
 namespace RpgDex.Infrastructure.Hubs
 {
-    public class CampaignChatHub : Hub
+    public class CampaignChatHub() : Hub
     {
-        public async Task JoinCampaign(string campaignId)
+        public async Task JoinCampaignChat(string campaignId)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId,$"campaign-{campaignId}");
+            await Groups.AddToGroupAsync(Context.ConnectionId,$"campaign-chat-{campaignId}");
         }
-        public async Task LeaveCampaign(string campaignId)
+        public async Task LeaveCampaignChat(string campaignId)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"campaign-{campaignId}");
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"campaign-chat-{campaignId}");
         }
     }
 }

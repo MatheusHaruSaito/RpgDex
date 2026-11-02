@@ -7,5 +7,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record CreateCanvaTokenElementRequest(Guid CampaignId,Guid CharacterId, double X, double Y, int Z, double Scale, string? Content, string? Color, CanvasElementType ElementType = CanvasElementType.Token);
+    public record CreateCanvaTokenElementRequest(Guid CampaignId,Guid CharacterId, double X, double Y, int Z, double Scale, string? Content, string? Color, CanvasElementType ElementType = CanvasElementType.Token, string? ExceptConnectionId = null);
 }

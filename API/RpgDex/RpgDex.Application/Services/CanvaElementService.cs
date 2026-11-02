@@ -22,8 +22,8 @@ namespace RpgDex.Application.Services
     public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
         SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
-        ScaleCanvasElementsRequestValidator scaleCamvasElementValidator
-        ) : ICanvaElementService
+        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator
+        ) : ICanvasElementService
     {
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
@@ -59,7 +59,13 @@ namespace RpgDex.Application.Services
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
 
-            return Result<CanvasElementResponse>.Success(created.Adapt<CanvasElementResponse>());
+            var result = created.Adapt<CanvasElementResponse>();
+
+            await canvasHubService.AddElement(
+                request.CampaignId.ToString(),
+                new CreateElementEvent(result, request.ExceptConnectionId));
+
+            return Result<CanvasElementResponse>.Success(result);
 
         }
 
@@ -140,7 +146,7 @@ namespace RpgDex.Application.Services
                 new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb));
         }
 
-        public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)
+        public async Task<Result<bool>> MoveElement(string userId, MoveCanvasElementsRequest request)
         {
             var check = moveCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
@@ -150,10 +156,14 @@ namespace RpgDex.Application.Services
             var positions = request.Items.Select(i => new ElementPosition(i.Id, i.X, i.Y));
             var ok = await canvaElementRepository.MoveElementAsync(request.CampaignId, positions);
 
+            await canvasHubService.MoveElements(
+                request.CampaignId.ToString(),
+                new MoveElementsEvent(positions.Select(p => new MoveCanvasElement(p.Id, p.X, p.Y)).ToList(),
+                request.ExceptConnectionId));
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.MoveFailed);
         }
 
-        public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request)
+        public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvasElementsRequest request)
         {
             var check = reOrderCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
@@ -163,6 +173,11 @@ namespace RpgDex.Application.Services
 
             var orders = request.Items.Select(i => new ElementOrder(i.Id, i.Z));
             var ok = await canvaElementRepository.ReorderElementsAsync(request.CampaignId, orders);
+
+            await canvasHubService.ReOrderElements(
+                request.CampaignId.ToString(),
+                new ReOrderElementsEvent(orders.Select(o => new ReOrderCanvasElement(o.Id, o.Z)).ToList(),
+                request.ExceptConnectionId));
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
         }
@@ -176,6 +191,11 @@ namespace RpgDex.Application.Services
 
             var scales = request.Items.Select(i => new ElementScale(i.Id, i.Scale));
             var ok = await canvaElementRepository.ScaleElement(request.CampaignId, scales);
+
+            await canvasHubService.ScaleElements(
+                request.CampaignId.ToString(),
+                new ScaleElementsEvent(scales.Select(s => new ScaleCanvasElement(s.Id, s.Scale)).ToList(),
+                request.ExceptConnectionId));
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
         }
