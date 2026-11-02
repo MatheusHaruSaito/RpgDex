@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../../models/apiResponse';
@@ -33,32 +33,28 @@ export class CanvasElementService {
   public CreateTokenElement(
     request: CreateCanvasTokenElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
     return this.http.post<ApiResponse<CanvasElementResponse>>(`${this.env}/element/token`, request);
   }
   public QuickCreateTokenElement(
     request: QuickCreateCanvaTokenElementRequest | FormData,
   ): Observable<ApiResponse<CanvasElementResponse>> {
+    console.log(request);
     return this.http.post<ApiResponse<CanvasElementResponse>>(
       `${this.env}/element/token/quick`,
       request,
     );
   }
-
   public GetAllElements(
     campaignId: string,
-    minX?: number,
-    minY?: number,
-    maxX?: number,
-    maxY?: number,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
   ): Observable<ApiResponse<GetAllCanvasElementResponse>> {
-    let params = new HttpParams().set('campaignId', campaignId);
-
-    if (minX !== undefined && minX !== null) params = params.set('minX', minX.toString());
-    if (minY !== undefined && minY !== null) params = params.set('minY', minY.toString());
-    if (maxX !== undefined && maxX !== null) params = params.set('maxX', maxX.toString());
-    if (maxY !== undefined && maxY !== null) params = params.set('maxY', maxY.toString());
-
-    return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(`${this.env}/All`, { params });
+    return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(`${this.env}/All`, {
+      params: { campaignId, maxX, minY, minX, maxY },
+    });
   }
 
   public UpdateElement(request: UpdateCanvaElementRequest): Observable<ApiResponse<boolean>> {
