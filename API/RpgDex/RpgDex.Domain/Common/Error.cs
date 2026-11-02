@@ -25,7 +25,8 @@ namespace RpgDex.Domain.Common
         public static readonly Error TokenGenerationFailed = new("AUTH_TOKEN_GENERATION_FAILED", "Could not generate a new token.");
         public static readonly Error UserCreationFailed = new("AUTH_USER_CREATION_FAILED", "An error occurred while creating the user.");
         public static readonly Error AccountLinkingFailed = new("AUTH_ACCOUNT_LINKING_FAILED", "An error occurred while linking the external account.");
-        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email.");
+        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email."); 
+        public static readonly Error PasswordResetFailed = new("AUTH_PASSWORD_RESET_FAILED", "An error occurred while resetting the password.");
     }
 
     public static class CampaignError

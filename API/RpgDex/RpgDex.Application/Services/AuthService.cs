@@ -1,11 +1,13 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
-using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Auth;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using System;
@@ -287,6 +289,70 @@ namespace RpgDex.Application.Services
 
 
             return await LogInAsync(user);
+        }
+        public async Task<Result<string>> SendResetPasswordEmailAsync(SendResetPasswordEmailRequest request)
+        {
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+            var isEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
+            if(!isEmailConfirmed)
+            {
+                return Result<string>.Failure(AuthError.EmailNotConfirmed);
+            }
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            if (token is null)
+            {
+                return Result<string>.Failure(AuthError.TokenGenerationFailed);
+            }
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            string resetLink = $"/resetPassword?userid={user.Id}&token={encodedToken}";
+            var htmlBody = emailService.GeneratePasswordResetHTMLTemplate(resetLink, user.UserName!);
+            var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email!, user.UserName!, "Password Reset", htmlBody);
+            if (!isEmailSent)
+            {
+                return Result<string>.Failure(AuthError.EmailSendFailed);
+            }
+            return Result<string>.Success(message);
+        }
+        public async Task<Result<string>> ResetPasswordAsync(string userId, ResetPasswordRequest request)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null)
+            {
+                return Result<string>.Failure(AuthError.UserNotFound);
+            }
+            string decodedToken;
+            try
+            {
+                decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+            }
+            catch (FormatException)
+            {
+                return Result<string>.Failure(AuthError.PasswordResetFailed);
+            }
+
+            var result = await userManager.ResetPasswordAsync(user, decodedToken, request.NewPassword);
+            if (!result.Succeeded)
+            {
+                return Result<string>.Failure(AuthError.PasswordResetFailed);
+            }
+
+            var revoked = await tokenService.RevokeTokenByUserId(user.Id);
+            if(!revoked)
+            {
+                return Result<string>.Failure(AuthError.TokenGenerationFailed);
+            }
+            var htmlBody = emailService.GeneratePasswordResetConfirmationHTMLTemplate(user.UserName!);
+            var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email!, user.UserName!, "Password Reset Confirmation", htmlBody);
+            if (!isEmailSent)
+            {
+                return Result<string>.Failure(AuthError.EmailSendFailed);
+            }
+            return Result<string>.Success("Password reset successfully.");
         }
         private async Task<Result<string>> SendEmailVerificationAsync(string email)
         {
