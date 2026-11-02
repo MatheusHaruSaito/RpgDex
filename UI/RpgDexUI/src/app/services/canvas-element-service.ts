@@ -47,11 +47,13 @@ export class CanvasElementService {
   }
   public GetAllElements(
     campaignId: string,
-    page: string,
-    pageSize: string,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
   ): Observable<ApiResponse<GetAllCanvasElementResponse>> {
     return this.http.get<ApiResponse<GetAllCanvasElementResponse>>(`${this.env}/All`, {
-      params: { campaignId, page, pageSize },
+      params: { campaignId, maxX, minY, minX, maxY },
     });
   }
 

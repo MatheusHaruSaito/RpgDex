@@ -7,6 +7,6 @@ namespace RpgDex.Application.Interfaces
 {
     public interface ICanvasElementQueries
     {
-        Task<GetAllCanvasElementResponse> GetAllCanvasElementByCampaignIdAsync(Guid campaignId, int page = 1, int pageSize = 20);
+        Task<GetAllCanvasElementResponse> GetAllCanvasElementByCampaignIdAsync(Guid campaignId, double? minX, double? minY, double? maxX, double? maxY);
     }
 }

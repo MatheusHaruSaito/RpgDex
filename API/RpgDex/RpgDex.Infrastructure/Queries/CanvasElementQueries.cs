@@ -28,16 +28,18 @@ namespace RpgDex.Infrastructure.Queries
             _canvasElementRepository = canvasElementRepository;
             _apiSettings = apiSettings.Value;
         }
-        public async Task<GetAllCanvasElementResponse> GetAllCanvasElementByCampaignIdAsync(Guid campaignId, int page = 1, int pageSize = 20)
+        public async Task<GetAllCanvasElementResponse> GetAllCanvasElementByCampaignIdAsync(Guid campaignId, double? minX, double? minY, double? maxX, double? maxY)
         {
-            page = page < 1 ? 1 : page;
-            pageSize = pageSize < 1 ? 1 : pageSize;
             var filter = Builders<CanvasElement>.Filter.And(
                 Builders<CanvasElement>.Filter.Eq(e => e.CampaignId, campaignId),
-                Builders<CanvasElement>.Filter.Eq(e => e.IsActive, true));
+                Builders<CanvasElement>.Filter.Eq(e => e.IsActive, true),
+                Builders<CanvasElement>.Filter.Gt(e => e.X, minX),
+                Builders<CanvasElement>.Filter.Lt(e => e.X, maxX),
+                Builders<CanvasElement>.Filter.Gt(e => e.Y, minY),
+                Builders<CanvasElement>.Filter.Lt(e => e.Y, maxY)
+            );
+                
             var elements = await _entity.Find(filter)
-                .Skip((page - 1) * pageSize)
-                .Limit(pageSize)
                 .ToListAsync();
             var characterIds = elements
                 .Where(e => e.ElementType == CanvasElementType.Token && e.CharacterId is not null)

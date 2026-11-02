@@ -130,12 +130,12 @@ namespace RpgDex.Application.Services
             return await CreateTokenElement(userId, requestAdapted, imageSize);
         }
 
-        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
+        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId, double? minX, double? minY, double? maxX, double? maxY)
         {
             var (_, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
-            var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId,page,pageSize);
+            var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId, minX, minY, maxX, maxY);
             return Result<GetAllCanvasElementResponse>.Success(
                 new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb));
         }

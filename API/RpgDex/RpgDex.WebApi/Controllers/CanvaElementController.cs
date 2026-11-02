@@ -47,9 +47,9 @@ namespace RpgDex.WebApi.Controllers
         }
 
         [HttpGet("All")]
-        public async Task<IActionResult> GetAllElements([FromQuery]Guid campaignId, [FromQuery]int page, [FromQuery]int pageSize)
+        public async Task<IActionResult> GetAllElements([FromQuery]Guid campaignId, [FromQuery]double? minX, [FromQuery]double? minY, [FromQuery]double? maxX, [FromQuery]double? maxY)
         {
-            var result = await _canvaElementService.GetAllElements(currentUser, campaignId,page,pageSize);
+            var result = await _canvaElementService.GetAllElements(currentUser, campaignId, minX, minY, maxX, maxY);
             return result.ToIActionResult();
         }
         [HttpPut("element")]
