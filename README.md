@@ -25,15 +25,7 @@ n gs
 ## Estrutura do projeto
 
 ```
-src/
-├── pages/
-│   ├── dashboard/     # Feed, Calendário, Salvo, Planos, FAQ, Sobre, Perfil
-│   ├── admin/         # Painel administrativo
-│   ├── SignupFlow.tsx # Cadastro
-│   └── LoginFlow.tsx  # Login
-├── services/          # Chamadas à API (user, notice, favorite)
-├── utils/             # Validações (CPF, email, senha, nome)
-└── App.tsx            # Rotas e autenticação
+
 ```
 
 ## Funcionalidades
