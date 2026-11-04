@@ -9,7 +9,6 @@ namespace RpgDex.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles ="Owner")]
     public class PlanController : ControllerBase
     {
         private readonly IPlanService _planService;
@@ -17,6 +16,7 @@ namespace RpgDex.WebApi.Controllers
         {
             _planService = planService;
         }
+        [Authorize(Roles = "Owner")]
         [HttpPost]
         public async Task<IActionResult> AddPlan([FromBody]CreatePlanRequest request)
         {

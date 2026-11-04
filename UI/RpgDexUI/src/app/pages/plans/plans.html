@@ -22,33 +22,42 @@
 
       <div class="plan-price">
         <span class="currency">R$</span>
-        <span class="value">{{ plan.price | number:'1.2-2' }}</span>
+        <span class="value">{{ plan.price | number: '1.2-2' }}</span>
         <span class="duration">/ {{ plan.durationDays }} dias</span>
       </div>
 
       <ul class="plan-features">
         <li>
           <span class="feature-icon">👤</span>
-          <span><strong>{{ plan.characterQty }}</strong> Fichas de Personagem</span>
+          <span
+            ><strong>{{ plan.characterQty }}</strong> Fichas de Personagem</span
+          >
         </li>
         <li>
           <span class="feature-icon">📜</span>
-          <span><strong>{{ plan.campaignQty }}</strong> Campanhas</span>
+          <span
+            ><strong>{{ plan.campaignQty }}</strong> Campanhas</span
+          >
         </li>
         <li>
           <span class="feature-icon">📁</span>
-          <span><strong>{{ plan.documentsSpaceMB }} MB</strong> em Documentos</span>
+          <span
+            ><strong>{{ plan.documentsSpaceMB }} MB</strong> em Documentos</span
+          >
         </li>
         <li>
           <span class="feature-icon">🎨</span>
-          <span><strong>{{ plan.canvasSpaceMb }} MB</strong> no Canvas</span>
+          <span
+            ><strong>{{ plan.canvasSpaceMb }} MB</strong> no Canvas</span
+          >
         </li>
       </ul>
 
       <button
         class="btn btn-primary btn-checkout"
         (click)="subscribeToPlan(plan.id)"
-        [disabled]="loadingPlanId === plan.id">
+        [disabled]="loadingPlanId === plan.id"
+      >
         <span *ngIf="loadingPlanId !== plan.id">Assinar Plano</span>
         <span *ngIf="loadingPlanId === plan.id">A redirecionar...</span>
       </button>

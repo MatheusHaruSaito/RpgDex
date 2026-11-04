@@ -9,8 +9,8 @@ import { PaymentInitiateResult } from '../../../models/paymentInitiateResult';
   selector: 'app-plans',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './plans.html', 
-  styleUrls: ['./plans.css']  
+  templateUrl: './plans.html',
+  styleUrls: ['./plans.css'],
 })
 export class PlansComponent implements OnInit {
   private planService = inject(PlanService);
@@ -30,15 +30,16 @@ export class PlansComponent implements OnInit {
     this.errorMessage = null;
 
     this.planService.GetAllPlan().subscribe({
-      next: (data: PlanResponse[]) => {
-        this.plans = data ?? [];
+      next: (data) => {
+        this.plans = data.data ?? [];
+        console.log('Planos carregados:', this.plans);
         this.isLoadingPlans = false;
       },
       error: (err: unknown) => {
         console.error('Erro ao carregar os planos:', err);
         this.errorMessage = 'Não foi possível carregar os planos no momento.';
         this.isLoadingPlans = false;
-      }
+      },
     });
   }
 
@@ -61,7 +62,7 @@ export class PlansComponent implements OnInit {
         console.error('Erro ao iniciar o pagamento:', err);
         this.errorMessage = 'Ocorreu um erro ao comunicar com o servidor de pagamentos.';
         this.loadingPlanId = null;
-      }
+      },
     });
   }
 }
