@@ -87,10 +87,11 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
-            var result =  await characterRepository.GetAllByUserIdAsync(guidUserId,page,pageSize);
-            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+            var result =  await characterQueries.GetAllByUserIdAsync(guidUserId,page,pageSize);
+            if (result.Characters is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+            var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
 
-            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
+            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),limit.Value!.CharacterQty, result.Total);
             return  Result<GetAllCharacterResponse>.Success(response);
         }
         public async Task<Result<GetAllCharacterResponse>> GetAllFromCampaign(string userId, Guid campaignId)
@@ -99,9 +100,10 @@ namespace RpgDex.Application.Services
 
             //Return all characters
             var result = await characterQueries.GetPlayerCharactersFromCampaign(guidUserId,campaignId);
-            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+            if (result.Characters is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+            var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
 
-            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(), result.CharactersLenght);
+            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(), limit.Value!.CharacterQty, result.Total);
             return Result<GetAllCharacterResponse>.Success(response);
         }
 
@@ -110,9 +112,12 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
 
             //Return all characters
-            var result = await characterRepository.GetAllByUserIdAsync(guidUserId);
-            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
-            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
+            var result = await characterQueries.GetAllByUserIdAsync(guidUserId);
+            if (result.Characters is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+
+            var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
+
+            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(), limit.Value!.CharacterQty, result.Total);
             return Result<GetAllCharacterResponse>.Success(response);
         }
         public async Task<Result<CharacterResponse>> GetByIdAsync(Guid Id)

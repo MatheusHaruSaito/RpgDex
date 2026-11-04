@@ -173,7 +173,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoadingCharacters = true;
     this.characterService.GetAllByPage(1, 6).subscribe({
       next: (response) => {
-        this.characterTotal = response.data?.characterLenght ?? 0;
+        this.characterTotal = response.data?.characterLength ?? 0;
         this.characterPreview = response.data?.characters ?? [];
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();

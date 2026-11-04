@@ -28,29 +28,7 @@ namespace RpgDex.Infrastructure.Services
         }
         public async Task<long> GetCharactersCountByUserId(Guid userId) =>
             await _entity.CountDocumentsAsync(c => c.UserId == userId && c.IsActive);
-        public async Task<GetAllCharactersResult> GetAllByUserIdAsync(Guid userId, int page=1,int pageSize =3)
-        {
-            page = page < 1 ? 1 : page;
-            pageSize = pageSize < 1 ? 1 : pageSize;
-            var filter = Builders<Character>.Filter.Eq(c => c.UserId, userId) 
-                & Builders<Character>.Filter.Eq(c => c.IsActive, true);
-            var reqeust= _entity.Find(filter)
-                .Skip((page -1)*pageSize)
-                .Limit(pageSize)
-                .ToListAsync();
-            var total = _entity.CountDocumentsAsync(filter);
-            await Task.WhenAll(reqeust, total);
-            return new GetAllCharactersResult(reqeust.Result,(int)total.Result);
-
-        }
-        public async Task<GetAllCharactersResult> GetAllByUserIdAsync(Guid userId)
-        {
-            var filter = Builders<Character>.Filter.Eq(c => c.UserId, userId)
-                & Builders<Character>.Filter.Eq(c => c.IsActive, true);
-            var result = await _entity.Find(filter)
-                .ToListAsync();
-            return new GetAllCharactersResult(result, result.Count());
-        }
+       
         public async Task<Character> GetByIdAsync(Guid Id)
         {
             return await _entity.Find(u => u.Id == Id).FirstOrDefaultAsync();

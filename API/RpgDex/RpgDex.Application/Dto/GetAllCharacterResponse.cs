@@ -5,5 +5,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record GetAllCharacterResponse(IEnumerable<CharacterResponse>Characters,int CharacterLenght);
+    public record GetAllCharacterResponse(IEnumerable<CharacterResponse>Characters,int MaxCharacters, int CharacterLength);
 }
