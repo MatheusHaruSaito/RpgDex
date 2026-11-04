@@ -27,9 +27,7 @@ export class CampaignService {
   Post(request: CreateCampaignRequest | FormData): Observable<ApiResponse<Campaign>> {
     return this.http.post<ApiResponse<Campaign>>(`${this.env}`, request);
   }
-  GetAll(): Observable<ApiResponse<GetAllCampaignResponse>> {
-    return this.http.get<ApiResponse<GetAllCampaignResponse>>(`${this.env}`);
-  }
+
   // GetAllByUser(): Observable<ApiResponse<Campaign[]>> {
   //   return this.http.get<ApiResponse<Campaign[]>>(`${this.env}/All`);
   // }

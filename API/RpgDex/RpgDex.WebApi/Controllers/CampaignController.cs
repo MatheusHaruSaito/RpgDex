@@ -22,12 +22,7 @@ namespace RpgDex.WebApi.Controllers
             _campaignService = campaignService;
         }
 
-        [HttpGet("All")]
-        public async Task<IActionResult> GetAllByUserId()
-        {
-            var result = await _campaignService.GetAllByUserId(currentUser);
-            return result.ToIActionResult();
-        }
+  
         [HttpGet("All/{page}/{pageSize}")]
         public async Task<IActionResult> GetAllByUserId(int page, int pageSize)
         {

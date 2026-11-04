@@ -74,6 +74,7 @@ export class CampaignsComponent implements OnInit {
     this.isLoadingCampaigns = true;
     this.campaignService.GetAllByUserPage(0, this.campaingsPerPage).subscribe({
       next: (r) => {
+        console.log('Campaigns loaded:', r.data);
         if (r.data!.campaigns.length > this.campaingsPerPage - 1) {
           this.showMoreButton = true;
         }

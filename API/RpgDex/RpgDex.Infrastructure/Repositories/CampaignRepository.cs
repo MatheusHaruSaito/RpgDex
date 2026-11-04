@@ -23,31 +23,9 @@ namespace RpgDex.Infrastructure.Repositories
 
             return await _entity.Find(o => o.Id == campaign.Id).FirstOrDefaultAsync();
         }
-
-        public async Task<GetAllCampaignResult> GetAllAsync(Guid userId)
-        {
-            var filter = Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId);
-            var result = await _entity.Find(filter).ToListAsync();
-            return new GetAllCampaignResult(result,result.Count);
-
-        }
         public async Task<Campaign> GetByIdAsync(Guid id)
         {
             return await _entity.Find(u => u.Id == id).FirstOrDefaultAsync();
-        }
-        public async Task<GetAllCampaignResult> GetAllAsync(Guid userId, int page = 1, int pageSize = 5)
-        {
-            page = page < 1 ? 1 : page;
-            pageSize = pageSize < 1 ? 1 : pageSize;
-            var filter = GetCampaignFilter(userId);
-            var total = _entity.CountDocumentsAsync(filter);
-            var request= _entity.Find(filter)
-                .Skip((page - 1) * pageSize)
-                .Limit(pageSize)
-                .ToListAsync();
-            await Task.WhenAll(total, request);
-            return new GetAllCampaignResult(request.Result, (int)total.Result);
-
         }
         public async Task<long> GetUserCampaignCount(Guid userId)
         {

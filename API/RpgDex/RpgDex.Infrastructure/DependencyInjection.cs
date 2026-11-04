@@ -97,6 +97,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
             services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
             services.AddScoped<ICharacterQueries, CharacterQueries>();
+            services.AddScoped<ICampaignQueries, CampaignQueries>();
 
 
             services.AddHostedService<SyncPaymentJob>();
