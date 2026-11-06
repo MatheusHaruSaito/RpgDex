@@ -36,10 +36,15 @@ export class SettingsModalComponent implements OnChanges {
   @Output() closeModal = new EventEmitter<void>();
   @Output() twoFactorUpdated = new EventEmitter<boolean>();
 
+  // Estados de 2FA
   isSending2FAEmail = false;
   isActivating2FA = false;
   twoFactorTokenInput = '';
   twoFactorStep: 'idle' | 'code-sent' = 'idle';
+
+  // Estado de Solicitação de Senha
+  isSendingPasswordReset = false;
+
   settingsMessage = { text: '', type: '' };
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -72,10 +77,50 @@ export class SettingsModalComponent implements OnChanges {
   onClose(): void {
     this.twoFactorStep = 'idle';
     this.twoFactorTokenInput = '';
+    this.isSendingPasswordReset = false;
     this.settingsMessage = { text: '', type: '' };
     this.closeModal.emit();
   }
 
+  // ── SOLICITAR CRIAÇÃO / ALTERAÇÃO DE SENHA ──
+  requestPasswordEmail(): void {
+    if (!this.user?.email) {
+      this.settingsMessage = { text: 'E-mail do usuário não localizado.', type: 'error' };
+      return;
+    }
+
+    this.isSendingPasswordReset = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.authService.SendResetPasswordEmail({ email: this.user.email }).subscribe({
+      next: (res: any) => {
+        this.isSendingPasswordReset = false;
+        const isSuccess = res?.success ?? res?.isSuccess ?? true;
+
+        if (isSuccess) {
+          this.settingsMessage = {
+            text: 'Enviamos as instruções para o seu e-mail para cadastrar/redefinir sua senha!',
+            type: 'success',
+          };
+        } else {
+          this.settingsMessage = {
+            text: res?.message || res?.error || 'Erro ao enviar e-mail de redefinição.',
+            type: 'error',
+          };
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isSendingPasswordReset = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  // ── FLUXO 2FA ──
   request2FACode(): void {
     const userId = this.authService.getLoggedUserId();
 

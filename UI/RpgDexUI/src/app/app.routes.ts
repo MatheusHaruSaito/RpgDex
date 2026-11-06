@@ -63,6 +63,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/library/library').then((m) => m.LibraryComponent),
     canActivate: [authGuard],
   },
-
+  {
+    path: 'resetPassword',
+    loadComponent: () => import('./pages/reset-password/reset-password').then(m => m.ResetPasswordComponent)
+  },
   { path: '**', redirectTo: '/home' },
 ];

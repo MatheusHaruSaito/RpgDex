@@ -25,21 +25,48 @@
             <h3>Métodos de Autenticação</h3>
 
             <!-- Senha Local -->
-            @if (authOptions.hasPassword) {
-              <div class="auth-method-item">
-                <span><i class="fa-solid fa-key"></i> Senha Local</span>
-                <span class="status-badge active">Cadastrada</span>
+            <div class="auth-method-item">
+              <div class="method-info">
+                <i class="fa-solid fa-key"></i>
+                <span>Senha Local</span>
               </div>
-            }
+              <div class="method-actions">
+                @if (authOptions.hasPassword) {
+                  <span class="status-badge active">Cadastrada</span>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    (click)="requestPasswordEmail()"
+                    [disabled]="isSendingPasswordReset"
+                  >
+                    <i class="fa-solid" [ngClass]="isSendingPasswordReset ? 'fa-spinner fa-spin' : 'fa-pen-to-square'"></i>
+                    Alterar
+                  </button>
+                } @else {
+                  <span class="status-badge">Não Cadastrada</span>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    (click)="requestPasswordEmail()"
+                    [disabled]="isSendingPasswordReset"
+                  >
+                    <i class="fa-solid" [ngClass]="isSendingPasswordReset ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
+                    Cadastrar Senha
+                  </button>
+                }
+              </div>
+            </div>
 
             <!-- Provedores Externos -->
             @for (provider of authOptions.externalProviders; track provider) {
               <div class="auth-method-item">
-                <span>
+                <div class="method-info">
                   <i class="fa-brands" [ngClass]="'fa-' + provider.toLowerCase()"></i>
-                  {{ provider }}
-                </span>
-                <span class="status-badge active">Conectado</span>
+                  <span>{{ provider }}</span>
+                </div>
+                <div class="method-actions">
+                  <span class="status-badge active">Conectado</span>
+                </div>
               </div>
             }
           </div>
