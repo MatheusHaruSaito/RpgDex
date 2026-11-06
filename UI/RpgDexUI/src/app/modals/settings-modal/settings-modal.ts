@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
+import { GoogleAuthService } from '../../services/google-auth-service';
 import { UserResponse } from '../../../models/userResponse';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
 import { InfoHintComponent } from '../../components/info-hint/info-hint';
@@ -26,6 +27,7 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 })
 export class SettingsModalComponent implements OnChanges {
   private authService = inject(AuthService);
+  private googleAuthService = inject(GoogleAuthService);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
@@ -36,11 +38,43 @@ export class SettingsModalComponent implements OnChanges {
   @Output() closeModal = new EventEmitter<void>();
   @Output() twoFactorUpdated = new EventEmitter<boolean>();
 
+  // Estados de 2FA
   isSending2FAEmail = false;
   isActivating2FA = false;
   twoFactorTokenInput = '';
   twoFactorStep: 'idle' | 'code-sent' = 'idle';
+
+  // Estados de Vínculo OAuth
+  isLinkingGoogle = false;
+  isUnlinkingGoogle = false;
+  isLinkingDiscord = false;
+  isUnlinkingDiscord = false;
+
   settingsMessage = { text: '', type: '' };
+
+  get isGoogleLinked(): boolean {
+    return !!this.authOptions?.externalProviders?.some(
+      (p) => p.toLowerCase() === 'google'
+    );
+  }
+
+  get isDiscordLinked(): boolean {
+    return !!this.authOptions?.externalProviders?.some(
+      (p) => p.toLowerCase() === 'discord'
+    );
+  }
+
+  get totalAuthMethodsCount(): number {
+    if (!this.authOptions) return 0;
+    const hasPasswordCount = this.authOptions.hasPassword ? 1 : 0;
+    const externalCount = this.authOptions.externalProviders?.length || 0;
+    return hasPasswordCount + externalCount;
+  }
+
+  get canUnlink(): boolean {
+    // Só permite desvincular se houver mais de 1 método de login cadastrado
+    return this.totalAuthMethodsCount > 1;
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
@@ -76,6 +110,127 @@ export class SettingsModalComponent implements OnChanges {
     this.closeModal.emit();
   }
 
+  // ── VÍNCULO GOOGLE ──
+  linkGoogleAccount(): void {
+    this.isLinkingGoogle = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.googleAuthService.initLogin((googleResponse: any) => {
+      const idToken = googleResponse.credential;
+      if (!idToken) {
+        this.isLinkingGoogle = false;
+        this.settingsMessage = { text: 'Falha ao obter token do Google.', type: 'error' };
+        this.cdr.detectChanges();
+        return;
+      }
+
+      this.authService.LinkGoogle(idToken).subscribe({
+        next: (res: any) => {
+          this.isLinkingGoogle = false;
+          if (res?.success ?? true) {
+            this.settingsMessage = { text: 'Conta Google vinculada com sucesso!', type: 'success' };
+            this.loadUserAuthOptions();
+          } else {
+            this.settingsMessage = { text: res?.error || 'Erro ao vincular conta Google.', type: 'error' };
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.isLinkingGoogle = false;
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.settingsMessage = { text: msg, type: 'error' };
+            this.cdr.detectChanges();
+          });
+        },
+      });
+    });
+
+    this.googleAuthService.prompt();
+  }
+
+  unlinkGoogleAccount(): void {
+    if (!this.canUnlink) return;
+
+    this.isUnlinkingGoogle = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.authService.UnlinkGoogle().subscribe({
+      next: (res: any) => {
+        this.isUnlinkingGoogle = false;
+        if (res?.success ?? true) {
+          this.settingsMessage = { text: 'Conta Google desvinculada com sucesso!', type: 'success' };
+          this.loadUserAuthOptions();
+        } else {
+          this.settingsMessage = { text: res?.error || 'Erro ao desvincular conta Google.', type: 'error' };
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isUnlinkingGoogle = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  // ── VÍNCULO DISCORD ──
+  linkDiscordAccount(): void {
+    this.isLinkingDiscord = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.authService.startDiscordLink().subscribe({
+      next: (res: any) => {
+        this.isLinkingDiscord = false;
+        const redirectUrl = res?.data?.url || res?.url;
+
+        if (redirectUrl) {
+          // Redireciona o usuário para autorização do Discord
+          window.location.href = redirectUrl;
+        } else {
+          this.settingsMessage = { text: 'URL de autenticação do Discord não recebida.', type: 'error' };
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => {
+        this.isLinkingDiscord = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  unlinkDiscordAccount(): void {
+    if (!this.canUnlink) return;
+
+    this.isUnlinkingDiscord = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.authService.unlinkDiscord().subscribe({
+      next: (res: any) => {
+        this.isUnlinkingDiscord = false;
+        if (res?.success ?? true) {
+          this.settingsMessage = { text: 'Conta Discord desvinculada com sucesso!', type: 'success' };
+          this.loadUserAuthOptions();
+        } else {
+          this.settingsMessage = { text: res?.error || 'Erro ao desvincular conta Discord.', type: 'error' };
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isUnlinkingDiscord = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.settingsMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  // ── FLUXO 2FA ──
   request2FACode(): void {
     const userId = this.authService.getLoggedUserId();
 
