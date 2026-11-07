@@ -67,8 +67,14 @@ namespace RpgDex.Application.Services
                         SuccessUrl = successUrl,
                         FailureUrl = failureUrl,
                         PendingUrl = pendingUrl,
-                        AutoReturn = "approved"
-                    }
+                        AutoReturn = "approved",
+                        TransactionSecurity = new MpTransactionSecurity
+                        {
+                            Validation = "on_fraud_risk",
+                            LiabilityShift = "required"
+                        }
+                    },
+                    
                 },
                 AdditionalInfo = new MpOrderAdditionalInfo
                 {
@@ -350,13 +356,12 @@ namespace RpgDex.Application.Services
                 for (var attempt = 0; attempt < 3; attempt++)
                 {
                     var entries = sub.Ledger.Where(e => e.PaymentId == payment.Id).ToList();
-                    if (entries.Count == 0) break;   // já desfeito por outra execução
+                    if (entries.Count == 0) break;
 
                     var expires = sub.ExpiresAt - TimeSpan.FromTicks(entries.Sum(e => e.ExpiresDeltaTicks));
                     var start = sub.StartDate - TimeSpan.FromTicks(entries.Sum(e => e.StartDeltaTicks));
 
-                    // só desativa se nenhum OUTRO pagamento deu tempo de verdade a esta assinatura
-                    // (empurrões não contam: não são tempo pago)
+
                     var created = entries.Any(e => e.Kind == LedgerEntryKind.Created);
                     var paidByOthers = sub.Ledger.Any(e => e.PaymentId != payment.Id && e.Kind != LedgerEntryKind.Shifted);
                     var deactivate = created && !paidByOthers;

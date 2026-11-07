@@ -184,8 +184,13 @@ namespace RpgDex.Application.Interfaces
         [JsonPropertyName("failure_url")] public string? FailureUrl { get; init; }
         [JsonPropertyName("pending_url")] public string? PendingUrl { get; init; }
         [JsonPropertyName("auto_return")] public string? AutoReturn { get; init; }
+        [JsonPropertyName("transaction_security")] public MpTransactionSecurity? TransactionSecurity { get; set; }
     }
-
+    public sealed class MpTransactionSecurity
+    {
+        [JsonPropertyName("validation")] public string? Validation { get; set; }
+        [JsonPropertyName("liability_shift")] public string? LiabilityShift { get; set; } 
+    }
     public sealed class MpOrderAdditionalInfo
     {
         [JsonPropertyName("payer.registration_date")] public string? PayerRegistrationDate { get; init; }
