@@ -65,7 +65,7 @@ export class PlansComponent implements OnInit {
     this.errorMessage = null;
     this.subscriptionService.GetFreePlanLimit().subscribe({
       next: (response: any) => {
-        const freePlanLimits = response['value'];
+        const freePlanLimits = response.data;
         console.log(response);
         console.log('Free Plan Limits:', freePlanLimits);
         this.plans = [
