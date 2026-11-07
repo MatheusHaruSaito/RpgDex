@@ -5,7 +5,7 @@
     <div class="profile-card">
 
       <!-- SKELETON: USER INFO -->
-      @if (isLoadingUser) {
+      @if (isLoadingUser || isLoadingPlan) {
         <header class="profile-header">
           <div class="user-main-info">
             <div class="avatar-wrapper">
@@ -22,7 +22,7 @@
       }
 
       <!-- CONTEÚDO REAL: USER INFO -->
-      @if (!isLoadingUser) {
+      @if (!isLoadingUser && !isLoadingPlan) {
         <header class="profile-header fade-in-content">
           <div class="user-main-info">
             <div class="avatar-wrapper">
@@ -49,9 +49,9 @@
               <div class="user-badges">
                 <span class="badge">Aventureiro</span>
                 
-                <a routerLink="/planos" class="badge badge-plan" [class.badge-early]="userPlan?.hasEarlyAccess">
-                  <i class="fa-solid" [ngClass]="userPlan?.hasEarlyAccess ? 'fa-star' : 'fa-shield-halved'"></i>
-                  <span>{{ userPlan?.name || 'Plano Gratuito' }}</span>
+                <a routerLink="/planos" class="badge badge-plan" [class.badge-early]="hasEarlyAccess">
+                  <i class="fa-solid" [ngClass]="hasEarlyAccess ? 'fa-star' : 'fa-shield-halved'"></i>
+                  <span>{{ userPlanName }}</span>
                 </a>
               </div>
             </div>

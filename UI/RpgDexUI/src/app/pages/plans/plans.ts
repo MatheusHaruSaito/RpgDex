@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { PlanService } from '../../services/plan-service';
 import { PaymentService } from '../../services/payment-service';
 import { SubscriptionService } from '../../services/subscription-service';
+import { AuthService } from '../../services/auth-service';
 import { PlanResponse } from '../../../models/planResponse';
 import { PaymentInitiateResult } from '../../../models/paymentInitiateResult';
 import { UserSubscriptionInfo } from '../../../models/userSubscriptionInfo';
@@ -26,11 +27,13 @@ export class PlansComponent implements OnInit {
   private planService = inject(PlanService);
   private subscriptionService = inject(SubscriptionService);
   private paymentService = inject(PaymentService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   plans: PlanResponse[] = [];
   userActivePlanIds: string[] = [];
-  isLoadingPlans: boolean = false;
+  activePlanInfo: UserSubscriptionInfo | null = null;
+  isLoadingPlans: boolean = true;
   loadingPlanId: string | null = null;
   errorMessage: string | null = null;
 
@@ -69,28 +72,41 @@ export class PlansComponent implements OnInit {
     this.isLoadingPlans = true;
     this.errorMessage = null;
 
+    const isLoggedIn = this.authService.isLoggedIn();
+
     forkJoin({
-      freePlan: this.subscriptionService.GetFreePlanLimit().pipe(
-        catchError((err) => {
-          console.error('Erro ao buscar plano gratuito:', err);
-          return of(null);
-        }),
-      ),
       allPlans: this.planService.GetAllPlan().pipe(
         catchError((err) => {
           console.error('Erro ao buscar planos:', err);
           return of(null);
-        }),
+        })
       ),
-      userPlans: this.subscriptionService.GetAllUserPlanInfo().pipe(catchError(() => of(null))),
+      freePlanLimit: this.subscriptionService.GetFreePlanLimit().pipe(
+        catchError(() => of(null))
+      ),
+      userPlans: isLoggedIn
+        ? this.subscriptionService.GetAllUserPlanInfo().pipe(
+            catchError((err) => {
+              console.error('Erro ao buscar plano do usuário:', err);
+              return of(null);
+            })
+          )
+        : of(null),
     }).subscribe({
-      next: ({ freePlan, allPlans, userPlans }) => {
+      next: ({ allPlans, freePlanLimit, userPlans }) => {
         let assembledPlans: PlanResponse[] = [];
 
-        // 1. Monta o Plano Gratuito
-        if (freePlan?.data) {
-          const freeData = freePlan.data;
-          assembledPlans.push({
+        if (allPlans?.data && allPlans.data.length > 0) {
+          assembledPlans = [...allPlans.data];
+        }
+
+        const hasFreeInAllPlans = assembledPlans.some(
+          (p) => p.id === 'free' || p.price === 0 || p.name.toLowerCase().includes('gratuito')
+        );
+
+        if (!hasFreeInAllPlans && freePlanLimit?.data) {
+          const freeData = freePlanLimit.data;
+          assembledPlans.unshift({
             id: 'free',
             name: 'Plano Gratuito',
             description: 'Acesso básico com recursos limitados.',
@@ -105,27 +121,21 @@ export class PlansComponent implements OnInit {
           });
         }
 
-        // 2. Adiciona os demais planos pagos
-        if (allPlans?.data) {
-          const paidPlans = [...allPlans.data].sort((a, b) => a.price - b.price);
-          assembledPlans = [...assembledPlans, ...paidPlans];
-        }
+        this.plans = assembledPlans.sort((a, b) => a.price - b.price);
 
-        this.plans = assembledPlans;
-
-        // 3. Mapeia os IDs de planos ativos do usuário
         if (userPlans?.data && userPlans.data.length > 0) {
+          this.activePlanInfo = userPlans.data[0];
           this.userActivePlanIds = userPlans.data.map((u: UserSubscriptionInfo) => u.planId);
         } else {
-          // Se não possui nenhuma assinatura ativa paga, o plano atual é o gratuito
-          this.userActivePlanIds = ['free'];
+          const freePlanObj = this.plans.find((p) => p.price === 0 || p.id === 'free');
+          this.userActivePlanIds = freePlanObj ? [freePlanObj.id] : ['free'];
         }
 
         this.isLoadingPlans = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Erro ao carregar informações dos planos:', err);
+        console.error('Erro geral ao carregar dados dos planos:', err);
         this.errorMessage = 'Não foi possível carregar os planos no momento.';
         this.isLoadingPlans = false;
         this.cdr.detectChanges();
@@ -134,11 +144,18 @@ export class PlansComponent implements OnInit {
   }
 
   isUserCurrentPlan(planId: string): boolean {
+    if (!planId) return false;
     return this.userActivePlanIds.includes(planId);
   }
 
+  hasPaidPlanActive(): boolean {
+    return !!this.activePlanInfo && this.activePlanInfo.planId !== 'free';
+  }
+
   subscribeToPlan(planId: string): void {
-    if (!planId || this.loadingPlanId !== null || this.isUserCurrentPlan(planId)) return;
+    if (!planId || this.loadingPlanId !== null || this.isUserCurrentPlan(planId)) {
+      return;
+    }
 
     this.loadingPlanId = planId;
     this.errorMessage = null;
@@ -176,7 +193,8 @@ export class PlansComponent implements OnInit {
     return `${mbValue} MB`;
   }
 
-  formatDuration(days: number): string {
+  formatDuration(days?: number): string {
+    if (days === undefined || days === null) return 'mês';
     if (days >= 30000) return 'vitalício';
     if (days === 30 || days === 31) return 'mês';
     if (days === 365) return 'ano';
