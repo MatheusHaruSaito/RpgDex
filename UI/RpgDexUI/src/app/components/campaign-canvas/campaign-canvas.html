@@ -196,16 +196,6 @@
     </div>
   </div>
 
-  <!-- CAIXA DE SELEÇÃO MÚLTIPLA -->
-  <div
-    *ngIf="selectionBox.active"
-    class="selection-box"
-    [style.left.px]="getMin(selectionBox.startX, selectionBox.currentX)"
-    [style.top.px]="getMin(selectionBox.startY, selectionBox.currentY)"
-    [style.width.px]="getAbs(selectionBox.currentX - selectionBox.startX)"
-    [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
-  ></div>
-
   <!-- MODAL DE ADICIONAR TEXTO -->
   <div class="token-modal-backdrop" *ngIf="isTextModalOpen">
     <div class="token-modal-card text-modal-card">
@@ -231,8 +221,8 @@
             <button class="btn btn-secondary" style="margin-right: 10px;" (click)="isTextModalOpen = false">
               Cancelar
             </button>
-            <button class="btn btn-primary" (click)="confirmAddText()">
-              <i class="fa fa-check"></i> Adicionar ao Canva
+            <button class="btn btn-primary" [disabled]="isCreatingElement" (click)="confirmAddText()">
+              <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i> Adicionar ao Canva
             </button>
           </div>
         </div>
@@ -291,8 +281,12 @@
                 <h4>{{ char.name }}</h4>
                 <p>{{ char.description || 'Personagem da mesa' }}</p>
               </div>
-              <button class="btn btn-primary btn-sm" (click)="addCharacterToken(char)">
-                <i class="fa fa-plus"></i> Adicionar
+              <button
+                class="btn btn-primary btn-sm"
+                [disabled]="isCreatingElement"
+                (click)="addCharacterToken(char)"
+              >
+                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-plus'"></i> Adicionar
               </button>
             </div>
           </div>
@@ -371,8 +365,12 @@
             </div>
 
             <div class="form-actions">
-              <button class="btn btn-primary" (click)="createCustomToken()">
-                <i class="fa fa-check"></i> Criar Token no Canva
+              <button
+                class="btn btn-primary"
+                [disabled]="isCreatingElement"
+                (click)="createCustomToken()"
+              >
+                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i> Criar Token no Canva
               </button>
             </div>
           </div>
@@ -420,6 +418,17 @@
 
   <!-- ÁREA DE VISUALIZAÇÃO INFINITA (CANVAS WORLD) -->
   <div class="canvas-viewport" #canvasContainer (pointerdown)="onPointerDown($event)">
+    
+    <!-- CAIXA DE SELEÇÃO MÚLTIPLA MOVIDA PARA DENTRO DO VIEWPORT -->
+    <div
+      *ngIf="selectionBox.active"
+      class="selection-box"
+      [style.left.px]="getMin(selectionBox.startX, selectionBox.currentX)"
+      [style.top.px]="getMin(selectionBox.startY, selectionBox.currentY)"
+      [style.width.px]="getAbs(selectionBox.currentX - selectionBox.startX)"
+      [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
+    ></div>
+
     <div
       class="canvas-world"
       [style.transform]="'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')'"

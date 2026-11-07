@@ -460,9 +460,22 @@ image-cropper { max-height: 400px; width: 100%; }
   transform: translateX(-50%) translateY(0) !important;
 }
 
+/* ── TEXTO E ANOTAÇÕES (Ajustado para seleção Encaixada) ── */
 .type-text {
-  font-family: 'Kalam', 'Nunito', cursive, sans-serif; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-  white-space: pre-wrap; pointer-events: auto; padding: 4px 8px; border-radius: 8px; font-weight: bold;
+  font-family: 'Kalam', 'Nunito', cursive, sans-serif;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  white-space: pre-wrap;
+  word-break: break-word;
+  pointer-events: auto;
+  padding: 6px 12px;
+  border-radius: 8px;
+  width: max-content;
+  max-width: 600px;
+  height: auto;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 /* ── IMAGENS ── */
