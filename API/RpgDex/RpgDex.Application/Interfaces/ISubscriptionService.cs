@@ -11,5 +11,6 @@ namespace RpgDex.Application.Interfaces
         Task ExpireOverdueAsync();
         Task<Result<PlanLimitsDTO>> GetSubscritptionLimits(string userId);
         Task<bool> HasEarlyAccess(string userId);
+        Task<IEnumerable<UserSubscriptionInfo>?> GetAllUserPlanInfo(string userId);
     }
 }

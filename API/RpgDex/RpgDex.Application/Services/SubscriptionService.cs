@@ -1,4 +1,5 @@
 ﻿using Mapster;
+using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto.Subscription;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -51,6 +52,17 @@ namespace RpgDex.Application.Services
                 return FreeLimits.HasEarlyAccess;
             }
             return result.HasEarlyAccess;
+        }
+        public async Task<IEnumerable<UserSubscriptionInfo>?> GetAllUserPlanInfo(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuidId)) return null;
+            var result = await subscriptionQueries.GetUserCurrentSubscriptions(userGuidId);
+
+            if (result is null || result.Count() == 0)
+            {
+                return new List<UserSubscriptionInfo> { new UserSubscriptionInfo(Guid.Empty, "Free Plan", DateTime.MaxValue) };
+            }
+            return result;
         }
     }
 }

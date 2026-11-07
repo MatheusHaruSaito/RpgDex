@@ -31,5 +31,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _subscriptionService.HasEarlyAccess(currentUser);
             return Ok(result);
         }
+        [HttpGet("allPlans")]
+        public async Task<IActionResult> GetAllUserPlanInfo()
+        {
+            var result = await _subscriptionService.GetAllUserPlanInfo(currentUser);
+            return Ok(result);
+        }
     }
 }

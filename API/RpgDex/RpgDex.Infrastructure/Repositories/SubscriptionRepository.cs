@@ -32,6 +32,6 @@ namespace RpgDex.Infrastructure.Repositories
 
         public async Task SetIsActive(Subscription subscription, bool isActive) =>
             await _entity.UpdateOneAsync(s => s.Id == subscription.Id,
-                Builders<Subscription>.Update.Set(s => s.isActive,isActive));
+                Builders<Subscription>.Update.Set(s => s.IsActive,isActive));
     }
 }

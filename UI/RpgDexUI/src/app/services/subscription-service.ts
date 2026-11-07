@@ -14,4 +14,8 @@ export class SubscriptionService {
   public HasEarlyAccess(): Observable<boolean> {
     return this.http.get<boolean>(`${this.env}/earlyAccess`);
   }
+
+  public GetAllUserPlanInfo(): Observable<boolean> {
+    return this.http.get<boolean>(`${this.env}/allPlans`);
+  }
 }
