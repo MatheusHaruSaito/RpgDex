@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { PlanLimits } from '../../models/planLimits';
 import { ApiResponse } from '../../models/apiResponse';
 import { UserSubscriptionInfo } from '../../models/userSubscriptionInfo';
+import { TagToPlanRequest } from '../../models/tagToPlanRequest';
 @Injectable({
   providedIn: 'root',
 })
@@ -24,5 +25,11 @@ export class SubscriptionService {
 
   public GetFreePlanLimit(): Observable<ApiResponse<PlanLimits>> {
     return this.http.get<ApiResponse<PlanLimits>>(`${this.env}/freePlanLimit`);
+  }
+  public AddTag(request: TagToPlanRequest): Observable<ApiResponse<PlanLimits>> {
+    return this.http.post<ApiResponse<PlanLimits>>(`${this.env}/tags/add`, request);
+  }
+  public RemoveTag(request: TagToPlanRequest): Observable<ApiResponse<PlanLimits>> {
+    return this.http.post<ApiResponse<PlanLimits>>(`${this.env}/tags/remove`, request);
   }
 }

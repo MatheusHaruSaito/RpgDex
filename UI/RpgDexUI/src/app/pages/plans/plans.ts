@@ -80,6 +80,7 @@ export class PlansComponent implements OnInit {
             documentsSpaceMB: freePlanLimits.documentsSpaceMB,
             canvasSpaceMb: freePlanLimits.canvasSpaceMb,
             durationDays: 33550336,
+            tags: [],
           },
         ];
       },

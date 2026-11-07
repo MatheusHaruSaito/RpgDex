@@ -35,5 +35,19 @@ namespace RpgDex.WebApi.Controllers
             var result = await _planService.GetAll();
             return result.ToIActionResult();
         }
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("tags/add")]
+        public async Task<IActionResult> AddTag([FromBody] TagToPlanRequest request)
+        {
+            var result = await _planService.AddTagToPlan(request);
+            return result.ToIActionResult();
+        }
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("tags/remove")]
+        public async Task<IActionResult> RemoveTag([FromBody] TagToPlanRequest request)
+        {
+            var result = await _planService.RemoveTagFromPlan(request);
+            return result.ToIActionResult();
+        }
     }
 }

@@ -1,3 +1,5 @@
+import { PlanTagType } from './planTagType';
+
 export interface PlanResponse {
   id: string;
   name: string;
@@ -9,4 +11,5 @@ export interface PlanResponse {
   documentsSpaceMB: number;
   canvasSpaceMb: number;
   durationDays: number;
+  tags: PlanTagType[];
 }

@@ -11,6 +11,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<PlanResponse>> AddPlan(CreatePlanRequest request);
         Task<Result<PlanResponse>> GetById(Guid id);
         Task<Result<IEnumerable<PlanResponse>>> GetAll();
-
+        Task<Result<PlanResponse>> AddTagToPlan(TagToPlanRequest request);
+        Task<Result<PlanResponse>> RemoveTagFromPlan(TagToPlanRequest request); 
     }
 }

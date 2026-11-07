@@ -91,6 +91,8 @@
     "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório.",
 
     "PLAN_NOT_FOUND": "Plano Não encontrado.",
+    "PLAN_TAG_ALREADY_EXISTS": "Tag já existe no plano.",
+    "PLAN_TAG_NOT_FOUND": "Tag not found on the plan.",
 
     "MERCADOPAGO_ORDER_CREATION_FAILED": "Falha ao criar ordem de pagamento"
   }

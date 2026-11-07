@@ -24,6 +24,15 @@ namespace RpgDex.Infrastructure.Repositories
         public async Task Insert(Plan payment) =>
             await _entity.InsertOneAsync(payment);
 
-
+        public async Task AddTagAsync(Guid planId, PlanTagType tag) =>
+            await _entity.UpdateOneAsync(
+                p => p.Id == planId,
+                Builders<Plan>.Update.AddToSet(p => p.Tags, tag)
+            );
+        public async Task RemoveTagAsync(Guid planId, PlanTagType tag) =>
+            await _entity.UpdateOneAsync(
+                p => p.Id == planId,
+                Builders<Plan>.Update.Pull(p => p.Tags, tag)
+            );
     }
 }

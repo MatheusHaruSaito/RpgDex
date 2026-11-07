@@ -4,6 +4,7 @@ using RpgDex.Application.Dto.Plan;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
+using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -29,6 +30,36 @@ namespace RpgDex.Application.Services
         {
             var plans = await planRepository.GetById(id);
             return Result<PlanResponse>.Success(plans.Adapt<PlanResponse>());
+        }
+        public async Task<Result<PlanResponse>> AddTagToPlan(TagToPlanRequest request)
+        {
+            var plan = await planRepository.GetById(request.Id);
+            if (plan is null)
+            {
+                return Result<PlanResponse>.Failure(PlanError.NotFound);
+            }
+            if(plan.Tags.Contains(request.Tag))
+            {
+                return Result<PlanResponse>.Failure(PlanError.TagAlreadyExists);
+            }
+
+            await planRepository.AddTagAsync(request.Id, request.Tag);
+            return Result<PlanResponse>.Success(plan.Adapt<PlanResponse>());
+        }
+        public async Task<Result<PlanResponse>> RemoveTagFromPlan(TagToPlanRequest request)
+        {
+            var plan = await planRepository.GetById(request.Id);
+            if (plan is null)
+            {
+                return Result<PlanResponse>.Failure(PlanError.NotFound);
+            }
+            if (!plan.Tags.Contains(request.Tag))
+            {
+                return Result<PlanResponse>.Failure(PlanError.TagNotFound);
+            }
+
+            await planRepository.RemoveTagAsync(request.Id, request.Tag);
+            return Result<PlanResponse>.Success(plan.Adapt<PlanResponse>());
         }
     }
 }

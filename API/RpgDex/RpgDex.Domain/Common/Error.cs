@@ -137,6 +137,8 @@ namespace RpgDex.Domain.Common
     public static class PlanError
     {
         public static readonly Error NotFound = new("PLAN_NOT_FOUND", "Plan not found.");
+        public static readonly Error TagAlreadyExists = new("PLAN_TAG_ALREADY_EXISTS", "Tag already exists on the plan.");
+        public static readonly Error TagNotFound = new("PLAN_TAG_NOT_FOUND", "Tag not found on the plan.");
     }
     public static class MercadoPagoOrderError
     {

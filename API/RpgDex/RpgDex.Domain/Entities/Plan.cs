@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using RpgDex.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -21,6 +22,7 @@ namespace RpgDex.Domain.Entities
         public int CanvasSpaceMb { get; set; }
         public int DurationDays { get; set; }
         public bool IsActive { get; set; } = true;
+        public List<PlanTagType> Tags { get; set; } = new List<PlanTagType>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
