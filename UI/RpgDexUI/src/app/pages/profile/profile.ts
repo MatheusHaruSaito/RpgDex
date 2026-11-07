@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { CampaignService } from '../../services/campaign-service';
 import { PlanService } from '../../services/plan-service';
+import { SubscriptionService } from '../../services/subscription-service';
 import { UserResponse } from '../../../models/userResponse';
 import { Character } from '../../../models/character';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
@@ -14,6 +15,8 @@ import { SettingsModalComponent } from '../../modals/settings-modal/settings-mod
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 const THEME_KEY = 'rpgdex-theme';
 
@@ -36,12 +39,14 @@ export class ProfileComponent implements OnInit {
   private characterService = inject(CharacterService);
   private campaignService = inject(CampaignService);
   private planService = inject(PlanService);
+  private subscriptionService = inject(SubscriptionService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
   user: UserResponse | null = null;
-  userPlan: PlanResponse | null = null;
+  userPlanName = 'Plano Gratuito';
+  hasEarlyAccess = false;
   authOptions: AuthOptionsResponse | null = null;
   isDarkMode = false;
   isSettingsModalOpen = false;
@@ -61,6 +66,7 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.initTheme();
     this.loadUser();
+    this.loadUserPlanInfo();
     this.loadCharacterPreview();
     this.loadCampaignPreview();
   }
@@ -100,7 +106,6 @@ export class ProfileComponent implements OnInit {
 
         if (this.user?.id) {
           this.loadAuthOptions(this.user.id);
-          // this.loadUserPlan();
         }
       },
       error: (err) => {
@@ -112,27 +117,33 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // private loadUserPlan(): void {
-  //   this.isLoadingPlan = true;
-  //   if (this.user?.planId) {
-  //     this.planService.GetById(this.user.planId).subscribe({
-  //       next: (res) => {
-  //         if (res.success && res.data) {
-  //           this.userPlan = res.data;
-  //         }
-  //         this.isLoadingPlan = false;
-  //         this.cdr.detectChanges();
-  //       },
-  //       error: () => {
-  //         this.isLoadingPlan = false;
-  //         this.cdr.detectChanges();
-  //       },
-  //     });
-  //   } else {
-  //     this.isLoadingPlan = false;
-  //     this.cdr.detectChanges();
-  //   }
-  // }
+  private loadUserPlanInfo(): void {
+    this.isLoadingPlan = true;
+
+    forkJoin({
+      userPlans: this.subscriptionService.GetAllUserPlanInfo().pipe(catchError(() => of(null))),
+      earlyAccess: this.subscriptionService.HasEarlyAccess().pipe(catchError(() => of(false))),
+    }).subscribe({
+      next: ({ userPlans, earlyAccess }) => {
+        this.hasEarlyAccess = !!earlyAccess;
+
+        if (userPlans?.data && userPlans.data.length > 0) {
+          const activeSub = userPlans.data[0];
+          this.userPlanName = activeSub.planName || 'Plano VIP';
+        } else {
+          this.userPlanName = 'Plano Gratuito';
+        }
+
+        this.isLoadingPlan = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.userPlanName = 'Plano Gratuito';
+        this.isLoadingPlan = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
 
   private loadAuthOptions(userId: string): void {
     this.authService.GetUserAuthOptions(userId).subscribe({

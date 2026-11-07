@@ -1,16 +1,20 @@
 .plans-wrapper {
+  padding: 40px 20px 80px;
   min-height: calc(100vh - 80px);
-  background-color: var(--rpg-bg);
+  background: transparent;
 }
 
 .plans-container {
-  padding-top: 50px;
-  padding-bottom: 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .plans-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
 }
 
 .plans-header h1 {
@@ -29,6 +33,47 @@
   margin: 0 auto;
 }
 
+/* ── CONTAINER EM CARD (PADRÃO HOME) ── */
+.plans-main-card {
+  background: var(--rpg-surface, #ffffff);
+  border-radius: 20px;
+  padding: 32px 36px;
+  border: 1px solid var(--rpg-border-light, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.section-card-margin {
+  margin-top: 12px;
+}
+
+/* ── AVISO DE PLANO ATIVO ── */
+.active-plan-banner {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1.5px solid var(--rpg-purple);
+  border-radius: 16px;
+  padding: 16px 24px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.active-plan-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--rpg-text-strong);
+}
+
+.active-plan-icon {
+  font-size: 1.6rem;
+  color: var(--rpg-purple);
+}
+
+.active-plan-info p {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: var(--rpg-text-muted);
+}
+
 /* ── ESTADOS DE FEEDBACK ── */
 .error-banner {
   background: var(--rpg-error-bg);
@@ -36,7 +81,6 @@
   color: var(--rpg-error);
   padding: 14px 20px;
   border-radius: 12px;
-  margin-bottom: 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -82,15 +126,15 @@
 .plans-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 32px;
+  gap: 28px;
   align-items: stretch;
 }
 
 .plan-card {
-  background: var(--rpg-surface);
+  background: var(--rpg-surface-2, #f8fafc);
   border: 2px solid var(--rpg-border-light);
   border-radius: 18px;
-  padding: 32px 28px;
+  padding: 28px 24px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -104,39 +148,15 @@
   box-shadow: var(--rpg-shadow-md);
 }
 
-.plan-card.featured {
-  border: 2px solid var(--rpg-purple);
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
-}
-
 .plan-card.current-plan-card {
   border: 2px solid #27ae60;
   box-shadow: 0 8px 24px rgba(39, 174, 96, 0.15);
 }
 
-.early-badge {
-  position: absolute;
-  top: -14px;
-  right: 24px;
-  background: var(--rpg-purple);
-  color: #fff;
-  font-family: 'Exo 2', sans-serif;
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 4px 14px;
-  border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
-}
-
 .current-badge {
   position: absolute;
   top: -14px;
-  right: 24px;
+  right: 20px;
   background: #27ae60;
   color: #fff;
   font-family: 'Exo 2', sans-serif;
@@ -155,7 +175,7 @@
 .plan-title {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   color: var(--rpg-text-strong);
   margin: 0 0 8px 0;
 }
@@ -228,6 +248,7 @@
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
   padding: 14px;
+  border-radius: 12px;
 }
 
 .btn-checkout.btn-current {
@@ -246,7 +267,7 @@
 }
 
 .security-note {
-  margin-top: 48px;
+  margin-top: 20px;
   text-align: center;
   font-family: 'Nunito', sans-serif;
   font-size: 0.88rem;
@@ -262,13 +283,9 @@
 }
 
 /* ── SEÇÃO DE BENEFÍCIOS DETALHADOS ── */
-.benefits-section {
-  margin-top: 80px;
-}
-
 .section-title-wrapper {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .section-title-wrapper h2 {
@@ -288,15 +305,15 @@
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
 }
 
 .benefit-card {
-  background: var(--rpg-surface);
+  background: var(--rpg-surface-2, #f8fafc);
   border: 1px solid var(--rpg-border-light);
   border-radius: 16px;
-  padding: 28px 24px;
+  padding: 24px 20px;
   box-shadow: var(--rpg-shadow-card);
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
@@ -307,39 +324,35 @@
 }
 
 .benefit-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   background: var(--rpg-purple-tint, rgba(124, 58, 237, 0.1));
   color: var(--rpg-purple);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
-  margin-bottom: 16px;
+  font-size: 1.3rem;
+  margin-bottom: 14px;
 }
 
 .benefit-card h3 {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   color: var(--rpg-text-strong);
   margin: 0 0 8px;
 }
 
 .benefit-card p {
   font-family: 'Nunito', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
   color: var(--rpg-text-body);
-  line-height: 1.6;
+  line-height: 1.5;
   margin: 0;
 }
 
-/* ── FAQ (SANFONA / ACCORDION) ── */
-.faq-section {
-  margin-top: 80px;
-}
-
+/* ── FAQ ── */
 .faq-accordion {
   max-width: 800px;
   margin: 0 auto;
@@ -349,7 +362,7 @@
 }
 
 .faq-item {
-  background: var(--rpg-surface);
+  background: var(--rpg-surface-2, #f8fafc);
   border: 1.5px solid var(--rpg-border-light);
   border-radius: 12px;
   overflow: hidden;
@@ -396,4 +409,13 @@
 
 .faq-answer p {
   margin: 0;
+}
+
+.fade-in-content {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
