@@ -37,5 +37,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _subscriptionService.GetAllUserPlanInfo(currentUser);
             return Ok(result);
         }
+        [HttpGet("freePlanLimit")]
+        public async Task<IActionResult> GetFreePlanLimit()
+        {
+            var result = _subscriptionService.GetFreePlanLimits();
+            return Ok(result);
+        }
     }
 }

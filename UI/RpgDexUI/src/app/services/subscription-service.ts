@@ -2,6 +2,8 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { PlanLimits } from '../../models/planLimits';
+import { ApiResponse } from '../../models/apiResponse';
 @Injectable({
   providedIn: 'root',
 })
@@ -17,5 +19,9 @@ export class SubscriptionService {
 
   public GetAllUserPlanInfo(): Observable<boolean> {
     return this.http.get<boolean>(`${this.env}/allPlans`);
+  }
+
+  public GetFreePlanLimit(): Observable<ApiResponse<PlanLimits>> {
+    return this.http.get<ApiResponse<PlanLimits>>(`${this.env}/freePlanLimit`);
   }
 }

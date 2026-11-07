@@ -10,7 +10,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class SubscriptionService(ISubscriptionRepository subscriptionRepository, ISubscriptionQueries subscriptionQueries) : ISubscriptionService
+    public class SubscriptionService(ISubscriptionRepository subscriptionRepository, ISubscriptionQueries subscriptionQueries, ILogger<SubscriptionService> logger) : ISubscriptionService
     {
         private static readonly PlanLimitsDTO FreeLimits = new(
             HasEarlyAccess: false,
@@ -63,6 +63,11 @@ namespace RpgDex.Application.Services
                 return new List<UserSubscriptionInfo> { new UserSubscriptionInfo(Guid.Empty, "Free Plan", DateTime.MaxValue) };
             }
             return result;
+        }
+
+        public Result<PlanLimitsDTO> GetFreePlanLimits()
+        {
+            return Result<PlanLimitsDTO>.Success(FreeLimits);
         }
     }
 }

@@ -4,6 +4,7 @@ import { PlanService } from '../../services/plan-service';
 import { PaymentService } from '../../services/payment-service';
 import { PlanResponse } from '../../../models/planResponse';
 import { PaymentInitiateResult } from '../../../models/paymentInitiateResult';
+import { SubscriptionService } from '../../services/subscription-service';
 
 interface FaqItem {
   question: string;
@@ -20,6 +21,7 @@ interface FaqItem {
 })
 export class PlansComponent implements OnInit {
   private planService = inject(PlanService);
+  private subscriptionService = inject(SubscriptionService);
   private paymentService = inject(PaymentService);
 
   plans: PlanResponse[] = [];
@@ -30,22 +32,26 @@ export class PlansComponent implements OnInit {
   faqItems: FaqItem[] = [
     {
       question: 'Como funciona o Acesso Antecipado (Early Access)?',
-      answer: 'Assinantes de planos com Acesso Antecipado recebem acesso exclusivo à Biblioteca de Arquivos (para armazenar mapas, tokens e PDFs) e testam em primeira mão novos recursos antes do lançamento público.',
+      answer:
+        'Assinantes de planos com Acesso Antecipado recebem acesso exclusivo à Biblioteca de Arquivos (para armazenar mapas, tokens e PDFs) e testam em primeira mão novos recursos antes do lançamento público.',
       isOpen: false,
     },
     {
       question: 'Posso alterar ou cancelar meu plano a qualquer momento?',
-      answer: 'Sim! Não há fidelidade. Você pode realizar o cancelamento ou alterar seu plano quando quiser diretamente pelo painel do Mercado Pago ou nas configurações da sua conta.',
+      answer:
+        'Sim! Não há fidelidade. Você pode realizar o cancelamento ou alterar seu plano quando quiser diretamente pelo painel do Mercado Pago ou nas configurações da sua conta.',
       isOpen: false,
     },
     {
       question: 'O que acontece com minhas fichas e campanhas se minha assinatura expirar?',
-      answer: 'Seu conteúdo já criado continuará seguro! No entanto, o limite para criação de novas fichas, campanhas e o acesso à Biblioteca será ajustado ao limite do plano gratuito até a renovação.',
+      answer:
+        'Seu conteúdo já criado continuará seguro! No entanto, o limite para criação de novas fichas, campanhas e o acesso à Biblioteca será ajustado ao limite do plano gratuito até a renovação.',
       isOpen: false,
     },
     {
       question: 'Quais são as formas de pagamento aceitas?',
-      answer: 'Aceitamos PIX, cartões de crédito (com aprovação imediata) e boleto bancário através do checkout seguro do Mercado Pago.',
+      answer:
+        'Aceitamos PIX, cartões de crédito (com aprovação imediata) e boleto bancário através do checkout seguro do Mercado Pago.',
       isOpen: false,
     },
   ];
@@ -57,11 +63,32 @@ export class PlansComponent implements OnInit {
   loadPlans(): void {
     this.isLoadingPlans = true;
     this.errorMessage = null;
+    this.subscriptionService.GetFreePlanLimit().subscribe({
+      next: (response: any) => {
+        const freePlanLimits = response['value'];
+        console.log(response);
+        console.log('Free Plan Limits:', freePlanLimits);
+        this.plans = [
+          {
+            id: 'free',
+            name: 'Plano Gratuito',
+            description: 'Acesso básico com recursos limitados.',
+            price: 0,
+            hasEarlyAccess: freePlanLimits.hasEarlyAccess,
+            characterQty: freePlanLimits.characterQty,
+            campaignQty: freePlanLimits.campaignQty,
+            documentsSpaceMB: freePlanLimits.documentsSpaceMB,
+            canvasSpaceMb: freePlanLimits.canvasSpaceMb,
+            durationDays: 33550336,
+          },
+        ];
+      },
+    });
 
     this.planService.GetAllPlan().subscribe({
       next: (data) => {
         const rawPlans = data.data ?? [];
-        this.plans = rawPlans.sort((a, b) => a.price - b.price);
+        this.plans = [...this.plans, ...rawPlans.sort((a, b) => a.price - b.price)];
         this.isLoadingPlans = false;
       },
       error: (err: unknown) => {
