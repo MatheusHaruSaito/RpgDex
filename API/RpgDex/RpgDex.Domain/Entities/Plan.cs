@@ -22,6 +22,7 @@ namespace RpgDex.Domain.Entities
         public int CanvasSpaceMb { get; set; }
         public int DurationDays { get; set; }
         public bool IsActive { get; set; } = true;
+        public int Tier { get; set; } = 0;
         public List<PlanTagType> Tags { get; set; } = new List<PlanTagType>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -42,7 +42,9 @@ namespace RpgDex.Infrastructure.Queries
             var now = DateTime.UtcNow;
 
             var subscriptions = await _entity
-                .Find(s => s.UserId == userId && s.IsActive && s.ExpiresAt > now)
+                .Find(s => s.UserId == userId && s.IsActive && s.StartDate <= now && s.ExpiresAt > now)
+                .SortByDescending(s => s.Tier)
+                .ThenByDescending(s => s.ExpiresAt)
                 .Project(s => new { s.PlanId, s.ExpiresAt })
                 .ToListAsync();
 

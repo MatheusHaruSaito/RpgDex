@@ -140,6 +140,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error TagAlreadyExists = new("PLAN_TAG_ALREADY_EXISTS", "Tag already exists on the plan.");
         public static readonly Error TagNotFound = new("PLAN_TAG_NOT_FOUND", "Tag not found on the plan.");
     }
+
     public static class MercadoPagoOrderError
     {
         public static readonly Error CreationFailed = new("MERCADOPAGO_ORDER_CREATION_FAILED", "Failed to create the payment order.");
