@@ -1,10 +1,6 @@
 .plans-wrapper {
   min-height: calc(100vh - 80px);
   background-color: var(--rpg-bg);
-  background-image: 
-    linear-gradient(var(--rpg-border-light) 1px, transparent 1px),
-    linear-gradient(90deg, var(--rpg-border-light) 1px, transparent 1px);
-  background-size: 24px 24px;
 }
 
 .plans-container {
@@ -113,6 +109,11 @@
   box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
 }
 
+.plan-card.current-plan-card {
+  border: 2px solid #27ae60;
+  box-shadow: 0 8px 24px rgba(39, 174, 96, 0.15);
+}
+
 .early-badge {
   position: absolute;
   top: -14px;
@@ -130,6 +131,25 @@
   align-items: center;
   gap: 6px;
   box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
+}
+
+.current-badge {
+  position: absolute;
+  top: -14px;
+  right: 24px;
+  background: #27ae60;
+  color: #fff;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
 }
 
 .plan-title {
@@ -208,6 +228,13 @@
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
   padding: 14px;
+}
+
+.btn-checkout.btn-current {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: #fff;
+  opacity: 0.95;
 }
 
 .btn-checkout:disabled {
