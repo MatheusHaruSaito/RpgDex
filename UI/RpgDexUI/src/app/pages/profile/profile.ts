@@ -5,9 +5,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { CampaignService } from '../../services/campaign-service';
+import { PlanService } from '../../services/plan-service';
 import { UserResponse } from '../../../models/userResponse';
 import { Character } from '../../../models/character';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
+import { PlanResponse } from '../../../models/planResponse';
 import { SettingsModalComponent } from '../../modals/settings-modal/settings-modal';
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
@@ -33,17 +35,20 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private characterService = inject(CharacterService);
   private campaignService = inject(CampaignService);
+  private planService = inject(PlanService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
   user: UserResponse | null = null;
+  userPlan: PlanResponse | null = null;
   authOptions: AuthOptionsResponse | null = null;
   isDarkMode = false;
   isSettingsModalOpen = false;
 
   // Estados de carregamento com Skeleton
   isLoadingUser = true;
+  isLoadingPlan = true;
   isLoadingCharacters = true;
   isLoadingCampaigns = true;
 
@@ -95,6 +100,7 @@ export class ProfileComponent implements OnInit {
 
         if (this.user?.id) {
           this.loadAuthOptions(this.user.id);
+          // this.loadUserPlan();
         }
       },
       error: (err) => {
@@ -105,6 +111,28 @@ export class ProfileComponent implements OnInit {
       },
     });
   }
+
+  // private loadUserPlan(): void {
+  //   this.isLoadingPlan = true;
+  //   if (this.user?.planId) {
+  //     this.planService.GetById(this.user.planId).subscribe({
+  //       next: (res) => {
+  //         if (res.success && res.data) {
+  //           this.userPlan = res.data;
+  //         }
+  //         this.isLoadingPlan = false;
+  //         this.cdr.detectChanges();
+  //       },
+  //       error: () => {
+  //         this.isLoadingPlan = false;
+  //         this.cdr.detectChanges();
+  //       },
+  //     });
+  //   } else {
+  //     this.isLoadingPlan = false;
+  //     this.cdr.detectChanges();
+  //   }
+  // }
 
   private loadAuthOptions(userId: string): void {
     this.authService.GetUserAuthOptions(userId).subscribe({
@@ -140,20 +168,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  openSettingsModal(): void {
-    this.isSettingsModalOpen = true;
-  }
-
-  closeSettingsModal(): void {
-    this.isSettingsModalOpen = false;
-  }
-
-  onTwoFactorUpdated(isEnabled: boolean): void {
-    if (this.authOptions) {
-      this.authOptions.isTwoFactorEnabled = isEnabled;
-    }
-  }
-
   private loadCampaignPreview(): void {
     const userId = this.authService.getLoggedUserId();
     if (!userId) {
@@ -183,6 +197,20 @@ export class ProfileComponent implements OnInit {
         });
       },
     });
+  }
+
+  openSettingsModal(): void {
+    this.isSettingsModalOpen = true;
+  }
+
+  closeSettingsModal(): void {
+    this.isSettingsModalOpen = false;
+  }
+
+  onTwoFactorUpdated(isEnabled: boolean): void {
+    if (this.authOptions) {
+      this.authOptions.isTwoFactorEnabled = isEnabled;
+    }
   }
 
   editProfile(): void {

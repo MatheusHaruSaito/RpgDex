@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, HostListener, OnInit, OnDestroy } from '@
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
+import { SubscriptionService } from '../../services/subscription-service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -14,13 +15,19 @@ import { Subscription } from 'rxjs';
 export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
   userAvatarUrl: string = '';
+  hasEarlyAccess = false;
   private userSub!: Subscription;
 
-  constructor(public authService: AuthService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    public authService: AuthService,
+    private subscriptionService: SubscriptionService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
       this.authService.GetLoggedUser().subscribe();
+      this.checkEarlyAccess();
     }
 
     this.userSub = this.authService.currentUser.subscribe((user) => {
@@ -30,7 +37,27 @@ export class NavbarComponent implements OnInit, OnDestroy {
       } else {
         this.userAvatarUrl = '';
       }
+      
+      if (user) {
+        this.checkEarlyAccess();
+      } else {
+        this.hasEarlyAccess = false;
+      }
+
       this.cdr.detectChanges();
+    });
+  }
+
+  private checkEarlyAccess(): void {
+    this.subscriptionService.HasEarlyAccess().subscribe({
+      next: (hasAccess) => {
+        this.hasEarlyAccess = hasAccess;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.hasEarlyAccess = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

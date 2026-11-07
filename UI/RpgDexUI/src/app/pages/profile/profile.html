@@ -15,6 +15,7 @@
               <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
               <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
               <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
+              <app-skeleton width="140px" height="24px" radius="20px"></app-skeleton>
             </div>
           </div>
         </header>
@@ -43,7 +44,16 @@
               <span class="user-handle">@{{ user?.userName || 'viajante' }}</span>
               <!-- E-mail -->
               <p class="email">{{ user?.email }}</p>
-              <span class="badge">Aventureiro</span>
+
+              <!-- BADGES & EXIBIÇÃO DO PLANO -->
+              <div class="user-badges">
+                <span class="badge">Aventureiro</span>
+                
+                <a routerLink="/planos" class="badge badge-plan" [class.badge-early]="userPlan?.hasEarlyAccess">
+                  <i class="fa-solid" [ngClass]="userPlan?.hasEarlyAccess ? 'fa-star' : 'fa-shield-halved'"></i>
+                  <span>{{ userPlan?.name || 'Plano Gratuito' }}</span>
+                </a>
+              </div>
             </div>
           </div>
 

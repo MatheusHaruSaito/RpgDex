@@ -1,8 +1,10 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { UserDocumentService } from '../../services/user-document-service';
+import { SubscriptionService } from '../../services/subscription-service';
 import { UserDocumentResponse } from '../../../models/userDocumentResponse';
 import { CreateUserDocumentRequest } from '../../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../../models/updateUserDocumentRequest';
@@ -11,12 +13,13 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './library.html',
   styleUrl: './library.css',
 })
 export class LibraryComponent implements OnInit {
   private documentService = inject(UserDocumentService);
+  private subscriptionService = inject(SubscriptionService);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
@@ -26,6 +29,8 @@ export class LibraryComponent implements OnInit {
   isLoading = false;
   isUploading = false;
   isUpdating = false;
+
+  hasAccess = true;
 
   errorMessage = '';
   successMessage = '';
@@ -52,13 +57,35 @@ export class LibraryComponent implements OnInit {
   editSelectedFile: File | null = null;
 
   ngOnInit(): void {
-    this.loadDocuments();
+    this.checkAccessAndLoad();
   }
 
-  loadDocuments(): void {
+  checkAccessAndLoad(): void {
     this.isLoading = true;
     this.clearMessages();
 
+    this.subscriptionService.HasEarlyAccess().subscribe({
+      next: (hasEarlyAccess: boolean) => {
+        if (!hasEarlyAccess) {
+          this.hasAccess = false;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.hasAccess = true;
+        this.loadDocuments();
+      },
+      error: (err) => {
+        console.error('Erro ao verificar Early Access:', err);
+        this.hasAccess = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadDocuments(): void {
     this.documentService.GetAllByUserId(1, 100).subscribe({
       next: (res) => {
         this.isLoading = false;

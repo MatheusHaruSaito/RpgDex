@@ -75,16 +75,36 @@
   align-items: flex-start;
 }
 
-.username {
+.display-name {
   font-size: 2rem;
+  font-weight: 800;
   color: var(--rpg-text-strong);
   margin: 0;
   line-height: 1.2;
 }
 
+.user-handle {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  margin-top: 2px;
+  display: inline-block;
+}
+
 .email {
   color: var(--rpg-text-muted);
-  margin: 5px 0 10px;
+  margin: 4px 0 10px;
+  font-size: 0.88rem;
+}
+
+/* ── BADGES & EXIBIÇÃO DO PLANO ── */
+.user-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 .badge {
@@ -94,7 +114,30 @@
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 700;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.badge-plan {
+  background: var(--rpg-surface-2, #f0f4f8);
+  border: 1px solid var(--rpg-border, #cbd5e0);
+  color: var(--rpg-text-strong);
+  transition: all 0.2s ease;
+}
+
+.badge-plan:hover {
+  border-color: var(--rpg-purple);
+  color: var(--rpg-purple);
+  transform: translateY(-1px);
+}
+
+.badge-plan.badge-early {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(168, 85, 247, 0.15));
+  border-color: var(--rpg-purple);
+  color: var(--rpg-purple);
+  font-weight: 800;
 }
 
 /* ── CONTROLES DO PERFIL ── */
@@ -180,7 +223,7 @@
   gap: 25px;
 }
 
-/* ── CARDS DE CAMPANHA / PERSONAGEM (PADRONIZADOS) ── */
+/* ── CARDS DE CAMPANHA / PERSONAGEM ── */
 .campaign-card {
   background: var(--rpg-surface);
   border-radius: 18px;
@@ -279,29 +322,6 @@
   color: var(--rpg-purple);
 }
 
-.display-name {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--rpg-text-strong);
-  margin: 0;
-  line-height: 1.2;
-}
-
-.user-handle {
-  font-family: 'Exo 2', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--rpg-purple);
-  margin-top: 2px;
-  display: inline-block;
-}
-
-.email {
-  color: var(--rpg-text-muted);
-  margin: 4px 0 10px;
-  font-size: 0.88rem;
-}
-
 .fade-in-content {
   animation: fadeInContent 0.3s ease-in-out forwards;
 }
@@ -346,7 +366,7 @@
     flex: 1;
   }
 
-  .username {
+  .display-name {
     font-size: 1.6rem;
   }
 }
@@ -360,6 +380,10 @@
 
   .user-text {
     align-items: center;
+  }
+
+  .user-badges {
+    justify-content: center;
   }
 
   .section-header {

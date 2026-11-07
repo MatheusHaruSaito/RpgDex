@@ -1,66 +1,162 @@
-<div class="plans-container container">
-  <header class="plans-header">
-    <h1>Planos & Assinaturas</h1>
-    <p>Escolha o plano ideal para expandir o seu acesso, personagens e campanhas no RPGDex.</p>
-  </header>
+<div class="plans-wrapper">
+  <div class="plans-container container">
+    
+    <header class="plans-header">
+      <h1>Planos & Assinaturas</h1>
+      <p>Escolha o plano ideal para expandir o seu acesso, personagens e campanhas no RPGDex.</p>
+    </header>
 
-  <div *ngIf="errorMessage" class="error-banner">
-    {{ errorMessage }}
-  </div>
-
-  <div *ngIf="isLoadingPlans" class="loading-state">
-    <div class="spinner"></div>
-    <p>A carregar planos...</p>
-  </div>
-
-  <div *ngIf="!isLoadingPlans" class="plans-grid">
-    <div *ngFor="let plan of plans" class="plan-card" [class.featured]="plan.hasEarlyAccess">
-      <div *ngIf="plan.hasEarlyAccess" class="early-badge">Acesso Antecipado</div>
-
-      <h2 class="plan-title">{{ plan.name }}</h2>
-      <p class="plan-description">{{ plan.description }}</p>
-
-      <div class="plan-price">
-        <span class="currency">R$</span>
-        <span class="value">{{ plan.price | number: '1.2-2' }}</span>
-        <span class="duration">/ {{ plan.durationDays }} dias</span>
+    <!-- Banner de Erro com Re-tentativa -->
+    <div *ngIf="errorMessage" class="error-banner">
+      <div class="error-content">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+        <span>{{ errorMessage }}</span>
       </div>
-
-      <ul class="plan-features">
-        <li>
-          <span class="feature-icon">👤</span>
-          <span
-            ><strong>{{ plan.characterQty }}</strong> Fichas de Personagem</span
-          >
-        </li>
-        <li>
-          <span class="feature-icon">📜</span>
-          <span
-            ><strong>{{ plan.campaignQty }}</strong> Campanhas</span
-          >
-        </li>
-        <li>
-          <span class="feature-icon">📁</span>
-          <span
-            ><strong>{{ plan.documentsSpaceMB }} MB</strong> em Documentos</span
-          >
-        </li>
-        <li>
-          <span class="feature-icon">🎨</span>
-          <span
-            ><strong>{{ plan.canvasSpaceMb }} MB</strong> no Canvas</span
-          >
-        </li>
-      </ul>
-
-      <button
-        class="btn btn-primary btn-checkout"
-        (click)="subscribeToPlan(plan.id)"
-        [disabled]="loadingPlanId === plan.id"
-      >
-        <span *ngIf="loadingPlanId !== plan.id">Assinar Plano</span>
-        <span *ngIf="loadingPlanId === plan.id">A redirecionar...</span>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="loadPlans()">
+        <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Tentar novamente
       </button>
     </div>
+
+    <!-- State de Carregamento -->
+    <div *ngIf="isLoadingPlans" class="loading-state">
+      <div class="spinner"></div>
+      <p>Carregando planos...</p>
+    </div>
+
+    <!-- State Vazio -->
+    <div *ngIf="!isLoadingPlans && plans.length === 0 && !errorMessage" class="empty-state">
+      <i class="fa-solid fa-box-open empty-icon" aria-hidden="true"></i>
+      <h3>Nenhum plano disponível</h3>
+      <p>Nenhum plano foi encontrado no momento. Volte novamente mais tarde.</p>
+    </div>
+
+    <!-- Grid de Planos -->
+    <div *ngIf="!isLoadingPlans && plans.length > 0" class="plans-grid">
+      <div
+        *ngFor="let plan of plans"
+        class="plan-card"
+        [class.featured]="plan.hasEarlyAccess"
+      >
+        <div *ngIf="plan.hasEarlyAccess" class="early-badge">
+          <i class="fa-solid fa-star" aria-hidden="true"></i> Mais Popular
+        </div>
+
+        <h2 class="plan-title">{{ plan.name }}</h2>
+        <p class="plan-description">{{ plan.description }}</p>
+
+        <div class="plan-price">
+          <span class="value">{{ plan.price | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          <span class="duration">/ {{ formatDuration(plan.durationDays) }}</span>
+        </div>
+
+        <ul class="plan-features">
+          <li>
+            <i class="fa-solid fa-user feature-icon" aria-hidden="true"></i>
+            <span><strong>{{ plan.characterQty > 0 ? plan.characterQty : 'Ilimitadas' }}</strong> Fichas de Personagem</span>
+          </li>
+          <li>
+            <i class="fa-solid fa-scroll feature-icon" aria-hidden="true"></i>
+            <span><strong>{{ plan.campaignQty > 0 ? plan.campaignQty : 'Ilimitadas' }}</strong> Campanhas</span>
+          </li>
+          <li>
+            <i class="fa-solid fa-folder feature-icon" aria-hidden="true"></i>
+            <span><strong>{{ formatStorage(plan.documentsSpaceMB) }}</strong> em Documentos</span>
+          </li>
+          <li>
+            <i class="fa-solid fa-palette feature-icon" aria-hidden="true"></i>
+            <span><strong>{{ formatStorage(plan.canvasSpaceMb) }}</strong> no Canvas</span>
+          </li>
+
+          <li *ngIf="plan.hasEarlyAccess">
+            <i class="fa-solid fa-check feature-icon check-icon" aria-hidden="true"></i>
+            <span>Acesso Antecipado a Novas Features</span>
+          </li>
+        </ul>
+
+        <button
+          class="btn btn-primary btn-checkout"
+          (click)="subscribeToPlan(plan.id)"
+          [disabled]="loadingPlanId !== null"
+        >
+          <span *ngIf="loadingPlanId !== plan.id">Assinar Plano</span>
+          <span *ngIf="loadingPlanId === plan.id">
+            <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Redirecionando...
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Nota de Pagamento Seguro -->
+    <div class="security-note">
+      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+      <span>Pagamento processado com segurança via Mercado Pago. Cancele a qualquer momento.</span>
+    </div>
+
+    <!-- ── EXPLICAÇÃO DETALHADA DOS BENEFÍCIOS ── -->
+    <section class="benefits-section">
+      <div class="section-title-wrapper">
+        <h2>Por que evoluir sua conta?</h2>
+        <p>Entenda o que cada recurso oferece para transformar suas sessões de RPG</p>
+      </div>
+
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+          </div>
+          <h3>Biblioteca de Arquivos</h3>
+          <p>Envie e gerencie seus próprios mapas, tokens de criaturas, PDFs de regras e áudios de ambiente em um único lugar seguro.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fa-solid fa-scroll" aria-hidden="true"></i>
+          </div>
+          <h3>Campanhas & Fichas Adicionais</h3>
+          <p>Crie mais mesas com seus amigos e mantenha um acervo de fichas completas personalizadas sem preocupação com limites baixos.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fa-solid fa-palette" aria-hidden="true"></i>
+          </div>
+          <h3>Espaço para o Canvas</h3>
+          <p>Espaço ampliado para desenhar tabuleiros táticos dinâmicos, montar cenários de combate e interagir em tempo real.</p>
+        </div>
+
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+          </div>
+          <h3>Acesso Antecipado</h3>
+          <p>Desbloqueie ferramentas antes de todo mundo e ajude a moldar o futuro do RPGDex enviando feedbacks prioritários.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FAQ (PERGUNTAS FREQUENTES) ── -->
+    <section class="faq-section">
+      <div class="section-title-wrapper">
+        <h2>Perguntas Frequentes</h2>
+        <p>Tire suas dúvidas sobre assinaturas, pagamentos e recursos do RPGDex</p>
+      </div>
+
+      <div class="faq-accordion">
+        <div
+          *ngFor="let item of faqItems; let i = index"
+          class="faq-item"
+          [class.active]="item.isOpen"
+        >
+          <button type="button" class="faq-question" (click)="toggleFaq(i)">
+            <span>{{ item.question }}</span>
+            <i class="fa-solid" [ngClass]="item.isOpen ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+          </button>
+          <div *ngIf="item.isOpen" class="faq-answer">
+            <p>{{ item.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>

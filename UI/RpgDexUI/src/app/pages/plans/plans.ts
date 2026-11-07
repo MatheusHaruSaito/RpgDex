@@ -5,6 +5,12 @@ import { PaymentService } from '../../services/payment-service';
 import { PlanResponse } from '../../../models/planResponse';
 import { PaymentInitiateResult } from '../../../models/paymentInitiateResult';
 
+interface FaqItem {
+  question: string;
+  answer: string;
+  isOpen?: boolean;
+}
+
 @Component({
   selector: 'app-plans',
   standalone: true,
@@ -21,6 +27,29 @@ export class PlansComponent implements OnInit {
   loadingPlanId: string | null = null;
   errorMessage: string | null = null;
 
+  faqItems: FaqItem[] = [
+    {
+      question: 'Como funciona o Acesso Antecipado (Early Access)?',
+      answer: 'Assinantes de planos com Acesso Antecipado recebem acesso exclusivo à Biblioteca de Arquivos (para armazenar mapas, tokens e PDFs) e testam em primeira mão novos recursos antes do lançamento público.',
+      isOpen: false,
+    },
+    {
+      question: 'Posso alterar ou cancelar meu plano a qualquer momento?',
+      answer: 'Sim! Não há fidelidade. Você pode realizar o cancelamento ou alterar seu plano quando quiser diretamente pelo painel do Mercado Pago ou nas configurações da sua conta.',
+      isOpen: false,
+    },
+    {
+      question: 'O que acontece com minhas fichas e campanhas se minha assinatura expirar?',
+      answer: 'Seu conteúdo já criado continuará seguro! No entanto, o limite para criação de novas fichas, campanhas e o acesso à Biblioteca será ajustado ao limite do plano gratuito até a renovação.',
+      isOpen: false,
+    },
+    {
+      question: 'Quais são as formas de pagamento aceitas?',
+      answer: 'Aceitamos PIX, cartões de crédito (com aprovação imediata) e boleto bancário através do checkout seguro do Mercado Pago.',
+      isOpen: false,
+    },
+  ];
+
   ngOnInit(): void {
     this.loadPlans();
   }
@@ -31,8 +60,8 @@ export class PlansComponent implements OnInit {
 
     this.planService.GetAllPlan().subscribe({
       next: (data) => {
-        this.plans = data.data ?? [];
-        console.log('Planos carregados:', this.plans);
+        const rawPlans = data.data ?? [];
+        this.plans = rawPlans.sort((a, b) => a.price - b.price);
         this.isLoadingPlans = false;
       },
       error: (err: unknown) => {
@@ -44,7 +73,7 @@ export class PlansComponent implements OnInit {
   }
 
   subscribeToPlan(planId: string): void {
-    if (!planId) return;
+    if (!planId || this.loadingPlanId !== null) return;
 
     this.loadingPlanId = planId;
     this.errorMessage = null;
@@ -64,5 +93,29 @@ export class PlansComponent implements OnInit {
         this.loadingPlanId = null;
       },
     });
+  }
+
+  toggleFaq(index: number): void {
+    this.faqItems[index].isOpen = !this.faqItems[index].isOpen;
+  }
+
+  formatStorage(mbValue?: number): string {
+    if (mbValue === undefined || mbValue === null) return '0 MB';
+    if (mbValue <= 0 || mbValue === -1) return 'Ilimitado';
+    if (mbValue >= 1024) {
+      const gb = mbValue / 1024;
+      return Number.isInteger(gb) ? `${gb} GB` : `${gb.toFixed(1)} GB`;
+    }
+    return `${mbValue} MB`;
+  }
+
+  formatDuration(days: number): string {
+    if (days === 30 || days === 31) return 'mês';
+    if (days === 365) return 'ano';
+    if (days % 7 === 0) {
+      const weeks = days / 7;
+      return weeks === 1 ? 'semana' : `${weeks} semanas`;
+    }
+    return `${days} dias`;
   }
 }

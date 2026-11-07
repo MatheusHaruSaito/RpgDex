@@ -1,11 +1,20 @@
-<div class="status-card success container">
-  <div class="status-icon">🎉</div>
-  <h1>Pagamento Concluído!</h1>
-  <p>A tua assinatura foi ativada com sucesso. Os recursos do teu novo plano já estão disponíveis no RPGDex.</p>
-  
-  <div *ngIf="paymentId" class="payment-ref">
-    Identificador da Transação: <span>{{ paymentId }}</span>
-  </div>
+<div>
+  <div class="status-card success container fade-in-content">
+    <div class="status-icon-badge success-badge">
+      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+    </div>
+    
+    <h1>Pagamento Concluído!</h1>
+    <p>Sua assinatura foi ativada com sucesso. Os recursos do seu novo plano já estão prontos para uso no RPGDex.</p>
+    
+    <div *ngIf="paymentId" class="payment-ref">
+      <i class="fa-solid fa-receipt" aria-hidden="true"></i>
+      Identificador da Transação: <span>{{ paymentId }}</span>
+    </div>
 
-  <a routerLink="/home" class="btn btn-primary">Voltar ao RPGDex</a>
+    <div class="action-buttons">
+      <a routerLink="/home" class="btn btn-primary">Voltar ao RPGDex</a>
+      <a routerLink="/personagens" class="btn btn-secondary">Ver Meus Personagens</a>
+    </div>
+  </div>
 </div>

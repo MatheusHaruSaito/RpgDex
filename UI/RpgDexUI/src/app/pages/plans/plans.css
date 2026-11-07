@@ -1,43 +1,76 @@
+.plans-wrapper {
+  min-height: calc(100vh - 80px);
+  background-color: var(--rpg-bg);
+  background-image: 
+    linear-gradient(var(--rpg-border-light) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rpg-border-light) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
 .plans-container {
-  padding-top: 40px;
-  padding-bottom: 40px;
+  padding-top: 50px;
+  padding-bottom: 80px;
 }
 
 .plans-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .plans-header h1 {
-  font-size: 2.3rem;
-  color: var(--rpg-purple);
-  margin-bottom: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #3C3489;
+  margin-bottom: 10px;
 }
 
 .plans-header p {
+  font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-muted);
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
+/* ── ESTADOS DE FEEDBACK ── */
 .error-banner {
   background: var(--rpg-error-bg);
   border: 1px solid var(--rpg-error-border);
   color: var(--rpg-error);
-  padding: 12px 20px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  text-align: center;
+  padding: 14px 20px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: 'Nunito', sans-serif;
 }
 
-.loading-state {
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.loading-state, .empty-state {
   text-align: center;
-  padding: 40px 0;
+  padding: 60px 0;
   color: var(--rpg-text-muted);
+  font-family: 'Nunito', sans-serif;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--rpg-text-faint);
+  margin-bottom: 12px;
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: 4px solid var(--rpg-border);
   border-top-color: var(--rpg-purple);
   border-radius: 50%;
@@ -49,60 +82,70 @@
   to { transform: rotate(360deg); }
 }
 
+/* ── GRID DE PLANOS ── */
 .plans-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 28px;
+  gap: 32px;
+  align-items: stretch;
 }
 
 .plan-card {
   background: var(--rpg-surface);
   border: 2px solid var(--rpg-border-light);
-  border-radius: 16px;
-  padding: 28px;
+  border-radius: 18px;
+  padding: 32px 28px;
   position: relative;
   display: flex;
   flex-direction: column;
   box-shadow: var(--rpg-shadow-card);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.2s ease,
-              box-shadow 0.2s ease;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .plan-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   border-color: var(--rpg-purple);
   box-shadow: var(--rpg-shadow-md);
 }
 
 .plan-card.featured {
-  border-color: var(--rpg-purple);
-  box-shadow: var(--rpg-shadow-md);
+  border: 2px solid var(--rpg-purple);
+  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
 }
 
 .early-badge {
   position: absolute;
-  top: -12px;
-  right: 20px;
+  top: -14px;
+  right: 24px;
   background: var(--rpg-purple);
-  color: var(--rpg-text-light);
-  font-size: 0.75rem;
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 12px;
+  color: #fff;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 20px;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.3);
 }
 
 .plan-title {
-  font-size: 1.4rem;
-  color: var(--rpg-text-dark);
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  color: var(--rpg-text-strong);
   margin: 0 0 8px 0;
 }
 
 .plan-description {
+  font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-body);
-  font-size: 0.9rem;
-  min-height: 40px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  min-height: 42px;
   margin-bottom: 20px;
 }
 
@@ -110,30 +153,28 @@
   margin-bottom: 24px;
   display: flex;
   align-items: baseline;
-  gap: 4px;
-}
-
-.plan-price .currency {
-  font-size: 1.1rem;
-  color: var(--rpg-purple);
-  font-weight: bold;
+  gap: 6px;
 }
 
 .plan-price .value {
+  font-family: 'Exo 2', sans-serif;
   font-size: 2.2rem;
   font-weight: 800;
-  color: var(--rpg-text-strong);
+  color: #3C3489;
 }
 
 .plan-price .duration {
+  font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-muted);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
+/* ── RECURSOS / LISTA ── */
 .plan-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 28px 0;
+  margin: 0 0 32px 0;
   flex-grow: 1;
 }
 
@@ -141,7 +182,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-body);
   font-size: 0.95rem;
 }
@@ -152,8 +194,179 @@
 
 .feature-icon {
   font-size: 1.1rem;
+  color: var(--rpg-purple);
+  width: 20px;
+  text-align: center;
+}
+
+.feature-icon.check-icon {
+  color: #27ae60;
 }
 
 .btn-checkout {
   width: 100%;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  padding: 14px;
+}
+
+.btn-checkout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.security-note {
+  margin-top: 48px;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  color: var(--rpg-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.security-note i {
+  color: var(--rpg-purple);
+}
+
+/* ── SEÇÃO DE BENEFÍCIOS DETALHADOS ── */
+.benefits-section {
+  margin-top: 80px;
+}
+
+.section-title-wrapper {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-title-wrapper h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #3C3489;
+  margin: 0 0 8px;
+}
+
+.section-title-wrapper p {
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+
+.benefit-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: var(--rpg-shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--rpg-purple);
+}
+
+.benefit-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--rpg-purple-tint, rgba(124, 58, 237, 0.1));
+  color: var(--rpg-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+
+.benefit-card h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--rpg-text-strong);
+  margin: 0 0 8px;
+}
+
+.benefit-card p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.92rem;
+  color: var(--rpg-text-body);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── FAQ (SANFONA / ACCORDION) ── */
+.faq-section {
+  margin-top: 80px;
+}
+
+.faq-accordion {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: var(--rpg-surface);
+  border: 1.5px solid var(--rpg-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.faq-item.active {
+  border-color: var(--rpg-purple);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 18px 24px;
+  background: transparent;
+  border: none;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--rpg-text-strong);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.faq-question i {
+  color: var(--rpg-purple);
+  font-size: 0.9rem;
+}
+
+.faq-answer {
+  padding: 0 24px 20px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--rpg-text-body);
+  line-height: 1.6;
+  border-top: 1px solid var(--rpg-border-light);
+  margin-top: 4px;
+  padding-top: 14px;
+}
+
+.faq-answer p {
+  margin: 0;
 }

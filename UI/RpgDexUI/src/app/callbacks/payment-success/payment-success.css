@@ -1,27 +1,45 @@
 .status-card {
-  max-width: 480px;
-  margin: 80px auto;
+  max-width: 500px;
+  width: 100%;
+  margin: 60px auto;
   background: var(--rpg-surface);
   border: 2px solid var(--rpg-border-light);
-  border-radius: 16px;
-  padding: 36px;
+  border-radius: 20px;
+  padding: 40px 32px;
   text-align: center;
-  box-shadow: var(--rpg-shadow-card);
+  box-shadow: var(--rpg-shadow-lg);
+  box-sizing: border-box;
 }
 
-.status-icon {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
+.status-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  font-size: 2.4rem;
+  margin-bottom: 20px;
+}
+
+.success-badge {
+  background: var(--rpg-success-bg, rgba(46, 204, 113, 0.15));
+  color: var(--rpg-success, #27ae60);
+  border: 2px solid var(--rpg-success, #27ae60);
 }
 
 .status-card h1 {
-  font-size: 1.8rem;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
   margin-bottom: 12px;
   color: var(--rpg-purple);
 }
 
 .status-card p {
+  font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-body);
+  font-size: 1rem;
   line-height: 1.6;
   margin-bottom: 24px;
 }
@@ -29,14 +47,32 @@
 .payment-ref {
   background: var(--rpg-surface-2);
   border: 1px solid var(--rpg-border-input);
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 0.85rem;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
   color: var(--rpg-text-muted);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .payment-ref span {
   color: var(--rpg-purple);
-  font-weight: bold;
+  font-weight: 800;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-buttons .btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  padding: 14px 24px;
+  width: 100%;
 }
