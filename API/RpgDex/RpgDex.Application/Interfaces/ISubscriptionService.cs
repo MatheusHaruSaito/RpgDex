@@ -12,6 +12,6 @@ namespace RpgDex.Application.Interfaces
         Task<Result<PlanLimitsDTO>> GetSubscritptionLimits(string userId);
         Result<PlanLimitsDTO> GetFreePlanLimits();
         Task<bool> HasEarlyAccess(string userId);
-        Task<IEnumerable<UserSubscriptionInfo>?> GetAllUserPlanInfo(string userId);
+        Task<Result<IEnumerable<UserSubscriptionInfo>>> GetAllUserPlanInfo(string userId);
     }
 }

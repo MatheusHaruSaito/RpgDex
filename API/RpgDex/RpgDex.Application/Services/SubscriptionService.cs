@@ -10,7 +10,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class SubscriptionService(ISubscriptionRepository subscriptionRepository, ISubscriptionQueries subscriptionQueries, ILogger<SubscriptionService> logger) : ISubscriptionService
+    public class SubscriptionService(ISubscriptionRepository subscriptionRepository, ISubscriptionQueries subscriptionQueries) : ISubscriptionService
     {
         private static readonly PlanLimitsDTO FreeLimits = new(
             HasEarlyAccess: false,
@@ -53,16 +53,20 @@ namespace RpgDex.Application.Services
             }
             return result.HasEarlyAccess;
         }
-        public async Task<IEnumerable<UserSubscriptionInfo>?> GetAllUserPlanInfo(string userId)
+        public async Task<Result<IEnumerable<UserSubscriptionInfo>>> GetAllUserPlanInfo(string userId)
         {
-            if (!Guid.TryParse(userId, out var userGuidId)) return null;
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<IEnumerable<UserSubscriptionInfo>>.Failure(Error.InvalidUserId);
             var result = await subscriptionQueries.GetUserCurrentSubscriptions(userGuidId);
 
             if (result is null || result.Count() == 0)
             {
-                return new List<UserSubscriptionInfo> { new UserSubscriptionInfo(Guid.Empty, "Free Plan", DateTime.MaxValue) };
+                var freePlanInfo = new List<UserSubscriptionInfo>
+                {
+                    new UserSubscriptionInfo(Guid.Empty, "Free Plan", DateTime.MaxValue)
+                };
+                return Result<IEnumerable<UserSubscriptionInfo>>.Success(freePlanInfo);
             }
-            return result;
+            return Result<IEnumerable<UserSubscriptionInfo>>.Success(result);
         }
 
         public Result<PlanLimitsDTO> GetFreePlanLimits()

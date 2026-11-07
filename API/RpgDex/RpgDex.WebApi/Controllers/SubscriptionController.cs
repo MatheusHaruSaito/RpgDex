@@ -35,13 +35,13 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> GetAllUserPlanInfo()
         {
             var result = await _subscriptionService.GetAllUserPlanInfo(currentUser);
-            return Ok(result);
+            return result.ToIActionResult();
         }
         [HttpGet("freePlanLimit")]
         public async Task<IActionResult> GetFreePlanLimit()
         {
             var result = _subscriptionService.GetFreePlanLimits();
-            return Ok(result);
+            return result.ToIActionResult();
         }
     }
 }
