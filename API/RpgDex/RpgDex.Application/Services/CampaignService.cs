@@ -152,6 +152,11 @@ namespace RpgDex.Application.Services
             }
 
             campaign.Update(request.Title, request.Description, request.MaxPlayers, request.NextSession);
+            if(!String.IsNullOrWhiteSpace(request.NewPassword))
+            {
+                var hashpassword = HashPassword(campaign, request.NewPassword);
+                campaign.SetPasswordHash(hashpassword);
+            }
 
             //Update Icon, if request provides another
             if (request.Icon is not null)

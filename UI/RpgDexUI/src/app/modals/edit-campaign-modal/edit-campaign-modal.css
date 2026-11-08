@@ -13,8 +13,12 @@
 }
 
 @keyframes backdropIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-card {
@@ -31,8 +35,14 @@
 }
 
 @keyframes modalIn {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ── ESTRUTURA DO MODAL ── */
@@ -52,10 +62,17 @@
   margin: 0;
 }
 
-.modal-title span { color: var(--rpg-purple); }
+.modal-title span {
+  color: var(--rpg-purple);
+}
 
-.modal-close { color: var(--rpg-border); }
-.modal-close:hover { background: var(--rpg-purple-tint); color: var(--rpg-purple); }
+.modal-close {
+  color: var(--rpg-border);
+}
+.modal-close:hover {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+}
 
 .modal-body {
   padding: 20px 28px;
@@ -66,8 +83,13 @@
   flex: 1;
 }
 
-.modal-body::-webkit-scrollbar { width: 4px; }
-.modal-body::-webkit-scrollbar-thumb { background: var(--rpg-border); border-radius: 4px; }
+.modal-body::-webkit-scrollbar {
+  width: 4px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--rpg-border);
+  border-radius: 4px;
+}
 
 .modal-footer {
   display: flex;
@@ -85,7 +107,9 @@
   gap: 6px;
 }
 
-.input-group--sm { flex: 0 0 140px; }
+.input-group--sm {
+  flex: 0 0 140px;
+}
 
 .input-label {
   font-family: 'Exo 2', sans-serif;
@@ -105,7 +129,9 @@
   letter-spacing: 0;
 }
 
-.required { color: var(--rpg-error-text); }
+.required {
+  color: var(--rpg-error-text);
+}
 
 .input-row {
   display: flex;
@@ -136,7 +162,9 @@
   font-size: 0.95rem;
   color: var(--rpg-text-strong);
   background: var(--rpg-surface-tint);
-  transition: border-color 0.2s, background 0.2s;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
   box-sizing: border-box;
 }
 
@@ -165,6 +193,32 @@
   display: block;
 }
 
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--rpg-text-faint);
+  cursor: pointer;
+  padding: 4px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--rpg-purple);
+}
+
+.input-field-wrapper input[type='password'],
+.input-field-wrapper input[type='text'] {
+  padding-right: 40px;
+}
+
 /* ── UPLOAD DE CAPA ── */
 .cover-upload {
   position: relative;
@@ -182,7 +236,9 @@
 }
 
 .cover-upload:hover,
-.cover-upload.has-preview:hover { border-color: var(--rpg-purple); }
+.cover-upload.has-preview:hover {
+  border-color: var(--rpg-purple);
+}
 
 .cover-preview-img {
   width: 100%;
@@ -211,7 +267,7 @@
 .cover-upload-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -224,12 +280,20 @@
   font-size: 0.88rem;
 }
 
-.cover-upload:hover .cover-upload-overlay { opacity: 1; }
+.cover-upload:hover .cover-upload-overlay {
+  opacity: 1;
+}
 
-.file-input-hidden { display: none; }
+.file-input-hidden {
+  display: none;
+}
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 520px) {
-  .input-row { flex-direction: column; }
-  .input-group--sm { flex: none; }
+  .input-row {
+    flex-direction: column;
+  }
+  .input-group--sm {
+    flex: none;
+  }
 }
