@@ -25,7 +25,17 @@ namespace RpgDex.Domain.Common
         public static readonly Error TokenGenerationFailed = new("AUTH_TOKEN_GENERATION_FAILED", "Could not generate a new token.");
         public static readonly Error UserCreationFailed = new("AUTH_USER_CREATION_FAILED", "An error occurred while creating the user.");
         public static readonly Error AccountLinkingFailed = new("AUTH_ACCOUNT_LINKING_FAILED", "An error occurred while linking the external account.");
-        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email.");
+        public static readonly Error EmailSendFailed = new("AUTH_EMAIL_SEND_FAILED", "An error occurred while sending the email."); 
+        public static readonly Error AccountAlreadyLinked = new("AUTH_ACCOUNT_ALREADY_LINKED", "The account is already linked to an user."); 
+        public static readonly Error UserAlreadyHasGoogle = new("AUTH_USER_ALREADY_HAS_GOOGLE", "The user already has a Google account linked.");
+        public static readonly Error GoogleNotLinked = new("AUTH_GOOGLE_NOT_LINKED", "The user does not have a Google account linked."); 
+        public static readonly Error CannotRemoveLastLogin = new("AUTH_CANNOT_REMOVE_LAST_LOGIN", "Cannot remove the last login method."); 
+        public static readonly Error DiscordLinkedToAnotherUser = new("AUTH_DISCORD_LINKED_TO_ANOTHER_USER", "The Discord account is already linked to another user."); 
+        public static readonly Error UserAlreadyHasDiscord = new("AUTH_USER_ALREADY_HAS_DISCORD", "The user already has a Discord account linked."); 
+        public static readonly Error DiscordNotLinked = new("AUTH_DISCORD_NOT_LINKED", "The user does not have a Discord account linked.");
+        public static readonly Error ExternalLoginFailed = new("AUTH_EXTERNAL_LOGIN_FAILED", "An error occurred while performing external login.");
+        public static readonly Error LinkTicketInvalid = new("LINK_TICKET_INVALID", "The link ticket is invalid or expired.");
+
     }
 
     public static class CampaignError
@@ -44,6 +54,9 @@ namespace RpgDex.Domain.Common
         public static readonly Error SaveMessageFailed = new("CAMPAIGN_SAVE_MESSAGE_FAILED", "Failed to save new chat message.");
         public static readonly Error IsNotActive = new("CAMPAIGN_IS_NOT_ACTIVE", "Campaign is not active.");
         public static readonly Error MaxPlayersReached = new("CAMPAIGN_MAX_PLAYERS_REACHED", "Failed to add player to campaign / max player capacity.");
+        public static readonly Error MessageNotFound = new("CAMPAIGN_CHAT_MESSAGE_NOT_FOUND", "Chat message not found");
+        public static readonly Error MessageForbidden = new("CAMPAIGN_CHAT_MESSAGE_FORBIDDEN", "Player is not the author of this message");
+        public static readonly Error FailedToRestoreMessage = new("CAMPAIGN_CHAT_MESSAGE_RESTORE", "Failed to Restore Message");
         public static readonly Error CharacterAlreadyInCampaign = new("CAMPAIGN_CHARACTER_ALREADY_IN", "Character already in campaign.");
         public static readonly Error CharacterAwaitingApproval = new("CAMPAIGN_CHARACTER_AWAITING_APPROVAL", "Character awaiting approval.");
         public static readonly Error CharacterNotInRequests = new("CAMPAIGN_CHARACTER_NOT_IN_REQUESTS", "Character is not in the request list.");
@@ -77,6 +90,14 @@ namespace RpgDex.Domain.Common
         public static readonly Error CreateFailed = new("USER_DOCUMENT_CREATE_FAILED", "Failed to create user document.");
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
+    }
+
+    public static class DiceLogError
+    {
+        public static readonly Error AddRollFailed = new("DICE_LOG_ADD_ROLL_FAILED", "Failed to save dice roll to the campaign log.");
+        public static readonly Error LogNotFound = new("DICE_LOG_NOT_FOUND", "Dice roll log not found for this campaign.");
+        public static readonly Error ExpressionRequired = new("DICE_LOG_EXPRESSION_REQUIRED", "Dice roll expression is required.");
+        public static readonly Error InvalidExpression = new("DICE_LOG_INVALID_EXPRESSION", "Invalid dice expression.");
     }
     public static class ValidationErrorCodes
     {

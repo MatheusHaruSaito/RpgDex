@@ -116,8 +116,10 @@ export class AuthService {
   }
 
   public Logout(): void {
-    this.cookieService.delete(this.JWT_Token, '/');
-    this.cookieService.delete(this.REFRESH_Token, '/');
+    for (const p of ['/', '/auth', '/Auth']) {
+      this.cookieService.delete(this.JWT_Token, p);
+      this.cookieService.delete(this.REFRESH_Token, p);
+    }
     this.currentUserSubject.next(null);
   }
 
@@ -146,11 +148,22 @@ export class AuthService {
       }),
     );
   }
+  public LinkGoogle(token: string): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(`${this.env}/link/google`, { token });
+  }
 
+  public UnlinkGoogle(): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(`${this.env}/unlink/google`);
+  }
   public DiscordSingUp(redirectUri?: string): void {
     window.location.href = `${this.env}/discord?redirectUri=${redirectUri}`;
   }
-
+  public startDiscordLink(): Observable<ApiResponse<{ url: string }>> {
+    return this.http.post<ApiResponse<{ url: string }>>(`${this.env}/link/discord/start`, {});
+  }
+  public unlinkDiscord(): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(`${this.env}/unlink/discord`);
+  }
   public StoreToken(accessToken: string, refreshToken: string): void {
     this.cookieService.set(this.JWT_Token, accessToken, { path: '/' });
     this.cookieService.set(this.REFRESH_Token, refreshToken, { path: '/' });

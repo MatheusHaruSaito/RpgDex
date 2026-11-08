@@ -17,7 +17,7 @@ namespace RpgDex.Application.Services
 {
     public class CharacterService(ICharacterRepository character, IUserRepository userRepository,
         IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator, ICanvasElementRepository canvasElementRepository, ICampaignRepository campaignRepository,
-        IValidator<UpdateCharacterRequest> updateCharacterRequestValidator) : ICharacterService
+        IValidator<UpdateCharacterRequest> updateCharacterRequestValidator, ICharacterQueries characterQueries) : ICharacterService
     {
         private readonly ICharacterRepository _character = character;
 
@@ -101,6 +101,18 @@ namespace RpgDex.Application.Services
             var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(),result.CharactersLenght);
             return  Result<GetAllCharacterResponse>.Success(response);
         }
+        public async Task<Result<GetAllCharacterResponse>> GetAllFromCampaign(string userId, Guid campaignId)
+        {
+            if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);
+
+            //Return all characters
+            var result = await characterQueries.GetPlayerCharactersFromCampaign(guidUserId,campaignId);
+            if (result is null) return Result<GetAllCharacterResponse>.Failure(CharacterError.NotFound);
+
+            var response = new GetAllCharacterResponse(result.Characters.Adapt<IEnumerable<CharacterResponse>>(), result.CharactersLenght);
+            return Result<GetAllCharacterResponse>.Success(response);
+        }
+
         public async Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId)
         {
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<GetAllCharacterResponse>.Failure(Error.InvalidUserId);

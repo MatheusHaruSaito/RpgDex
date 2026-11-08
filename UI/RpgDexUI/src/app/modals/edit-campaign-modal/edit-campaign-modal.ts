@@ -27,6 +27,8 @@ export class EditCampaignModalComponent implements OnChanges {
   editDescription = '';
   editMaxPlayers = 4;
   editNextSession = '';
+  editNewPassword = '';
+  showNewPassword = false;
   editIconFile: File | null = null;
   editCoverPreview = '';
   currentIconPath = '';
@@ -43,6 +45,8 @@ export class EditCampaignModalComponent implements OnChanges {
       this.editDescription = this.campaign.description ?? '';
       this.editMaxPlayers = this.campaign.maxPlayers;
       this.currentIconPath = this.campaign.iconPath ?? '';
+      this.editNewPassword = '';
+      this.showNewPassword = false;
       this.editNextSession = this.campaign.nextSession
         ? new Date(this.campaign.nextSession).toISOString().slice(0, 16)
         : '';
@@ -55,6 +59,13 @@ export class EditCampaignModalComponent implements OnChanges {
     this.isOpenChange.emit(false);
     this.editCoverPreview = '';
     this.editIconFile = null;
+    this.editNewPassword = '';
+    this.showNewPassword = false;
+    this.showCropperModal = false;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showNewPassword = !this.showNewPassword;
     this.errorMessage = '';
     this.showCropperModal = false;
   }
@@ -121,6 +132,7 @@ export class EditCampaignModalComponent implements OnChanges {
     form.append('description', this.editDescription ? this.editDescription.trim().substring(0, 1000) : '');
     form.append('maxPlayers', this.editMaxPlayers.toString());
     form.append('nextSession', this.editNextSession ? new Date(this.editNextSession).toISOString() : '');
+    form.append('newPassword', this.editNewPassword ? this.editNewPassword.trim() : '');
 
     if (this.editIconFile) {
       form.append('icon', this.editIconFile, this.editIconFile.name);

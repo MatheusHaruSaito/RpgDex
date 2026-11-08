@@ -1,16 +1,18 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
-using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace RpgDex.Application.Services
@@ -247,11 +249,63 @@ namespace RpgDex.Application.Services
 
             return await LogInAsync(user);
         }
+        public async Task<Result<bool>> LinkGoogleAccount(string userId,GoogleLoginRequest request)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null)
+            {
+                return Result<bool>.Failure(AuthError.UserNotFound);
+            }
+            var googleUser = await googleAuthService.ValidateTokenAsync(request.Token);
+            if (googleUser is null)
+                return Result<bool>.Failure(AuthError.InvalidToken);
+            
+            var owner = await userManager.FindByLoginAsync(GoogleProvider, googleUser.googleId);
+            if(owner is not null)
+            {
+                return Result<bool>.Failure(AuthError.AccountAlreadyLinked);
+            }
+
+            var logins = await userManager.GetLoginsAsync(user);
+            if (logins.Any(l => l.LoginProvider == GoogleProvider))
+                return Result<bool>.Failure(AuthError.UserAlreadyHasGoogle);
+
+            var info = new UserLoginInfo(GoogleProvider, googleUser.googleId, GoogleProvider);
+            var result = await userManager.AddLoginAsync(user, info);
+
+            return result.Succeeded
+                ? Result<bool>.Success(true)
+                : Result<bool>.Failure(AuthError.AccountLinkingFailed);
+        }
+        public async Task<Result<bool>> UnlinkGoogleAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return Result<bool>.Failure(AuthError.UserNotFound);
+
+            var logins = await userManager.GetLoginsAsync(user);
+            var google = logins.FirstOrDefault(l => l.LoginProvider == GoogleProvider);
+            if (google is null) return Result<bool>.Failure(AuthError.GoogleNotLinked);
+
+            var hasPassword = await userManager.HasPasswordAsync(user);
+            if (!hasPassword && logins.Count <= 1)
+                return Result<bool>.Failure(AuthError.CannotRemoveLastLogin);
+
+            var result = await userManager.RemoveLoginAsync(user, google.LoginProvider, google.ProviderKey);
+            return result.Succeeded
+                ? Result<bool>.Success(true)
+                : Result<bool>.Failure(AuthError.AccountLinkingFailed);
+        }
 
         public async Task<Result<RefreshTokenModel>> DiscordSignUp()
         {
             var discorduser = await discordAuthService.GetDiscordUserAsync();
             var userLoginInfo = new UserLoginInfo(DiscordProvider, discorduser.Id, DiscordProvider);
+
+            var userByDiscord = await userManager.FindByLoginAsync(DiscordProvider, discorduser.Id);
+            if(userByDiscord is not null)
+            {
+                return await LogInAsync(userByDiscord);
+            }
             //Verify if user exists in the database
             var userDb = await userManager.FindByEmailAsync(discorduser.Email);
             if (userDb is not null)
@@ -262,6 +316,7 @@ namespace RpgDex.Application.Services
                 {
                     //Account exists but is not linked with Discord, link the account
                     await userManager.AddLoginAsync(userDb, userLoginInfo);
+
                 }
                 //User Login with Discord already exists, proceed to login
                 return await LogInAsync(userDb);
@@ -282,11 +337,57 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
-            await userManager.AddLoginAsync(user, userLoginInfo);
-
+            var addLogin = await userManager.AddLoginAsync(user, userLoginInfo);
+            if (!addLogin.Succeeded)
+            {
+                await userManager.DeleteAsync(user);
+                return Result<RefreshTokenModel>.Failure(AuthError.ExternalLoginFailed);
+            }
 
 
             return await LogInAsync(user);
+        }
+        public async Task<Result<bool>> LinkDiscordAccount(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return Result<bool>.Failure(AuthError.UserNotFound);
+
+            var discordUser = await discordAuthService.GetDiscordUserAsync();
+
+            var owner = await userManager.FindByLoginAsync(DiscordProvider, discordUser.Id);
+            if (owner is not null)
+                return owner.Id == user.Id
+                    ? Result<bool>.Failure(AuthError.AccountAlreadyLinked)
+                    : Result<bool>.Failure(AuthError.DiscordLinkedToAnotherUser);
+
+            var logins = await userManager.GetLoginsAsync(user);
+            if (logins.Any(l => l.LoginProvider == DiscordProvider))
+                return Result<bool>.Failure(AuthError.UserAlreadyHasDiscord);
+
+            var result = await userManager.AddLoginAsync(user,
+                new UserLoginInfo(DiscordProvider, discordUser.Id, DiscordProvider));
+
+            return result.Succeeded
+                ? Result<bool>.Success(true)
+                : Result<bool>.Failure(AuthError.AccountLinkingFailed);
+        }
+        public async Task<Result<bool>> UnlinkDiscordAsync(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return Result<bool>.Failure(AuthError.UserNotFound);
+
+            var logins = await userManager.GetLoginsAsync(user);
+            var discord = logins.FirstOrDefault(l => l.LoginProvider == DiscordProvider);
+            if (discord is null) return Result<bool>.Failure(AuthError.DiscordNotLinked);
+
+            var hasPassword = await userManager.HasPasswordAsync(user);
+            if (!hasPassword && logins.Count <= 1)
+                return Result<bool>.Failure(AuthError.CannotRemoveLastLogin);
+
+            var result = await userManager.RemoveLoginAsync(user, discord.LoginProvider, discord.ProviderKey);
+            return result.Succeeded
+                ? Result<bool>.Success(true)
+                : Result<bool>.Failure(AuthError.AccountLinkingFailed);
         }
         private async Task<Result<string>> SendEmailVerificationAsync(string email)
         {

@@ -15,6 +15,15 @@
     "AUTH_USER_CREATION_FAILED": "Ocorreu um erro ao criar o utilizador.",
     "AUTH_ACCOUNT_LINKING_FAILED": "Ocorreu um erro ao associar a conta externa.",
     "AUTH_EMAIL_SEND_FAILED": "Ocorreu um erro ao enviar o e-mail.",
+    "AUTH_ACCOUNT_ALREADY_LINKED": "A conta já está ligada a um utilizador.",
+    "AUTH_USER_ALREADY_HAS_GOOGLE": "O utilizador já tem uma conta do Google ligada.",
+    "AUTH_GOOGLE_NOT_LINKED": "O utilizador não tem uma conta do Google ligada.",
+    "AUTH_CANNOT_REMOVE_LAST_LOGIN": "Não é possível remover o último método de início de sessão.",
+    "AUTH_DISCORD_LINKED_TO_ANOTHER_USER": "A conta do Discord já está ligada a outro utilizador.",
+    "AUTH_USER_ALREADY_HAS_DISCORD": "O utilizador já tem uma conta do Discord ligada.",
+    "AUTH_DISCORD_NOT_LINKED": "O utilizador não tem uma conta do Discord ligada.",
+    "AUTH_EXTERNAL_LOGIN_FAILED": "Ocorreu um erro ao realizar o login externo.",
+    "LINK_TICKET_INVALID": "O link ticket é inválido ou expirou.",
 
     "CAMPAIGN_NOT_FOUND": "Campanha não encontrada.",
     "CAMPAIGN_NOT_GAME_MASTER": "Apenas o Mestre da campanha pode realizar esta ação.",
@@ -30,6 +39,9 @@
     "CAMPAIGN_SAVE_MESSAGE_FAILED": "Falha ao guardar a nova mensagem do chat.",
     "CAMPAIGN_IS_NOT_ACTIVE": "A campanha não está ativa.",
     "CAMPAIGN_MAX_PLAYERS_REACHED": "A capacidade máxima de jogadores da campanha foi atingida.",
+    "CAMPAIGN_CHAT_MESSAGE_NOT_FOUND": "Mensagem do chat não encontrada",
+    "CAMPAIGN_CHAT_MESSAGE_FORBIDDEN": "O jogador não é o autor desta mensagem",
+    "CAMPAIGN_CHAT_MESSAGE_RESTORE": "Falha ao restaurar mensagem",
     "CAMPAIGN_CHARACTER_ALREADY_IN": "Este personagem já faz parte da campanha.",
     "CAMPAIGN_CHARACTER_AWAITING_APPROVAL": "O personagem está a aguardar aprovação do Mestre.",
     "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "O personagem não se encontra na lista de pedidos de adesão.",
@@ -54,6 +66,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
 
+    "DICE_LOG_ADD_ROLL_FAILED": "Falha ao guardar a rolagem no registo da campanha.",
+    "DICE_LOG_NOT_FOUND": "Registo de rolagens não encontrado para esta campanha.",
+    "DICE_LOG_EXPRESSION_REQUIRED": "A expressão da rolagem é obrigatória.",
+    "DICE_LOG_INVALID_EXPRESSION": "Expressão de dados inválida.",
+
     "VALIDATION_PASSWORD_EMPTY": "A senha não pode estar vazia.",
     "VALIDATION_PASSWORD_UPPERCASE": "A senha deve conter pelo menos uma letra maiúscula.",
     "VALIDATION_PASSWORD_LOWERCASE": "A senha deve conter pelo menos uma letra minúscula.",
@@ -66,9 +83,9 @@
     "CAMPAIGN_VALIDATION_ICON_REQUIRED": "A imagem da campanha é obrigatória.",
     "VALIDATION_INVALID_FILE_EXTENSION": "O ícone deve ser um ficheiro JPG, JPEG, PNG ou WEBP.",
     "VALIDATION_FILE_TOO_LARGE": "O tamanho do ficheiro do ícone excede o limite permitido.",
+
     "CANVAS_DUPLICATED_ITEMS": "O mesmo elemento foi enviado mais de uma vez",
     "CANVAS_INVALID_SCALE": "A escala deve estar entre 0,1 e 10",
-
     "CANVAS_ELEMENT_NOT_FOUND": "Elemento do canvas não encontrado.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Falha ao criar o elemento do canvas.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Falha ao atualizar o elemento do canvas.",

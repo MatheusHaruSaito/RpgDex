@@ -86,8 +86,10 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
             services.AddScoped<ICanvasHubService, CanvasHubService>();
-
-
+            services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
+            services.AddScoped<ICharacterQueries, CharacterQueries>();
+            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+            services.AddSingleton<ILinkTicketService, LinkTicketService>();
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

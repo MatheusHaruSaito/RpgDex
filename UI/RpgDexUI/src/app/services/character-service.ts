@@ -37,6 +37,12 @@ export class CharacterService {
     return this.http.get<ApiResponse<Character>>(`${this.env}/${Id}`);
   }
 
+  public GetAllFromCampaign(campaignId: string): Observable<ApiResponse<GetAllCharacterResponse>> {
+    const params: Record<string, string> = { campaignId };
+    return this.http.get<ApiResponse<GetAllCharacterResponse>>(`${this.env}/All/campaign`, {
+      params,
+    });
+  }
   public Delete(Id: String): Observable<ApiResponse<Character>> {
     return this.http.put<ApiResponse<Character>>(`${this.env}/SetActiveState/${Id}`, '');
   }

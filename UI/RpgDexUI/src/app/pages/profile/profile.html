@@ -1,9 +1,7 @@
 <div class="profile-wrapper">
   <div class="profile-container">
-
     <!-- 1. CARD DE PERFIL -->
     <div class="profile-card">
-
       <!-- SKELETON: USER INFO -->
       @if (isLoadingUser) {
         <header class="profile-header">
@@ -11,7 +9,7 @@
             <div class="avatar-wrapper">
               <app-skeleton width="120px" height="120px" radius="50%"></app-skeleton>
             </div>
-            <div class="user-text" style="gap: 8px;">
+            <div class="user-text" style="gap: 8px">
               <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
               <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
               <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
@@ -64,7 +62,9 @@
                 class="icon-btn"
                 (click)="toggleTheme()"
                 [title]="isDarkMode ? 'Modo Claro' : 'Modo Escuro'"
-                [attr.aria-label]="isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'"
+                [attr.aria-label]="
+                  isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'
+                "
               >
                 <i class="fa-solid" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
               </button>
@@ -130,7 +130,7 @@
               <div class="campaign-card" [routerLink]="['/campanha', camp.id]">
                 @if (camp.iconPath) {
                   <div class="card-image-placeholder campaign-avatar--image">
-                    <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title">
+                    <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title" />
                   </div>
                 } @else {
                   <div class="card-image-placeholder">
@@ -140,7 +140,9 @@
 
                 <div class="card-info">
                   <span class="camp-name">{{ camp.title }}</span>
-                  <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{ camp.role }}</span>
+                  <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{
+                    camp.role
+                  }}</span>
                 </div>
               </div>
             }
@@ -196,7 +198,7 @@
               <div class="campaign-card character-card" routerLink="/personagens">
                 @if (char.iconPath) {
                   <div class="card-image-placeholder character-avatar character-avatar--image">
-                    <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name">
+                    <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name" />
                   </div>
                 } @else {
                   <div class="card-image-placeholder character-avatar">
@@ -214,7 +216,6 @@
         }
       </section>
     </div>
-
   </div>
 </div>
 
@@ -222,6 +223,8 @@
   [isOpen]="isSettingsModalOpen"
   [user]="user"
   [authOptions]="authOptions"
+  [feedBackMessageInput]="feedBackMessage"
   (closeModal)="isSettingsModalOpen = false"
-  (twoFactorUpdated)="onTwoFactorUpdated($event)">
+  (twoFactorUpdated)="onTwoFactorUpdated($event)"
+>
 </app-settings-modal>

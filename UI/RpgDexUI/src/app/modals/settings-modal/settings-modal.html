@@ -27,20 +27,87 @@
             <!-- Senha Local -->
             @if (authOptions.hasPassword) {
               <div class="auth-method-item">
-                <span><i class="fa-solid fa-key"></i> Senha Local</span>
+                <div class="method-info">
+                  <i class="fa-solid fa-key"></i>
+                  <span>Senha Local</span>
+                </div>
                 <span class="status-badge active">Cadastrada</span>
               </div>
             }
 
-            <!-- Provedores Externos -->
-            @for (provider of authOptions.externalProviders; track provider) {
-              <div class="auth-method-item">
-                <span>
-                  <i class="fa-brands" [ngClass]="'fa-' + provider.toLowerCase()"></i>
-                  {{ provider }}
-                </span>
-                <span class="status-badge active">Conectado</span>
+            <!-- Google -->
+            <div class="auth-method-item">
+              <div class="method-info">
+                <i class="fa-brands fa-google"></i>
+                <span>Google</span>
               </div>
+              <div class="method-actions">
+                @if (isGoogleLinked) {
+                  <span class="status-badge active">Conectado</span>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="unlinkGoogleAccount()"
+                    [disabled]="isLinkingGoogle || isUnlinkingGoogle || !canUnlink"
+                    title="Desvincular conta do Google"
+                  >
+                    <i class="fa-solid" [ngClass]="isUnlinkingGoogle ? 'fa-spinner fa-spin' : 'fa-link-slash'"></i>
+                    Desvincular
+                  </button>
+                } @else {
+                  <span class="status-badge">Não Conectado</span>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    (click)="linkGoogleAccount()"
+                    [disabled]="isLinkingGoogle || isUnlinkingGoogle"
+                  >
+                    <i class="fa-solid" [ngClass]="isLinkingGoogle ? 'fa-spinner fa-spin' : 'fa-link'"></i>
+                    Vincular
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Discord -->
+            <div class="auth-method-item">
+              <div class="method-info">
+                <i class="fa-brands fa-discord"></i>
+                <span>Discord</span>
+              </div>
+              <div class="method-actions">
+                @if (isDiscordLinked) {
+                  <span class="status-badge active">Conectado</span>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="unlinkDiscordAccount()"
+                    [disabled]="isLinkingDiscord || isUnlinkingDiscord || !canUnlink"
+                    title="Desvincular conta do Discord"
+                  >
+                    <i class="fa-solid" [ngClass]="isUnlinkingDiscord ? 'fa-spinner fa-spin' : 'fa-link-slash'"></i>
+                    Desvincular
+                  </button>
+                } @else {
+                  <span class="status-badge">Não Conectado</span>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    (click)="linkDiscordAccount()"
+                    [disabled]="isLinkingDiscord || isUnlinkingDiscord"
+                  >
+                    <i class="fa-solid" [ngClass]="isLinkingDiscord ? 'fa-spinner fa-spin' : 'fa-link'"></i>
+                    Vincular
+                  </button>
+                }
+              </div>
+            </div>
+
+            @if (!canUnlink) {
+              <p class="security-warning">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Você deve manter ao menos um método de login (senha local ou conta vinculada) para não perder o acesso à sua conta.
+              </p>
             }
           </div>
 

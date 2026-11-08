@@ -47,7 +47,28 @@
           <textarea class="input-textarea" [(ngModel)]="editDescription" rows="3" maxlength="1000"></textarea>
           <small class="char-counter">{{ editDescription.length }}/1000</small>
         </div>
-
+        
+        <div class="input-group">
+        <label class="input-label">Nova Senha de Acesso <span class="input-optional">(deixe em branco para não alterar)</span></label>
+        <div class="input-field-wrapper">
+          <i class="fa fa-key icon-field"></i>
+          <input
+            [type]="showNewPassword ? 'text' : 'password'"
+            [(ngModel)]="editNewPassword"
+            placeholder="Nova senha da campanha"
+            maxlength="50"
+          >
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showNewPassword ? 'Ocultar senha' : 'Exibir senha'"
+          >
+            <i class="fa" [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+          </button>
+        </div>
+      </div>
+        
         <!-- Próxima sessão + Máx jogadores -->
         <div class="input-row">
           <div class="input-group">

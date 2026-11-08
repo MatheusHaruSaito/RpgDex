@@ -1,0 +1,6 @@
+name = "rpgdex"
+compatibility_date = "2026-10-29"
+
+[assets]
+directory = "./dist/RpgDexUI/browser"
+not_found_handling = "single-page-application"

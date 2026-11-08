@@ -17,14 +17,19 @@ export const tokenInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   let currentUser = authService.currentUserValue;
 
-  if (req.url.includes('/Auth/RefreshToken')) {
+  const AUTH_ROUTES =
+    /\/Auth\/(Login|RefreshToken|Google\/SignUp|discord|ValidateTwoFactor|SendTwoFactorAuthEmailRequest|ValidateEmail|ResendEmailVerification)(\/|\?|$)/i;
+
+  if (AUTH_ROUTES.test(req.url)) {
     return next(req);
   }
 
-  let authReq = req;
-  if (currentUser?.accessToken) {
-    authReq = addToken(req, currentUser.accessToken);
-  }
+  // let authReq = req;
+  // if (currentUser?.accessToken) {
+  //   authReq = addToken(req, currentUser.accessToken);
+  // }
+  const token = authService.Token;
+  const authReq = token ? addToken(req, token) : req;
 
   return next(authReq).pipe(
     catchError((error) => {
@@ -65,6 +70,7 @@ function handle401Error(req: HttpRequest<any>, next: HttpHandlerFn, authService:
       }),
 
       catchError((err) => {
+        console.error('Error refreshing token:', err);
         isRefreshing = false;
         authService.Logout();
         return throwError(() => err);
