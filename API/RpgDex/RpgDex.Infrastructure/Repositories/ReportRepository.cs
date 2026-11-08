@@ -18,11 +18,11 @@ namespace RpgDex.Infrastructure.Repositories
             _entitie = _mongoDbContext.Reports;
         }
 
-        public async Task<IEnumerable<Report>> GetAllAsync(int page = 1, int pageSize = 5)
+        public async Task<IEnumerable<Report>> GetAllAsync(int page = 1, int pageSize = 5, bool isActive = true)
         {
             page = page< 1 ? 1 : page;
             pageSize = pageSize < 1 ? 1 : pageSize;
-            var request = await _entitie.Find(r => true)
+            var request = await _entitie.Find(r => r.IsActive == isActive)
                 .Skip((page -1) * pageSize)
                 .Limit(pageSize)
                 .ToListAsync();

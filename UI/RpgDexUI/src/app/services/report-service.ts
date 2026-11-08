@@ -19,8 +19,17 @@ export class ReportService {
     return this.http.post<ApiResponse<ReportResponse>>(this.baseUrl, request);
   }
 
-  public GetAll(page: number, pageSize: number): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/All/${page}/${pageSize}`);
+  public GetAll(
+    page: number,
+    pageSize: number,
+    isActive: boolean,
+  ): Observable<ApiResponse<GetAllReportResponse>> {
+    const params: Record<string, string | boolean> = {
+      page: page.toString(),
+      pageSize: pageSize.toString(),
+      isActive: isActive,
+    };
+    return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/All`, { params });
   }
 
   public GetById(id: string): Observable<ApiResponse<ReportDetail>> {
@@ -32,6 +41,9 @@ export class ReportService {
   }
 
   public PunishUser(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/PunishUser`, request);
+    return this.http.patch<ApiResponse<GetAllReportResponse>>(
+      `${this.baseUrl}/PunishUser`,
+      request,
+    );
   }
 }

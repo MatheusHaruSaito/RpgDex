@@ -52,9 +52,9 @@ namespace RpgDex.Application.Services
             return Result<ReportResponse>.Success(response.Adapt<ReportResponse>());
         }
 
-        public async Task<Result<GetAllReportResponse>> GetAll(int page, int pageSize)
+        public async Task<Result<GetAllReportResponse>> GetAll(int page, int pageSize,bool isActive)
         {
-            var reports = await reportRepository.GetAllAsync(page, pageSize);
+            var reports = await reportRepository.GetAllAsync(page, pageSize, isActive);
             if (reports is null)
             {
                 return Result<GetAllReportResponse>.Failure(ReportError.NotFound);

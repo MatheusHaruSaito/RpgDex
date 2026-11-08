@@ -23,10 +23,10 @@ namespace RpgDex.WebApi.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        [HttpGet("All/{page}/{pageSize}")]
-        public async Task<IActionResult> GetAll(int page,int pageSize)
+        [HttpGet("All")]
+        public async Task<IActionResult> GetAll([FromQuery] int page, [FromQuery] int pageSize, [FromQuery] bool isActive=true)
         {
-            var result = await reportService.GetAll(page,pageSize);
+            var result = await reportService.GetAll(page,pageSize,isActive);
             return result.ToIActionResult();
         }
 
