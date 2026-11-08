@@ -9,11 +9,19 @@ import { Character } from '../../../models/character';
 import { Campaign } from '../../../models/campaign';
 import { CreateJoinCampaignModalComponent } from '../../modals/create-join-campaign-modal/create-join-campaign-modal';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ReportModalComponent } from '../../modals/report-modal/report-modal';
+import { ReportType } from '../../../models/reportType';
 
 @Component({
   selector: 'app-campaigns',
   standalone: true,
-  imports: [CommonModule, RouterModule, CreateJoinCampaignModalComponent, SkeletonComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    CreateJoinCampaignModalComponent,
+    SkeletonComponent,
+    ReportModalComponent,
+  ],
   templateUrl: './campaigns.html',
   styleUrls: ['./campaigns.css'],
 })
@@ -44,6 +52,12 @@ export class CampaignsComponent implements OnInit {
   isModalOpen = false;
   activeModalTab: 'create' | 'join' = 'create';
 
+  // ── ESTADO DO MODAL DE DENÚNCIA ──
+  isReportModalOpen = false;
+  reportTargetId = '';
+  reportTargetType: ReportType = ReportType.CampaignReport;
+  reportTargetName = '';
+
   ngOnInit(): void {
     this.currentUserId = this.authService.getLoggedUserId() ?? '';
     if (this.currentUserId) {
@@ -53,6 +67,19 @@ export class CampaignsComponent implements OnInit {
       this.isLoadingCampaigns = false;
       this.isLoadingCharacters = false;
     }
+  }
+
+  // ── MÉTODOS DE DENÚNCIA ──
+  openReportModal(event: Event, targetId: string, type: ReportType, name: string): void {
+    event.stopPropagation();
+    this.reportTargetId = targetId;
+    this.reportTargetType = type;
+    this.reportTargetName = name;
+    this.isReportModalOpen = true;
+  }
+
+  onReportModalClosed(success: boolean): void {
+    this.isReportModalOpen = false;
   }
 
   public showMoreCampaigns(): void {

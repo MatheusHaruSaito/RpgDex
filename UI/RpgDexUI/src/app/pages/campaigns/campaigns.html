@@ -47,6 +47,17 @@
             <div class="cmp-card__cover-fallback" *ngIf="!camp.iconPath">
               <i class="fa fa-map-location-dot"></i>
             </div>
+            
+            <button
+              *ngIf="camp.gameMasterId !== currentUserId"
+              type="button"
+              class="btn-icon danger cmp-card__report-btn"
+              (click)="openReportModal($event, camp.id, 1, camp.title)"
+              title="Denunciar esta campanha"
+            >
+              <i class="fa-solid fa-flag"></i>
+            </button>
+
             <div class="cmp-card__status" [class.cmp-card__status--inactive]="!camp.isActive">
               {{ camp.isActive ? 'Ativa' : 'Inativa' }}
             </div>
@@ -156,7 +167,7 @@
   </div>
 </div>
 
-<!-- Modal isolado reutilizável -->
+<!-- Modal isolado reutilizável de criar/entrar em campanha -->
 <app-create-join-campaign-modal
   [(isOpen)]="isModalOpen"
   [activeTab]="activeModalTab"
@@ -164,3 +175,12 @@
   (onJoin)="handleJoinCampaign($event)"
 >
 </app-create-join-campaign-modal>
+
+<!-- Modal de Denúncia -->
+<app-report-modal
+  *ngIf="isReportModalOpen"
+  [targetId]="reportTargetId"
+  [reportType]="reportTargetType"
+  [targetName]="reportTargetName"
+  (closed)="onReportModalClosed($event)"
+></app-report-modal>

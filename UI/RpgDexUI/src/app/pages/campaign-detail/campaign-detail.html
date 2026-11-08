@@ -22,6 +22,16 @@
     <div class="cd-topbar">
       <div class="cd-topbar-actions">
         
+        <!-- Botão para denunciar a campanha -->
+        <button
+          *ngIf="!isGameMaster"
+          class="btn btn-outline-danger"
+          (click)="openReportModal(campaign.id, 1, campaign.title)"
+          title="Denunciar esta campanha"
+        >
+          <i class="fa-solid fa-flag"></i> Denunciar Campanha
+        </button>
+
         <app-info-hint
           [useContent]="true"
           title="Código de Acesso"
@@ -309,19 +319,33 @@
                     </div>
                   </div>
                 </div>
-                <button
-                  class="char-card-toggle-btn"
-                  type="button"
-                  [attr.aria-expanded]="expandedCharacterId === char.id"
-                >
-                  <span>{{ expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha' }}</span>
-                  <i
-                    class="fa"
-                    [ngClass]="
-                      expandedCharacterId === char.id ? 'fa-chevron-up' : 'fa-chevron-down'
-                    "
-                  ></i>
-                </button>
+
+                <div class="cd-request-actions" (click)="$event.stopPropagation()">
+                  <button
+                    *ngIf="char.userId !== currentUserId"
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="openReportModal(char.id, 2, char.name)"
+                    title="Denunciar Personagem"
+                  >
+                    <i class="fa-solid fa-flag"></i>
+                  </button>
+
+                  <button
+                    class="char-card-toggle-btn"
+                    type="button"
+                    (click)="toggleCharacter(char.id)"
+                    [attr.aria-expanded]="expandedCharacterId === char.id"
+                  >
+                    <span>{{ expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha' }}</span>
+                    <i
+                      class="fa"
+                      [ngClass]="
+                        expandedCharacterId === char.id ? 'fa-chevron-up' : 'fa-chevron-down'
+                      "
+                    ></i>
+                  </button>
+                </div>
               </div>
 
               <!-- Ficha Detalhada do Personagem Expansível -->
@@ -365,6 +389,16 @@
                   >você</span
                 >
               </div>
+
+              <button
+                *ngIf="campaign.gameMasterId !== currentUserId"
+                type="button"
+                class="btn btn-outline-danger btn-sm"
+                (click)="openReportModal(campaign.gameMasterId, 0, getUser(campaign.gameMasterId)?.displayName || 'Mestre')"
+                title="Denunciar Mestre"
+              >
+                <i class="fa-solid fa-flag"></i>
+              </button>
             </div>
 
             <!-- Jogadores Inscritos -->
@@ -374,8 +408,7 @@
                   <div
                     class="cd-player-avatar"
                     [style.background-image]="
-                      getUser(playerId)?.iconPath ? 'url(' + getUser(playerId)?.iconPath + ')' : ''
-                    "
+                      getUser(playerId)?.iconPath ? 'url(' + getUser(playerId)?.iconPath + ')' : ''"
                   >
                     <i class="fa fa-user" *ngIf="!getUser(playerId)?.iconPath"></i>
                   </div>
@@ -388,13 +421,26 @@
                   <span class="cd-player-you" *ngIf="playerId === currentUserId">você</span>
                 </div>
 
-                <button
-                  *ngIf="isGameMaster && playerId !== currentUserId"
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="removePlayer(playerId)"
-                >
-                  <i class="fa fa-user-minus"></i>
-                </button>
+                <div class="cd-request-actions">
+                  <button
+                    *ngIf="playerId !== currentUserId"
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="openReportModal(playerId, 0, getUser(playerId)?.displayName || 'Jogador')"
+                    title="Denunciar Jogador"
+                  >
+                    <i class="fa-solid fa-flag"></i>
+                  </button>
+
+                  <button
+                    *ngIf="isGameMaster && playerId !== currentUserId"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="removePlayer(playerId)"
+                    title="Remover Jogador da Mesa"
+                  >
+                    <i class="fa fa-user-minus"></i>
+                  </button>
+                </div>
               </div>
             </ng-container>
           </div>
@@ -443,6 +489,15 @@
   (onSave)="saveCampaignChanges($event)"
 >
 </app-edit-campaign-modal>
+
+<!-- Modal de Denúncia -->
+<app-report-modal
+  *ngIf="isReportModalOpen"
+  [targetId]="reportTargetId"
+  [reportType]="reportTargetType"
+  [targetName]="reportTargetName"
+  (closed)="onReportModalClosed($event)"
+></app-report-modal>
 
 <!-- Chat da Campanha incorporado -->
 <app-campaign-chat-component [campaignId]="campaignId"></app-campaign-chat-component>

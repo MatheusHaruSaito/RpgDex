@@ -12,21 +12,26 @@ import { ReportDetail } from '../../models/reportDetailBase';
   providedIn: 'root',
 })
 export class ReportService {
-  env = environment.RpxDexApi;
-  http = inject(HttpClient);
+  private baseUrl = `${environment.RpxDexApi}/Report`;
+  private http = inject(HttpClient);
+
   public CreateReport(request: CreateReportRequest): Observable<ApiResponse<ReportResponse>> {
-    return this.http.post<ApiResponse<ReportResponse>>(this.env, request);
+    return this.http.post<ApiResponse<ReportResponse>>(this.baseUrl, request);
   }
+
   public GetAll(page: number, pageSize: number): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.env}/All/${page}/${pageSize}`);
+    return this.http.get<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/All/${page}/${pageSize}`);
   }
+
   public GetById(id: string): Observable<ApiResponse<ReportDetail>> {
-    return this.http.get<ApiResponse<ReportDetail>>(`${this.env}/${id}`);
+    return this.http.get<ApiResponse<ReportDetail>>(`${this.baseUrl}/${id}`);
   }
+
   public Close(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}/Close`, request);
+    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/Close`, request);
   }
+
   public PunishUser(request: { reportId: string }): Observable<ApiResponse<GetAllReportResponse>> {
-    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.env}/PunishUser`, request);
+    return this.http.patch<ApiResponse<GetAllReportResponse>>(`${this.baseUrl}/PunishUser`, request);
   }
 }
