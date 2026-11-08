@@ -36,9 +36,9 @@ export class EditProfileComponent implements OnInit {
 
   avatarPreviewUrl: string = '';
   selectedFile: File | null = null;
-  
+
   isInitialLoading = true; // Estado de carregamento dos dados iniciais do utilizador
-  isLoading = false;        // Estado de envio/guardar formulário
+  isLoading = false; // Estado de envio/guardar formulário
   errorMessage = '';
   successMessage = '';
 

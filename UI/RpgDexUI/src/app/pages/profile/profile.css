@@ -126,7 +126,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
 }
 
 .icon-btn:hover {
@@ -164,7 +166,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.2s ease, gap 0.2s ease;
+  transition:
+    color 0.2s ease,
+    gap 0.2s ease;
   white-space: nowrap;
   margin-top: 4px;
 }
@@ -186,7 +190,10 @@
   border-radius: 18px;
   border: 2px solid var(--rpg-border-light);
   overflow: hidden;
-  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
   cursor: pointer;
   box-sizing: border-box;
 }
@@ -271,7 +278,9 @@
   color: var(--rpg-text-faint);
   gap: 10px;
   min-height: 220px;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
 }
 
 .add-card:hover {

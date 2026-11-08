@@ -116,6 +116,45 @@
   color: var(--rpg-purple);
 }
 
+.method-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.method-info i {
+  color: var(--rpg-purple);
+  font-size: 1.1rem;
+}
+
+.method-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.security-warning {
+  margin-top: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.8rem;
+  color: var(--rpg-text-muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.security-warning i {
+  color: #f39c12;
+  margin-top: 2px;
+}
+
 .status-badge {
   padding: 3px 10px;
   border-radius: 12px;

@@ -16,7 +16,11 @@ namespace RpgDex.Application.Interfaces
         Task<Result<string>> SendTwoFactorAuthEmailRequest(SendTwoFactEmailrequest request);
         Task<Result<AuthOptionsResponse>> GetUserAuthOptions(string userId);
         Task<Result<RefreshTokenModel>> DiscordSignUp();
+        Task<Result<bool>> LinkDiscordAccount(string userId);
+        Task<Result<bool>> UnlinkDiscordAsync(string userId);
         Task<Result<RefreshTokenModel>> GoogleSignUp(GoogleLoginRequest request);
+        Task<Result<bool>> LinkGoogleAccount(string userId, GoogleLoginRequest request);
+        Task<Result<bool>> UnlinkGoogleAsync(string userId);
         Task<Result<RefreshTokenModel>> RefreshTokenAsync(RefreshTokenModel refreshToken);
         Task<Result<string>> ValidateEmailByTokenAsync(ValidateEmailByTokenRequest request);
         Task<Result<string>> ResendEmailVerificationAsync(ResendEmailVerificationRequest request);
