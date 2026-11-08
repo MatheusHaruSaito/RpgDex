@@ -5,50 +5,50 @@ using RpgDex.Infrastructure.Settings;
 
 namespace RpgDex.Infrastructure.Services
 {
-    public class EmailService : IEmailService
+  public class EmailService : IEmailService
+  {
+    private readonly EmailSettings _settings;
+    private readonly ApiSettings _apiSettings;
+
+    private readonly IResend _resend;
+    public EmailService(IOptions<EmailSettings> options, IOptions<ApiSettings> apiSettings, IResend resend)
     {
-        private readonly EmailSettings _settings;
-        private readonly ApiSettings _apiSettings;
+      _settings = options.Value;
+      _apiSettings = apiSettings.Value;
+      _resend = resend;
+    }
 
-        private readonly IResend _resend;
-        public EmailService(IOptions<EmailSettings> options, IOptions<ApiSettings> apiSettings, IResend resend)
+    public async Task<(bool isEmailSent, string message)> SendEmailAsync(string receiverEmail, string receiverName, string subject, string htmlBody)
+    {
+      //Resend
+      try
+      {
+        var message = new EmailMessage();
+        message.From = $"RpgDex <{_settings.Username}>";
+        message.To.Add(receiverEmail);
+        message.Subject = subject;
+        message.HtmlBody = htmlBody;
+
+        var response = await _resend.EmailSendAsync(message);
+
+        if (response.Success)
         {
-            _settings = options.Value;
-            _apiSettings = apiSettings.Value;
-            _resend = resend;
+          return (true, "Email sent successfully.");
         }
 
-        public async Task<(bool isEmailSent, string message)> SendEmailAsync(string receiverEmail, string receiverName, string subject, string htmlBody)
-        {
-            //Resend
-            try
-            {
-                var message = new EmailMessage();
-                message.From = $"RpgDex <{_settings.Username}>";
-                message.To.Add(receiverEmail);
-                message.Subject = subject;
-                message.HtmlBody = htmlBody;
+        return (false, "Error sending email via Resend.");
+      }
+      catch (Exception ex)
+      {
+        return (false, "Error sending email: " + ex.Message);
+      }
 
-                var response = await _resend.EmailSendAsync(message);
+    }
 
-                if (response.Success)
-                {
-                    return (true, "Email sent successfully.");
-                }
+    public string GenerateEmailVerificationHTMLTemplate(string verificationLink, string userName)
+    {
 
-                return (false, "Error sending email via Resend.");
-            }
-            catch (Exception ex)
-            {
-                return (false, "Error sending email: " + ex.Message);
-            }
-
-        }
-
-        public string GenerateEmailVerificationHTMLTemplate(string verificationLink, string userName)
-        {
-            
-            return $@"<!DOCTYPE html>
+      return $@"<!DOCTYPE html>
 <html lang=""pt-BR"">
 <head>
   <meta charset=""UTF-8"">
@@ -157,11 +157,11 @@ namespace RpgDex.Infrastructure.Services
 
 </body>
 </html>";
-        }
+    }
 
-public string GenerateTwoFactorEmailHTMLTemplate(string twoFactorCode, string userName)
-{
-    return $@"<!DOCTYPE html>
+    public string GenerateTwoFactorEmailHTMLTemplate(string twoFactorCode, string userName)
+    {
+      return $@"<!DOCTYPE html>
 <html lang=""pt-BR"">
 <head>
   <meta charset=""UTF-8"">
@@ -253,25 +253,107 @@ public string GenerateTwoFactorEmailHTMLTemplate(string twoFactorCode, string us
 
 </body>
 </html>";
-}
-
-        public string GenerateEmailUserPunishmentHTMLTemplate(DateTimeOffset lockoutEnd, string userName)
-        {
-            return $@"<!DOCTYPE html>
-                <html lang=""pt-BR"">
-                <head>
-                  <meta charset=""UTF-8"">
-                  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-                  <title>Código de Segurança 2FA — RPGDex</title>
-                </head>
-                <body style=""margin:0;padding:0;background-color:#f4f2fb;font-family:'Segoe UI',Arial,sans-serif;"">
-                    <p style=""margin:0 0 24px;font-size:1rem;color:#555;
-                            text-align:center;line-height:1.6;"">
-                    Olá, <strong style=""color:#7c3aed;"">{userName}</strong>!<br>
-                    Usuario Banido Até: {lockoutEnd.UtcDateTime.ToString("dd/MM/yyyy HH:mm:ss")} UTC
-                    </p>
-                </body>
-                </html>";
-        }
     }
+
+    public string GenerateEmailUserPunishmentHTMLTemplate(DateTimeOffset lockoutEnd, string userName)
+    {
+      var formattedDate = lockoutEnd.UtcDateTime.ToString("dd/MM/yyyy 'às' HH:mm:ss") + " UTC";
+
+      return $@"<!DOCTYPE html>
+<html lang=""pt-BR"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>Notificação de Penalidade — RPGDex</title>
+</head>
+<body style=""margin:0;padding:0;background-color:#f4f2fb;font-family:'Segoe UI',Arial,sans-serif;"">
+
+  <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background-color:#f4f2fb;padding:40px 20px;"">
+    <tr>
+      <td align=""center"">
+        <table width=""100%"" cellpadding=""0"" cellspacing=""0""
+               style=""max-width:520px;background:#ffffff;border-radius:20px;
+                       box-shadow:0 8px 40px rgba(100,60,200,0.12);overflow:hidden;"">
+
+          <!-- Header gradiente -->
+          <tr>
+            <td style=""background:linear-gradient(135deg,#7c3aed,#a855f7);
+                        padding:40px 40px 32px;text-align:center;"">
+              <p style=""margin:0;font-family:'Segoe UI',Arial,sans-serif;
+                         font-weight:900;font-size:2rem;color:#ffffff;
+                         letter-spacing:-1px;"">RPGDex</p>
+              <p style=""margin:10px 0 0;font-size:0.9rem;color:rgba(255,255,255,0.8);"">
+                Sua plataforma de campanhas e fichas
+              </p>
+            </td>
+          </tr>
+
+          <!-- Corpo -->
+          <tr>
+            <td style=""padding:40px 40px 32px;"">
+
+              <!-- Ícone de Alerta/Martelo de Punição -->
+              <div style=""text-align:center;margin-bottom:24px;"">
+                <div style=""display:inline-block;width:72px;height:72px;
+                             border-radius:50%;background:#fff5f5;
+                             border:3px solid #e53e3e;line-height:72px;
+                             font-size:2rem;color:#e53e3e;text-align:center;"">
+                  ⚖️
+                </div>
+              </div>
+
+              <h1 style=""margin:0 0 8px;font-size:1.5rem;font-weight:800;
+                          color:#1a1033;text-align:center;"">
+                Aviso de Penalidade
+              </h1>
+              <p style=""margin:0 0 24px;font-size:1rem;color:#555;
+                         text-align:center;line-height:1.6;"">
+                Olá, <strong style=""color:#7c3aed;"">{userName}</strong>!<br>
+                Sua conta sofreu uma suspensão temporária devido a uma violação das nossas diretrizes de comunidade.
+              </p>
+
+              <!-- Caixa Destaque de Expiração -->
+              <div style=""text-align:center;margin:32px 0;"">
+                <div style=""display:inline-block;padding:16px 28px;
+                            background:#fff5f5;border:2px dashed #e53e3e;
+                            border-radius:12px;"">
+                  <p style=""margin:0 0 6px;font-size:0.85rem;font-weight:700;
+                             color:#e53e3e;text-transform:uppercase;letter-spacing:0.05em;"">
+                    Acesso suspenso até:
+                  </p>
+                  <span style=""font-family:monospace,'Courier New',Courier;
+                               font-size:1.2rem;font-weight:900;color:#c53030;"">
+                    {formattedDate}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Orientação -->
+              <p style=""margin:0 0 20px;font-size:0.85rem;color:#718096;
+                         text-align:center;line-height:1.5;"">
+                Após essa data e horário, o seu acesso à plataforma será reestabelecido automaticamente. Se você acredita que isso foi um engano, entre em contato com nossa equipe de suporte.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style=""background:#f8f6ff;padding:20px 40px;text-align:center;
+                        border-top:1px solid #ede9f8;"">
+              <p style=""margin:0;font-size:0.8rem;color:#aaa;line-height:1.6;"">
+                © {DateTime.UtcNow.Year} RPGDex · Este é um email automático, não responda.<br>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>";
+    }
+  }
 }

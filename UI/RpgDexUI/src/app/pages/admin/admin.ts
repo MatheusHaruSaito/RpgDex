@@ -9,6 +9,7 @@ import { ReportDetail } from '../../../models/reportDetailBase';
 import { ChartResponse } from '../../../models/chartResponse';
 import { ReportType } from '../../../models/reportType';
 import { ReportResponse } from '../../../models/reportResponse';
+import { ApiResponse } from '../../../models/apiResponse';
 
 export type AdminTab = 'reportes' | 'usuarios' | 'personagens' | 'campanhas' | 'pagamentos';
 
@@ -28,22 +29,20 @@ export class AdminComponent implements OnInit {
   public ReportType = ReportType;
   activeTab: AdminTab = 'reportes';
 
-  // ── ABA REPORTES ──
   reports: ReportResponse[] = [];
   selectedReport: ReportDetail | null = null;
   totalOpenReports: number = 0;
   isLoadingReports = false;
+  showOnlyActive = true;
   currentPage = 1;
   pageSize = 10;
 
-  // ── ABA USUÁRIOS & MÉTRICAS ──
   startDate: string = '2026-01-01';
   endDate: string = '2027-01-01';
 
   userChartData: ChartResponse | null = null;
   isLoadingUserChart = false;
 
-  // ── ABA PERSONAGENS & CAMPANHAS ──
   characterChartData: ChartResponse | null = null;
   campaignChartData: ChartResponse | null = null;
 
@@ -64,27 +63,40 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // ── REPORTES ──
   loadReports(): void {
     this.isLoadingReports = true;
-    this.reportService.GetAll(this.currentPage, this.pageSize, true).subscribe({
-      next: (res) => {
+    this.selectedReport = null;
+    
+    this.reportService.GetAll(this.currentPage, this.pageSize, this.showOnlyActive).subscribe({
+      next: (res: ApiResponse<any>) => {
         if (res.success && res.data) {
           this.reports = res.data.reports || [];
           this.totalOpenReports = res.data.count || this.reports.length;
-          if (this.reports.length > 0 && !this.selectedReport) {
+          if (this.reports.length > 0) {
             this.selectReport(this.reports[0].id);
           }
+        } else {
+          this.reports = [];
         }
         this.isLoadingReports = false;
       },
-      error: () => (this.isLoadingReports = false),
+      error: () => {
+        this.reports = [];
+        this.isLoadingReports = false;
+      },
     });
+  }
+
+  toggleReportStatusFilter(isActive: boolean): void {
+    if (this.showOnlyActive === isActive) return;
+    this.showOnlyActive = isActive;
+    this.currentPage = 1;
+    this.loadReports();
   }
 
   selectReport(id: string): void {
     this.reportService.GetById(id).subscribe({
-      next: (res) => {
+      next: (res: ApiResponse<ReportDetail>) => {
         if (res.success && res.data) {
           this.selectedReport = res.data;
         }
@@ -95,7 +107,7 @@ export class AdminComponent implements OnInit {
   punishUser(reportId: string): void {
     if (confirm('Deseja aplicar uma penalidade relacionada a este reporte?')) {
       this.reportService.PunishUser({ reportId }).subscribe({
-        next: (res) => {
+        next: (res: ApiResponse<any>) => {
           if (res.success) {
             alert('Penalização aplicada com sucesso!');
             this.loadReports();
@@ -108,7 +120,7 @@ export class AdminComponent implements OnInit {
   closeReport(reportId: string): void {
     if (confirm('Tem certeza de que deseja fechar esta denúncia?')) {
       this.reportService.Close({ reportId }).subscribe({
-        next: (res) => {
+        next: (res: ApiResponse<any>) => {
           if (res.success) {
             alert('Reporte encerrado com sucesso!');
             this.selectedReport = null;
@@ -119,11 +131,10 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // ── GRÁFICOS E MÉTRICAS ──
   loadUserChart(): void {
     this.isLoadingUserChart = true;
     this.userService.GetUserChart(this.startDate, this.endDate).subscribe({
-      next: (res) => {
+      next: (res: ApiResponse<ChartResponse>) => {
         if (res.success && res.data) {
           this.userChartData = res.data;
         }
@@ -135,21 +146,23 @@ export class AdminComponent implements OnInit {
 
   loadCharacterChart(): void {
     this.characterService.GetCharacterChart(this.startDate, this.endDate).subscribe({
-      next: (res) => {
+      next: (res: ApiResponse<ChartResponse>) => {
         if (res.success && res.data) {
           this.characterChartData = res.data;
         }
       },
+      error: (err: unknown) => console.error('[Admin] Erro no gráfico de personagens:', err),
     });
   }
 
   loadCampaignChart(): void {
     this.campaignService.GetCharacterChart(this.startDate, this.endDate).subscribe({
-      next: (res) => {
+      next: (res: ApiResponse<ChartResponse>) => {
         if (res.success && res.data) {
           this.campaignChartData = res.data;
         }
       },
+      error: (err: unknown) => console.error('[Admin] Erro no gráfico de campanhas:', err),
     });
   }
 
@@ -159,15 +172,17 @@ export class AdminComponent implements OnInit {
     }
 
     const points = chartData.points;
-    const maxVal = Math.max(...points.map((p) => p.userCount), 1);
+    const values = points.map((p: any) => p.userCount ?? p.count ?? p.value ?? 0);
+    const maxVal = Math.max(...values, 1);
     const width = 700;
     const height = 180;
 
     return points
-      .map((pt, i) => {
+      .map((pt: any, i: number) => {
+        const val = pt.userCount ?? pt.count ?? pt.value ?? 0;
         const x = (i / (points.length - 1 || 1)) * width;
-        const y = height - (pt.userCount / maxVal) * (height - 20);
-        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+        const y = height - (val / maxVal) * (height - 30) - 15;
+        return `${i === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`;
       })
       .join(' ');
   }

@@ -16,7 +16,7 @@ export class ReportModalComponent {
   private reportService = inject(ReportService);
 
   @Input({ required: true }) targetId!: string;
-  @Input({ required: true }) reportType!: ReportType | number;
+  @Input({ required: true }) reportType!: ReportType | number | string;
   @Input() targetName: string = '';
 
   @Output() closed = new EventEmitter<boolean>();
@@ -26,17 +26,25 @@ export class ReportModalComponent {
   isSubmitting = false;
   errorMessage: string | null = null;
 
-  get modalTitle(): string {
-    // Trata valores numéricos e enum garantindo que Campanha e Personagem fiquem corretos
-    const type = Number(this.reportType);
+  private getNormalizedReportType(): ReportType {
+    if (typeof this.reportType === 'string') {
+      if (this.reportType === 'UserReport' || this.reportType === '0') return ReportType.UserReport;
+      if (this.reportType === 'CampaignReport' || this.reportType === '1') return ReportType.CampaignReport;
+      if (this.reportType === 'CharacterReport' || this.reportType === '2') return ReportType.CharacterReport;
+    }
+    return Number(this.reportType) as ReportType;
+  }
 
-    if (type === 0 || this.reportType === ReportType.UserReport) {
+  get modalTitle(): string {
+    const type = this.getNormalizedReportType();
+
+    if (type === ReportType.UserReport) {
       return `Denunciar Jogador${this.targetName ? ': ' + this.targetName : ''}`;
     }
-    if (type === 1 || this.reportType === ReportType.CampaignReport) {
+    if (type === ReportType.CampaignReport) {
       return `Denunciar Campanha${this.targetName ? ': ' + this.targetName : ''}`;
     }
-    if (type === 2 || this.reportType === ReportType.CharacterReport) {
+    if (type === ReportType.CharacterReport) {
       return `Denunciar Personagem${this.targetName ? ': ' + this.targetName : ''}`;
     }
     return 'Enviar Denúncia';
@@ -59,7 +67,7 @@ export class ReportModalComponent {
       title: this.title.trim(),
       description: this.description.trim(),
       targetId: this.targetId,
-      reportType: Number(this.reportType) as ReportType,
+      reportType: this.getNormalizedReportType(),
     };
 
     this.reportService.CreateReport(request).subscribe({
