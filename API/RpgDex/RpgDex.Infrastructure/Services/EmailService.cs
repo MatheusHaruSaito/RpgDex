@@ -255,5 +255,23 @@ public string GenerateTwoFactorEmailHTMLTemplate(string twoFactorCode, string us
 </html>";
 }
 
+        public string GenerateEmailUserPunishmentHTMLTemplate(DateTimeOffset lockoutEnd, string userName)
+        {
+            return $@"<!DOCTYPE html>
+                <html lang=""pt-BR"">
+                <head>
+                  <meta charset=""UTF-8"">
+                  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                  <title>Código de Segurança 2FA — RPGDex</title>
+                </head>
+                <body style=""margin:0;padding:0;background-color:#f4f2fb;font-family:'Segoe UI',Arial,sans-serif;"">
+                    <p style=""margin:0 0 24px;font-size:1rem;color:#555;
+                            text-align:center;line-height:1.6;"">
+                    Olá, <strong style=""color:#7c3aed;"">{userName}</strong>!<br>
+                    Usuario Banido Até: {lockoutEnd.UtcDateTime.ToString("dd/MM/yyyy HH:mm:ss")} UTC
+                    </p>
+                </body>
+                </html>";
+        }
     }
 }

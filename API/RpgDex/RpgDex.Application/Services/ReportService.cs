@@ -13,7 +13,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager,
+    public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager, IEmailService emailService,
         IReportQueries queries) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
@@ -97,9 +97,14 @@ namespace RpgDex.Application.Services
             {
                 return Result<ReportResponse>.Failure(UserError.BanFailed);
             }
-            //Send an email After this
 
-            //
+            var htmlBody = emailService.GenerateEmailUserPunishmentHTMLTemplate(lockoutEnd, user.UserName);
+            var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email, user.UserName, "User Punishment", htmlBody);
+            if (!isEmailSent)
+            {
+                return Result<ReportResponse>.Failure(AuthError.EmailSendFailed);
+            }
+
             var closeResult = await reportRepository.SetActiveState(report.Id, false);
             if (!closeResult)
             {
