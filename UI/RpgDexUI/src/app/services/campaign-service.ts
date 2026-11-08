@@ -15,6 +15,7 @@ import { CampaignSetActiveStateRequest } from '../../models/campaignSetActiveSta
 import { GetAllCampaignResponse } from '../../models/getAllCampaignResponse';
 import { LeaveCampaignRequest } from '../../models/leaveCampaignRequest';
 import { ChartResponse } from '../../models/chartResponse';
+import { DiceRollsLogResult } from '../../models/diceRollsLogResult';
 @Injectable({
   providedIn: 'root',
 })
@@ -81,5 +82,8 @@ export class CampaignService {
   //bad idea, refactor this later to just deactive
   SetActiveState(request: CampaignSetActiveStateRequest): Observable<ApiResponse<String>> {
     return this.http.put<ApiResponse<String>>(`${this.env}/SetActiveState`, request);
+  }
+  GetRollsLog(campaignId: string): Observable<DiceRollsLogResult> {
+    return this.http.get<DiceRollsLogResult>(`${this.env}/GetRollsLog/${campaignId}`);
   }
 }

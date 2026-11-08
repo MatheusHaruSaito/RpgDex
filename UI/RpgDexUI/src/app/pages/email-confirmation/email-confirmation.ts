@@ -1,7 +1,9 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth-service';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
+import { AuthService } from '../../services/auth-service';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-email-confirmation',
@@ -21,8 +23,8 @@ export class EmailConfirmation implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
   private router = inject(Router);
-
-  constructor(private route: ActivatedRoute) {}
+  private route = inject(ActivatedRoute);
+  private translateService = inject(TranslateService);
 
   ngOnInit() {
     this.route.queryParamMap.subscribe((params) => {
@@ -37,14 +39,16 @@ export class EmailConfirmation implements OnInit {
 
         this.authService.ValidateEmailByToken(request).subscribe({
           next: (response) => {
-            this.message = response.data;
+            this.message = response.data || 'E-mail verificado com sucesso!';
             this.state = 'success';
             this.cdr.detectChanges();
           },
           error: (error) => {
-            this.message = error.error?.message || error.message || 'Erro ao validar confirmação de e-mail.';
-            this.state = 'error';
-            this.cdr.detectChanges();
+            ErrorHandlerUtil.parseApiError(error, this.translateService, (msg) => {
+              this.message = msg;
+              this.state = 'error';
+              this.cdr.detectChanges();
+            });
           },
         });
       } else {

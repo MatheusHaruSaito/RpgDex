@@ -85,14 +85,17 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
-            services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IReportQueries, ReportQueries>();
             services.AddScoped<IReportTargetResolver, UserReportTargetResolver>();
             services.AddScoped<IReportTargetResolver, CampaignReportTargetResolver>();
             services.AddScoped<IReportTargetResolver, CharacterReportTargetResolver>();
             services.AddScoped<IUserQueries, UserQueries>();
-            services.AddScoped<ICharacterQueries, CharacterQueries>();
             services.AddScoped<ICampaignQueries, CampaignQueries>();
+            services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
+            services.AddScoped<ICharacterQueries, CharacterQueries>();
+            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+
+
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

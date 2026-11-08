@@ -26,6 +26,9 @@ namespace RpgDex.Application
             services.AddScoped<IPasswordHasher<Campaign>, PasswordHasher<Campaign>>();
             services.AddScoped<IUserDocumentService, UserDocumentService>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<ICanvaElementService, CanvaElementService>();
+
+
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
             services.AddSingleton<IFileUrlBuilder>(new FileUrlBuilder(configuration["ApiSettings:BaseUrl"]!));
             return services;

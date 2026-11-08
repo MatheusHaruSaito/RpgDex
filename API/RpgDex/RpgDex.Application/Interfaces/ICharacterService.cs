@@ -9,6 +9,8 @@ namespace RpgDex.Application.Interfaces
         Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId);
         Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId, int page = 1, int pageSize = 3);
         Task<Result<ChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate);
+        Task<Result<GetAllCharacterResponse>> GetAllFromCampaign(string userId,Guid campaignId);
+
         Task<Result<CharacterResponse>> GetByIdAsync(Guid Id);
         Task<Result<bool>> UpdateAsync(string userId, UpdateCharacterRequest request);
         Task<Result<CharacterResponse>> SetActiveState(Guid Id,bool ActiveState);

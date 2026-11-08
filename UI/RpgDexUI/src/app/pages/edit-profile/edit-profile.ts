@@ -2,11 +2,13 @@ import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { UserService } from '../../services/user-service';
 import { UserResponse } from '../../../models/userResponse';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 interface EditProfileForm {
   displayName: string;
@@ -24,6 +26,7 @@ export class EditProfileComponent implements OnInit {
   private userService = inject(UserService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   currentUser: UserResponse | null = null;
 
@@ -62,10 +65,12 @@ export class EditProfileComponent implements OnInit {
         this.isInitialLoading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
-        this.errorMessage = 'Não foi possível carregar os dados do perfil.';
+      error: (err) => {
         this.isInitialLoading = false;
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -154,8 +159,10 @@ export class EditProfileComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message ?? 'Erro ao salvar alterações. Tente novamente.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

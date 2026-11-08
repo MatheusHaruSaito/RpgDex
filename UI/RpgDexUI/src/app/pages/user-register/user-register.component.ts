@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { RegisterUser } from '../../../models/registerUser';
-import { CommonModule } from '@angular/common';
 import { GoogleAuthService } from '../../services/google-auth-service';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-user-register',
@@ -18,6 +20,7 @@ export class UserRegisterComponent implements OnInit {
   private googleAuth = inject(GoogleAuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -57,10 +60,12 @@ export class UserRegisterComponent implements OnInit {
           this.isGoogleLoading = false;
           this.router.navigate(['/home']);
         },
-        error: () => {
+        error: (err) => {
           this.isGoogleLoading = false;
-          this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
-          this.cdr.detectChanges();
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.errorMessage = msg;
+            this.cdr.detectChanges();
+          });
         },
       });
     });
@@ -251,17 +256,10 @@ export class UserRegisterComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        const errors = err.error?.errors;
-        if (errors) {
-          const messages = Object.values(errors).flat() as string[];
-          this.errorMessage = messages[0] ?? 'Dados inválidos. Verifique as informações.';
-        } else if (err.status === 409 || err.error?.code === 'DuplicateUserName') {
-          this.errorMessage = 'Este nome de usuário já está em uso.';
-        } else if (err.status === 409 || err.error?.code === 'DuplicateEmail') {
-          this.errorMessage = 'Este e-mail já está cadastrado.';
-        } else {
-          this.errorMessage = 'Ocorreu um erro ao criar a conta. Tente novamente.';
-        }
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

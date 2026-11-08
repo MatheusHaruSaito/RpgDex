@@ -1,76 +1,90 @@
-<div class="modal-backdrop" *ngIf="isOpen" (click)="close()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
+@if (isOpen) {
+  <div class="modal-backdrop" (click)="close()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
 
-    <div class="modal-header">
-      <h2 class="modal-title">Editar <span>Campanha</span></h2>
-      <button class="btn-icon modal-close" (click)="close()">
-        <i class="fa fa-xmark"></i>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Capa -->
-      <div class="input-group">
-        <label class="input-label">Nova Imagem de Capa <span class="input-optional">(opcional)</span></label>
-        <div class="cover-upload" (click)="coverEditInput.click()" [class.has-preview]="editCoverPreview">
-          <img *ngIf="editCoverPreview" [src]="editCoverPreview" class="cover-preview-img" alt="Capa">
-          <img *ngIf="!editCoverPreview && currentIconPath" [src]="currentIconPath" class="cover-preview-img" alt="Capa atual">
-          <div class="cover-upload-placeholder" *ngIf="!editCoverPreview && !currentIconPath">
-            <i class="fa fa-image"></i>
-            <span>Clique para selecionar</span>
-          </div>
-          <div class="cover-upload-overlay">
-            <i class="fa fa-camera"></i> Alterar
-          </div>
-        </div>
-        <input #coverEditInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileSelected($event)">
+      <div class="modal-header">
+        <h2 class="modal-title">Editar <span>Campanha</span></h2>
+        <button type="button" class="btn-icon modal-close" (click)="close()">
+          <i class="fa fa-xmark"></i>
+        </button>
       </div>
 
-      <!-- Título -->
-      <div class="input-group">
-        <label class="input-label">Título <span class="required">*</span></label>
-        <div class="input-field-wrapper">
-          <i class="fa fa-scroll icon-field"></i>
-          <input type="text" [(ngModel)]="editTitle" maxlength="60">
-        </div>
-        <small class="char-counter">{{ editTitle.length }}/60</small>
-      </div>
-
-      <!-- Descrição -->
-      <div class="input-group">
-        <label class="input-label">Descrição</label>
-        <textarea class="input-textarea" [(ngModel)]="editDescription" rows="3" maxlength="1000"></textarea>
-        <small class="char-counter">{{ editDescription.length }}/1000</small>
-      </div>
-
-      <!-- Próxima sessão + Máx jogadores -->
-      <div class="input-row">
+      <div class="modal-body">
+        <!-- Capa -->
         <div class="input-group">
-          <label class="input-label">Próxima Sessão</label>
+          <label class="input-label">Nova Imagem de Capa <span class="input-optional">(opcional)</span></label>
+          <div class="cover-upload" (click)="coverEditInput.click()" [class.has-preview]="editCoverPreview || currentIconPath">
+            @if (editCoverPreview) {
+              <img [src]="editCoverPreview" class="cover-preview-img" alt="Capa" />
+            } @else if (currentIconPath) {
+              <img [src]="currentIconPath" class="cover-preview-img" alt="Capa atual" />
+            } @else {
+              <div class="cover-upload-placeholder">
+                <i class="fa fa-image"></i>
+                <span>Clique para selecionar</span>
+              </div>
+            }
+            <div class="cover-upload-overlay">
+              <i class="fa fa-camera"></i> Alterar
+            </div>
+          </div>
+          <input #coverEditInput type="file" accept="image/*" class="file-input-hidden" (change)="onFileSelected($event)">
+        </div>
+
+        <!-- Título -->
+        <div class="input-group">
+          <label class="input-label">Título <span class="required">*</span></label>
           <div class="input-field-wrapper">
-            <i class="fa fa-calendar icon-field"></i>
-            <input type="datetime-local" [(ngModel)]="editNextSession">
+            <i class="fa fa-scroll icon-field"></i>
+            <input type="text" [(ngModel)]="editTitle" maxlength="60">
+          </div>
+          <small class="char-counter">{{ editTitle.length }}/60</small>
+        </div>
+
+        <!-- Descrição -->
+        <div class="input-group">
+          <label class="input-label">Descrição</label>
+          <textarea class="input-textarea" [(ngModel)]="editDescription" rows="3" maxlength="1000"></textarea>
+          <small class="char-counter">{{ editDescription.length }}/1000</small>
+        </div>
+
+        <!-- Próxima sessão + Máx jogadores -->
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Próxima Sessão</label>
+            <div class="input-field-wrapper">
+              <i class="fa fa-calendar icon-field"></i>
+              <input type="datetime-local" [(ngModel)]="editNextSession">
+            </div>
+          </div>
+          <div class="input-group input-group--sm">
+            <label class="input-label">Máx. Jogadores</label>
+            <div class="input-field-wrapper">
+              <i class="fa fa-users icon-field"></i>
+              <input type="number" [(ngModel)]="editMaxPlayers" min="1" max="20" (change)="validateMaxPlayers()">
+            </div>
           </div>
         </div>
-        <div class="input-group input-group--sm">
-          <label class="input-label">Máx. Jogadores</label>
-          <div class="input-field-wrapper">
-            <i class="fa fa-users icon-field"></i>
-            <input type="number" [(ngModel)]="editMaxPlayers" min="1" max="20" (change)="validateMaxPlayers()">
+
+        <!-- MENSAGEM DE ERRO DA API -->
+        @if (errorMessage) {
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
           </div>
-        </div>
+        }
       </div>
-    </div>
 
-    <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="close()">Cancelar</button>
-      <button class="btn btn-primary" (click)="submitSave()" [disabled]="!editTitle">
-        <i class="fa fa-floppy-disk"></i> Salvar
-      </button>
-    </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="close()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="submitSave()" [disabled]="!editTitle.trim()">
+          <i class="fa fa-floppy-disk"></i> Salvar
+        </button>
+      </div>
 
+    </div>
   </div>
-</div>
+}
 
 <!-- SUB-MODAL: CORTE DA IMAGEM -->
 @if (showCropperModal) {
@@ -78,7 +92,7 @@
     <div class="modal-card cropper-card">
       <div class="modal-header">
         <h2 class="modal-title">Ajustar <span>Capa</span></h2>
-        <button class="btn-icon modal-close" (click)="cancelCrop()">
+        <button type="button" class="btn-icon modal-close" (click)="cancelCrop()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>

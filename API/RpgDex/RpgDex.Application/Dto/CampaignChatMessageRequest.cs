@@ -4,6 +4,6 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public record CampaignChatMessageRequest(Guid CampaignId, string Message);
+    public record CampaignChatMessageRequest(Guid CampaignId, Guid? CharacterId, string Message);
 
 }

@@ -2,6 +2,7 @@ import { Component, inject, OnInit, ChangeDetectorRef, ElementRef, ViewChild } f
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { CampaignService } from '../../services/campaign-service';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
@@ -17,6 +18,7 @@ import { CampaignChatComponent } from '../../components/campaign-chat-component/
 import { InfoHintComponent } from '../../components/info-hint/info-hint';
 import { ReportModalComponent } from '../../modals/report-modal/report-modal';
 import { ReportType } from '../../../models/reportType';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-campaign-detail',
@@ -37,6 +39,7 @@ import { ReportType } from '../../../models/reportType';
 })
 export class CampaignDetailComponent implements OnInit {
   @ViewChild('alertBanner') alertBanner?: ElementRef;
+  @ViewChild(EditCampaignModalComponent) editCampaignModal?: EditCampaignModalComponent;
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -46,6 +49,7 @@ export class CampaignDetailComponent implements OnInit {
   private userService = inject(UserService);
   private cdr = inject(ChangeDetectorRef);
   private datePipe = inject(DatePipe);
+  private translateService = inject(TranslateService);
 
   campaignId = '';
   currentUserId = '';
@@ -134,8 +138,10 @@ export class CampaignDetailComponent implements OnInit {
     }, 5000);
   }
 
-  private getErrorMessage(err: any, fallbackMessage: string): string {
-    return err?.error?.message || err?.error?.title || fallbackMessage;
+  private handleApiError(err: any): void {
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      this.showFeedback(msg, true);
+    });
   }
 
   loadCampaign(isSilentReload: boolean = false): void {
@@ -160,7 +166,7 @@ export class CampaignDetailComponent implements OnInit {
         this.isLoading = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
+      error: () => {
         this.isLoading = false;
         if (!isSilentReload) {
           this.router.navigate(['/campanhas']);
@@ -305,11 +311,7 @@ export class CampaignDetailComponent implements OnInit {
           this.joinPassword = '';
           this.loadCampaign(true);
         },
-        error: (err) =>
-          this.showFeedback(
-            this.getErrorMessage(err, 'Erro ao entrar na campanha. Verifique a senha.'),
-            true,
-          ),
+        error: (err) => this.handleApiError(err),
       });
   }
 
@@ -330,11 +332,7 @@ export class CampaignDetailComponent implements OnInit {
 
           this.loadCampaign(true);
         },
-        error: (err) =>
-          this.showFeedback(
-            this.getErrorMessage(err, 'Não foi possível vincular o personagem.'),
-            true,
-          ),
+        error: (err) => this.handleApiError(err),
       });
   }
 
@@ -353,11 +351,7 @@ export class CampaignDetailComponent implements OnInit {
           this.showFeedback(approve ? 'Personagem aprovado na campanha!' : 'Solicitação recusada.');
           this.loadCampaign(true);
         },
-        error: (err) =>
-          this.showFeedback(
-            this.getErrorMessage(err, 'Erro ao processar solicitação de personagem.'),
-            true,
-          ),
+        error: (err) => this.handleApiError(err),
       });
   }
 
@@ -383,8 +377,7 @@ export class CampaignDetailComponent implements OnInit {
             this.loadCampaign(true);
           }
         },
-        error: (err) =>
-          this.showFeedback(this.getErrorMessage(err, 'Erro ao remover jogador.'), true),
+        error: (err) => this.handleApiError(err),
       });
   }
 
@@ -402,8 +395,7 @@ export class CampaignDetailComponent implements OnInit {
         this.showFeedback(`Campanha ${newState ? 'reativada' : 'desativada'} com sucesso!`);
         this.loadCampaign(true);
       },
-      error: (err) =>
-        this.showFeedback(this.getErrorMessage(err, 'Erro ao alterar status da campanha.'), true),
+      error: (err) => this.handleApiError(err),
     });
   }
 
@@ -426,10 +418,7 @@ export class CampaignDetailComponent implements OnInit {
       error: (err) => {
         this.requireApproval = !this.requireApproval;
         this.cdr.detectChanges();
-        this.showFeedback(
-          this.getErrorMessage(err, 'Erro ao atualizar configurações da campanha.'),
-          true,
-        );
+        this.handleApiError(err);
       },
     });
   }
@@ -453,8 +442,13 @@ export class CampaignDetailComponent implements OnInit {
         this.cdr.detectChanges();
         this.loadCampaign(true);
       },
-      error: (err) =>
-        this.showFeedback(this.getErrorMessage(err, 'Erro ao atualizar dados da campanha.'), true),
+      error: (err) => {
+        if (this.editCampaignModal) {
+          this.editCampaignModal.handleError(err);
+        } else {
+          this.handleApiError(err);
+        }
+      },
     });
   }
 
@@ -465,6 +459,7 @@ export class CampaignDetailComponent implements OnInit {
       next: () => {
         this.router.navigate(['/campanhas']);
       },
+      error: (err) => this.handleApiError(err),
     });
   }
 }

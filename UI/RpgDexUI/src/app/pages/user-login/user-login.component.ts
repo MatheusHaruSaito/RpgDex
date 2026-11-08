@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { LoginUser } from '../../../models/loginUser';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { GoogleAuthService } from '../../services/google-auth-service';
 import { TwoFactorModalComponent } from '../../modals/two-factor-modal/two-factor-modal';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-user-login',
@@ -19,6 +21,7 @@ export class UserLoginComponent implements OnInit {
   private router = inject(Router);
   private googleAuth = inject(GoogleAuthService);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -61,10 +64,12 @@ export class UserLoginComponent implements OnInit {
           this.isGoogleLoading = false;
           this.router.navigate(['/home']);
         },
-        error: () => {
+        error: (err) => {
           this.isGoogleLoading = false;
-          this.errorMessage = 'Falha ao entrar com o Google. Tente novamente.';
-          this.cdr.detectChanges();
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.errorMessage = msg;
+            this.cdr.detectChanges();
+          });
         },
       });
     });
@@ -114,8 +119,10 @@ export class UserLoginComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'Falha ao entrar. Verifique seu email e senha.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
