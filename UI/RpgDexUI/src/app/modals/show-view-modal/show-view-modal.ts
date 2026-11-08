@@ -8,12 +8,15 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { Character } from '../../../models/character';
 import { CharacterService } from '../../services/character-service';
-import { CommonModule } from '@angular/common';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-show-view-modal',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './show-view-modal.html',
   styleUrl: './show-view-modal.css',
@@ -23,21 +26,37 @@ export class ShowViewModal implements OnChanges {
   @Input() characterId = '';
   @Output() close = new EventEmitter<void>();
 
-  viewCharacter: Character | any;
-  characterService = inject(CharacterService);
-  cdr = inject(ChangeDetectorRef);
+  private characterService = inject(CharacterService);
+  private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
+
+  viewCharacter: Character | any = null;
+  isLoading = false;
+  errorMessage = '';
+
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible']?.currentValue == true) {
+    if (changes['visible']?.currentValue === true && this.characterId) {
       this.ShowCharacter();
     }
   }
+
   ShowCharacter(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.viewCharacter = null;
+
     this.characterService.GetById(this.characterId).subscribe({
       next: (res) => {
-        console.log('teste');
-
-        this.viewCharacter = res.data!;
+        this.isLoading = false;
+        this.viewCharacter = res.data ?? null;
         this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -45,6 +64,8 @@ export class ShowViewModal implements OnChanges {
   CloseViewModal(): void {
     this.close.emit();
     this.viewCharacter = null;
+    this.errorMessage = '';
+    this.isLoading = false;
   }
 
   private readonly GUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

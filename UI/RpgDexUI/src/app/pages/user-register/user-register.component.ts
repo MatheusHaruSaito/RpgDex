@@ -1,10 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { RegisterUser } from '../../../models/registerUser';
-import { CommonModule } from '@angular/common';
 import { GoogleAuthService } from '../../services/google-auth-service';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-user-register',
@@ -17,6 +19,8 @@ export class UserRegisterComponent implements OnInit {
   authService = inject(AuthService);
   private googleAuth = inject(GoogleAuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   private emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -35,19 +39,33 @@ export class UserRegisterComponent implements OnInit {
   showConfirmPassword = false;
 
   isLoading = false;
+  isGoogleLoading = false;
+  isDiscordLoading = false;
   errorMessage = '';
   successMessage = '';
+
+  get isAnyLoading(): boolean {
+    return this.isLoading || this.isGoogleLoading || this.isDiscordLoading;
+  }
 
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;
+      this.isGoogleLoading = true;
+      this.errorMessage = '';
+      this.cdr.detectChanges();
 
       this.authService.GoogleSingUp(token).subscribe({
         next: () => {
+          this.isGoogleLoading = false;
           this.router.navigate(['/home']);
         },
-        error: () => {
-          this.errorMessage = 'Falha ao entrar com o Google. Verifique seu email e senha.';
+        error: (err) => {
+          this.isGoogleLoading = false;
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.errorMessage = msg;
+            this.cdr.detectChanges();
+          });
         },
       });
     });
@@ -175,6 +193,8 @@ export class UserRegisterComponent implements OnInit {
   }
 
   loginComGoogle(): void {
+    if (this.isAnyLoading) return;
+
     const googleBtn = document.querySelector('#google-btn div[role="button"]') as HTMLElement;
     if (googleBtn) {
       googleBtn.click();
@@ -236,22 +256,17 @@ export class UserRegisterComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        const errors = err.error?.errors;
-        if (errors) {
-          const messages = Object.values(errors).flat() as string[];
-          this.errorMessage = messages[0] ?? 'Dados inválidos. Verifique as informações.';
-        } else if (err.status === 409 || err.error?.code === 'DuplicateUserName') {
-          this.errorMessage = 'Este nome de usuário já está em uso.';
-        } else if (err.status === 409 || err.error?.code === 'DuplicateEmail') {
-          this.errorMessage = 'Este e-mail já está cadastrado.';
-        } else {
-          this.errorMessage = 'Ocorreu um erro ao criar a conta. Tente novamente.';
-        }
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
 
   onDiscordLogin() {
+    if (this.isAnyLoading) return;
+    this.isDiscordLoading = true;
     this.authService.DiscordSingUp();
   }
 }

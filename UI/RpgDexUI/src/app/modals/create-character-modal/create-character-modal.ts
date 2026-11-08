@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { TranslateService } from '@ngx-translate/core';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-create-character-modal',
@@ -32,11 +33,11 @@ export class CreateCharacterModal implements OnInit {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
+
   isLoading = false;
   errorMessage = '';
   newCharacter = { name: '', description: '' };
 
-  // Controle de imagem e do Cropper
   selectedIconFile: File | null = null;
   iconPreviewUrl = '';
   imageChangedEvent: Event | null = null;
@@ -96,7 +97,7 @@ export class CreateCharacterModal implements OnInit {
     this.errorMessage = '';
     if (!this.newCharacter.name.trim()) {
       this.translateService.get('ERRORS.VALIDATION_DISPLAYNAME').subscribe((res: string) => {
-        this.errorMessage = res !== 'ERRORS.VALIDATION_DISPLAYNAME' ? res : 'sds';
+        this.errorMessage = res !== 'ERRORS.VALIDATION_DISPLAYNAME' ? res : 'Informe o nome do personagem.';
         this.cdr.detectChanges();
       });
       return;
@@ -121,37 +122,11 @@ export class CreateCharacterModal implements OnInit {
         }
       },
       error: (err: any) => {
-        const body = err?.error;
-        const errorList = Array.isArray(body?.message) ? body.message : (body?.errors ?? []);
-        const primaryError = errorList[0];
-        if (primaryError?.code) {
-          const translationKey = `ERRORS.${primaryError.code}`;
-
-          this.translateService.get(translationKey).subscribe((translatedText: string) => {
-            const hasTranslation = translatedText !== translationKey;
-            this.errorMessage = hasTranslation ? translatedText : primaryError.message;
-            this.cdr.detectChanges();
-          });
-        } else {
-          const fallbackText = err?.error?.message ?? err?.error?.title;
-
-          if (fallbackText) {
-            this.errorMessage = fallbackText;
-          } else {
-            this.translateService.get('ERRORS.COMMON_DEFAULT').subscribe((res: string) => {
-              this.errorMessage = res;
-              this.cdr.detectChanges();
-            });
-          }
-        }
-
-        // this.isLoading = false;
-        // const body = err?.error;
-        // this.errorMessage =
-        //   (body?.errors ? (Object.values(body.errors).flat() as string[])[0] : null) ??
-        //   body?.message ??
-        //   body?.title ??
-        //   'Erro ao criar personagem. Tente novamente.';
+        this.isLoading = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

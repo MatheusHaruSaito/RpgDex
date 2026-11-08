@@ -1,8 +1,10 @@
 import { Component, EventEmitter, Input, Output, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { ValidateTwoFactorRequest } from '../../../models/validateTwoFactorRequest';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-two-factor-modal',
@@ -19,6 +21,7 @@ export class TwoFactorModalComponent {
 
   private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   code = '';
   isLoading = false;
@@ -62,8 +65,10 @@ export class TwoFactorModalComponent {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'Código inválido ou expirado.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -78,8 +83,10 @@ export class TwoFactorModalComponent {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.errorMessage = err?.error?.message || 'Erro ao reenviar o código.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }

@@ -1,54 +1,78 @@
-@if (visible && viewCharacter) {
+@if (visible) {
   <div class="modal-backdrop" (click)="CloseViewModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">Detalhes do <span>Personagem</span></h2>
-        <button class="btn-icon modal-close" (click)="CloseViewModal()">
+        <button type="button" class="btn-icon modal-close" (click)="CloseViewModal()">
           <i class="fa fa-xmark"></i>
         </button>
       </div>
 
       <div class="modal-body">
-        <div class="modal-view-info">
-          <div
-            class="modal-view-avatar"
-            [style.background-image]="
-              viewCharacter.iconPath ? 'url(' + viewCharacter.iconPath + ')' : ''
-            "
-          >
-            <i class="fa fa-shield-halved" *ngIf="!viewCharacter.iconPath"></i>
+        <!-- ESTADO DE CARREGAMENTO -->
+        @if (isLoading) {
+          <div class="modal-loading-state" style="text-align: center; padding: 40px 0;">
+            <i class="fa fa-spinner fa-spin" style="font-size: 2rem; color: var(--rpg-purple, #8a2be2);"></i>
+            <p style="margin-top: 12px; font-family: 'Nunito', sans-serif; color: var(--rpg-text-body, #718096);">
+              Carregando informações do personagem...
+            </p>
           </div>
-          <div>
-            <p class="modal-view-name">{{ viewCharacter.name }}</p>
-            <span class="modal-view-id">#{{ viewCharacter.id.substring(0, 8) }}</span>
+        }
+
+        <!-- MENSAGEM DE ERRO DA API -->
+        @if (errorMessage && !isLoading) {
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
           </div>
-        </div>
+        }
 
-        <div class="modal-view-section">
-          <span class="modal-view-label"><i class="fa fa-align-left"></i> Descrição</span>
-          <p class="modal-view-desc" [class.empty]="!viewCharacter.description">
-            {{ viewCharacter.description || 'Nenhuma descrição fornecida.' }}
-          </p>
-        </div>
+        <!-- DETALHES DO PERSONAGEM -->
+        @if (viewCharacter && !isLoading) {
+          <div class="modal-view-info">
+            <div
+              class="modal-view-avatar"
+              [style.background-image]="
+                viewCharacter.iconPath ? 'url(' + viewCharacter.iconPath + ')' : ''
+              "
+            >
+              @if (!viewCharacter.iconPath) {
+                <i class="fa fa-shield-halved"></i>
+              }
+            </div>
+            <div>
+              <p class="modal-view-name">{{ viewCharacter.name }}</p>
+              @if (viewCharacter.id) {
+                <span class="modal-view-id">#{{ viewCharacter.id.substring(0, 8) }}</span>
+              }
+            </div>
+          </div>
 
-        <div
-          class="modal-view-section modal-view-properties"
-          *ngIf="viewPropertiesEntries().length > 0"
-        >
-          <span class="modal-view-label"><i class="fa fa-list-check"></i> Atributos</span>
-          <div class="modal-view-props-grid">
-            @for (entry of viewPropertiesEntries(); track $index) {
-              <div class="modal-view-prop-chip">
-                <span class="prop-chip-key">{{ entry.key }}</span>
-                <span class="prop-chip-value">{{ entry.value }}</span>
+          <div class="modal-view-section">
+            <span class="modal-view-label"><i class="fa fa-align-left"></i> Descrição</span>
+            <p class="modal-view-desc" [class.empty]="!viewCharacter.description">
+              {{ viewCharacter.description || 'Nenhuma descrição fornecida.' }}
+            </p>
+          </div>
+
+          @if (viewPropertiesEntries().length > 0) {
+            <div class="modal-view-section modal-view-properties">
+              <span class="modal-view-label"><i class="fa fa-list-check"></i> Atributos</span>
+              <div class="modal-view-props-grid">
+                @for (entry of viewPropertiesEntries(); track $index) {
+                  <div class="modal-view-prop-chip">
+                    <span class="prop-chip-key">{{ entry.key }}</span>
+                    <span class="prop-chip-value">{{ entry.value }}</span>
+                  </div>
+                }
               </div>
-            }
-          </div>
-        </div>
+            </div>
+          }
+        }
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="CloseViewModal()">Fechar</button>
+        <button type="button" class="btn btn-secondary" (click)="CloseViewModal()">Fechar</button>
       </div>
     </div>
   </div>

@@ -5,78 +5,82 @@
     <div class="profile-card">
 
       <!-- SKELETON: USER INFO -->
-      <header class="profile-header" *ngIf="isLoadingUser">
-        <div class="user-main-info">
-          <div class="avatar-wrapper">
-            <app-skeleton width="120px" height="120px" radius="50%"></app-skeleton>
+      @if (isLoadingUser) {
+        <header class="profile-header">
+          <div class="user-main-info">
+            <div class="avatar-wrapper">
+              <app-skeleton width="120px" height="120px" radius="50%"></app-skeleton>
+            </div>
+            <div class="user-text" style="gap: 8px;">
+              <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
+              <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
+              <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
+            </div>
           </div>
-          <div class="user-text" style="gap: 8px;">
-            <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
-            <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
-            <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
-          </div>
-        </div>
-      </header>
+        </header>
+      }
 
       <!-- CONTEÚDO REAL: USER INFO -->
-      <header class="profile-header fade-in-content" *ngIf="!isLoadingUser">
-        <div class="user-main-info">
-          <div class="avatar-wrapper">
-            @if (user?.iconPath) {
-              <div class="avatar-placeholder avatar-placeholder--image">
-                <img class="avatar-img" [src]="user!.iconPath" alt="Foto de perfil" />
-              </div>
-            } @else {
-              <div class="avatar-placeholder">
-                {{ user?.displayName?.substring(0, 2)?.toUpperCase() || '??' }}
-              </div>
-            }
+      @if (!isLoadingUser) {
+        <header class="profile-header fade-in-content">
+          <div class="user-main-info">
+            <div class="avatar-wrapper">
+              @if (user?.iconPath) {
+                <div class="avatar-placeholder avatar-placeholder--image">
+                  <img class="avatar-img" [src]="user!.iconPath" alt="Foto de perfil" />
+                </div>
+              } @else {
+                <div class="avatar-placeholder">
+                  {{ user?.displayName?.substring(0, 2)?.toUpperCase() || '??' }}
+                </div>
+              }
+            </div>
+
+            <div class="user-text">
+              <!-- Nome de Exibição (displayName) -->
+              <h1 class="display-name">{{ user?.displayName || 'Viajante' }}</h1>
+              <!-- Username Único (@userName) -->
+              <span class="user-handle">@{{ user?.userName || 'viajante' }}</span>
+              <!-- E-mail -->
+              <p class="email">{{ user?.email }}</p>
+              <span class="badge">Aventureiro</span>
+            </div>
           </div>
 
-          <div class="user-text">
-            <!-- Nome de Exibição (displayName) -->
-            <h1 class="display-name">{{ user?.displayName || 'Viajante' }}</h1>
-            <!-- Username Único (@userName) -->
-            <span class="user-handle">@{{ user?.userName || 'viajante' }}</span>
-            <!-- E-mail -->
-            <p class="email">{{ user?.email }}</p>
-            <span class="badge">Aventureiro</span>
-          </div>
-        </div>
+          <div class="profile-controls">
+            <div class="main-btns">
+              <button type="button" class="btn btn-primary" (click)="editProfile()">
+                <i class="fa-solid fa-pen"></i>
+                <span>Editar Perfil</span>
+              </button>
+              <button type="button" class="btn btn-secondary" (click)="logout()">
+                <span>Sair</span>
+              </button>
+            </div>
 
-        <div class="profile-controls">
-          <div class="main-btns">
-            <button type="button" class="btn btn-primary" (click)="editProfile()">
-              <i class="fa-solid fa-pen"></i>
-              <span>Editar Perfil</span>
-            </button>
-            <button type="button" class="btn btn-secondary" (click)="logout()">
-              <span>Sair</span>
-            </button>
+            <div class="tool-btns">
+              <button
+                type="button"
+                class="icon-btn"
+                (click)="toggleTheme()"
+                [title]="isDarkMode ? 'Modo Claro' : 'Modo Escuro'"
+                [attr.aria-label]="isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'"
+              >
+                <i class="fa-solid" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
+              </button>
+              <button
+                type="button"
+                class="icon-btn"
+                title="Configurações"
+                aria-label="Configurações"
+                (click)="openSettingsModal()"
+              >
+                <i class="fa-solid fa-gear"></i>
+              </button>
+            </div>
           </div>
-
-          <div class="tool-btns">
-            <button
-              type="button"
-              class="icon-btn"
-              (click)="toggleTheme()"
-              [title]="isDarkMode ? 'Modo Claro' : 'Modo Escuro'"
-              [attr.aria-label]="isDarkMode ? 'Alternar para Modo Claro' : 'Alternar para Modo Escuro'"
-            >
-              <i class="fa-solid" [ngClass]="isDarkMode ? 'fa-sun' : 'fa-moon'"></i>
-            </button>
-            <button
-              type="button"
-              class="icon-btn"
-              title="Configurações"
-              aria-label="Configurações"
-              (click)="openSettingsModal()"
-            >
-              <i class="fa-solid fa-gear"></i>
-            </button>
-          </div>
-        </div>
-      </header>
+        </header>
+      }
     </div>
 
     <!-- 2. SEÇÃO DE CAMPANHAS -->
@@ -100,42 +104,48 @@
         </div>
 
         <!-- SKELETON: CAMPANHAS -->
-        <div class="campaigns-grid" *ngIf="isLoadingCampaigns">
-          <div class="campaign-card" *ngFor="let item of [1, 2, 3]">
-            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
-            <div class="card-info">
-              <app-skeleton width="70%" height="18px"></app-skeleton>
-              <app-skeleton width="40%" height="14px"></app-skeleton>
-            </div>
+        @if (isLoadingCampaigns) {
+          <div class="campaigns-grid">
+            @for (item of [1, 2, 3]; track item) {
+              <div class="campaign-card">
+                <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+                <div class="card-info">
+                  <app-skeleton width="70%" height="18px"></app-skeleton>
+                  <app-skeleton width="40%" height="14px"></app-skeleton>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        }
 
         <!-- CONTEÚDO REAL: CAMPANHAS -->
-        <div class="campaigns-grid fade-in-content" *ngIf="!isLoadingCampaigns">
-          <div class="campaign-card add-card" routerLink="/campanhas">
-            <i class="fa-solid fa-plus"></i>
-            <span>Nova Campanha</span>
-          </div>
-
-          @for (camp of campaignPreview; track camp.id || camp.title) {
-            <div class="campaign-card" [routerLink]="['/campanha', camp.id]">
-              @if (camp.iconPath) {
-                <div class="card-image-placeholder campaign-avatar--image">
-                  <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title">
-                </div>
-              } @else {
-                <div class="card-image-placeholder">
-                  <i class="fa-solid fa-map-location-dot"></i>
-                </div>
-              }
-
-              <div class="card-info">
-                <span class="camp-name">{{ camp.title }}</span>
-                <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{ camp.role }}</span>
-              </div>
+        @if (!isLoadingCampaigns) {
+          <div class="campaigns-grid fade-in-content">
+            <div class="campaign-card add-card" routerLink="/campanhas">
+              <i class="fa-solid fa-plus"></i>
+              <span>Nova Campanha</span>
             </div>
-          }
-        </div>
+
+            @for (camp of campaignPreview; track camp.id || camp.title) {
+              <div class="campaign-card" [routerLink]="['/campanha', camp.id]">
+                @if (camp.iconPath) {
+                  <div class="card-image-placeholder campaign-avatar--image">
+                    <img class="campaign-avatar-img" [src]="camp.iconPath" [alt]="camp.title">
+                  </div>
+                } @else {
+                  <div class="card-image-placeholder">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                  </div>
+                }
+
+                <div class="card-info">
+                  <span class="camp-name">{{ camp.title }}</span>
+                  <span class="camp-role" [class.camp-role--gm]="camp.role === 'Mestre'">{{ camp.role }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </section>
     </div>
 
@@ -160,42 +170,48 @@
         </div>
 
         <!-- SKELETON: PERSONAGENS -->
-        <div class="campaigns-grid" *ngIf="isLoadingCharacters">
-          <div class="campaign-card" *ngFor="let item of [1, 2, 3]">
-            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
-            <div class="card-info">
-              <app-skeleton width="70%" height="18px"></app-skeleton>
-              <app-skeleton width="90%" height="14px"></app-skeleton>
-            </div>
+        @if (isLoadingCharacters) {
+          <div class="campaigns-grid">
+            @for (item of [1, 2, 3]; track item) {
+              <div class="campaign-card">
+                <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+                <div class="card-info">
+                  <app-skeleton width="70%" height="18px"></app-skeleton>
+                  <app-skeleton width="90%" height="14px"></app-skeleton>
+                </div>
+              </div>
+            }
           </div>
-        </div>
+        }
 
         <!-- CONTEÚDO REAL: PERSONAGENS -->
-        <div class="campaigns-grid fade-in-content" *ngIf="!isLoadingCharacters">
-          <div class="campaign-card add-card" routerLink="/personagens">
-            <i class="fa-solid fa-plus"></i>
-            <span>Novo Personagem</span>
-          </div>
-
-          @for (char of characterPreview; track char.id || char.name) {
-            <div class="campaign-card character-card" routerLink="/personagens">
-              @if (char.iconPath) {
-                <div class="card-image-placeholder character-avatar character-avatar--image">
-                  <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name">
-                </div>
-              } @else {
-                <div class="card-image-placeholder character-avatar">
-                  <i class="fa-solid fa-shield-halved"></i>
-                </div>
-              }
-
-              <div class="card-info">
-                <span class="camp-name">{{ char.name }}</span>
-                <span class="char-desc-preview">{{ char.description }}</span>
-              </div>
+        @if (!isLoadingCharacters) {
+          <div class="campaigns-grid fade-in-content">
+            <div class="campaign-card add-card" routerLink="/personagens">
+              <i class="fa-solid fa-plus"></i>
+              <span>Novo Personagem</span>
             </div>
-          }
-        </div>
+
+            @for (char of characterPreview; track char.id || char.name) {
+              <div class="campaign-card character-card" routerLink="/personagens">
+                @if (char.iconPath) {
+                  <div class="card-image-placeholder character-avatar character-avatar--image">
+                    <img class="character-avatar-img" [src]="char.iconPath" [alt]="char.name">
+                  </div>
+                } @else {
+                  <div class="card-image-placeholder character-avatar">
+                    <i class="fa-solid fa-shield-halved"></i>
+                  </div>
+                }
+
+                <div class="card-info">
+                  <span class="camp-name">{{ char.name }}</span>
+                  <span class="char-desc-preview">{{ char.description }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </section>
     </div>
 

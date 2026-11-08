@@ -7,10 +7,10 @@
         <p class="cmp-page-sub">Gerencie suas aventuras e sessões.</p>
       </div>
       <div class="cmp-header-actions">
-        <button class="btn btn-secondary" (click)="openModal('join')">
+        <button type="button" class="btn btn-secondary" (click)="openModal('join')">
           <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
         </button>
-        <button class="btn btn-primary" (click)="openModal('create')">
+        <button type="button" class="btn btn-primary" (click)="openModal('create')">
           <i class="fa fa-plus"></i> Nova Campanha
         </button>
       </div>
@@ -20,70 +20,85 @@
     <div class="cmp-section-card">
 
       <!-- 1. SKELETON STATE (CAMPANHAS) -->
-      <div class="cmp-grid" *ngIf="isLoadingCampaigns">
-        <div class="cmp-card" *ngFor="let item of [1, 2, 3, 4]">
-          <div class="cmp-card__cover" style="padding: 0;">
-            <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
-          </div>
-          <div class="cmp-card__body">
-            <app-skeleton width="70%" height="18px"></app-skeleton>
-            <app-skeleton width="90%" height="14px"></app-skeleton>
-            <app-skeleton width="50%" height="14px"></app-skeleton>
-          </div>
+      @if (isLoadingCampaigns) {
+        <div class="cmp-grid">
+          @for (item of [1, 2, 3, 4]; track item) {
+            <div class="cmp-card">
+              <div class="cmp-card__cover" style="padding: 0;">
+                <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
+              </div>
+              <div class="cmp-card__body">
+                <app-skeleton width="70%" height="18px"></app-skeleton>
+                <app-skeleton width="90%" height="14px"></app-skeleton>
+                <app-skeleton width="50%" height="14px"></app-skeleton>
+              </div>
+            </div>
+          }
         </div>
-      </div>
+      }
 
       <!-- 2. GRID REAL DE CAMPANHAS -->
-      <div class="cmp-grid fade-in-content" *ngIf="!isLoadingCampaigns && myCampaigns.length > 0">
-        <div
-          class="cmp-card"
-          *ngFor="let camp of myCampaigns"
-          (click)="goToCampaignDetail(camp.id)"
-        >
-          <div
-            class="cmp-card__cover"
-            [style.background-image]="camp.iconPath ? 'url(' + camp.iconPath + ')' : ''"
-          >
-            <div class="cmp-card__cover-fallback" *ngIf="!camp.iconPath">
-              <i class="fa fa-map-location-dot"></i>
+      @if (!isLoadingCampaigns && myCampaigns.length > 0) {
+        <div class="cmp-grid fade-in-content">
+          @for (camp of myCampaigns; track camp.id) {
+            <div
+              class="cmp-card"
+              (click)="goToCampaignDetail(camp.id)"
+            >
+              <div
+                class="cmp-card__cover"
+                [style.background-image]="camp.iconPath ? 'url(' + camp.iconPath + ')' : ''"
+              >
+                @if (!camp.iconPath) {
+                  <div class="cmp-card__cover-fallback">
+                    <i class="fa fa-map-location-dot"></i>
+                  </div>
+                }
+                <div class="cmp-card__status" [class.cmp-card__status--inactive]="!camp.isActive">
+                  {{ camp.isActive ? 'Ativa' : 'Inativa' }}
+                </div>
+              </div>
+              <div class="cmp-card__body">
+                <h3 class="cmp-card__title">{{ camp.title }}</h3>
+                @if (camp.description) {
+                  <p class="cmp-card__desc">{{ camp.description }}</p>
+                }
+                <div class="cmp-card__meta">
+                  <span>
+                    <i class="fa fa-users"></i> {{ camp.playerIds?.length || 0 }}/{{ camp.maxPlayers }}
+                  </span>
+                  <span>
+                    <i class="fa fa-calendar"></i> {{ formatNextSession(camp.nextSession) }}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div class="cmp-card__status" [class.cmp-card__status--inactive]="!camp.isActive">
-              {{ camp.isActive ? 'Ativa' : 'Inativa' }}
-            </div>
-          </div>
-          <div class="cmp-card__body">
-            <h3 class="cmp-card__title">{{ camp.title }}</h3>
-            <p class="cmp-card__desc" *ngIf="camp.description">{{ camp.description }}</p>
-            <div class="cmp-card__meta">
-              <span>
-                <i class="fa fa-users"></i> {{ camp.playerIds?.length || 0 }}/{{ camp.maxPlayers }}
-              </span>
-              <span>
-                <i class="fa fa-calendar"></i> {{ formatNextSession(camp.nextSession) }}
-              </span>
-            </div>
-          </div>
+          }
         </div>
-      </div>
+      }
 
       <!-- 3. ESTADO VAZIO -->
-      <div class="cmp-empty" *ngIf="!isLoadingCampaigns && myCampaigns.length === 0">
-        <div class="cmp-empty__icon"><i class="fa fa-map"></i></div>
-        <p class="cmp-empty__title">Nenhuma campanha ainda.</p>
-        <p class="cmp-empty__sub">Crie sua própria aventura ou junte-se a uma existente.</p>
-        <div class="cmp-empty-actions">
-          <button class="btn btn-secondary" (click)="openModal('join')">
-            <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
-          </button>
-          <button class="btn btn-primary" (click)="openModal('create')">
-            <i class="fa fa-plus"></i> Nova Campanha
-          </button>
+      @if (!isLoadingCampaigns && myCampaigns.length === 0) {
+        <div class="cmp-empty">
+          <div class="cmp-empty__icon"><i class="fa fa-map"></i></div>
+          <p class="cmp-empty__title">Nenhuma campanha ainda.</p>
+          <p class="cmp-empty__sub">Crie sua própria aventura ou junte-se a uma existente.</p>
+          <div class="cmp-empty-actions">
+            <button type="button" class="btn btn-secondary" (click)="openModal('join')">
+              <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
+            </button>
+            <button type="button" class="btn btn-primary" (click)="openModal('create')">
+              <i class="fa fa-plus"></i> Nova Campanha
+            </button>
+          </div>
         </div>
-      </div>
+      }
 
-      <div id="btn-show-more" class="btn-show-more-container" *ngIf="!isLoadingCampaigns && showMoreButton">
-        <button class="btn btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
-      </div>
+      @if (!isLoadingCampaigns && showMoreButton) {
+        <div id="btn-show-more" class="btn-show-more-container">
+          <button type="button" class="btn btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
+        </div>
+      }
     </div>
 
     <!-- ── SEÇÃO: ACESSO RÁPIDO AOS PERSONAGENS ── -->
@@ -101,56 +116,65 @@
 
       <div class="char-session-list">
         <!-- 1. SKELETON STATE (PERSONAGENS) -->
-        <ng-container *ngIf="isLoadingCharacters">
-          <div class="char-session-card" *ngFor="let item of [1, 2, 3]">
-            <div class="char-session-card__left">
-              <app-skeleton width="48px" height="48px" radius="50%"></app-skeleton>
-              <div class="char-session-card__info" style="flex: 1;">
-                <app-skeleton width="40%" height="16px"></app-skeleton>
-                <app-skeleton width="60%" height="12px"></app-skeleton>
+        @if (isLoadingCharacters) {
+          @for (item of [1, 2, 3]; track item) {
+            <div class="char-session-card">
+              <div class="char-session-card__left">
+                <app-skeleton width="48px" height="48px" radius="50%"></app-skeleton>
+                <div class="char-session-card__info" style="flex: 1;">
+                  <app-skeleton width="40%" height="16px"></app-skeleton>
+                  <app-skeleton width="60%" height="12px"></app-skeleton>
+                </div>
               </div>
             </div>
-          </div>
-        </ng-container>
+          }
+        }
 
         <!-- 2. ESTADO VAZIO -->
-        <div class="char-empty" *ngIf="!isLoadingCharacters && myCharacters.length === 0">
-          <div class="char-empty__icon"><i class="fa fa-scroll"></i></div>
-          <p class="char-empty__text">Nenhum personagem encontrado.</p>
-          <a routerLink="/personagens" class="char-empty__link">
-            <i class="fa fa-plus"></i> Criar personagem
-          </a>
-        </div>
+        @if (!isLoadingCharacters && myCharacters.length === 0) {
+          <div class="char-empty">
+            <div class="char-empty__icon"><i class="fa fa-scroll"></i></div>
+            <p class="char-empty__text">Nenhum personagem encontrado.</p>
+            <a routerLink="/personagens" class="char-empty__link">
+              <i class="fa fa-plus"></i> Criar personagem
+            </a>
+          </div>
+        }
 
         <!-- 3. LISTA REAL DE PERSONAGENS -->
-        <ng-container *ngIf="!isLoadingCharacters && myCharacters.length > 0">
-          <div
-            class="char-session-card fade-in-content"
-            *ngFor="let char of myCharacters"
-            (click)="openCharacter(char.id)"
-          >
-            <div class="char-session-card__left">
-              <div
-                class="char-session-avatar"
-                [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
-              >
-                <i class="fa fa-shield-halved" *ngIf="!char.iconPath"></i>
+        @if (!isLoadingCharacters && myCharacters.length > 0) {
+          @for (char of myCharacters; track char.id) {
+            <div
+              class="char-session-card fade-in-content"
+              (click)="openCharacter(char.id)"
+            >
+              <div class="char-session-card__left">
+                <div
+                  class="char-session-avatar"
+                  [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"
+                >
+                  @if (!char.iconPath) {
+                    <i class="fa fa-shield-halved"></i>
+                  }
+                </div>
+                <div class="char-session-card__info">
+                  <span class="char-session-card__name">{{ char.name }}</span>
+                  @if (char.description) {
+                    <span class="char-session-card__desc">{{ char.description }}</span>
+                  }
+                </div>
               </div>
-              <div class="char-session-card__info">
-                <span class="char-session-card__name">{{ char.name }}</span>
-                <span class="char-session-card__desc" *ngIf="char.description">{{ char.description }}</span>
-              </div>
-            </div>
 
-            <div class="char-quick-meta">
-              <span class="char-quick-time" [class.never]="!wasAccessed(char.id)">
-                <i class="fa fa-clock"></i>
-                {{ lastAccessedLabel(char.id) }}
-              </span>
-              <i class="fa fa-chevron-right char-quick-arrow"></i>
+              <div class="char-quick-meta">
+                <span class="char-quick-time" [class.never]="!wasAccessed(char.id)">
+                  <i class="fa fa-clock"></i>
+                  {{ lastAccessedLabel(char.id) }}
+                </span>
+                <i class="fa fa-chevron-right char-quick-arrow"></i>
+              </div>
             </div>
-          </div>
-        </ng-container>
+          }
+        }
       </div>
     </div>
   </div>

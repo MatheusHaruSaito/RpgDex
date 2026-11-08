@@ -24,8 +24,11 @@ namespace RpgDex.Application.Interfaces
         public Task<Result<string>> UpdateConfiguration(string userId ,UpdateCampaignSettingsRequest request);
         //For now it won't be saved on database
         public Task<Result<string>> SendMessage(string userId, CampaignChatMessageRequest request);
-        public Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, DateTime? beforeSentAt, int pageSize, Guid campaignId);
-        
+        public Task<Result<ChatPagedResultDto>> GetChatMessages(string userId, Guid campaignId, DateTime? beforeSentAt, int pageSize, string? dataFilter = null);
+        Task<Result<string>> EditMessage(string userId, EditChatMessageRequest request);
+        Task<Result<string>> RestoreMessage(string userId, RestoreMessageRequest request);
+        Task<Result<bool>> AddRollToLogAsync(string userId, AddRollToLogRequest request);
+        Task<Result<IEnumerable<DiceRollsLogResult>>> GetDiceRollLogAsync(string userId, Guid campaignId);
 
 
 

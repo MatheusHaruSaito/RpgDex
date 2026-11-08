@@ -9,11 +9,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { UserResponse } from '../../../models/userResponse';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 export interface Theme {
   tag: string;
@@ -43,6 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private characterService = inject(CharacterService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   current = signal(0);
   private timer?: any;
@@ -157,9 +160,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.isLoadingUser = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.isLoadingUser = false;
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -173,9 +178,11 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.isLoadingCharacters = false;
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
       },
     });
   }

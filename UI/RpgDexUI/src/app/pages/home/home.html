@@ -94,7 +94,7 @@
     </div>
   </section>
 } @else {
-  <!-- HOME PARA USUÁRIOS LOGADOS (ESTRUTURA EM CARDS ESTILO PERFIL) -->
+  <!-- HOME PARA USUÁRIOS LOGADOS -->
   <div class="home-wrapper fade-in-content">
     <div class="home-container">
 
@@ -213,7 +213,7 @@
           } @else {
             <div class="chars-grid-large">
               @for (char of characterPreview; track char.id || char.name) {
-                <a [routerLink]="['/personagens']" class="char-dash-card">
+                <a [routerLink]="['/personagens', char.id]" class="char-dash-card">
                   <div
                     class="char-avatar"
                     [style.background-image]="char.iconPath ? 'url(' + char.iconPath + ')' : ''"

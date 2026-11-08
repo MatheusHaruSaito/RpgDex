@@ -1,10 +1,12 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import { UserDocumentService } from '../../services/user-document-service';
 import { UserDocumentResponse } from '../../../models/userDocumentResponse';
 import { CreateUserDocumentRequest } from '../../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../../models/updateUserDocumentRequest';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-library',
@@ -16,6 +18,7 @@ import { UpdateUserDocumentRequest } from '../../../models/updateUserDocumentReq
 export class LibraryComponent implements OnInit {
   private documentService = inject(UserDocumentService);
   private cdr = inject(ChangeDetectorRef);
+  private translateService = inject(TranslateService);
 
   documents: UserDocumentResponse[] = [];
   filteredDocuments: UserDocumentResponse[] = [];
@@ -67,8 +70,10 @@ export class LibraryComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.errorMessage = err?.error?.message || 'Erro ao carregar arquivos da biblioteca.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -169,8 +174,10 @@ export class LibraryComponent implements OnInit {
       },
       error: (err) => {
         this.isUploading = false;
-        this.errorMessage = err?.error?.message || 'Falha no envio do documento.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -227,8 +234,10 @@ export class LibraryComponent implements OnInit {
       },
       error: (err) => {
         this.isUpdating = false;
-        this.errorMessage = err?.error?.message || 'Erro ao salvar alterações.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
@@ -250,8 +259,10 @@ export class LibraryComponent implements OnInit {
         }
       },
       error: (err) => {
-        this.errorMessage = err?.error?.message || 'Erro ao desativar o arquivo.';
-        this.cdr.detectChanges();
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.errorMessage = msg;
+          this.cdr.detectChanges();
+        });
       },
     });
   }
