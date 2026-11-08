@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
@@ -49,17 +49,37 @@ export class ProfileComponent implements OnInit {
 
   characterPreview: Character[] = [];
   characterTotal = 0;
-
+  feedBackMessage = { text: '', type: '' };
   campaignPreview: CampaignDisplayItem[] = [];
   campaignTotal = 0;
+  constructor(private activatedRoute: ActivatedRoute) {}
 
   ngOnInit(): void {
+    this.HandleFeedBackMessage();
     this.initTheme();
     this.loadUser();
     this.loadCharacterPreview();
     this.loadCampaignPreview();
   }
 
+  private HandleFeedBackMessage(): void {
+    this.activatedRoute.queryParams.subscribe((params) => {
+      if (params['error']) {
+        const err = { error: { errors: [{ code: params['error'] }] } };
+        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+          this.feedBackMessage = { text: msg, type: 'error' };
+          this.cdr.detectChanges();
+        });
+      } else if (params['linked']) {
+        this.feedBackMessage = {
+          text: 'Conta vinculada com ' + params['linked'] + ' com sucesso!',
+          type: 'success',
+        };
+        this.cdr.detectChanges();
+      }
+    });
+    this.isSettingsModalOpen = true;
+  }
   private initTheme(): void {
     const saved = localStorage.getItem(THEME_KEY);
     this.isDarkMode = saved === 'dark';

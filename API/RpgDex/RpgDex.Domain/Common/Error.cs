@@ -32,7 +32,10 @@ namespace RpgDex.Domain.Common
         public static readonly Error CannotRemoveLastLogin = new("AUTH_CANNOT_REMOVE_LAST_LOGIN", "Cannot remove the last login method."); 
         public static readonly Error DiscordLinkedToAnotherUser = new("AUTH_DISCORD_LINKED_TO_ANOTHER_USER", "The Discord account is already linked to another user."); 
         public static readonly Error UserAlreadyHasDiscord = new("AUTH_USER_ALREADY_HAS_DISCORD", "The user already has a Discord account linked."); 
-        public static readonly Error DiscordNotLinked = new("AUTH_DISCORD_NOT_LINKED", "The user does not have a Discord account linked."); 
+        public static readonly Error DiscordNotLinked = new("AUTH_DISCORD_NOT_LINKED", "The user does not have a Discord account linked.");
+        public static readonly Error ExternalLoginFailed = new("AUTH_EXTERNAL_LOGIN_FAILED", "An error occurred while performing external login.");
+        public static readonly Error LinkTicketInvalid = new("LINK_TICKET_INVALID", "The link ticket is invalid or expired.");
+
     }
 
     public static class CampaignError

@@ -24,10 +24,6 @@ export class DiscordAuth {
       const redirectTo = params['redirectPage'] ?? '/';
 
       if (token) {
-        // Salva os tokens recebidos
-        for (var e in params) {
-          console.log(params[e]);
-        }
         this.authService.StoreToken(token, refreshToken);
 
         // Redireciona o usuário para a tela principal/dashboard da sua app

@@ -300,6 +300,12 @@ namespace RpgDex.Application.Services
         {
             var discorduser = await discordAuthService.GetDiscordUserAsync();
             var userLoginInfo = new UserLoginInfo(DiscordProvider, discorduser.Id, DiscordProvider);
+
+            var userByDiscord = await userManager.FindByLoginAsync(DiscordProvider, discorduser.Id);
+            if(userByDiscord is not null)
+            {
+                return await LogInAsync(userByDiscord);
+            }
             //Verify if user exists in the database
             var userDb = await userManager.FindByEmailAsync(discorduser.Email);
             if (userDb is not null)
@@ -310,6 +316,7 @@ namespace RpgDex.Application.Services
                 {
                     //Account exists but is not linked with Discord, link the account
                     await userManager.AddLoginAsync(userDb, userLoginInfo);
+
                 }
                 //User Login with Discord already exists, proceed to login
                 return await LogInAsync(userDb);
@@ -330,8 +337,12 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
-            await userManager.AddLoginAsync(user, userLoginInfo);
-
+            var addLogin = await userManager.AddLoginAsync(user, userLoginInfo);
+            if (!addLogin.Succeeded)
+            {
+                await userManager.DeleteAsync(user);
+                return Result<RefreshTokenModel>.Failure(AuthError.ExternalLoginFailed);
+            }
 
 
             return await LogInAsync(user);

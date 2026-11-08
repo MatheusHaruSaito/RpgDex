@@ -116,8 +116,10 @@ export class AuthService {
   }
 
   public Logout(): void {
-    this.cookieService.delete(this.JWT_Token, '/');
-    this.cookieService.delete(this.REFRESH_Token, '/');
+    for (const p of ['/', '/auth', '/Auth']) {
+      this.cookieService.delete(this.JWT_Token, p);
+      this.cookieService.delete(this.REFRESH_Token, p);
+    }
     this.currentUserSubject.next(null);
   }
 

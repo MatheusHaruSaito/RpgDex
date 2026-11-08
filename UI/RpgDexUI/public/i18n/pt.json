@@ -22,6 +22,8 @@
     "AUTH_DISCORD_LINKED_TO_ANOTHER_USER": "A conta do Discord já está ligada a outro utilizador.",
     "AUTH_USER_ALREADY_HAS_DISCORD": "O utilizador já tem uma conta do Discord ligada.",
     "AUTH_DISCORD_NOT_LINKED": "O utilizador não tem uma conta do Discord ligada.",
+    "AUTH_EXTERNAL_LOGIN_FAILED": "Ocorreu um erro ao realizar o login externo.",
+    "LINK_TICKET_INVALID": "O link ticket é inválido ou expirou.",
 
     "CAMPAIGN_NOT_FOUND": "Campanha não encontrada.",
     "CAMPAIGN_NOT_GAME_MASTER": "Apenas o Mestre da campanha pode realizar esta ação.",

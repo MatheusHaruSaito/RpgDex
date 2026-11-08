@@ -34,6 +34,7 @@ export class SettingsModalComponent implements OnChanges {
   @Input() isOpen = false;
   @Input() user: UserResponse | null = null;
   @Input() authOptions: AuthOptionsResponse | null = null;
+  @Input() feedBackMessageInput: { text: string; type: string } = { text: '', type: '' };
 
   @Output() closeModal = new EventEmitter<void>();
   @Output() twoFactorUpdated = new EventEmitter<boolean>();
@@ -50,18 +51,13 @@ export class SettingsModalComponent implements OnChanges {
   isLinkingDiscord = false;
   isUnlinkingDiscord = false;
 
-  settingsMessage = { text: '', type: '' };
-
+  settingsMessage = { text: this.feedBackMessageInput.text, type: this.feedBackMessageInput.type };
   get isGoogleLinked(): boolean {
-    return !!this.authOptions?.externalProviders?.some(
-      (p) => p.toLowerCase() === 'google'
-    );
+    return !!this.authOptions?.externalProviders?.some((p) => p.toLowerCase() === 'google');
   }
 
   get isDiscordLinked(): boolean {
-    return !!this.authOptions?.externalProviders?.some(
-      (p) => p.toLowerCase() === 'discord'
-    );
+    return !!this.authOptions?.externalProviders?.some((p) => p.toLowerCase() === 'discord');
   }
 
   get totalAuthMethodsCount(): number {
@@ -77,6 +73,12 @@ export class SettingsModalComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['feedBackMessageInput']) {
+      this.settingsMessage = {
+        text: this.feedBackMessageInput.text,
+        type: this.feedBackMessageInput.type,
+      };
+    }
     if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
       this.loadUserAuthOptions();
     }
@@ -131,7 +133,10 @@ export class SettingsModalComponent implements OnChanges {
             this.settingsMessage = { text: 'Conta Google vinculada com sucesso!', type: 'success' };
             this.loadUserAuthOptions();
           } else {
-            this.settingsMessage = { text: res?.error || 'Erro ao vincular conta Google.', type: 'error' };
+            this.settingsMessage = {
+              text: res?.error || 'Erro ao vincular conta Google.',
+              type: 'error',
+            };
           }
           this.cdr.detectChanges();
         },
@@ -158,10 +163,16 @@ export class SettingsModalComponent implements OnChanges {
       next: (res: any) => {
         this.isUnlinkingGoogle = false;
         if (res?.success ?? true) {
-          this.settingsMessage = { text: 'Conta Google desvinculada com sucesso!', type: 'success' };
+          this.settingsMessage = {
+            text: 'Conta Google desvinculada com sucesso!',
+            type: 'success',
+          };
           this.loadUserAuthOptions();
         } else {
-          this.settingsMessage = { text: res?.error || 'Erro ao desvincular conta Google.', type: 'error' };
+          this.settingsMessage = {
+            text: res?.error || 'Erro ao desvincular conta Google.',
+            type: 'error',
+          };
         }
         this.cdr.detectChanges();
       },
@@ -189,7 +200,10 @@ export class SettingsModalComponent implements OnChanges {
           // Redireciona o usuário para autorização do Discord
           window.location.href = redirectUrl;
         } else {
-          this.settingsMessage = { text: 'URL de autenticação do Discord não recebida.', type: 'error' };
+          this.settingsMessage = {
+            text: 'URL de autenticação do Discord não recebida.',
+            type: 'error',
+          };
           this.cdr.detectChanges();
         }
       },
@@ -213,10 +227,16 @@ export class SettingsModalComponent implements OnChanges {
       next: (res: any) => {
         this.isUnlinkingDiscord = false;
         if (res?.success ?? true) {
-          this.settingsMessage = { text: 'Conta Discord desvinculada com sucesso!', type: 'success' };
+          this.settingsMessage = {
+            text: 'Conta Discord desvinculada com sucesso!',
+            type: 'success',
+          };
           this.loadUserAuthOptions();
         } else {
-          this.settingsMessage = { text: res?.error || 'Erro ao desvincular conta Discord.', type: 'error' };
+          this.settingsMessage = {
+            text: res?.error || 'Erro ao desvincular conta Discord.',
+            type: 'error',
+          };
         }
         this.cdr.detectChanges();
       },
@@ -258,7 +278,8 @@ export class SettingsModalComponent implements OnChanges {
           };
         } else {
           this.settingsMessage = {
-            text: response?.message || response?.error || 'Erro ao solicitar código de verificação.',
+            text:
+              response?.message || response?.error || 'Erro ao solicitar código de verificação.',
             type: 'error',
           };
         }
