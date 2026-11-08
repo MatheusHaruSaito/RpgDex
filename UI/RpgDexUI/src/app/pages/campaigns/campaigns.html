@@ -18,11 +18,10 @@
 
     <!-- ── SEÇÃO: MINHAS CAMPANHAS ── -->
     <div class="cmp-section-card">
-
       <!-- 1. SKELETON STATE (CAMPANHAS) -->
       <div class="cmp-grid" *ngIf="isLoadingCampaigns">
         <div class="cmp-card" *ngFor="let item of [1, 2, 3, 4]">
-          <div class="cmp-card__cover" style="padding: 0;">
+          <div class="cmp-card__cover" style="padding: 0">
             <app-skeleton width="100%" height="150px" radius="0px"></app-skeleton>
           </div>
           <div class="cmp-card__body">
@@ -47,12 +46,12 @@
             <div class="cmp-card__cover-fallback" *ngIf="!camp.iconPath">
               <i class="fa fa-map-location-dot"></i>
             </div>
-            
+
             <button
               *ngIf="camp.gameMasterId !== currentUserId"
               type="button"
               class="btn-icon danger cmp-card__report-btn"
-              (click)="openReportModal($event, camp.id, 1, camp.title)"
+              (click)="openReportModal($event, camp.id, reportTypes.CampaignReport, camp.title)"
               title="Denunciar esta campanha"
             >
               <i class="fa-solid fa-flag"></i>
@@ -92,7 +91,11 @@
         </div>
       </div>
 
-      <div id="btn-show-more" class="btn-show-more-container" *ngIf="!isLoadingCampaigns && showMoreButton">
+      <div
+        id="btn-show-more"
+        class="btn-show-more-container"
+        *ngIf="!isLoadingCampaigns && showMoreButton"
+      >
         <button class="btn btn-primary" (click)="showMoreCampaigns()">Carregar Mais</button>
       </div>
     </div>
@@ -116,7 +119,7 @@
           <div class="char-session-card" *ngFor="let item of [1, 2, 3]">
             <div class="char-session-card__left">
               <app-skeleton width="48px" height="48px" radius="50%"></app-skeleton>
-              <div class="char-session-card__info" style="flex: 1;">
+              <div class="char-session-card__info" style="flex: 1">
                 <app-skeleton width="40%" height="16px"></app-skeleton>
                 <app-skeleton width="60%" height="12px"></app-skeleton>
               </div>
@@ -149,7 +152,9 @@
               </div>
               <div class="char-session-card__info">
                 <span class="char-session-card__name">{{ char.name }}</span>
-                <span class="char-session-card__desc" *ngIf="char.description">{{ char.description }}</span>
+                <span class="char-session-card__desc" *ngIf="char.description">{{
+                  char.description
+                }}</span>
               </div>
             </div>
 

@@ -38,7 +38,7 @@ export class CampaignsComponent implements OnInit {
   myCampaigns: Campaign[] = [];
   myCharacters: Character[] = [];
   currentUserId = '';
-
+  reportTypes = ReportType;
   // Estados de carregamento
   isLoadingCampaigns = true;
   isLoadingCharacters = true;
@@ -242,8 +242,8 @@ export class CampaignsComponent implements OnInit {
     const errorList = Array.isArray(body?.message)
       ? body.message
       : Array.isArray(body?.errors)
-      ? body.errors
-      : [];
+        ? body.errors
+        : [];
 
     const primaryError = errorList[0];
 

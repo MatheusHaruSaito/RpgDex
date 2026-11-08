@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto.Report;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -34,6 +35,7 @@ namespace RpgDex.Application.Services
 
             var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
             var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
+
             if (reportedUser is null)
             {
                 return Result<ReportResponse>.Failure(AuthError.UserNotFound);

@@ -21,12 +21,11 @@
     <!-- ── TOPBAR ── -->
     <div class="cd-topbar">
       <div class="cd-topbar-actions">
-        
         <!-- Botão para denunciar a campanha -->
         <button
           *ngIf="!isGameMaster"
           class="btn btn-outline-danger"
-          (click)="openReportModal(campaign.id, 1, campaign.title)"
+          (click)="openReportModal(campaign.id, reportTypes.CampaignReport, campaign.title)"
           title="Denunciar esta campanha"
         >
           <i class="fa-solid fa-flag"></i> Denunciar Campanha
@@ -337,7 +336,9 @@
                     (click)="toggleCharacter(char.id)"
                     [attr.aria-expanded]="expandedCharacterId === char.id"
                   >
-                    <span>{{ expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha' }}</span>
+                    <span>{{
+                      expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha'
+                    }}</span>
                     <i
                       class="fa"
                       [ngClass]="
@@ -394,7 +395,13 @@
                 *ngIf="campaign.gameMasterId !== currentUserId"
                 type="button"
                 class="btn btn-outline-danger btn-sm"
-                (click)="openReportModal(campaign.gameMasterId, 0, getUser(campaign.gameMasterId)?.displayName || 'Mestre')"
+                (click)="
+                  openReportModal(
+                    campaign.gameMasterId,
+                    reportTypes.UserReport,
+                    getUser(campaign.gameMasterId)?.displayName || 'Mestre'
+                  )
+                "
                 title="Denunciar Mestre"
               >
                 <i class="fa-solid fa-flag"></i>
@@ -408,7 +415,8 @@
                   <div
                     class="cd-player-avatar"
                     [style.background-image]="
-                      getUser(playerId)?.iconPath ? 'url(' + getUser(playerId)?.iconPath + ')' : ''"
+                      getUser(playerId)?.iconPath ? 'url(' + getUser(playerId)?.iconPath + ')' : ''
+                    "
                   >
                     <i class="fa fa-user" *ngIf="!getUser(playerId)?.iconPath"></i>
                   </div>
@@ -426,7 +434,13 @@
                     *ngIf="playerId !== currentUserId"
                     type="button"
                     class="btn btn-outline-danger btn-sm"
-                    (click)="openReportModal(playerId, 0, getUser(playerId)?.displayName || 'Jogador')"
+                    (click)="
+                      openReportModal(
+                        playerId,
+                        reportTypes.UserReport,
+                        getUser(playerId)?.displayName || 'Jogador'
+                      )
+                    "
                     title="Denunciar Jogador"
                   >
                     <i class="fa-solid fa-flag"></i>

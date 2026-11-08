@@ -51,10 +51,10 @@ export class CampaignDetailComponent implements OnInit {
   currentUserId = '';
   campaign?: Campaign;
 
-  isLoading = true; 
+  isLoading = true;
   isGameMaster = false;
   isPlayerInCampaign = false;
-
+  reportTypes = ReportType;
   usersCache: { [id: string]: UserResponse } = {};
 
   approvedCharacters: Character[] = [];

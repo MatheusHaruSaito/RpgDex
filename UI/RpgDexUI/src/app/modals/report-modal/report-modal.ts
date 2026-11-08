@@ -10,7 +10,7 @@ import { ReportType } from '../../../models/reportType';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './report-modal.html',
-  styleUrls: ['./report-modal.css']
+  styleUrls: ['./report-modal.css'],
 })
 export class ReportModalComponent {
   private reportService = inject(ReportService);
@@ -29,7 +29,7 @@ export class ReportModalComponent {
   get modalTitle(): string {
     // Trata valores numéricos e enum garantindo que Campanha e Personagem fiquem corretos
     const type = Number(this.reportType);
-    
+
     if (type === 0 || this.reportType === ReportType.UserReport) {
       return `Denunciar Jogador${this.targetName ? ': ' + this.targetName : ''}`;
     }
@@ -58,8 +58,8 @@ export class ReportModalComponent {
     const request: CreateReportRequest = {
       title: this.title.trim(),
       description: this.description.trim(),
-      dataId: this.targetId,
-      ReportEnum: Number(this.reportType) as ReportType
+      targetId: this.targetId,
+      reportType: Number(this.reportType) as ReportType,
     };
 
     this.reportService.CreateReport(request).subscribe({
@@ -75,8 +75,9 @@ export class ReportModalComponent {
       error: (err) => {
         this.isSubmitting = false;
         console.error('[ReportModal] Erro ao enviar denúncia:', err);
-        this.errorMessage = 'Ocorreu um erro interno ao enviar a sua denúncia. Tente novamente mais tarde.';
-      }
+        this.errorMessage =
+          'Ocorreu um erro interno ao enviar a sua denúncia. Tente novamente mais tarde.';
+      },
     });
   }
 }
