@@ -173,7 +173,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.canvasElementService.stopConnection();
   }
 
-  // Métodos de utilidade de posição no centro da viewport real
   getCanvasBounds(): DOMRect {
     if (this.canvasContainer?.nativeElement) {
       return this.canvasContainer.nativeElement.getBoundingClientRect();
@@ -238,7 +237,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   get visibleElements(): ExtendedCanvasElement[] {
     const bounds = this.getCanvasBounds();
-    const margin = 1000 / Math.max(this.scale, 0.2);
+    const margin = 5000 / Math.max(this.scale, 0.1);
 
     const minX = this.getWorldX(bounds.left) - margin;
     const maxX = this.getWorldX(bounds.left + bounds.width) + margin;
@@ -246,9 +245,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     const maxY = this.getWorldY(bounds.top + bounds.height) + margin;
 
     return this.elements.filter((el) => {
-      if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
-        return el.points.some((p) => p.x >= minX && p.x <= maxX && p.y >= minY && p.y <= maxY);
-      }
+      if (el.elementType === CanvasElementType.Drawing) return true;
 
       const elScale = el.scale || 1;
       const size = 600 * elScale;
@@ -491,7 +488,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (!this.campaignId) return;
 
     const bounds = this.getCanvasBounds();
-    const buffer = 3000;
+    const buffer = 5000;
     const minX = this.getWorldX(bounds.left) - buffer;
     const maxX = this.getWorldX(bounds.left + bounds.width) + buffer;
     const minY = this.getWorldY(bounds.top) - buffer;
@@ -570,7 +567,24 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (this.history.length > 0) {
       this.redoHistory.push(JSON.stringify(this.elements));
       const prevState = this.history.pop()!;
-      this.elements = JSON.parse(prevState);
+      const previousElements: ExtendedCanvasElement[] = JSON.parse(prevState);
+
+      const removedIds = this.elements
+        .filter((el) => !previousElements.some((prev) => prev.id === el.id) && !el.id.startsWith('temp-'))
+        .map((el) => el.id);
+
+      if (removedIds.length > 0) {
+        this.canvasElementService
+          .DeactiveElement({
+            campaignId: this.campaignId,
+            ids: removedIds,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao sincronizar desativação no undo:', err),
+          });
+      }
+
+      this.elements = previousElements;
       this.selectedElements = [];
     }
   }
@@ -846,9 +860,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   }
 
   eraseDrawingsAt(wx: number, wy: number): void {
-    const eraseRadius = 16;
+    if (isNaN(wx) || isNaN(wy)) return;
 
+    const eraseRadius = 16;
     const trailPoint: EraserTrailPoint = { x: wx, y: wy, id: Date.now() + Math.random() };
+
     this.eraserTrail.push(trailPoint);
     setTimeout(() => {
       this.eraserTrail = this.eraserTrail.filter((p) => p.id !== trailPoint.id);
@@ -1088,11 +1104,13 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   }
 
   getWorldX(screenX: number): number {
-    return (screenX - this.panX) / this.scale;
+    const bounds = this.getCanvasBounds();
+    return (screenX - bounds.left - this.panX) / this.scale;
   }
 
   getWorldY(screenY: number): number {
-    return (screenY - this.panY) / this.scale;
+    const bounds = this.getCanvasBounds();
+    return (screenY - bounds.top - this.panY) / this.scale;
   }
 
   centerCamera(): void {
@@ -1104,11 +1122,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   doZoom(newScale: number, clientX: number, clientY: number): void {
     newScale = Math.max(0.2, Math.min(newScale, 4));
     if (newScale === this.scale) return;
-    const wx = (clientX - this.panX) / this.scale;
-    const wy = (clientY - this.panY) / this.scale;
+    const bounds = this.getCanvasBounds();
+    const wx = (clientX - bounds.left - this.panX) / this.scale;
+    const wy = (clientY - bounds.top - this.panY) / this.scale;
     this.scale = newScale;
-    this.panX = clientX - wx * this.scale;
-    this.panY = clientY - wy * this.scale;
+    this.panX = clientX - bounds.left - wx * this.scale;
+    this.panY = clientY - bounds.top - wy * this.scale;
   }
 
   zoomIn(): void {
@@ -1139,21 +1158,32 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   }
 
   updateSelectionBoxIntersection(): void {
-    const bounds = this.getCanvasBounds();
-
-    const boxWorldX = this.getWorldX(
-      Math.min(this.selectionBox.startX, this.selectionBox.currentX) + bounds.left,
-    );
-    const boxWorldY = this.getWorldY(
-      Math.min(this.selectionBox.startY, this.selectionBox.currentY) + bounds.top,
-    );
-    const boxWorldW = Math.abs(this.selectionBox.currentX - this.selectionBox.startX) / this.scale;
-    const boxWorldH = Math.abs(this.selectionBox.currentY - this.selectionBox.startY) / this.scale;
+    const boxWorldX = Math.min(this.selectionBox.startX, this.selectionBox.currentX);
+    const boxWorldY = Math.min(this.selectionBox.startY, this.selectionBox.currentY);
+    const boxWorldW = Math.abs(this.selectionBox.currentX - this.selectionBox.startX);
+    const boxWorldH = Math.abs(this.selectionBox.currentY - this.selectionBox.startY);
 
     this.selectedElements = this.elements.filter((el) => {
+      if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+        const xs = el.points.map((p) => p.x);
+        const ys = el.points.map((p) => p.y);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+
+        return (
+          minX < boxWorldX + boxWorldW &&
+          maxX > boxWorldX &&
+          minY < boxWorldY + boxWorldH &&
+          maxY > boxWorldY
+        );
+      }
+
       const elScale = el.scale || 1;
-      const elW = 100 * elScale;
-      const elH = 100 * elScale;
+      const elW = (el.elementType === CanvasElementType.Token ? 50 : 100) * elScale;
+      const elH = (el.elementType === CanvasElementType.Token ? 50 : 100) * elScale;
+
       return (
         el.x < boxWorldX + boxWorldW &&
         el.x + elW > boxWorldX &&
@@ -1176,6 +1206,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     }
 
     this.isInteracting = true;
+    const wx = this.getWorldX(event.clientX);
+    const wy = this.getWorldY(event.clientY);
 
     if (this.activeTool === 'draw') {
       this.selectedElements = [];
@@ -1190,21 +1222,20 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         scale: 1,
         color: this.selectedColor,
         strokeWidth: this.brushSize,
-        points: [{ x: this.getWorldX(event.clientX), y: this.getWorldY(event.clientY) }],
+        points: [{ x: wx, y: wy }],
       };
       this.elements.push(newDrawing);
       this.activeDrawing = newDrawing;
     } else if (this.activeTool === 'eraser') {
-      this.eraseDrawingsAt(this.getWorldX(event.clientX), this.getWorldY(event.clientY));
+      this.lastPointer = { x: event.clientX, y: event.clientY };
     } else if (this.activeTool === 'cursor') {
       if (!(event.target as HTMLElement).closest('.board-element')) {
-        const bounds = this.getCanvasBounds();
         this.selectedElements = [];
         this.selectionBox.active = true;
-        this.selectionBox.startX = event.clientX - bounds.left;
-        this.selectionBox.startY = event.clientY - bounds.top;
-        this.selectionBox.currentX = event.clientX - bounds.left;
-        this.selectionBox.currentY = event.clientY - bounds.top;
+        this.selectionBox.startX = wx;
+        this.selectionBox.startY = wy;
+        this.selectionBox.currentX = wx;
+        this.selectionBox.currentY = wy;
       }
     }
   }
@@ -1214,7 +1245,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (this.activeTool === 'eraser') {
       event.stopPropagation();
-      this.eraseDrawingsAt(this.getWorldX(event.clientX), this.getWorldY(event.clientY));
+      this.isInteracting = true;
       return;
     }
 
@@ -1254,6 +1285,10 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (!this.isInteracting) return;
 
+    if (event.clientX === this.lastPointer.x && event.clientY === this.lastPointer.y && this.activeTool === 'eraser') {
+      return;
+    }
+
     const wx = this.getWorldX(event.clientX);
     const wy = this.getWorldY(event.clientY);
 
@@ -1263,9 +1298,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       this.eraseDrawingsAt(wx, wy);
     } else if (this.activeTool === 'cursor') {
       if (this.selectionBox.active) {
-        const bounds = this.getCanvasBounds();
-        this.selectionBox.currentX = event.clientX - bounds.left;
-        this.selectionBox.currentY = event.clientY - bounds.top;
+        this.selectionBox.currentX = wx;
+        this.selectionBox.currentY = wy;
         this.updateSelectionBoxIntersection();
       } else {
         const deltaX = event.clientX - this.lastPointer.x;
@@ -1280,8 +1314,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           });
         }
       }
-      this.lastPointer = { x: event.clientX, y: event.clientY };
     }
+    this.lastPointer = { x: event.clientX, y: event.clientY };
   }
 
   @HostListener('window:pointerup', ['$event'])

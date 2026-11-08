@@ -15,7 +15,6 @@
   -webkit-user-select: none;
 }
 
-/* campos de texto continuam selecionáveis/digitáveis */
 .canvas-fullscreen-wrapper input,
 .canvas-fullscreen-wrapper textarea {
   user-select: text;
@@ -24,7 +23,7 @@
 
 .canvas-ui { position: absolute; }
 
-/* ── PAINEL: base visual única ── */
+/* ── PAINEL: Base visual única ── */
 .canvas-panel,
 .toolbar-group {
   display: flex;
@@ -432,9 +431,10 @@ image-cropper { max-height: 400px; width: 100%; }
 .type-drawing path { pointer-events: stroke; cursor: pointer; transition: filter 0.2s; }
 .type-drawing path:hover { filter: drop-shadow(0 0 4px var(--rpg-purple, #9E74D0)); }
 
+/* ── TOKEN ── */
 .type-token {
   width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform-origin: center center;
+  border: 3px solid #ffffff; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transform-origin: top left;
   overflow: visible; position: relative;
 }
 
@@ -460,7 +460,7 @@ image-cropper { max-height: 400px; width: 100%; }
   transform: translateX(-50%) translateY(0) !important;
 }
 
-/* ── TEXTO E ANOTAÇÕES (Ajustado para seleção Encaixada) ── */
+/* ── TEXTO E ANOTAÇÕES ── */
 .type-text {
   font-family: 'Kalam', 'Nunito', cursive, sans-serif;
   font-size: 1.5rem;
@@ -489,6 +489,7 @@ image-cropper { max-height: 400px; width: 100%; }
   overflow: hidden;
 }
 
+/* ── CAIXA DE SELEÇÃO ── */
 .selection-box {
   position: absolute;
   background: rgba(158, 116, 208, 0.2);

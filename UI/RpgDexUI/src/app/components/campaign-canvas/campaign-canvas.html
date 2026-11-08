@@ -418,37 +418,36 @@
 
   <!-- ÁREA DE VISUALIZAÇÃO INFINITA (CANVAS WORLD) -->
   <div class="canvas-viewport" #canvasContainer (pointerdown)="onPointerDown($event)">
-    
-    <!-- CAIXA DE SELEÇÃO MÚLTIPLA MOVIDA PARA DENTRO DO VIEWPORT -->
-    <div
-      *ngIf="selectionBox.active"
-      class="selection-box"
-      [style.left.px]="getMin(selectionBox.startX, selectionBox.currentX)"
-      [style.top.px]="getMin(selectionBox.startY, selectionBox.currentY)"
-      [style.width.px]="getAbs(selectionBox.currentX - selectionBox.startX)"
-      [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
-    ></div>
-
     <div
       class="canvas-world"
       [style.transform]="'translate(' + panX + 'px, ' + panY + 'px) scale(' + scale + ')'"
     >
       <div class="grid-bg"></div>
 
+      <!-- CAIXA DE SELEÇÃO MÚLTIPLA -->
+      <div
+        *ngIf="selectionBox.active"
+        class="selection-box"
+        [style.left.px]="getMin(selectionBox.startX, selectionBox.currentX)"
+        [style.top.px]="getMin(selectionBox.startY, selectionBox.currentY)"
+        [style.width.px]="getAbs(selectionBox.currentX - selectionBox.startX)"
+        [style.height.px]="getAbs(selectionBox.currentY - selectionBox.startY)"
+      ></div>
+
       <!-- RASTRO VISUAL DA BORRACHA -->
-      <svg class="board-element type-drawing" style="z-index: 9999; pointer-events: none;">
+      <svg style="position: absolute; top: -50000px; left: -50000px; width: 100000px; height: 100000px; z-index: 9999; pointer-events: none;">
         <circle
           *ngFor="let p of eraserTrail"
-          [attr.cx]="p.x"
-          [attr.cy]="p.y"
-          r="14"
-          fill="rgba(158, 116, 208, 0.35)"
-          stroke="#9E74D0"
+          [attr.cx]="p.x + 50000"
+          [attr.cy]="p.y + 50000"
+          r="16"
+          fill="rgba(231, 76, 60, 0.35)"
+          stroke="#e74c3c"
           stroke-width="2"
         />
       </svg>
 
-      <!-- RENDER CULLING DA MESA (Apenas elementos visíveis) -->
+      <!-- RENDER CULLING DA MESA -->
       <ng-container *ngFor="let el of visibleElements">
         <!-- DESENHOS -->
         <svg
@@ -457,6 +456,15 @@
           [style.z-index]="el.z"
           (pointerdown)="onElementDown($event, el)"
         >
+          <path
+            [attr.d]="getSvgPath(el.points)"
+            stroke="transparent"
+            stroke-width="20"
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="pointer-events: stroke; cursor: pointer;"
+          />
           <path
             [class.selected-path]="selectedElements.includes(el)"
             [attr.d]="getSvgPath(el.points)"
