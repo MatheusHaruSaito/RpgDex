@@ -67,7 +67,7 @@ export class AdminComponent implements OnInit {
   // ── REPORTES ──
   loadReports(): void {
     this.isLoadingReports = true;
-    this.reportService.GetAll(this.currentPage, this.pageSize, false).subscribe({
+    this.reportService.GetAll(this.currentPage, this.pageSize, true).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.reports = res.data.reports || [];
