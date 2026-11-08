@@ -1,5 +1,7 @@
 ﻿using ImageMagick;
+using Mapster;
 using MongoDB.Driver;
+using RpgDex.Application.Dto.UserDocument;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure.Data;
@@ -26,5 +28,19 @@ namespace RpgDex.Infrastructure.Queries
             var totalBytes = result?.TotalBytes ?? 0L;
             return totalBytes / 1024m / 1024m;
         }
+        public async Task<GetAllUserDocumentResponse> GetAllAsync(Guid userId, int page = 1, int pageSize = 5)
+        {
+            var filter = Builders<UserDocument>.Filter.Eq(x => x.UserId, userId)
+                & Builders<UserDocument>.Filter.Eq(x => x.IsActive, true);
+
+             var elements = await _entity.Find(filter)
+                .Skip((page - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
+
+            var currentSize =  await GetDocumentStorageInMbByUserId(userId);
+            return new GetAllUserDocumentResponse(elements.Adapt<IEnumerable<UserDocumentResponse>>(), currentSize, 0);
+        }
+
     }
 }

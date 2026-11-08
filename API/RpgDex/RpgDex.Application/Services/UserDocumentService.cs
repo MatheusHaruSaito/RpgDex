@@ -3,6 +3,7 @@ using FluentValidation;
 using Mapster;
 using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.UserDocument;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -56,13 +57,15 @@ namespace RpgDex.Application.Services
             }
         }
 
-        public async Task<Result<IEnumerable<UserDocumentResponse>>> GetAllByUserId(string userId, int page, int pageSize)
+        public async Task<Result<GetAllUserDocumentResponse>> GetAllByUserId(string userId, int page, int pageSize)
         {
 
-            if (!Guid.TryParse(userId, out var userGuidId)) return Result<IEnumerable<UserDocumentResponse>>.Failure(Error.InvalidUserId);
+            if (!Guid.TryParse(userId, out var userGuidId)) return Result<GetAllUserDocumentResponse>.Failure(Error.InvalidUserId);
 
-            var result = await userDocumentRepository.GetAllAsync(userGuidId, page, pageSize);
-            return Result<IEnumerable<UserDocumentResponse>>.Success(result.Adapt<IEnumerable<UserDocumentResponse>>());
+            var result = await userDocumentQueries.GetAllAsync(userGuidId, page, pageSize);
+            var limits = await subscriptionService.GetSubscritptionLimits(userId);
+
+            return Result<GetAllUserDocumentResponse>.Success(result with { DocumentsStorageCapacity = limits.Value!.DocumentsSpaceMB });
         }
 
         public async Task<Result<UserDocumentResponse>> GetById(string userId, Guid id)

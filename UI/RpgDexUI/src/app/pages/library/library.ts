@@ -90,7 +90,7 @@ export class LibraryComponent implements OnInit {
       next: (res) => {
         this.isLoading = false;
         if (res.success && res.data) {
-          this.documents = res.data;
+          this.documents = res.data.elements;
           this.applyFilters();
         }
         this.cdr.detectChanges();
@@ -114,7 +114,7 @@ export class LibraryComponent implements OnInit {
         (doc) =>
           doc.name?.toLowerCase().includes(term) ||
           doc.description?.toLowerCase().includes(term) ||
-          doc.fileName?.toLowerCase().includes(term)
+          doc.fileName?.toLowerCase().includes(term),
       );
     }
 
@@ -122,7 +122,8 @@ export class LibraryComponent implements OnInit {
       result = result.filter((doc) => {
         const ext = this.getFileExtension(doc.fileName);
         if (this.activeFilter === 'pdf') return ext === 'pdf';
-        if (this.activeFilter === 'image') return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+        if (this.activeFilter === 'image')
+          return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
         if (this.activeFilter === 'doc') return ['doc', 'docx', 'txt', 'rtf'].includes(ext);
         if (this.activeFilter === 'audio') return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
         return true;
@@ -154,7 +155,10 @@ export class LibraryComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
       if (!this.uploadData.name) {
-        const nameWithoutExt = this.selectedFile.name.substring(0, this.selectedFile.name.lastIndexOf('.'));
+        const nameWithoutExt = this.selectedFile.name.substring(
+          0,
+          this.selectedFile.name.lastIndexOf('.'),
+        );
         this.uploadData.name = nameWithoutExt || this.selectedFile.name;
       }
     }
@@ -165,7 +169,10 @@ export class LibraryComponent implements OnInit {
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       this.selectedFile = event.dataTransfer.files[0];
       if (!this.uploadData.name) {
-        const nameWithoutExt = this.selectedFile.name.substring(0, this.selectedFile.name.lastIndexOf('.'));
+        const nameWithoutExt = this.selectedFile.name.substring(
+          0,
+          this.selectedFile.name.lastIndexOf('.'),
+        );
         this.uploadData.name = nameWithoutExt || this.selectedFile.name;
       }
     }
