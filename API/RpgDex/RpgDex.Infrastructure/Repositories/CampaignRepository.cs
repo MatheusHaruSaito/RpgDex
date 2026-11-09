@@ -95,5 +95,14 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.UpdateManyAsync(filter, updatedCampaign);
             return result.MatchedCount > 0;
         }
+        public async Task<bool> RemoveUserFromCampaigns(Guid userId)
+        {
+            var filter = Builders<Campaign>.Filter.AnyEq("PlayerIds", userId);
+            var updatedCampaign = Builders<Campaign>.Update
+                .Pull("PlayerIds", userId);
+
+            var result = await _entity.UpdateManyAsync(filter, updatedCampaign);
+            return result.MatchedCount > 0;
+        }
     }
 }

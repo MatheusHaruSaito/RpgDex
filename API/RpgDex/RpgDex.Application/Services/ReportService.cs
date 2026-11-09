@@ -113,6 +113,7 @@ namespace RpgDex.Application.Services
             await tokenRepository.DeleteAllUserRefreshTokensByUserIdAsync(userId);
             //Characters have a method to remove all in campaign-canvas branch
             await campaignRepository.SetAllActiveStateByUserId(userId,false);
+            await campaignRepository.RemoveUserFromCampaigns(userId);
         }
 
         private async Task<Guid> GetUserIdByReportType(ReportEnum type,Guid DataId)
