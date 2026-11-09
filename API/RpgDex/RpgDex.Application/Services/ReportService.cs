@@ -97,14 +97,7 @@ namespace RpgDex.Application.Services
             {
                 return Result<ReportResponse>.Failure(UserError.BanFailed);
             }
-            await tokenRepository.DeleteAllUserRefreshTokensByUserIdAsync(user.Id);
-
-            var htmlBody = emailService.GenerateEmailUserPunishmentHTMLTemplate(lockoutEnd, user.UserName);
-            var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email, user.UserName, "User Punishment", htmlBody);
-            if (!isEmailSent)
-            {
-                return Result<ReportResponse>.Failure(AuthError.EmailSendFailed);
-            }
+            await HandleUserPunishmentSetToActive(user.Id);
 
             var closeResult = await reportRepository.SetActiveState(report.Id, false);
             if (!closeResult)
@@ -113,6 +106,13 @@ namespace RpgDex.Application.Services
             }
             return Result<ReportResponse>.Success(report.Adapt<ReportResponse>());
 
+        }
+
+        private async Task HandleUserPunishmentSetToActive(Guid userId)
+        {
+            await tokenRepository.DeleteAllUserRefreshTokensByUserIdAsync(userId);
+            //Characters have a method to remove all in campaign-canvas branch
+            await campaignRepository.SetAllActiveStateByUserId(userId,false);
         }
 
         private async Task<Guid> GetUserIdByReportType(ReportEnum type,Guid DataId)

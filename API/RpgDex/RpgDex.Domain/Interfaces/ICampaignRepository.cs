@@ -13,6 +13,8 @@ namespace RpgDex.Domain.Interfaces
         Task<Campaign> GetByIdAsync(Guid id);
         Task<Campaign> UpdateAsync(Campaign newCampaign);
         Task<bool> SetActiveState(Guid Id, bool ActiveState);
+        Task<bool> SetAllActiveStateByUserId(Guid Id, bool ActiveState);
+        
 
     }
     public record GetAllCampaignResult(IEnumerable<Campaign> campaign,int campaignLenght);

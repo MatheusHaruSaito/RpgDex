@@ -85,5 +85,15 @@ namespace RpgDex.Infrastructure.Repositories
                 & Builders<Campaign>.Filter.Eq(c=> c.IsActive, true);
             return isGameMaster | isPlayerAndActive;
         }
+
+        public async Task<bool> SetAllActiveStateByUserId(Guid userId, bool ActiveState)
+        {
+            var filter = Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId);
+            var updatedCampaign = Builders<Campaign>.Update
+                .Set(c => c.IsActive, ActiveState);
+
+            var result = await _entity.UpdateManyAsync(filter, updatedCampaign);
+            return result.MatchedCount > 0;
+        }
     }
 }
