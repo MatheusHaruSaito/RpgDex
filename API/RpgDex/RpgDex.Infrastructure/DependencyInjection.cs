@@ -23,6 +23,7 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace RpgDex.Infrastructure
@@ -152,6 +153,19 @@ namespace RpgDex.Infrastructure
                                 context.Token = accessToken;
                             }
                             return Task.CompletedTask;
+                        },
+                        OnTokenValidated = async ctx =>
+                        {
+                            var userManager = ctx.HttpContext.RequestServices
+                                .GetRequiredService<UserManager<ApplicationUser>>();
+
+                            var userId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                                         ?? ctx.Principal?.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+                            var user = userId is null ? null : await userManager.FindByIdAsync(userId);
+
+                            if (user is null || await userManager.IsLockedOutAsync(user))
+                                ctx.Fail("User is banned.");
                         }
                     };
                 })
