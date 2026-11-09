@@ -93,7 +93,10 @@ export class AuthService {
         if (response.success && response.data?.accessToken) {
           const currentUser = this.currentUserValue || {};
           currentUser.accessToken = response.data.accessToken;
-          this.cookieService.set(this.JWT_Token, response.data.accessToken);
+          this.cookieService.set(this.JWT_Token, response.data.accessToken, {
+            sameSite: 'Lax',
+            path: '/',
+          });
           this.currentUserSubject.next(currentUser);
         }
         return response;
