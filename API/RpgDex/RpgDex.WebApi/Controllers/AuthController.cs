@@ -150,12 +150,14 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPost("sendResetPasswordEmail")]
+        [AllowAnonymous]
         public async Task<IActionResult> SendResetPasswordEmail(SendResetPasswordEmailRequest request)
         {
             var result = await _authSerice.SendResetPasswordEmailAsync(request);
             return result.ToIActionResult();
         }
         [HttpPost("resetPassword")]
+        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             var result = await _authSerice.ResetPasswordAsync(currentUser, request);

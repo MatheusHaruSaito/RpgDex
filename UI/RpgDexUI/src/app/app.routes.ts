@@ -12,6 +12,8 @@ import { EmailConfirmation } from './pages/email-confirmation/email-confirmation
 import { EmailPending } from './pages/email-pending/email-pending';
 import { DiscordAuth } from './callbacks/discord-auth/discord-auth';
 
+// ... imports existentes ...
+
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
@@ -20,6 +22,17 @@ export const routes: Routes = [
   { path: 'emailConfirmation', component: EmailConfirmation },
   { path: 'verificar-email', component: EmailPending },
   { path: 'auth/callback', component: DiscordAuth },
+
+  {
+    path: 'esqueci-senha',
+    loadComponent: () =>
+      import('./pages/forgot-password/forgot-password').then((m) => m.ForgotPasswordComponent),
+  },
+  {
+    path: 'resetPassword',
+    loadComponent: () =>
+      import('./pages/reset-password/reset-password').then((m) => m.ResetPasswordComponent),
+  },
 
   {
     path: 'perfil',
@@ -62,10 +75,6 @@ export const routes: Routes = [
     path: 'biblioteca',
     loadComponent: () => import('./pages/library/library').then((m) => m.LibraryComponent),
     canActivate: [authGuard],
-  },
-  {
-    path: 'resetPassword',
-    loadComponent: () => import('./pages/reset-password/reset-password').then(m => m.ResetPasswordComponent)
   },
   { path: '**', redirectTo: '/home' },
 ];
