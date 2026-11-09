@@ -14,7 +14,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager, IEmailService emailService,
-        IReportQueries queries) : IReportService
+        IReportQueries queries, ITokenRepository tokenRepository) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
         {
@@ -97,6 +97,7 @@ namespace RpgDex.Application.Services
             {
                 return Result<ReportResponse>.Failure(UserError.BanFailed);
             }
+            await tokenRepository.DeleteAllUserRefreshTokensByUserIdAsync(user.Id);
 
             var htmlBody = emailService.GenerateEmailUserPunishmentHTMLTemplate(lockoutEnd, user.UserName);
             var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email, user.UserName, "User Punishment", htmlBody);

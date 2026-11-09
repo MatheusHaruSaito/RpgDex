@@ -16,7 +16,10 @@ namespace RpgDex.Infrastructure.Repositories
         {
             _dbContext = dbContext;
             _refreshTokens = _dbContext.RefreshTokens;
-        } 
+        }
+
+        public Task DeleteAllUserRefreshTokensByUserIdAsync(Guid userId)=>
+            _refreshTokens.DeleteManyAsync(t => t.UserId == userId);
 
         public async Task<bool> DeleteTokenByValueAsync(string token)
         {
