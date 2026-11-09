@@ -569,6 +569,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       const prevState = this.history.pop()!;
       const previousElements: ExtendedCanvasElement[] = JSON.parse(prevState);
 
+      // 1. Identifica elementos criados após a ação desfazer e desativa no backend
       const removedIds = this.elements
         .filter((el) => !previousElements.some((prev) => prev.id === el.id) && !el.id.startsWith('temp-'))
         .map((el) => el.id);
@@ -584,6 +585,26 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           });
       }
 
+      // 2. Identifica elementos que apenas mudaram de posição X/Y e sincroniza
+      const movedItems: { id: string; x: number; y: number }[] = [];
+      previousElements.forEach((prev) => {
+        const current = this.elements.find((e) => e.id === prev.id);
+        if (current && (current.x !== prev.x || current.y !== prev.y)) {
+          movedItems.push({ id: prev.id, x: prev.x, y: prev.y });
+        }
+      });
+
+      if (movedItems.length > 0) {
+        this.canvasElementService
+          .MoveElement({
+            campaignId: this.campaignId,
+            items: movedItems,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao mover elementos no undo:', err),
+          });
+      }
+
       this.elements = previousElements;
       this.selectedElements = [];
     }
@@ -593,7 +614,29 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (this.redoHistory.length > 0) {
       this.history.push(JSON.stringify(this.elements));
       const nextState = this.redoHistory.pop()!;
-      this.elements = JSON.parse(nextState);
+      const nextElements: ExtendedCanvasElement[] = JSON.parse(nextState);
+
+      // Sincroniza posições ao refazer
+      const movedItems: { id: string; x: number; y: number }[] = [];
+      nextElements.forEach((next) => {
+        const current = this.elements.find((e) => e.id === next.id);
+        if (current && (current.x !== next.x || current.y !== next.y)) {
+          movedItems.push({ id: next.id, x: next.x, y: next.y });
+        }
+      });
+
+      if (movedItems.length > 0) {
+        this.canvasElementService
+          .MoveElement({
+            campaignId: this.campaignId,
+            items: movedItems,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao mover elementos no redo:', err),
+          });
+      }
+
+      this.elements = nextElements;
       this.selectedElements = [];
     }
   }
@@ -846,16 +889,18 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (deletable.length === 0) return;
     this.saveState();
 
+    const idsToDelete = deletable.map((el) => el.id);
+
     const deleteRequest = {
       campaignId: this.campaignId,
-      ids: deletable.map((el) => el.id),
+      ids: idsToDelete,
     };
 
     this.canvasElementService.DeactiveElement(deleteRequest).subscribe({
       error: (err) => console.error('[Canvas] Erro ao desativar elementos:', err),
     });
 
-    this.elements = this.elements.filter((e) => !deletable.includes(e));
+    this.elements = this.elements.filter((e) => !idsToDelete.includes(e.id));
     this.selectedElements = [];
   }
 
@@ -1195,7 +1240,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   onPointerDown(event: PointerEvent): void {
     if ((event.target as HTMLElement).closest('.canvas-ui')) return;
-    (event.target as Element).setPointerCapture(event.pointerId);
+    const targetEl = event.target as Element;
+    if (targetEl && targetEl.setPointerCapture) {
+      try {
+        targetEl.setPointerCapture(event.pointerId);
+      } catch (e) {}
+    }
 
     this.pointerDownState = JSON.stringify(this.elements);
     this.lastPointer = { x: event.clientX, y: event.clientY };
@@ -1252,7 +1302,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (this.activeTool !== 'cursor') return;
 
     event.stopPropagation();
-    (event.target as Element).setPointerCapture(event.pointerId);
+    const targetEl = event.target as Element;
+    if (targetEl && targetEl.setPointerCapture) {
+      try {
+        targetEl.setPointerCapture(event.pointerId);
+      } catch (e) {}
+    }
 
     this.pointerDownState = JSON.stringify(this.elements);
     this.isInteracting = true;
