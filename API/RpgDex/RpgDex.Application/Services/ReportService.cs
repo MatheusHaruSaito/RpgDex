@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Report;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -14,7 +15,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager, IEmailService emailService,
-        IReportQueries queries, ITokenRepository tokenRepository) : IReportService
+        IReportQueries queries, ITokenRepository tokenRepository, IFileService fileService, ILogger<ReportService> logger) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
         {
@@ -33,17 +34,39 @@ namespace RpgDex.Application.Services
         {
             if (!Guid.TryParse(userId, out var userIdGuid)) return Result<ReportResponse>.Failure(Error.InvalidUserId);
 
-            var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
-            var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
+            var report = request.Adapt<Report>();
+            report.Id = Guid.NewGuid();
+            report.ReportOwner = userIdGuid;
 
-            if (reportedUser is null)
+            if (request.ReportType == ReportEnum.CustomReport) {
+                if (request.Image is not null)
+                {
+                    try
+                    {
+                        report.Images = await fileService.UploadFileAsync(request.Image, report.Id.ToString());
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.LogError("Exception: {ex}", ex);
+                        return Result<ReportResponse>.Failure(Error.UploadImageFailed);
+                    }
+                }
+
+            }
+            else
             {
-                return Result<ReportResponse>.Failure(AuthError.UserNotFound);
+                var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
+                var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
+
+                if (reportedUser is null)
+                {
+                    return Result<ReportResponse>.Failure(AuthError.UserNotFound);
+                }
+
+                report.ReportedUser = reportedUserId;
+
             }
 
-            var report = request.Adapt<Report>();
-            report.ReportOwner = userIdGuid;
-            report.ReportedUser = reportedUserId;
             var response = await reportRepository.InsertAsync(report);
             if (response is null)
             {

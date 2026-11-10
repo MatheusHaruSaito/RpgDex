@@ -8,6 +8,7 @@ namespace RpgDex.Domain.Enums
     {
         UserReport,
         CharacterReport,
-        CampaignReport
+        CampaignReport,
+        CustomReport,
     }
 }

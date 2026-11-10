@@ -9,4 +9,5 @@ export interface ReportResponse {
   reportedUser: string;
   isActive: boolean;
   ReportEnum: ReportType;
+  imagePath: string;
 }
