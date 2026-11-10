@@ -74,10 +74,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   eraserTrail: EraserTrailPoint[] = [];
 
   selectedElements: ExtendedCanvasElement[] = [];
+  clipboardStorage: ExtendedCanvasElement[] = [];
   selectionBox = { active: false, startX: 0, startY: 0, currentX: 0, currentY: 0 };
 
   activeDrawing: ExtendedCanvasElement | null = null;
   lastPointer = { x: 0, y: 0 };
+  mouseWorldPos = { x: 0, y: 0 };
   maxZ: number = 10;
 
   elements: ExtendedCanvasElement[] = [];
@@ -526,6 +528,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       color: el.color || '#9E74D0',
       content: el.content || (el.isRound ? 'round' : 'square'),
       image: imageToUpdate,
+      points: el.elementType === CanvasElementType.Drawing ? el.points : undefined,
     };
 
     this.canvasElementService.UpdateElement(req).subscribe({
@@ -569,9 +572,10 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       const prevState = this.history.pop()!;
       const previousElements: ExtendedCanvasElement[] = JSON.parse(prevState);
 
-      // 1. Identifica elementos criados após a ação desfazer e desativa no backend
       const removedIds = this.elements
-        .filter((el) => !previousElements.some((prev) => prev.id === el.id) && !el.id.startsWith('temp-'))
+        .filter(
+          (el) => !previousElements.some((prev) => prev.id === el.id) && !el.id.startsWith('temp-'),
+        )
         .map((el) => el.id);
 
       if (removedIds.length > 0) {
@@ -585,7 +589,23 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           });
       }
 
-      // 2. Identifica elementos que apenas mudaram de posição X/Y e sincroniza
+      const restoredIds = previousElements
+        .filter(
+          (prev) => !this.elements.some((el) => el.id === prev.id) && !prev.id.startsWith('temp-'),
+        )
+        .map((prev) => prev.id);
+
+      if (restoredIds.length > 0) {
+        this.canvasElementService
+          .ActiveElement({
+            campaignId: this.campaignId,
+            ids: restoredIds,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao reativar elementos no undo:', err),
+          });
+      }
+
       const movedItems: { id: string; x: number; y: number }[] = [];
       previousElements.forEach((prev) => {
         const current = this.elements.find((e) => e.id === prev.id);
@@ -616,7 +636,40 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       const nextState = this.redoHistory.pop()!;
       const nextElements: ExtendedCanvasElement[] = JSON.parse(nextState);
 
-      // Sincroniza posições ao refazer
+      const removedIds = this.elements
+        .filter(
+          (el) => !nextElements.some((next) => next.id === el.id) && !el.id.startsWith('temp-'),
+        )
+        .map((el) => el.id);
+
+      if (removedIds.length > 0) {
+        this.canvasElementService
+          .DeactiveElement({
+            campaignId: this.campaignId,
+            ids: removedIds,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao desativar elementos no redo:', err),
+          });
+      }
+
+      const restoredIds = nextElements
+        .filter(
+          (next) => !this.elements.some((el) => el.id === next.id) && !next.id.startsWith('temp-'),
+        )
+        .map((next) => next.id);
+
+      if (restoredIds.length > 0) {
+        this.canvasElementService
+          .ActiveElement({
+            campaignId: this.campaignId,
+            ids: restoredIds,
+          })
+          .subscribe({
+            error: (err) => console.error('[Canvas] Erro ao reativar elementos no redo:', err),
+          });
+      }
+
       const movedItems: { id: string; x: number; y: number }[] = [];
       nextElements.forEach((next) => {
         const current = this.elements.find((e) => e.id === next.id);
@@ -672,7 +725,10 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   onCopy(event: ClipboardEvent): void {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
       return;
+
     if (this.selectedElements.length > 0) {
+      this.clipboardStorage = JSON.parse(JSON.stringify(this.selectedElements));
+
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
       event.preventDefault();
@@ -683,9 +739,13 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   onCut(event: ClipboardEvent): void {
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
       return;
+
     if (this.selectedElements.length > 0) {
+      this.clipboardStorage = JSON.parse(JSON.stringify(this.selectedElements));
+
       const data = JSON.stringify({ isRpgDexElements: true, elements: this.selectedElements });
       event.clipboardData?.setData('text/plain', data);
+
       this.deleteSelected();
       event.preventDefault();
     }
@@ -700,76 +760,144 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     const textData = event.clipboardData?.getData('text/plain');
     const center = this.getViewportCenterWorld();
 
+    let elementsToPaste: ExtendedCanvasElement[] = [];
+
     if (textData && textData.includes('isRpgDexElements')) {
       try {
         const parsed = JSON.parse(textData);
         if (parsed.isRpgDexElements && Array.isArray(parsed.elements)) {
-          this.saveState();
-          const pastedElements: ExtendedCanvasElement[] = [];
-
-          parsed.elements.forEach((el: ExtendedCanvasElement) => {
-            if (el.elementType === CanvasElementType.Token && el.characterId) {
-              const req: CreateCanvaTokenElementRequest = {
-                campaignId: this.campaignId,
-                characterId: el.characterId,
-                content: el.content,
-                x: el.x + 40,
-                y: el.y + 40,
-                z: ++this.maxZ,
-                scale: el.scale,
-                color: el.color,
-              };
-
-              this.canvasElementService.CreateTokenElement(req).subscribe({
-                next: (res) => {
-                  if (res.success && res.data) {
-                    const newEl: ExtendedCanvasElement = {
-                      ...res.data,
-                      imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                    };
-                    this.selectAndSyncElement(newEl);
-                    pastedElements.push(newEl);
-                    this.selectedElements = [...pastedElements];
-                  }
-                },
-                error: (err) => console.error('[Canvas] Erro ao colar token:', err),
-              });
-            } else {
-              const req: CreateCanvaElementRequest = {
-                campaignId: this.campaignId,
-                elementType: el.elementType,
-                content: el.content,
-                x: el.x + 40,
-                y: el.y + 40,
-                z: ++this.maxZ,
-                scale: el.scale,
-                color: el.color,
-                strokeWidth: el.strokeWidth,
-                points: el.points,
-                image: undefined,
-              };
-
-              this.canvasElementService.CreateElement(req).subscribe({
-                next: (res) => {
-                  if (res.success && res.data) {
-                    const newEl: ExtendedCanvasElement = {
-                      ...res.data,
-                      imageUrl: res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                      isRound: el.isRound,
-                    };
-                    this.selectAndSyncElement(newEl);
-                    pastedElements.push(newEl);
-                    this.selectedElements = [...pastedElements];
-                  }
-                },
-                error: (err) => console.error('[Canvas] Erro ao colar elemento:', err),
-              });
-            }
-          });
-          event.preventDefault();
-          return;
+          elementsToPaste = parsed.elements;
         }
       } catch (e) {}
+    }
+
+    if (elementsToPaste.length === 0 && this.clipboardStorage.length > 0) {
+      elementsToPaste = this.clipboardStorage;
+    }
+
+    if (elementsToPaste.length > 0) {
+      this.saveState();
+      this.selectedElements = [];
+
+      const targetPos =
+        this.mouseWorldPos.x !== 0 || this.mouseWorldPos.y !== 0
+          ? this.mouseWorldPos
+          : center;
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+      elementsToPaste.forEach((el) => {
+        if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+          el.points.forEach((p) => {
+            if (p.x < minX) minX = p.x;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.y > maxY) maxY = p.y;
+          });
+        } else {
+          if (el.x < minX) minX = el.x;
+          if (el.x > maxX) maxX = el.x;
+          if (el.y < minY) minY = el.y;
+          if (el.y > maxY) maxY = el.y;
+        }
+      });
+
+      const groupCenterX = (minX + maxX) / 2;
+      const groupCenterY = (minY + maxY) / 2;
+
+      elementsToPaste.forEach((el: ExtendedCanvasElement) => {
+        const offsetX = el.x - groupCenterX;
+        const offsetY = el.y - groupCenterY;
+        const newX = targetPos.x + offsetX;
+        const newY = targetPos.y + offsetY;
+
+        let translatedPoints = el.points;
+        if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+          const deltaX = targetPos.x - groupCenterX;
+          const deltaY = targetPos.y - groupCenterY;
+          translatedPoints = el.points.map((p) => ({
+            x: p.x + deltaX,
+            y: p.y + deltaY,
+          }));
+        }
+
+        if (el.elementType === CanvasElementType.Token && el.characterId) {
+          const req: CreateCanvaTokenElementRequest = {
+            campaignId: this.campaignId,
+            characterId: el.characterId,
+            content: el.content,
+            x: newX,
+            y: newY,
+            z: ++this.maxZ,
+            scale: el.scale,
+            color: el.color,
+          };
+
+          this.canvasElementService.CreateTokenElement(req).subscribe({
+            next: (res) => {
+              if (res.success && res.data) {
+                const responseData = res.data;
+                const createdEl: ExtendedCanvasElement = {
+                  ...responseData,
+                  imageUrl: responseData.imageUrl || (responseData as any).image || el.imageUrl,
+                  isRound: el.isRound,
+                };
+
+                const index = this.elements.findIndex((e) => e.id === responseData.id);
+                if (index > -1) {
+                  this.elements[index] = createdEl;
+                } else {
+                  this.elements.push(createdEl);
+                }
+
+                this.selectedElements = [...this.selectedElements, createdEl];
+              }
+            },
+            error: (err) => console.error('[Canvas] Erro ao colar token:', err),
+          });
+        } else {
+          const req: CreateCanvaElementRequest = {
+            campaignId: this.campaignId,
+            elementType: el.elementType,
+            content: el.content,
+            x: newX,
+            y: newY,
+            z: ++this.maxZ,
+            scale: el.scale,
+            color: el.color,
+            strokeWidth: el.strokeWidth,
+            points: translatedPoints,
+            image: undefined,
+          };
+
+          this.canvasElementService.CreateElement(req).subscribe({
+            next: (res) => {
+              if (res.success && res.data) {
+                const responseData = res.data;
+                const createdEl: ExtendedCanvasElement = {
+                  ...responseData,
+                  points: translatedPoints,
+                  imageUrl: responseData.imageUrl || (responseData as any).image || el.imageUrl,
+                  isRound: el.isRound,
+                };
+
+                const index = this.elements.findIndex((e) => e.id === responseData.id);
+                if (index > -1) {
+                  this.elements[index] = createdEl;
+                } else {
+                  this.elements.push(createdEl);
+                }
+
+                this.selectedElements = [...this.selectedElements, createdEl];
+              }
+            },
+            error: (err) => console.error('[Canvas] Erro ao colar elemento:', err),
+          });
+        }
+      });
+
+      event.preventDefault();
+      return;
     }
 
     if (items) {
@@ -780,11 +908,16 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             this.saveState();
             this.selectedFile = file;
 
+            const targetPos =
+              this.mouseWorldPos.x !== 0 || this.mouseWorldPos.y !== 0
+                ? this.mouseWorldPos
+                : center;
+
             const formData = new FormData();
             formData.append('campaignId', this.campaignId);
             formData.append('elementType', CanvasElementType.Image.toString());
-            formData.append('x', (center.x - 50).toString());
-            formData.append('y', (center.y - 50).toString());
+            formData.append('x', (targetPos.x - 50).toString());
+            formData.append('y', (targetPos.y - 50).toString());
             formData.append('z', (++this.maxZ).toString());
             formData.append('scale', '1');
             formData.append('content', 'square');
@@ -807,12 +940,18 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (textData && textData.trim() !== '') {
       this.saveState();
+
+      const targetPos =
+        this.mouseWorldPos.x !== 0 || this.mouseWorldPos.y !== 0
+          ? this.mouseWorldPos
+          : center;
+
       const req: CreateCanvaElementRequest = {
         campaignId: this.campaignId,
         elementType: CanvasElementType.Text,
         content: textData,
-        x: center.x - 40,
-        y: center.y - 15,
+        x: targetPos.x - 40,
+        y: targetPos.y - 15,
         z: ++this.maxZ,
         scale: 1,
         color: this.selectedColor,
@@ -1329,6 +1468,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   @HostListener('window:pointermove', ['$event'])
   onPointerMove(event: PointerEvent): void {
+    this.mouseWorldPos = {
+      x: this.getWorldX(event.clientX),
+      y: this.getWorldY(event.clientY),
+    };
+
     if (this.isPanning) {
       const deltaX = event.clientX - this.lastPointer.x;
       const deltaY = event.clientY - this.lastPointer.y;
@@ -1340,7 +1484,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (!this.isInteracting) return;
 
-    if (event.clientX === this.lastPointer.x && event.clientY === this.lastPointer.y && this.activeTool === 'eraser') {
+    if (
+      event.clientX === this.lastPointer.x &&
+      event.clientY === this.lastPointer.y &&
+      this.activeTool === 'eraser'
+    ) {
       return;
     }
 
@@ -1361,10 +1509,20 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         const deltaY = event.clientY - this.lastPointer.y;
 
         if (this.selectedElements.length > 0) {
+          const deltaWorldX = deltaX / this.scale;
+          const deltaWorldY = deltaY / this.scale;
+
           this.selectedElements.forEach((el) => {
             if (!el.isLocked) {
-              el.x += deltaX / this.scale;
-              el.y += deltaY / this.scale;
+              el.x += deltaWorldX;
+              el.y += deltaWorldY;
+
+              if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+                el.points.forEach((p) => {
+                  p.x += deltaWorldX;
+                  p.y += deltaWorldY;
+                });
+              }
             }
           });
         }
@@ -1415,13 +1573,20 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         ) {
           const movable = this.selectedElements.filter((e) => !e.isLocked);
           if (movable.length > 0) {
-            const req: MoveCanvaElementsRequest = {
-              campaignId: this.campaignId,
-              items: movable.map((el) => ({ id: el.id, x: el.x, y: el.y })),
-            };
+            const standardElements = movable.filter((e) => e.elementType !== CanvasElementType.Drawing);
+            if (standardElements.length > 0) {
+              const req: MoveCanvaElementsRequest = {
+                campaignId: this.campaignId,
+                items: standardElements.map((el) => ({ id: el.id, x: el.x, y: el.y })),
+              };
+              this.canvasElementService.MoveElement(req).subscribe({
+                error: (err) => console.error('[Canvas] Erro ao mover elementos:', err),
+              });
+            }
 
-            this.canvasElementService.MoveElement(req).subscribe({
-              error: (err) => console.error('[Canvas] Erro ao mover elementos:', err),
+            const drawings = movable.filter((e) => e.elementType === CanvasElementType.Drawing);
+            drawings.forEach((drw) => {
+              this.updateElementAPI(drw);
             });
           }
         }
