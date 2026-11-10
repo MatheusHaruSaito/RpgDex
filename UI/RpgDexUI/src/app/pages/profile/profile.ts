@@ -69,6 +69,7 @@ export class ProfileComponent implements OnInit {
         ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
           this.feedBackMessage = { text: msg, type: 'error' };
           this.cdr.detectChanges();
+          this.isSettingsModalOpen = true;
         });
       } else if (params['linked']) {
         this.feedBackMessage = {
@@ -76,9 +77,9 @@ export class ProfileComponent implements OnInit {
           type: 'success',
         };
         this.cdr.detectChanges();
+        this.isSettingsModalOpen = true;
       }
     });
-    this.isSettingsModalOpen = true;
   }
   private initTheme(): void {
     const saved = localStorage.getItem(THEME_KEY);
