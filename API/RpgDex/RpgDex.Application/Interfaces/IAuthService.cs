@@ -1,5 +1,6 @@
-﻿using RpgDex.Domain.Common;
-using RpgDex.Application.Dto;
+﻿using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Auth;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,8 @@ namespace RpgDex.Application.Interfaces
         Task<Result<RefreshTokenModel>> RefreshTokenAsync(RefreshTokenModel refreshToken);
         Task<Result<string>> ValidateEmailByTokenAsync(ValidateEmailByTokenRequest request);
         Task<Result<string>> ResendEmailVerificationAsync(ResendEmailVerificationRequest request);
-
+        Task<Result<string>> SendResetPasswordEmailAsync(SendResetPasswordEmailRequest request);
+        Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request);
 
     }
 }

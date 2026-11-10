@@ -36,6 +36,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error ExternalLoginFailed = new("AUTH_EXTERNAL_LOGIN_FAILED", "An error occurred while performing external login.");
         public static readonly Error LinkTicketInvalid = new("LINK_TICKET_INVALID", "The link ticket is invalid or expired.");
 
+        public static readonly Error PasswordResetFailed = new("AUTH_PASSWORD_RESET_FAILED", "An error occurred while resetting the password.");
     }
 
     public static class CampaignError

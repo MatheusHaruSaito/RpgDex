@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using AspNetCore.Identity.MongoDbCore.Models;
+using MongoDB.Driver;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
@@ -16,7 +17,14 @@ namespace RpgDex.Infrastructure.Repositories
         {
             _dbContext = dbContext;
             _refreshTokens = _dbContext.RefreshTokens;
-        } 
+        }
+
+        public async Task<bool> DeleteTokenByUserIdAsync(Guid userId)
+        {
+            var filter = Builders<RefreshToken>.Filter.Eq(t => t.UserId, userId);
+            var deletedToken = await _refreshTokens.DeleteOneAsync(filter);
+            return deletedToken.DeletedCount > 0;
+        }
 
         public async Task<bool> DeleteTokenByValueAsync(string token)
         {

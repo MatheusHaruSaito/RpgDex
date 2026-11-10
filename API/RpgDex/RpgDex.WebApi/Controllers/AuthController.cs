@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Auth;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
@@ -219,6 +220,20 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> RequestTwoFAActivation(ValidateTwoFactorRequest request)
         {
             var result = await _authService.RequestTwoFAActivation(request);
+            return result.ToIActionResult();
+        }
+        [HttpPost("sendResetPasswordEmail")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendResetPasswordEmail(SendResetPasswordEmailRequest request)
+        {
+            var result = await _authSerice.SendResetPasswordEmailAsync(request);
+            return result.ToIActionResult();
+        }
+        [HttpPost("resetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            var result = await _authSerice.ResetPasswordAsync(request);
             return result.ToIActionResult();
         }
     }
