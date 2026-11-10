@@ -25,13 +25,10 @@
             <h3>Métodos de Autenticação</h3>
 
             <!-- Senha Local -->
-            @if (authOptions.hasPassword) {
-              <div class="auth-method-item">
-                <div class="method-info">
-                  <i class="fa-solid fa-key"></i>
-                  <span>Senha Local</span>
-                </div>
-                <span class="status-badge active">Cadastrada</span>
+            <div class="auth-method-item">
+              <div class="method-info">
+                <i class="fa-solid fa-key"></i>
+                <span>Senha Local</span>
               </div>
               <div class="method-actions">
                 @if (authOptions.hasPassword) {
@@ -60,16 +57,11 @@
               </div>
             </div>
 
-            <!-- Provedores Externos -->
-            @for (provider of authOptions.externalProviders; track provider) {
-              <div class="auth-method-item">
-                <div class="method-info">
-                  <i class="fa-brands" [ngClass]="'fa-' + provider.toLowerCase()"></i>
-                  <span>{{ provider }}</span>
-                </div>
-                <div class="method-actions">
-                  <span class="status-badge active">Conectado</span>
-                </div>
+            <!-- Google -->
+            <div class="auth-method-item">
+              <div class="method-info">
+                <i class="fa-brands fa-google"></i>
+                <span>Google</span>
               </div>
               <div class="method-actions">
                 @if (isGoogleLinked) {
