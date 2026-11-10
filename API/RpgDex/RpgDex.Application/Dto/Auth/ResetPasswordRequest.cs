@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Auth
 {
-    public record ResetPasswordRequest(string Token, string NewPassword);
+    public record ResetPasswordRequest(string Token, string NewPassword, string Email);
 }

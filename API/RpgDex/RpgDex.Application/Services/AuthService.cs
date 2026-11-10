@@ -309,7 +309,7 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(AuthError.TokenGenerationFailed);
             }
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-            string resetLink = $"/resetPassword?userid={user.Id}&token={encodedToken}";
+            string resetLink = $"/resetPassword?email={user.Email}&token={encodedToken}";
             var htmlBody = emailService.GeneratePasswordResetHTMLTemplate(resetLink, user.UserName!);
             var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email!, user.UserName!, "Password Reset", htmlBody);
             if (!isEmailSent)
@@ -318,12 +318,12 @@ namespace RpgDex.Application.Services
             }
             return Result<string>.Success(message);
         }
-        public async Task<Result<string>> ResetPasswordAsync(string userId, ResetPasswordRequest request)
+        public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await userManager.FindByIdAsync(userId);
+            var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null)
             {
-                return Result<string>.Failure(AuthError.UserNotFound);
+                if(user is null) return Result<string>.Failure(AuthError.UserNotFound);
             }
             string decodedToken;
             try

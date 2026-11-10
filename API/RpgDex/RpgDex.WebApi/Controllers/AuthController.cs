@@ -160,7 +160,7 @@ namespace RpgDex.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
-            var result = await _authSerice.ResetPasswordAsync(currentUser, request);
+            var result = await _authSerice.ResetPasswordAsync(request);
             return result.ToIActionResult();
         }
     }

@@ -22,7 +22,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<string>> ValidateEmailByTokenAsync(ValidateEmailByTokenRequest request);
         Task<Result<string>> ResendEmailVerificationAsync(ResendEmailVerificationRequest request);
         Task<Result<string>> SendResetPasswordEmailAsync(SendResetPasswordEmailRequest request);
-        Task<Result<string>> ResetPasswordAsync(string userId, ResetPasswordRequest request);
+        Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request);
 
     }
 }
