@@ -59,6 +59,12 @@ namespace RpgDex.Application.Mapping
                  ? null
                  : urls.Build(src.IconPath));
 
+            TypeAdapterConfig<ApplicationUser, UserSummary>
+                 .NewConfig()
+                 .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
+                 ? null
+                 : urls.Build(src.IconPath));
+
 
             //Mapeamentos para Campaign podem ser adicionados aqui, se necessário
             TypeAdapterConfig<CreateCampaignRequest, Campaign>
@@ -95,9 +101,9 @@ namespace RpgDex.Application.Mapping
 
             TypeAdapterConfig<Report, ReportResponse>
             .NewConfig()
-            .Map(dest => dest.Images, src => string.IsNullOrEmpty(src.Images)
+            .Map(dest => dest.ImagePath, src => string.IsNullOrEmpty(src.ImagePath)
                 ? null
-                : urls.Build(src.Images));
+                : urls.Build(src.ImagePath));
         }
 
 

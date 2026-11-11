@@ -43,7 +43,7 @@ namespace RpgDex.Application.Services
                 {
                     try
                     {
-                        report.Images = await fileService.UploadFileAsync(request.Image, report.Id.ToString());
+                        report.ImagePath = await fileService.UploadFileAsync(request.Image, report.Id.ToString());
                     }
                     catch(Exception ex)
                     {

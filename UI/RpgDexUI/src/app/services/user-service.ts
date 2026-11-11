@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../../models/apiResponse';
 import { UserResponse } from '../../models/userResponse';
 import { ChartResponse } from '../../models/chartResponse';
+import { UserSummary } from '../../models/userSummary';
 
 @Injectable({
   providedIn: 'root',
@@ -23,5 +24,13 @@ export class UserService {
   GetUserChart(startDate: string, endDate: string): Observable<ApiResponse<ChartResponse>> {
     const params: Record<string, string> = { startDate, endDate };
     return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`, { params });
+  }
+  GetUserSummaryByUserNameOrEmail(
+    target: string,
+    page: string,
+    pageSize: string,
+  ): Observable<ApiResponse<UserSummary[]>> {
+    const params: Record<string, string> = { target, page, pageSize };
+    return this.http.get<ApiResponse<UserSummary[]>>(`${this.env}/admin/getAllSummary`, { params });
   }
 }

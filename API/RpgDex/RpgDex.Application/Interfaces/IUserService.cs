@@ -9,7 +9,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<string>> UpdateUserProfileAsync(string userId,UpdateUserProfileDTO updatedUser);
         Task<Result<UserResponse>> GetUserById(Guid Id);
         Task<Result<ChartResponse>> GetUserChart(DateTime startDate, DateTime endDate);
-
+        Task<Result<IEnumerable<UserSummary>>> GetUserSummaryByUserNameOrEmail(string target, int page = 1, int pageSize = 5);
 
     }
 }

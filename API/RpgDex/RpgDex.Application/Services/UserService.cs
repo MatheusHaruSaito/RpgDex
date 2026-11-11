@@ -1,16 +1,19 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
+using RpgDex.Domain.Interfaces;
 
 namespace RpgDex.Application.Services
 {
-    public class UserService(UserManager<ApplicationUser> userManager, IUserQueries userQueries,IFileService fileService, IValidator<UpdateUserProfileDTO> updateUserProfileValidator) : IUserService
+    public class UserService(UserManager<ApplicationUser> userManager, IUserQueries userQueries,IFileService fileService,IUserRepository userRepository, IValidator<UpdateUserProfileDTO> updateUserProfileValidator, 
+        ILogger<UserService> logger) : IUserService
     {
         public async Task<Result<UserResponse>> GetUserById(Guid Id)
         {
@@ -63,6 +66,17 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(UserError.UpdateFailed);
             }
             return Result<string>.Success("Profile updated successfully!");
+        }
+
+        public async Task<Result<IEnumerable<UserSummary>>> GetUserSummaryByUserNameOrEmail(string target,int page=1,int pageSize=5)
+        {
+            var user = await userRepository.GetAllByEmailOrUserNameAsync(target,page,pageSize);
+            if (user is null)
+            {
+                return Result<IEnumerable<UserSummary>>.Failure(AuthError.UserNotFound);
+            }
+            var userResponse = user.Adapt<IEnumerable<UserSummary>>();
+            return Result<IEnumerable<UserSummary>>.Success(userResponse);
         }
     }
 }

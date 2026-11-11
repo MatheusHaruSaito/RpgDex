@@ -28,6 +28,7 @@ namespace RpgDex.WebApi.Controllers
             var result = await _userService.GetUserById(Id);
             return result.ToIActionResult();
         }
+
         [Authorize(Roles ="Admin")] 
         [HttpGet("admin/chart")]
         public async Task<IActionResult> GetUserChart([FromQuery]DateTime startDate, [FromQuery] DateTime endDate)
@@ -41,6 +42,12 @@ namespace RpgDex.WebApi.Controllers
             var result = await _userService.UpdateUserProfileAsync(currentUser, updateUserProfileDTO);
             return result.ToIActionResult();
         }
-
+        [HttpGet("admin/getAllSummary")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> GetUserSummaryByUserNameOrEmail([FromQuery]string target, [FromQuery]int page, [FromQuery] int pageSize)
+        {
+            var result = await _userService.GetUserSummaryByUserNameOrEmail(target,page,pageSize);
+            return result.ToIActionResult();
+        }
     }
 }
