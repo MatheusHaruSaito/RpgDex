@@ -311,19 +311,32 @@
                     </div>
                   </div>
                 </div>
-                <button
-                  class="char-card-toggle-btn"
-                  type="button"
-                  [attr.aria-expanded]="expandedCharacterId === char.id"
-                >
-                  <span>{{ expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha' }}</span>
-                  <i
-                    class="fa"
-                    [ngClass]="
-                      expandedCharacterId === char.id ? 'fa-chevron-up' : 'fa-chevron-down'
-                    "
-                  ></i>
-                </button>
+
+                <div class="char-card-actions">
+                  <button
+                    *ngIf="isGameMaster"
+                    class="btn btn-outline-danger btn-sm"
+                    type="button"
+                    title="Remover Personagem"
+                    (click)="$event.stopPropagation(); removeCharacter(char.id)"
+                  >
+                    <i class="fa fa-user-minus"></i>
+                  </button>
+
+                  <button
+                    class="char-card-toggle-btn"
+                    type="button"
+                    [attr.aria-expanded]="expandedCharacterId === char.id"
+                  >
+                    <span>{{ expandedCharacterId === char.id ? 'Ocultar Ficha' : 'Ver Ficha' }}</span>
+                    <i
+                      class="fa"
+                      [ngClass]="
+                        expandedCharacterId === char.id ? 'fa-chevron-up' : 'fa-chevron-down'
+                      "
+                    ></i>
+                  </button>
+                </div>
               </div>
 
               <!-- Ficha Detalhada do Personagem Expansível -->

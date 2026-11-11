@@ -29,7 +29,7 @@ namespace RpgDex.Application.Validators.Canvas
 
             RuleFor(e => e.Color).ValidColor().When(e => e.Color is not null);
 
-            When(e => e.ElementType is CanvaElementType.Token or CanvaElementType.Text, () =>
+            When(e => e.ElementType is CanvasElementType.Token or CanvasElementType.Text, () =>
             {
                 RuleFor(e => e.Content)
                     .Cascade(CascadeMode.Stop)
@@ -39,7 +39,7 @@ namespace RpgDex.Application.Validators.Canvas
                         .WithErrorCode(ValidationErrorCodes.GeneralMaxLength);
             });
 
-            When(e => e.ElementType == CanvaElementType.Image, () =>
+            When(e => e.ElementType == CanvasElementType.Image, () =>
             {
                 RuleFor(e => e.Image)
                     .Cascade(CascadeMode.Stop)
@@ -52,7 +52,7 @@ namespace RpgDex.Application.Validators.Canvas
                     .When(e => e.Image is not null);
             });
 
-            When(e => e.ElementType == CanvaElementType.Drawing, () =>
+            When(e => e.ElementType == CanvasElementType.Drawing, () =>
             {
                 RuleFor(e => e.Points)
                     .Cascade(CascadeMode.Stop)

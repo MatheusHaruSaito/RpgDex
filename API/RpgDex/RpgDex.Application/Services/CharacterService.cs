@@ -16,7 +16,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class CharacterService(ICharacterRepository character, IUserRepository userRepository,
-        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator,
+        IFileService fileService, IValidator<CreateCharacterRequest> createCharacterRequestValidator, ICanvasElementRepository canvasElementRepository, ICampaignRepository campaignRepository,
         IValidator<UpdateCharacterRequest> updateCharacterRequestValidator, ICharacterQueries characterQueries) : ICharacterService
     {
         private readonly ICharacterRepository _character = character;
@@ -62,14 +62,23 @@ namespace RpgDex.Application.Services
             return Result<CharacterResponse>.Success(response.Adapt<CharacterResponse>());
         }
 
-        public async Task<Result<CharacterResponse>> SetActiveState(Guid Id, bool ActiveState)
+        public async Task<Result<CharacterResponse>> SetActiveState(Guid id, bool activeState)
         {
             //Verifies if character exists
-            var characterFound = await _character.GetByIdAsync(Id);
+            var characterFound = await _character.GetByIdAsync(id);
             if(characterFound is null) return Result<CharacterResponse>.Failure(CharacterError.NotFound);
 
+            if (!activeState)
+            {
+                var handleResult = await HandleCharacterDeletion(id);
+                if (!handleResult.isSucces)
+                {
+                    return Result<CharacterResponse>.Failure(handleResult.error!);
+                }
+            }
+
             //Verifies if character is deactivated
-            bool modified = await _character.SetActiveState(Id,ActiveState);
+            bool modified = await _character.SetActiveState(id,activeState);
             if (!modified) return Result<CharacterResponse>.Failure(CharacterError.SetActiveStateFailed);
 
             //Verifies if the character is removed
@@ -178,7 +187,18 @@ namespace RpgDex.Application.Services
             }
             return Result<bool>.Success(true);
         }
+        private async Task<(bool isSucces,Error? error)> HandleCharacterDeletion(Guid characterId)
+        {
+            //Delete Canvas Tokens
+            var tokenIds = await canvasElementRepository.GetTokensIdsByCharacterId(characterId);
 
+            var tokensDeleted = await canvasElementRepository.SetActiveStateByCharacterId(tokenIds, false);
+            if (!tokensDeleted) return (false, CanvaElementError.SetActiveStateFailed);
+            //Delete From Both Campaign List
 
+            var characterRemoved = await campaignRepository.RemoveCharacterFromCampaigns(characterId);
+            if(!characterRemoved) return (false, CampaignError.CharacterRemoveFailed);
+            return (true, null);
+        }
     }
 }

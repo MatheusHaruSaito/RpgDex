@@ -62,7 +62,6 @@ namespace RpgDex.WebApi.Controllers
         [HttpPut("AddPlayer")]
         public async Task<IActionResult> JoinCampaignRequest(JoinCampaignRequest request)
         {
-
             var result = await _campaignService.AddPlayer(currentUser, request);
             return result.ToIActionResult();
         }

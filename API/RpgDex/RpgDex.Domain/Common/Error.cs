@@ -63,6 +63,8 @@ namespace RpgDex.Domain.Common
         public static readonly Error CharacterNotInRequests = new("CAMPAIGN_CHARACTER_NOT_IN_REQUESTS", "Character is not in the request list.");
         public static readonly Error CharacterNotInCampaign = new("CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN", "Character is not in the campaign.");
         public static readonly Error PlayerNotInCampaign = new("CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN", "Player is not in campaign.");
+        public static readonly Error CharacterRemoveFailed = new("CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS", "Failed to remove character from campaigns");
+
     }
 
     public static class CharacterError
@@ -126,6 +128,8 @@ namespace RpgDex.Domain.Common
         public const string CanvasInvalidValue = "CANVAS_INVALID_VALUE";
         public const string CanvasInvalidColor = "CANVAS_INVALID_COLOR";
         public const string CanvasTooManyItems = "CANVAS_TOO_MANY_ITEMS";
+        public const string CanvasEmptyItems = "CANVAS_EMPTY_ITEMS";
+        public const string CanvasDuplicatedItems = "CANVAS_DUPLICATED_ITEMS";
     }
     public static class CanvaElementError
     {

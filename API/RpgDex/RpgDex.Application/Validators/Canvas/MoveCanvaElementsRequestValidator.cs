@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.Canvas;
 using RpgDex.Domain.Common;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Text;
 
 namespace RpgDex.Application.Validators.Canvas
 {
-    public class MoveCanvaElementsRequestValidator : AbstractValidator<MoveCanvaElementsRequest>
+    public class MoveCanvaElementsRequestValidator : AbstractValidator<MoveCanvasElementsRequest>
     {
         public MoveCanvaElementsRequestValidator()
         {

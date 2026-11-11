@@ -1,4 +1,4 @@
-export interface RemovecharacterFromCapaignRequest{
-    campaignId : string;
-    characterId: string;
+export interface RemoveCharacterFromCapaignRequest {
+  campaignId: string;
+  characterId: string;
 }

@@ -4,11 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto
 {
-    public class AcceptCharacterToCampaignRequest
-    {
-        public Guid CampaignId { get; set; }
-        public Guid CharacterId { get; set; }
-        public bool IsAccepted { get; set; }
-
-    }
+    public record AcceptCharacterToCampaignRequest(Guid CampaignId, Guid CharacterId, bool IsAccepted);
 }

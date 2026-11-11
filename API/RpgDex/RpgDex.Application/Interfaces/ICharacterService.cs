@@ -16,7 +16,7 @@ namespace RpgDex.Application.Interfaces
 
         Task<Result<CharacterResponse>> GetByIdAsync(Guid Id);
         Task<Result<bool>> UpdateAsync(string userId, UpdateCharacterRequest request);
-        Task<Result<CharacterResponse>> SetActiveState(Guid Id,bool ActiveState);
+        Task<Result<CharacterResponse>> SetActiveState(Guid id,bool activeState);
         Task<Result<bool>> UpdateLastAccess(Guid id);
 
     }
