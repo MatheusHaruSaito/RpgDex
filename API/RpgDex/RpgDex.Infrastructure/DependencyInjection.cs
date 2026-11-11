@@ -190,10 +190,18 @@ namespace RpgDex.Infrastructure
                 o.KnownProxies.Clear();
 
             });
+            var uiBaseUrl = configuration["ApiSettings:UIBaseUrl"]!.TrimEnd('/');
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"]!.TrimEnd('/');
 
+            var origins = new List<string> { uiBaseUrl, apiBaseUrl };
+
+            if (uiBaseUrl.StartsWith("https://") && !uiBaseUrl.StartsWith("https://www."))
+            {
+                origins.Add(uiBaseUrl.Insert(8, "www."));
+            }
             services.AddCors(options => {
                 options.AddPolicy("PermitirTudo", policy => {
-                    policy.WithOrigins(configuration["ApiSettings:UIBaseUrl"], configuration["ApiSettings:BaseUrl"])
+                    policy.WithOrigins(origins.Distinct().ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
