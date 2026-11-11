@@ -5,5 +5,5 @@ export interface CreateReportRequest {
   description: string;
   targetId: string;
   reportType: ReportType;
-  image?: File;
+  images?: File;
 }

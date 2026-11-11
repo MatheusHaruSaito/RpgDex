@@ -6,6 +6,6 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Report
 {
-    public record CreateReportRequest(string Title, string Description, Guid TargetId, ReportEnum ReportType, IFormFile Image);
+    public record CreateReportRequest(string Title, string Description, Guid TargetId, ReportEnum ReportType, List<IFormFile> Images);
 
 }

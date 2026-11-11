@@ -29,5 +29,16 @@ namespace RpgDex.Application.Services
             return ExternalHosts.Any(h =>
                 uri.Host == h || uri.Host.EndsWith("." + h, StringComparison.OrdinalIgnoreCase));
         }
+
+        public ICollection<string>? BuildMultiple(ICollection<string> iconsPath)
+        {
+            if (iconsPath.Count ==0) return null;
+            List<string> result = new();
+            foreach (var icon in iconsPath)
+            {
+                result.Add(Build(icon)!);
+            }
+            return result;
+        }
     }
 }

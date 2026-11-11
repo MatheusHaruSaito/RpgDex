@@ -39,11 +39,14 @@ namespace RpgDex.Application.Services
             report.ReportOwner = userIdGuid;
 
             if (request.ReportType == ReportEnum.CustomReport) {
-                if (request.Image is not null)
+                if (request.Images is not null)
                 {
                     try
                     {
-                        report.ImagePath = await fileService.UploadFileAsync(request.Image, report.Id.ToString());
+                        for(int i =0;i < request.Images.Count();i++)
+                        {
+                            report.ImagesPath.Add(await fileService.UploadFileAsync(request.Images[i], $"{i}_{report.Id.ToString()}"));
+                        }
                     }
                     catch(Exception ex)
                     {
@@ -83,7 +86,7 @@ namespace RpgDex.Application.Services
                 return Result<GetAllReportResponse>.Failure(ReportError.NotFound);
             }
             var reportsCount = await reportRepository.GetReportsCountAsync();
-            var response = new GetAllReportResponse(reports.Adapt<IEnumerable<ReportResponse>>(), reportsCount);
+            var response = new GetAllReportResponse(reports.Adapt<List<ReportResponse>>(), reportsCount);
             return Result<GetAllReportResponse>.Success(response);
         }
 

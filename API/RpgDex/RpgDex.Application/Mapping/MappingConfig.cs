@@ -101,9 +101,9 @@ namespace RpgDex.Application.Mapping
 
             TypeAdapterConfig<Report, ReportResponse>
             .NewConfig()
-            .Map(dest => dest.ImagePath, src => string.IsNullOrEmpty(src.ImagePath)
+            .Map(dest => dest.ImagesPath, src => src.ImagesPath.Count ==0
                 ? null
-                : urls.Build(src.ImagePath));
+                : urls.BuildMultiple(src.ImagesPath));
         }
 
 

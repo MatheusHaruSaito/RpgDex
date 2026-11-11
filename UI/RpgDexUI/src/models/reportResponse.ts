@@ -8,6 +8,6 @@ export interface ReportResponse {
   dataId: string;
   reportedUser: string;
   isActive: boolean;
-  ReportEnum: ReportType;
-  imagePath: string;
+  reportEnum: ReportType;
+  imagesPath: string;
 }

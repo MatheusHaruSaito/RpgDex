@@ -10,7 +10,7 @@ namespace RpgDex.Domain.Entities
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public string ImagePath { get; set; } = string.Empty;
+        public ICollection<string> ImagesPath { get; set; } = new List<string>();
         public Guid ReportOwner { get; set; }
         public Guid? ReportedUser { get; set; }
         public Guid TargetId { get; set; }
