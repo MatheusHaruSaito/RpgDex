@@ -40,6 +40,26 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var userIdGuid)) return Result<ReportResponse>.Failure(Error.InvalidUserId);
 
             var report = request.Adapt<Report>();
+
+            if (request.ReportType != ReportEnum.CustomReport)
+            {
+                var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
+                var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
+                if (reportedUser is null)
+                {
+                    return Result<ReportResponse>.Failure(AuthError.UserNotFound);
+                }
+
+                
+                if(await IsUserPunished(reportedUser))
+                {
+                    return Result<ReportResponse>.Failure(UserError.UserIsBanned);
+                }
+
+                report.ReportedUser = reportedUserId;
+
+            }
+
             report.Id = Guid.NewGuid();
             report.ReportOwner = userIdGuid;
             if (request.Images is not null)
@@ -57,19 +77,7 @@ namespace RpgDex.Application.Services
                     return Result<ReportResponse>.Failure(Error.UploadImageFailed);
                 }
             }
-            if(request.ReportType != ReportEnum.CustomReport)
-            {
-                var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
-                var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
 
-                if (reportedUser is null)
-                {
-                    return Result<ReportResponse>.Failure(AuthError.UserNotFound);
-                }
-
-                report.ReportedUser = reportedUserId;
-
-            }
 
             var response = await reportRepository.InsertAsync(report);
             if (response is null)
@@ -133,6 +141,10 @@ namespace RpgDex.Application.Services
             }
             return Result<ReportResponse>.Success(report.Adapt<ReportResponse>());
 
+        }
+        private async Task<bool> IsUserPunished(ApplicationUser user)
+        {
+            return await userManager.IsLockedOutAsync(user);
         }
 
         private async Task HandleUserPunishmentSetToActive(Guid userId)
