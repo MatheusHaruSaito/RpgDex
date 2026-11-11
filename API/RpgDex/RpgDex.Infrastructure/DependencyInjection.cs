@@ -7,15 +7,18 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using Resend;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
+using RpgDex.Domain.ValueObjects;
 using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
+using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
@@ -31,6 +34,20 @@ namespace RpgDex.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             //Database configuration
+            FieldEncryption.Initialize(configuration["ENCRYPTION:CHATKEY"]!);
+
+            BsonClassMap.RegisterClassMap<ChatMessage>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+
+            BsonClassMap.RegisterClassMap<MessageRevision>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+
             services.AddSingleton<MongoDbContext>();
             var redisConnection = configuration.GetConnectionString("Redis");
             if (!string.IsNullOrEmpty(redisConnection))
@@ -176,10 +193,18 @@ namespace RpgDex.Infrastructure
                 o.KnownProxies.Clear();
 
             });
+            var uiBaseUrl = configuration["ApiSettings:UIBaseUrl"]!.TrimEnd('/');
+            var apiBaseUrl = configuration["ApiSettings:BaseUrl"]!.TrimEnd('/');
 
+            var origins = new List<string> { uiBaseUrl, apiBaseUrl };
+
+            if (uiBaseUrl.StartsWith("https://") && !uiBaseUrl.StartsWith("https://www."))
+            {
+                origins.Add(uiBaseUrl.Insert(8, "www."));
+            }
             services.AddCors(options => {
                 options.AddPolicy("PermitirTudo", policy => {
-                    policy.WithOrigins(configuration["ApiSettings:UIBaseUrl"], configuration["ApiSettings:BaseUrl"])
+                    policy.WithOrigins(origins.Distinct().ToArray())
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

@@ -51,6 +51,9 @@ export class SettingsModalComponent implements OnChanges {
   isLinkingDiscord = false;
   isUnlinkingDiscord = false;
 
+  // Estado de Solicitação de Senha
+  isSendingPasswordReset = false;
+
   settingsMessage = { text: this.feedBackMessageInput.text, type: this.feedBackMessageInput.type };
   get isGoogleLinked(): boolean {
     return !!this.authOptions?.externalProviders?.some((p) => p.toLowerCase() === 'google');
@@ -108,6 +111,7 @@ export class SettingsModalComponent implements OnChanges {
   onClose(): void {
     this.twoFactorStep = 'idle';
     this.twoFactorTokenInput = '';
+    this.isSendingPasswordReset = false;
     this.settingsMessage = { text: '', type: '' };
     this.closeModal.emit();
   }
@@ -171,6 +175,35 @@ export class SettingsModalComponent implements OnChanges {
         } else {
           this.settingsMessage = {
             text: res?.error || 'Erro ao desvincular conta Google.',
+            type: 'error',
+          };
+        }
+      },
+    });
+  }
+  // ── SOLICITAR CRIAÇÃO / ALTERAÇÃO DE SENHA ──
+  requestPasswordEmail(): void {
+    if (!this.user?.email) {
+      this.settingsMessage = { text: 'E-mail do usuário não localizado.', type: 'error' };
+      return;
+    }
+
+    this.isSendingPasswordReset = true;
+    this.settingsMessage = { text: '', type: '' };
+
+    this.authService.SendResetPasswordEmail({ email: this.user.email }).subscribe({
+      next: (res: any) => {
+        this.isSendingPasswordReset = false;
+        const isSuccess = res?.success ?? res?.isSuccess ?? true;
+
+        if (isSuccess) {
+          this.settingsMessage = {
+            text: 'Enviamos as instruções para o seu e-mail para cadastrar/redefinir sua senha!',
+            type: 'success',
+          };
+        } else {
+          this.settingsMessage = {
+            text: res?.message || res?.error || 'Erro ao enviar e-mail de redefinição.',
             type: 'error',
           };
         }
@@ -242,6 +275,7 @@ export class SettingsModalComponent implements OnChanges {
       },
       error: (err) => {
         this.isUnlinkingDiscord = false;
+        this.isSendingPasswordReset = false;
         ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
           this.settingsMessage = { text: msg, type: 'error' };
           this.cdr.detectChanges();

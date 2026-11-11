@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AspNetCore.Identity.MongoDbCore.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver.Linq;
-using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.Entities;
+using RpgDex.Domain.Interfaces;
+using RpgDex.Infrastructure.Settings;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using RpgDex.Infrastructure.Settings;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.WebUtilities;
 namespace RpgDex.Infrastructure.Services
 {
     public class TokenService : ITokenService
@@ -139,6 +140,11 @@ namespace RpgDex.Infrastructure.Services
 
             var result = await _userManager.ConfirmEmailAsync(user, originalToken);
             return result.Succeeded;
+        }
+
+        public async Task<bool> RevokeTokenByUserId(Guid userId)
+        {
+            return await _tokenRepository.DeleteTokenByUserIdAsync(userId);
         }
     }
 }

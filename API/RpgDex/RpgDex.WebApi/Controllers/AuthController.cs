@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RpgDex.Application.Dto;
+
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
@@ -20,16 +21,14 @@ namespace RpgDex.WebApi.Controllers
         private readonly IAuthService _authService;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ApiSettings _settings;
-        private readonly ILinkTicketService _linkTicketService;
         private  string currentUser => User.FindFirst(ClaimTypes.NameIdentifier).Value;
         private string[] authRedirectWhitelist = ["/","/perfil"];
 
-        public AuthController(IAuthService authSerice, SignInManager<ApplicationUser> signInManager, IOptions<ApiSettings> settings, ILinkTicketService linkTicketService)
+        public AuthController(IAuthService authSerice, SignInManager<ApplicationUser> signInManager, IOptions<ApiSettings> settings)
         {
             _authService = authSerice;
             _signInManager = signInManager;
             _settings = settings.Value;
-            _linkTicketService = linkTicketService;
         }
         [HttpPost]
         [AllowAnonymous]
@@ -82,19 +81,7 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
 
         }
-        [HttpPost("link/google")]
-        public async Task<IActionResult> LinkGoogle([FromBody] GoogleLoginRequest request)
-        {
-            var result = await _authService.LinkGoogleAccount(currentUser, request);
-            return result.ToIActionResult();
-        }
 
-        [HttpDelete("unlink/google")]
-        public async Task<IActionResult> UnlinkGoogle()
-        {
-            var result = await _authService.UnlinkGoogleAsync(currentUser);
-            return result.ToIActionResult();
-        }
         [HttpGet("discord")]
         [AllowAnonymous]
         public IActionResult DiscordLogin([FromQuery] string? redirectUri)
@@ -132,65 +119,7 @@ namespace RpgDex.WebApi.Controllers
             };
 
             return Redirect($"{_settings.UIBaseUrl}/auth/callback?token={token}&refreshToken={refreshToken}&redirectPage={filteredRedirect()}");
-        }
-        [Authorize]
-        [HttpPost("link/discord/start")]
-        public IActionResult StartDiscordLink()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var ticket = _linkTicketService.Create(userId);
-
-            var url = Url.Action(nameof(DiscordLink), "Auth", new { ticket }, Request.Scheme);
-            return Ok(new { success = true, data = new { url } });
-        }
-
-        [AllowAnonymous]
-        [HttpGet("link/discord")]
-        public IActionResult DiscordLink([FromQuery] string ticket)
-        {
-            var userId = _linkTicketService.Validate(ticket);
-            if (userId is null)
-                return Redirect($"{_settings.UIBaseUrl}/perfilperfil?error=LINK_TICKET_INVALID");
-
-            var redirectUrl = Url.Action(nameof(DiscordLinkCallback), "Auth");
-
-            var properties = _signInManager.ConfigureExternalAuthenticationProperties(
-                DiscordAuthenticationDefaults.AuthenticationScheme,
-                redirectUrl);
-            properties.Items["linkUserId"] = userId;
-
-            return Challenge(properties, DiscordAuthenticationDefaults.AuthenticationScheme);
-        }
-
-        [HttpGet("link/discord/callback")]
-        [AllowAnonymous]
-        public async Task<IActionResult> DiscordLinkCallback()
-        {
-            var info = await _signInManager.GetExternalLoginInfoAsync();
-
-            if (info?.AuthenticationProperties is null
-                || !info.AuthenticationProperties.Items.TryGetValue("linkUserId", out var userId)
-                || string.IsNullOrEmpty(userId))
-            {
-                return Redirect($"{_settings.UIBaseUrl}/perfil?error=LINK_TICKET_INVALID");
-            }
-
-            var result = await _authService.LinkDiscordAccount(userId);
-
-            if (result.IsFailure)
-            {
-                var error = Uri.EscapeDataString(result.Errors.ToString()!);
-                return Redirect($"{_settings.UIBaseUrl}/perfil?error={error}");
-            }
-
-            return Redirect($"{_settings.UIBaseUrl}/perfil?linked=discord");
-        }
-        [HttpDelete("unlink/discord")]
-        public async Task<IActionResult> UnlinkDiscord()
-        {
-            var result = await _authService.UnlinkDiscordAsync(currentUser);
-            return result.ToIActionResult();
-        }
+        } 
 
         [HttpGet("AuthOptions")]
         public async Task<IActionResult> GetUserAuthOptions()

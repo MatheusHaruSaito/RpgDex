@@ -102,6 +102,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 10px 14px;
   background: var(--rpg-bg);
   border-radius: 10px;
@@ -109,6 +110,35 @@
   font-family: 'Nunito', sans-serif;
   font-size: 0.9rem;
   color: var(--rpg-text-strong);
+}
+
+.method-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.method-info i {
+  color: var(--rpg-purple);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-right: 0;
+}
+
+.method-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: 6px;
+  white-space: nowrap;
 }
 
 .auth-method-item i {

@@ -192,4 +192,14 @@ export class AuthService {
   public get Token() {
     return this.cookieService.get(this.JWT_Token);
   }
+  public SendResetPasswordEmail(request: { email: string }): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.env}/sendResetPasswordEmail`, request);
+  }
+  public ResetPassword(request: {
+    email: string;
+    token: string;
+    newPassword: string;
+  }): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.env}/resetPassword`, request);
+  }
 }
