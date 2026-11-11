@@ -36,6 +36,7 @@
       - EmailSettings__SmtpPort=${EMAIL_SMTP_PORT}
       - EmailSettings__Username=${EMAIL_SMTP_USERNAME}
       - EmailSettings__Password=${EMAIL_SMTP_PASSWORD}
+      - Encryption__ChatKey=${ENCRYPTION_CHATKEY}
     depends_on:
       - mongo
       - redis

@@ -7,15 +7,18 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using Resend;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
+using RpgDex.Domain.ValueObjects;
 using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
+using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
@@ -31,6 +34,20 @@ namespace RpgDex.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             //Database configuration
+            FieldEncryption.Initialize(configuration["ENCRYPTION:CHATKEY"]!);
+
+            BsonClassMap.RegisterClassMap<ChatMessage>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+
+            BsonClassMap.RegisterClassMap<MessageRevision>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+
             services.AddSingleton<MongoDbContext>();
             var redisConnection = configuration.GetConnectionString("Redis");
             if (!string.IsNullOrEmpty(redisConnection))
