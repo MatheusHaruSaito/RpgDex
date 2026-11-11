@@ -128,6 +128,16 @@ namespace RpgDex.Domain.Common
         public const string CanvasInvalidValue = "CANVAS_INVALID_VALUE";
         public const string CanvasInvalidColor = "CANVAS_INVALID_COLOR";
         public const string CanvasTooManyItems = "CANVAS_TOO_MANY_ITEMS";
+
+        public const string ReportTitleEmpty = "REPORT_TITLE_EMPTY";
+        public const string ReportDescriptionEmpty = "REPORT_DESCRIPTION_EMPTY";
+        public const string ReportTargetEmpty = "REPORT_TARGET_EMPTY";
+        public const string ReportTypeInvalid = "REPORT_TYPE_INVALID";
+        public const string ReportTooManyImages = "REPORT_TOO_MANY_IMAGES";
+        public const string ImageEmpty = "IMAGE_EMPTY";
+        public const string ImageTooLarge = "IMAGE_TOO_LARGE";
+        public const string ImageInvalidFormat = "IMAGE_INVALID_FORMAT";
+        public const string ImageInvalidExtension = "IMAGE_INVALID_EXTENSION";
     }
     public static class CanvaElementError
     {

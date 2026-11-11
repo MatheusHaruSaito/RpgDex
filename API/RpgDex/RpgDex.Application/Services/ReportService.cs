@@ -1,9 +1,12 @@
-﻿using Mapster;
+﻿using FluentValidation;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Report;
+using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Validators.Report;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Enums;
@@ -15,7 +18,7 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class ReportService(IReportRepository reportRepository, ICampaignRepository campaignRepository, ICharacterRepository characterRepository, UserManager<ApplicationUser> userManager, IEmailService emailService,
-        IReportQueries queries, ITokenRepository tokenRepository, IFileService fileService, ILogger<ReportService> logger) : IReportService
+        IReportQueries queries, ITokenRepository tokenRepository, IFileService fileService, ILogger<ReportService> logger, IValidator<CreateReportRequest> createReportRequestValiadator) : IReportService
     {
         public async Task<Result<ReportResponse>> Close(CloseReportRequest request)
         {
@@ -32,31 +35,29 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<ReportResponse>> Create(string userId, CreateReportRequest request)
         {
+            var checkCreateReportRequestValiadator = createReportRequestValiadator.Validate(request);
+            if (!checkCreateReportRequestValiadator.IsValid) return checkCreateReportRequestValiadator.ReturnErrors<ReportResponse>();
             if (!Guid.TryParse(userId, out var userIdGuid)) return Result<ReportResponse>.Failure(Error.InvalidUserId);
 
             var report = request.Adapt<Report>();
             report.Id = Guid.NewGuid();
             report.ReportOwner = userIdGuid;
-
-            if (request.ReportType == ReportEnum.CustomReport) {
-                if (request.Images is not null)
+            if (request.Images is not null)
+            {
+                try
                 {
-                    try
+                    for(int i =0;i < request.Images.Count();i++)
                     {
-                        for(int i =0;i < request.Images.Count();i++)
-                        {
-                            report.ImagesPath.Add(await fileService.UploadFileAsync(request.Images[i], $"{i}_{report.Id.ToString()}"));
-                        }
-                    }
-                    catch(Exception ex)
-                    {
-                        logger.LogError("Exception: {ex}", ex);
-                        return Result<ReportResponse>.Failure(Error.UploadImageFailed);
+                        report.ImagesPath.Add(await fileService.UploadFileAsync(request.Images[i], $"{i}_{report.Id.ToString()}"));
                     }
                 }
-
+                catch(Exception ex)
+                {
+                    logger.LogError("Exception: {ex}", ex);
+                    return Result<ReportResponse>.Failure(Error.UploadImageFailed);
+                }
             }
-            else
+            if(request.ReportType != ReportEnum.CustomReport)
             {
                 var reportedUserId = await GetUserIdByReportType(request.ReportType, request.TargetId);
                 var reportedUser = await userManager.FindByIdAsync(reportedUserId.ToString());
