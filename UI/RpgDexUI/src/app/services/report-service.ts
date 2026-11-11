@@ -15,7 +15,9 @@ export class ReportService {
   private baseUrl = `${environment.RpxDexApi}/Report`;
   private http = inject(HttpClient);
 
-  public CreateReport(request: CreateReportRequest): Observable<ApiResponse<ReportResponse>> {
+  public CreateReport(
+    request: CreateReportRequest | FormData,
+  ): Observable<ApiResponse<ReportResponse>> {
     return this.http.post<ApiResponse<ReportResponse>>(this.baseUrl, request);
   }
 

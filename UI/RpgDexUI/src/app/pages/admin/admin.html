@@ -12,54 +12,28 @@
       </div>
 
       <nav class="admin-nav-tabs">
-        <button
-          type="button"
-          class="admin-tab-btn"
-          [class.active]="activeTab === 'reportes'"
-          (click)="setTab('reportes')"
-        >
+        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'reportes'"
+          (click)="setTab('reportes')">
           <i class="fa-solid fa-triangle-exclamation"></i>
           <span>Reportes</span>
         </button>
 
-        <button
-          type="button"
-          class="admin-tab-btn"
-          [class.active]="activeTab === 'usuarios'"
-          (click)="setTab('usuarios')"
-        >
+        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'usuarios'"
+          (click)="setTab('usuarios')">
           <i class="fa-solid fa-users"></i>
           <span>Usuários</span>
         </button>
 
-        <button
-          type="button"
-          class="admin-tab-btn"
-          [class.active]="activeTab === 'personagens'"
-          (click)="setTab('personagens')"
-        >
+        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'personagens'"
+          (click)="setTab('personagens')">
           <i class="fa-solid fa-id-card"></i>
           <span>Personagens</span>
         </button>
 
-        <button
-          type="button"
-          class="admin-tab-btn"
-          [class.active]="activeTab === 'campanhas'"
-          (click)="setTab('campanhas')"
-        >
+        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'campanhas'"
+          (click)="setTab('campanhas')">
           <i class="fa-solid fa-dice-d20"></i>
           <span>Campanhas</span>
-        </button>
-
-        <button
-          type="button"
-          class="admin-tab-btn"
-          [class.active]="activeTab === 'pagamentos'"
-          (click)="setTab('pagamentos')"
-        >
-          <i class="fa-solid fa-credit-card"></i>
-          <span>Pagamentos</span>
         </button>
       </nav>
     </header>
@@ -67,20 +41,12 @@
     <!-- 1. ABA DE REPORTES -->
     <ng-container *ngIf="activeTab === 'reportes'">
       <div class="reports-filter-bar">
-        <button
-          type="button"
-          class="filter-toggle-btn"
-          [class.active]="showOnlyActive"
-          (click)="toggleReportStatusFilter(true)"
-        >
+        <button type="button" class="filter-toggle-btn" [class.active]="showOnlyActive"
+          (click)="toggleReportStatusFilter(true)">
           <i class="fa-solid fa-folder-open"></i> Abertos
         </button>
-        <button
-          type="button"
-          class="filter-toggle-btn"
-          [class.active]="!showOnlyActive"
-          (click)="toggleReportStatusFilter(false)"
-        >
+        <button type="button" class="filter-toggle-btn" [class.active]="!showOnlyActive"
+          (click)="toggleReportStatusFilter(false)">
           <i class="fa-solid fa-folder-closed"></i> Encerrados / Fechados
         </button>
       </div>
@@ -99,16 +65,12 @@
             <p>Nenhuma denúncia {{ showOnlyActive ? 'aberta' : 'encerrada' }} encontrada!</p>
           </div>
 
-          <div
-            *ngFor="let rep of reports"
-            class="report-item-card"
-            [class.active]="selectedReport?.id === rep.id"
-            (click)="selectReport(rep.id)"
-          >
+          <div *ngFor="let rep of reports" class="report-item-card" [class.active]="selectedReport?.id === rep.id"
+            (click)="selectReport(rep.id)">
             <div class="report-item-header">
               <h4 class="report-item-title">{{ rep.title }}</h4>
-              <span class="badge" [ngClass]="showOnlyActive ? 'badge-open' : 'badge-closed'">
-                {{ showOnlyActive ? 'Aberto' : 'Fechado' }}
+              <span class="badge" [ngClass]="rep.isActive ? 'badge-open' : 'badge-closed'">
+                {{ rep.isActive ? 'Aberto' : 'Fechado' }}
               </span>
             </div>
             <p class="report-item-desc">{{ rep.description }}</p>
@@ -120,7 +82,9 @@
           <div class="report-meta-header">
             <div class="report-owner-info">
               <i class="fa-solid fa-user-ninja"></i>
-              <span>Reportado por: <strong>{{ selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName }}</strong></span>
+              <span>Reportado por:
+                <strong>{{ selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName }}</strong>
+              </span>
             </div>
             <div class="report-date-tag">
               <i class="fa-regular fa-clock"></i>
@@ -135,6 +99,20 @@
             </div>
           </div>
 
+          <!-- PROVAS (IMAGENS) -->
+          <div class="report-evidence" *ngIf="reportImages.length > 0">
+            <h3>
+              <i class="fa-solid fa-images"></i>
+              Provas anexadas ({{ reportImages.length }})
+            </h3>
+            <div class="evidence-grid">
+              <a *ngFor="let img of reportImages" class="evidence-thumb" [href]="getImageUrl(img)" target="_blank"
+                rel="noopener">
+                <img [src]="getImageUrl(img)" alt="Prova anexada" loading="lazy" />
+              </a>
+            </div>
+          </div>
+
           <!-- DETALHES DO TARGET -->
           <div class="report-target-box" *ngIf="selectedReport.target">
             <!-- TARGET: USUÁRIO -->
@@ -143,18 +121,18 @@
                 <i class="fa-solid fa-user"></i> Jogador Reportado
               </span>
               <div class="target-profile-row">
-                <img
-                  *ngIf="selectedReport.target.iconPath"
-                  [src]="selectedReport.target.iconPath"
-                  class="target-avatar"
-                  alt="Avatar"
-                />
-                <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
+                <img *ngIf="selectedReport.target.userSummary.iconPath"
+                  [src]="getImageUrl(selectedReport.target.userSummary.iconPath)" class="target-avatar" alt="Avatar" />
+                <div *ngIf="!selectedReport.target.userSummary.iconPath" class="target-avatar-fallback">
                   <i class="fa-solid fa-user"></i>
                 </div>
                 <div class="target-details-text">
-                  <h4>{{ selectedReport.target.displayName }}</h4>
-                  <p>&#64;{{ selectedReport.target.userName }}</p>
+                  <h4>{{ selectedReport.target.userSummary.displayName }}</h4>
+                  <p>&#64;{{ selectedReport.target.userSummary.userName }}</p>
+                  <p>
+                    Personagens: {{ selectedReport.target.charactersCount }} |
+                    Campanhas: {{ selectedReport.target.campaignsCount }}
+                  </p>
                 </div>
               </div>
             </ng-container>
@@ -165,19 +143,18 @@
                 <i class="fa-solid fa-map-location-dot"></i> Campanha Reportada
               </span>
               <div class="target-profile-row">
-                <img
-                  *ngIf="selectedReport.target.iconPath"
-                  [src]="selectedReport.target.iconPath"
-                  class="target-avatar"
-                  alt="Avatar da Campanha"
-                />
+                <img *ngIf="selectedReport.target.iconPath" [src]="getImageUrl(selectedReport.target.iconPath)" class="target-avatar"
+                  alt="Avatar da Campanha" />
                 <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
                   <i class="fa-solid fa-dice-d20"></i>
                 </div>
                 <div class="target-details-text">
                   <h4>{{ selectedReport.target.title }}</h4>
                   <p>{{ selectedReport.target.description || 'Sem descrição cadastrada' }}</p>
-                  <p>Mestre: {{ selectedReport.target.gameMaster?.displayName }} | Mensagens: {{ selectedReport.target.messagesCount }}</p>
+                  <p>
+                    Mestre: {{ selectedReport.target.gameMaster?.displayName }} |
+                    Jogadores: {{ selectedReport.target.players.length }}/{{ selectedReport.target.maxPlayers }}
+                  </p>
                 </div>
               </div>
             </ng-container>
@@ -188,12 +165,8 @@
                 <i class="fa-solid fa-shield-halved"></i> Personagem Reportado
               </span>
               <div class="target-profile-row">
-                <img
-                  *ngIf="selectedReport.target.iconPath"
-                  [src]="selectedReport.target.iconPath"
-                  class="target-avatar"
-                  alt="Avatar do Personagem"
-                />
+                <img *ngIf="selectedReport.target.iconPath" [src]="getImageUrl(selectedReport.target.iconPath)" class="target-avatar"
+                  alt="Avatar do Personagem" />
                 <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
                   <i class="fa-solid fa-user-shield"></i>
                 </div>
@@ -203,6 +176,15 @@
                 </div>
               </div>
             </ng-container>
+          </div>
+
+          <!-- ALVO INDISPONÍVEL -->
+          <div class="report-target-missing" *ngIf="!selectedReport.target">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>
+              Não foi possível carregar os dados do alvo. Ele pode ter sido removido, ou o ID
+              enviado na denúncia não corresponde a nenhum registro.
+            </span>
           </div>
 
           <!-- AÇÕES DO REPORTE -->
@@ -232,16 +214,16 @@
           <input type="date" [(ngModel)]="endDate" (change)="loadUserChart()" class="admin-date-input" />
         </div>
 
-        <div class="chart-svg-container">
-          <svg viewBox="0 0 700 200" class="admin-svg-chart">
-            <path
-              [attr.d]="getSvgPoints(userChartData)"
-              fill="none"
-              stroke="var(--rpg-purple)"
-              stroke-width="4"
-              stroke-linecap="round"
-            />
-          </svg>
+        <div class="chart-canvas-wrapper">
+          <canvas *ngIf="userChart; else semDados" baseChart [data]="userChart" [options]="lineChartOptions"
+            type="line">
+          </canvas>
+          <ng-template #semDados>
+            <div class="admin-empty-state">
+              <i class="fa-solid fa-chart-line"></i>
+              <p>{{ isLoadingUserChart ? 'Carregando...' : 'Sem dados para exibir.' }}</p>
+            </div>
+          </ng-template>
         </div>
 
         <div class="metrics-summary-grid">
@@ -275,16 +257,16 @@
           <input type="date" [(ngModel)]="endDate" (change)="loadCharacterChart()" class="admin-date-input" />
         </div>
 
-        <div class="chart-svg-container">
-          <svg viewBox="0 0 700 200" class="admin-svg-chart">
-            <path
-              [attr.d]="getSvgPoints(characterChartData)"
-              fill="none"
-              stroke="var(--rpg-purple)"
-              stroke-width="4"
-              stroke-linecap="round"
-            />
-          </svg>
+        <div class="chart-canvas-wrapper">
+          <canvas *ngIf="characterChart; else semDados" baseChart [data]="characterChart" [options]="lineChartOptions"
+            type="line">
+          </canvas>
+          <ng-template #semDados>
+            <div class="admin-empty-state">
+              <i class="fa-solid fa-chart-line"></i>
+              <p>Sem dados para exibir.</p>
+            </div>
+          </ng-template>
         </div>
 
         <div class="metrics-summary-grid">
@@ -310,16 +292,16 @@
           <input type="date" [(ngModel)]="endDate" (change)="loadCampaignChart()" class="admin-date-input" />
         </div>
 
-        <div class="chart-svg-container">
-          <svg viewBox="0 0 700 200" class="admin-svg-chart">
-            <path
-              [attr.d]="getSvgPoints(campaignChartData)"
-              fill="none"
-              stroke="var(--rpg-purple-dark)"
-              stroke-width="4"
-              stroke-linecap="round"
-            />
-          </svg>
+        <div class="chart-canvas-wrapper">
+          <canvas *ngIf="campaignChart; else semDados" baseChart [data]="campaignChart" [options]="lineChartOptions"
+            type="line">
+          </canvas>
+          <ng-template #semDados>
+            <div class="admin-empty-state">
+              <i class="fa-solid fa-chart-line"></i>
+              <p>Sem dados para exibir.</p>
+            </div>
+          </ng-template>
         </div>
 
         <div class="metrics-summary-grid">
@@ -328,30 +310,6 @@
             <div class="stat-info">
               <span>Mesas Criadas</span>
               <h3>{{ campaignChartData?.total ?? 0 }} Campanhas</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-    </ng-container>
-
-    <!-- 5. ABA DE PAGAMENTOS -->
-    <ng-container *ngIf="activeTab === 'pagamentos'">
-      <div class="metrics-card-panel">
-        <h2>Painel de Assinaturas & Planos</h2>
-        <div class="metrics-summary-grid">
-          <div class="stat-widget">
-            <div class="stat-icon"><i class="fa-solid fa-certificate"></i></div>
-            <div class="stat-info">
-              <span>Plano Gratuito</span>
-              <h3>Plano Free Ativo</h3>
-            </div>
-          </div>
-
-          <div class="stat-widget success">
-            <div class="stat-icon"><i class="fa-solid fa-gem"></i></div>
-            <div class="stat-info">
-              <span>Assinantes Premium</span>
-              <h3>Premium Habilitado</h3>
             </div>
           </div>
         </div>

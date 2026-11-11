@@ -8,11 +8,13 @@ import { tokenInterceptor } from './core/interceptors/token-interceptor';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideTranslateService, TranslateLoader } from '@ngx-translate/core';
 import { provideTranslateHttpLoader, TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
+    provideCharts(withDefaultRegisterables()),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withInterceptors([tokenInterceptor, jwtInterceptor])),
     provideTranslateHttpLoader({

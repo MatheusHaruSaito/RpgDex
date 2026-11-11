@@ -47,7 +47,7 @@ export class CampaignService {
     endDate: string,
   ): Observable<ApiResponse<ChartResponse>> {
     const params: Record<string, string> = { startDate, endDate };
-    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`);
+    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`, { params });
   }
   GetById(Id: String): Observable<ApiResponse<Campaign>> {
     return this.http.get<ApiResponse<Campaign>>(`${this.env}/${Id}`);

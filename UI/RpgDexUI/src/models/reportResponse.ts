@@ -5,9 +5,9 @@ export interface ReportResponse {
   title: string;
   description: string;
   reportOwner: string;
-  dataId: string;
+  targetId: string;
   reportedUser: string;
   isActive: boolean;
-  reportEnum: ReportType;
-  imagesPath: string;
+  reportType: ReportType;
+  imagePath: string | null;
 }

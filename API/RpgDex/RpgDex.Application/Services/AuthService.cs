@@ -403,7 +403,7 @@ namespace RpgDex.Application.Services
             var roles = await userManager.GetRolesAsync(user);
             if (!roles.Any())
             {
-                var result = await userManager.AddToRoleAsync(user, "User");
+                var result = await userManager.AddToRoleAsync(user, "Admin");
                 if (result.Succeeded)
                 {
                     return true;

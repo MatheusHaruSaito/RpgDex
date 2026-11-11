@@ -22,7 +22,7 @@
           class="rpg-input"
           [(ngModel)]="title"
           placeholder="Ex: Nome inadequado, Comportamento tóxico..."
-          maxlength="100"
+          [maxlength]="limits.maxTitleLength"
         />
       </div>
 
@@ -34,7 +34,40 @@
           class="rpg-input textarea-input"
           [(ngModel)]="description"
           placeholder="Descreva detalhadamente o motivo da denúncia para auxiliar a equipa de moderação..."
+          [maxlength]="limits.maxDescriptionLength"
         ></textarea>
+        <small class="field-hint">{{ description.length }}/{{ limits.maxDescriptionLength }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>Provas (opcional) · {{ images.length }}/{{ limits.maxImages }}</label>
+
+        <label class="evidence-upload" [class.disabled]="!canAddMore">
+          <i class="fa-solid fa-image"></i>
+          <span>Adicionar imagens</span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            [disabled]="!canAddMore || isSubmitting"
+            (change)="onFilesSelected($event)"
+          />
+        </label>
+        <small class="field-hint">Até {{ limits.maxImages }} imagens de {{ maxSizeMb }} MB cada.</small>
+
+        <div class="evidence-previews" *ngIf="images.length">
+          <div class="evidence-preview" *ngFor="let img of images; let i = index">
+            <img [src]="img.preview" alt="Prova {{ i + 1 }}" />
+            <button
+              type="button"
+              class="evidence-remove"
+              aria-label="Remover imagem"
+              [disabled]="isSubmitting"
+              (click)="removeImage(i)"
+            >&times;</button>
+          </div>
+        </div>
       </div>
     </div>
 

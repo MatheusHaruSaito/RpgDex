@@ -1,6 +1,6 @@
-import { CampaignCharacterSummary } from "./campaignCharacterSummary";
-import { CampaignPlayerSummary } from "./campaignPlayerSummary";
-import { UserSummary } from "./userSummary";
+import { CampaignCharacterSummary } from './campaignCharacterSummary';
+import { CampaignPlayerSummary } from './campaignPlayerSummary';
+import { UserSummary } from './userSummary';
 
 export interface ReportedCampaignProfile {
   id: string;
@@ -15,5 +15,4 @@ export interface ReportedCampaignProfile {
   players: CampaignPlayerSummary[];
   characters: CampaignCharacterSummary[];
   pendingCharacterRequests: number;
-  messagesCount: number;
 }

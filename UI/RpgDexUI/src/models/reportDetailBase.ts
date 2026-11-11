@@ -1,8 +1,8 @@
 import { ReportedCampaignProfile } from './reportedCampaignProfile';
 import { ReportedCharacterProfile } from './reportedCharacterProfile';
+import { ReportedUserProfile } from './reportedUserProfile';
 import { ReportType } from './reportType';
 import { ReportOwner } from './reportOwner';
-import { UserSummary } from './userSummary';
 
 interface ReportDetailBase {
   id: string;
@@ -11,10 +11,13 @@ interface ReportDetailBase {
   isActive: boolean;
   createdAt: string;
   reportOwner: ReportOwner;
+  imagePaths?: string[] | null;
+  imagePath?: string | null;
 }
+
 export type ReportDetail = ReportDetailBase &
   (
-    | { reportType: ReportType.UserReport; target: UserSummary | null }
+    | { reportType: ReportType.UserReport; target: ReportedUserProfile | null }
     | { reportType: ReportType.CampaignReport; target: ReportedCampaignProfile | null }
     | { reportType: ReportType.CharacterReport; target: ReportedCharacterProfile | null }
   );

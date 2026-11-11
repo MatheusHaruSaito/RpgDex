@@ -53,6 +53,17 @@
                 <div class="cmp-card__status" [class.cmp-card__status--inactive]="!camp.isActive">
                   {{ camp.isActive ? 'Ativa' : 'Inativa' }}
                 </div>
+
+                @if (camp.gameMasterId !== currentUserId) {
+                  <button
+                    type="button"
+                    class="btn-icon danger cmp-card__report-btn"
+                    (click)="$event.stopPropagation(); openReportModal($event, camp.id, reportTypes.CampaignReport, camp.title)"
+                    title="Denunciar esta campanha"
+                  >
+                    <i class="fa-solid fa-flag"></i>
+                  </button>
+                }
               </div>
               <div class="cmp-card__body">
                 <h3 class="cmp-card__title">{{ camp.title }}</h3>
@@ -71,16 +82,6 @@
                 </div>
               </div>
             </div>
-
-            <button
-              *ngIf="camp.gameMasterId !== currentUserId"
-              type="button"
-              class="btn-icon danger cmp-card__report-btn"
-              (click)="openReportModal($event, camp.id, reportTypes.CampaignReport, camp.title)"
-              title="Denunciar esta campanha"
-            >
-              <i class="fa-solid fa-flag"></i>
-            </button>
           }
         </div>
       }

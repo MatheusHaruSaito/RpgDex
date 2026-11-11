@@ -38,7 +38,7 @@ export class CharacterService {
     endDate: string,
   ): Observable<ApiResponse<ChartResponse>> {
     const params: Record<string, string> = { startDate, endDate };
-    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`);
+    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`, { params });
   }
   public GetById(Id: String): Observable<ApiResponse<Character>> {
     return this.http.get<ApiResponse<Character>>(`${this.env}/${Id}`);

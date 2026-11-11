@@ -114,9 +114,8 @@
       </div>
     </div>
 
-    <!-- ── TABULEIRO VIRTUAL (CHAMADA PARA A TELA CHEIA) ── -->
+    <!-- ── TABULEIRO VIRTUAL ── -->
     <div class="cd-card vtt-placeholder-card" style="background: var(--rpg-bg-dark); border-color: var(--rpg-purple); overflow: hidden; position: relative;">
-      <!-- Fundo decorativo -->
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: radial-gradient(circle at 80% 20%, var(--rpg-purple-15) 0%, transparent 40%), linear-gradient(rgba(158, 116, 208, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(158, 116, 208, 0.05) 1px, transparent 1px); background-size: 100% 100%, 30px 30px, 30px 30px; pointer-events: none;"></div>
 
       <div class="vtt-placeholder-body" style="position: relative; z-index: 1;">
@@ -326,7 +325,7 @@
                     *ngIf="char.userId !== currentUserId"
                     type="button"
                     class="btn btn-outline-danger btn-sm"
-                    (click)="openReportModal(char.id, 2, char.name)"
+                    (click)="openReportModal(char.id, reportTypes.CharacterReport, char.name)"
                     title="Denunciar Personagem"
                   >
                     <i class="fa-solid fa-flag"></i>

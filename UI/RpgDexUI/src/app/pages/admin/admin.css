@@ -318,18 +318,14 @@
   outline: none;
 }
 
-.chart-svg-container {
+/* ── GRÁFICO (CHART.JS) ── */
+.chart-canvas-wrapper {
   background: var(--rpg-surface-2);
   border: 1px solid var(--rpg-border);
   border-radius: 14px;
   padding: 24px;
+  height: 340px;
   position: relative;
-  overflow: hidden;
-}
-
-.admin-svg-chart {
-  width: 100%;
-  height: 220px;
 }
 
 .metrics-summary-grid {
@@ -382,6 +378,135 @@
   font-weight: 800;
   color: var(--rpg-text-strong);
   margin: 0;
+}
+
+/* ── FILTRO ABERTOS / ENCERRADOS ── */
+.reports-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-toggle-btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--rpg-border-light);
+  background: var(--rpg-surface);
+  color: var(--rpg-text-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle-btn:hover {
+  border-color: var(--rpg-purple-soft);
+  color: var(--rpg-purple);
+}
+
+.filter-toggle-btn.active {
+  background: var(--rpg-purple);
+  border-color: var(--rpg-purple);
+  color: #ffffff;
+  box-shadow: var(--rpg-shadow-btn);
+}
+
+/* ── BADGES DE STATUS ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badge-open {
+  background: var(--rpg-success-bg);
+  color: var(--rpg-success);
+  border: 1px solid var(--rpg-success-border);
+}
+
+.badge-closed {
+  background: var(--rpg-surface-tint);
+  color: var(--rpg-text-muted);
+  border: 1px solid var(--rpg-border-light);
+}
+
+/* ── ALVO INDISPONÍVEL ── */
+.report-target-missing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 0.9rem;
+}
+
+/* ── PROVAS (IMAGENS) ── */
+.report-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-evidence h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.evidence-thumb {
+  display: block;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--rpg-surface-2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evidence-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.evidence-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ações adicionais do reporte */
+.report-action-buttons .btn-outline-danger {
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.report-action-buttons .btn-outline-danger:hover {
+  background: #dc2626;
+  color: #ffffff;
 }
 
 /* Estados vazios / carregamento */
