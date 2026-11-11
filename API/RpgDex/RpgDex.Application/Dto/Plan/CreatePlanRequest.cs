@@ -7,5 +7,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Plan
 {
-    public record CreatePlanRequest(string Name, string Description, decimal Price, bool HasEarlyAccess, int CharacterQty, int CampaignQty, int DocumentsSpaceMB, int CanvasSpaceMb, int DurationDays, List<PlanTagType> Tags);
+    public record CreatePlanRequest(string Name, string Description, decimal Price, bool HasEarlyAccess, int CharacterQty, int CampaignQty, int DocumentsSpaceMB, int CanvasSpaceMb, int DurationDays,int Tier, List<PlanTagType> Tags);
 }
