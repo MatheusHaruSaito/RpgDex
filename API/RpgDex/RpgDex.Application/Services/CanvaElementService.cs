@@ -2,6 +2,8 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Canvas;
 using RpgDex.Application.Extension;
@@ -17,10 +19,11 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class CanvaElementService(ICanvaElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService,
-        CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
-        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator
-        ) : ICanvaElementService
+    public class CanvaElementService(ICanvasElementRepository canvaElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
+        ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
+        SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvaElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
+        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator
+        ) : ICanvasElementService
     {
         private const int MaxElementsPerCanvas = 500;
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
@@ -34,47 +37,119 @@ namespace RpgDex.Application.Services
             if (count >= MaxElementsPerCanvas)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
-            var element = request.Adapt<CanvaElement>();
-
+            var element = request.Adapt<CanvasElement>();
+            decimal elementSize = element.ToBson().Length;
             if (request.Image is not null)
             {
-                Console.WriteLine("NÃO É NULO");
                 try
                 {
-                    Console.WriteLine("AAAA");
                     element.ImageUrl = await fileService.UploadFileAsync(request.Image, Guid.NewGuid().ToString());
+                    elementSize += request.Image.Length;
+
                 }
                 catch
                 {
                     return Result<CanvasElementResponse>.Failure(Error.UploadImageFailed);
                 }
             }
-
+            element.ElementSize = elementSize / 1024m / 1024m;
             element.UserId = guidUserId;
 
             var created = await canvaElementRepository.InsertElementAsync(element);
             if (created is null)
                 return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
 
-            return Result<CanvasElementResponse>.Success(created.Adapt<CanvasElementResponse>());
+            var result = created.Adapt<CanvasElementResponse>();
+
+            await canvasHubService.AddElement(
+                request.CampaignId.ToString(),
+                new CreateElementEvent(result, request.ExceptConnectionId));
+
+            return Result<CanvasElementResponse>.Success(result);
 
         }
 
-        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId,int page =1 , int pageSize=20)
+        public async Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request, decimal imageSize = 0)
+        {
+            var (guidUserId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+
+            var count = await canvaElementRepository.CountByCampaignAsync(request.CampaignId);
+            if (count >= MaxElementsPerCanvas)
+                return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
+
+            var element = request.Adapt<CanvasElement>();
+            decimal elementSize = element.ToBson().Length;
+            elementSize += imageSize;
+            var character = await characterRepository.GetByIdAsync(request.CharacterId);
+            if (character is null)
+            {
+                return Result<CanvasElementResponse>.Failure(CharacterError.NotFound);
+            }
+            else
+            {
+                if (character.IconPath is not null)
+                    element.ImageUrl = character.IconPath;
+            }
+
+            element.UserId = guidUserId;
+            element.ElementSize = elementSize / 1024m / 1024m;
+            var created = await canvaElementRepository.InsertElementAsync(element);
+            if (created is null)
+                return Result<CanvasElementResponse>.Failure(CanvaElementError.CreateFailed);
+            var result = created.Adapt<CanvasElementResponse>();
+            await canvasHubService.AddElement(
+                request.CampaignId.ToString(),
+                new CreateElementEvent(result, request.ExceptConnectionId));
+            return Result<CanvasElementResponse>.Success(result);
+        }
+        public async Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request)
+        {
+            var (userGuidId, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
+            //CreateCharacter
+            Character character = new()
+            {
+                Name = request.Content,
+            };
+            var createCharacterResult =await characterSevice.Create(userId,new CreateCharacterRequest(character.Name, null,request.CharacterIcon,null));
+            if (createCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(createCharacterResult.Errors);
+            }
+            //Add To Campaign
+            //Add To Npc List, this is just for testing
+            //change this when implement npcs
+            var characterId = createCharacterResult.Value!.Id;
+            var addCharacterResult =await campaignService.AddCharacter(userId, new(request.CampaignId, characterId));
+            if (addCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(addCharacterResult.Errors);
+            }
+            var accpetCharacterResult = await campaignService.AcceptCharacter(userId, new(request.CampaignId, characterId, true));
+            if (accpetCharacterResult.IsFailure)
+            {
+                return Result<CanvasElementResponse>.Failure(accpetCharacterResult.Errors);
+            }
+            //CreateToken
+            var imageSize = 0m;
+            if (request.CharacterIcon is not null)
+            imageSize = request.CharacterIcon.Length;
+            var requestAdapted =request.Adapt<CreateCanvaTokenElementRequest>() with { CharacterId = characterId};
+            return await CreateTokenElement(userId, requestAdapted, imageSize);
+        }
+
+        public async Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId, double? minX, double? minY, double? maxX, double? maxY)
         {
             var (_, accessError) = await CheckAccessAsync(userId, campaignId);
             if (accessError is not null) return Result<GetAllCanvasElementResponse>.Failure(accessError);
 
-            var result = await canvaElementRepository.GetAllElementsByCampaignAsync(campaignId,page,pageSize);
-            foreach(var r in result.elements)
-            {
-                Console.WriteLine(r.ImageUrl);
-            }
+            var result = await canvasElementQueries.GetAllCanvasElementByCampaignIdAsync(campaignId, minX, minY, maxX, maxY);
             return Result<GetAllCanvasElementResponse>.Success(
-                new GetAllCanvasElementResponse(result.elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.Count));
+                new GetAllCanvasElementResponse(result.Elements.Adapt<IEnumerable<CanvasElementResponse>>(), result.CanvasSizeMb));
         }
 
-        public async Task<Result<bool>> MoveElement(string userId, MoveCanvaElementsRequest request)
+        public async Task<Result<bool>> MoveElement(string userId, MoveCanvasElementsRequest request)
         {
             var check = moveCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
@@ -84,10 +159,14 @@ namespace RpgDex.Application.Services
             var positions = request.Items.Select(i => new ElementPosition(i.Id, i.X, i.Y));
             var ok = await canvaElementRepository.MoveElementAsync(request.CampaignId, positions);
 
+            await canvasHubService.MoveElements(
+                request.CampaignId.ToString(),
+                new MoveElementsEvent(positions.Select(p => new MoveCanvasElement(p.Id, p.X, p.Y)).ToList(),
+                request.ExceptConnectionId));
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.MoveFailed);
         }
 
-        public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvaElementsRequest request)
+        public async Task<Result<bool>> ReOrderElement(string userId,ReOrderCanvasElementsRequest request)
         {
             var check = reOrderCanvaElementValidator.Validate(request);
             if (!check.IsValid) return check.ReturnErrors<bool>();
@@ -98,9 +177,31 @@ namespace RpgDex.Application.Services
             var orders = request.Items.Select(i => new ElementOrder(i.Id, i.Z));
             var ok = await canvaElementRepository.ReorderElementsAsync(request.CampaignId, orders);
 
+            await canvasHubService.ReOrderElements(
+                request.CampaignId.ToString(),
+                new ReOrderElementsEvent(orders.Select(o => new ReOrderCanvasElement(o.Id, o.Z)).ToList(),
+                request.ExceptConnectionId));
+
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
         }
+        public async Task<Result<bool>> ScaleElement(string userId, ScaleCanvasElementsRequest request)
+        {
+            var check = scaleCamvasElementValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
 
+            var (_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            var scales = request.Items.Select(i => new ElementScale(i.Id, i.Scale));
+            var ok = await canvaElementRepository.ScaleElement(request.CampaignId, scales);
+
+            await canvasHubService.ScaleElements(
+                request.CampaignId.ToString(),
+                new ScaleElementsEvent(scales.Select(s => new ScaleCanvasElement(s.Id, s.Scale)).ToList(),
+                request.ExceptConnectionId));
+
+            return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.ReorderFailed);
+        }
         public async Task<Result<bool>> SetElementActiveState(string userId, SetElementActiveStateRequest request, bool state)
         {
             var check = setElementActiveStateValidator.Validate(request);
@@ -109,6 +210,10 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
             var ok = await canvaElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
+
+            await canvasHubService.SetActiveElements(
+                request.CampaignId.ToString(),
+                new SetActiveElementsEvent(request.Ids, state, request.ExceptConnectionId));
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
         }

@@ -48,6 +48,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_REQUESTS": "The character was not found in the join requests list.",
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
+    "CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS": "Failed to remove character from campaigns",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -84,6 +85,8 @@
     "VALIDATION_INVALID_FILE_EXTENSION": "Icon must be a JPG, JPEG, or PNG file",
     "VALIDATION_FILE_TOO_LARGE": "Icon file size must not exceed the limit",
 
+    "CANVAS_DUPLICATED_ITEMS": "The same element was sent more than once",
+    "CANVAS_INVALID_SCALE": "Scale must be between 0.1 and 10",
     "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",

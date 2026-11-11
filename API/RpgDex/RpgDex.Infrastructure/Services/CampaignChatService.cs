@@ -14,7 +14,7 @@ namespace RpgDex.Infrastructure.Services
         public async Task SendMessage(string campaignId, CampaignChatMessagesResponse message)
         {
             await campaignChatHub.Clients
-                .Group($"campaign-{campaignId}")
+                .Group($"campaign-chat-{campaignId}")
                 .SendAsync("ReceiveMessage",message);
         }
     }

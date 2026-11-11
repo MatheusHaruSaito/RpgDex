@@ -100,9 +100,12 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
+            services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
+            services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
+            services.AddScoped<ICanvasHubService, CanvasHubService>();
             services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
             services.AddScoped<ICharacterQueries, CharacterQueries>();
-            services.AddScoped<ICanvaElementRepository, CanvaElementRepository>();
+            services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddSingleton<ILinkTicketService, LinkTicketService>();
 
             //Identity

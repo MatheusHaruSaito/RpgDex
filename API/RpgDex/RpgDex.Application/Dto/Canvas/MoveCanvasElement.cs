@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record ReOrderElementItem(Guid Id, int Z);
+    public record MoveCanvasElement(Guid Id, double X, double Y);
 }

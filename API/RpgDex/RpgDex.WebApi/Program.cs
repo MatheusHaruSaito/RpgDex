@@ -42,5 +42,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<CampaignChatHub>("/hubs/campaign-chat");
+app.MapHub<CampaignCanvasHub>("/hubs/campaign-canvas");
+
 
 app.Run();

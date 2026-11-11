@@ -7,7 +7,7 @@ using System.Text;
 
 namespace RpgDex.Application.Validators.Canvas
 {
-    public class ReOrderCanvaElementsRequestValidator : AbstractValidator<ReOrderCanvaElementsRequest>
+    public class ReOrderCanvaElementsRequestValidator : AbstractValidator<ReOrderCanvasElementsRequest>
     {
         public ReOrderCanvaElementsRequestValidator()
         {

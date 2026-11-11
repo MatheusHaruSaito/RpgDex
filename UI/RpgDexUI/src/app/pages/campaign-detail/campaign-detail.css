@@ -899,6 +899,13 @@
   opacity: 1;
 }
 
+.char-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* Campaign Chat */
 app-campaign-chat-component {
   display: block;

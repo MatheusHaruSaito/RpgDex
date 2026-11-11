@@ -4,5 +4,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record SetElementActiveStateRequest(Guid CampaignId, List<Guid> Ids);
+    public record SetElementActiveStateRequest(Guid CampaignId, List<Guid> Ids, string? ExceptConnectionId = null);
 }
