@@ -107,6 +107,20 @@
     "PLAN_TAG_ALREADY_EXISTS": "Tag already exists on the plan.",
     "PLAN_TAG_NOT_FOUND": "Tag not found on the plan.",
 
-    "MERCADOPAGO_ORDER_CREATION_FAILED": "Failed to create the payment order."
+    "MERCADOPAGO_ORDER_CREATION_FAILED": "Failed to create the payment order.",
+
+    "BIRTH_DATE_FUTURE": "Birth date can't be in the future.",
+    "BIRTH_DATE_INVALID": "Invalid birth date.",
+    "CPF_EMPTY": "CPF can't be empty.",
+    "CPF_INVALID": "Invalid CPF.",
+    "GUARDIAN_CPF_EMPTY": "Guardian CPF can't be empty.",
+    "GUARDIAN_CPF_INVALID": "Invalid guardian CPF.",
+    "GUARDIAN_CPF_SAME_AS_USER": "Guardian CPF must be different from your CPF.",
+    "GUARDIAN_EMAIL_EMPTY": "Guardian email can't be empty.",
+    "AGE_ALREADY_VERIFIED": "Your age has already been verified.",
+    "AGE_CPF_ALREADY_IN_USE": "This CPF is already in use.",
+    "AGE_SAVE_FAILED": "Failed to save your data. Please try again.",
+    "AGE_GUARDIAN_EMAIL_SEND_FAILED": "Failed to send the email to your guardian. Check the address and try again.",
+    "AGE_INVALID_CONSENT_TOKEN": "Invalid or expired consent link."
   }
 }
