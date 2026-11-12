@@ -154,11 +154,17 @@ namespace RpgDex.Infrastructure
                 ?? throw new InvalidOperationException("Jwt Not Found");
 
 
+            services.AddAuthorization(option =>
+            {
+                option.AddPolicy("AgeVerified", p => p.RequireClaim("age_status", "verified"));
+            });
+
             services.AddAuthentication(option =>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters

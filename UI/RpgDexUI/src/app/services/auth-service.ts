@@ -113,7 +113,11 @@ export class AuthService {
     if (!jwtToken) return undefined;
     return jwtDecode<JwtPayload>(jwtToken).sub;
   }
-
+  public getLoggedUserAgeStatus(): string | undefined {
+    const jwtToken = this.cookieService.get(this.JWT_Token);
+    if (!jwtToken) return undefined;
+    return jwtDecode<JwtPayload>(jwtToken).age_status;
+  }
   public isLoggedIn(): boolean {
     return this.cookieService.check(this.JWT_Token);
   }

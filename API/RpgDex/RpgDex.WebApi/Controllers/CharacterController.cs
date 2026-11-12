@@ -14,7 +14,7 @@ namespace RpgDex.WebApi.Controllers
         {
         [Route("api/[controller]")]
         [ApiController]
-        [Authorize]
+        [Authorize(Policy = "AgeVerified")]
         public class CharacterController : ControllerBase
         {
         private string? currentUser => User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

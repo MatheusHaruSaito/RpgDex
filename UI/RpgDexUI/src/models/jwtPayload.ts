@@ -6,5 +6,6 @@ export interface JwtPayload {
   exp: number;
   iss: string;
   aud: string;
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string | string[];
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'?: string | string[];
+  age_status: string;
 }
