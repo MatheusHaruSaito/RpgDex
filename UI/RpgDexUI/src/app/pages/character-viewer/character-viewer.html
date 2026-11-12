@@ -1,54 +1,124 @@
 @if (character) {
   <div class="cv-wrapper fade-in-content">
-    <!-- Header / Perfil -->
-    <div class="cv-header">
+    <!-- ── HEADER / PERFIL ── -->
+    <header class="cv-header">
       <div
         class="cv-avatar"
-        [style.background-image]="character.iconPath ? 'url(' + character.iconPath + ')' : ''"
+        [style.background-image]="character.iconPath ? 'url(&quot;' + character.iconPath + '&quot;)' : null"
+        role="img"
+        [attr.aria-label]="'Avatar de ' + character.name"
       >
         @if (!character.iconPath) {
-          <i class="fa fa-shield-halved"></i>
+          <i class="fa fa-shield-halved" aria-hidden="true"></i>
         }
       </div>
-      <div class="cv-details">
-        <h3 class="cv-name">{{ character.name }}</h3>
-        @if (character.description) {
-          <p class="cv-desc">{{ character.description }}</p>
-        }
-      </div>
-    </div>
 
-    <!-- Conteúdo Dinâmico da Ficha -->
-    @if (getSheetColumns().length === 0) {
+      <div class="cv-details">
+        <h3 class="cv-name" [title]="character.name">{{ character.name }}</h3>
+
+        @if (character.description) {
+          <p class="cv-desc" [class.cv-desc--clamped]="hasLongDescription && !descExpanded()">
+            {{ character.description }}
+          </p>
+          @if (hasLongDescription) {
+            <button type="button" class="cv-desc-toggle" (click)="toggleDescription()">
+              {{ descExpanded() ? 'Ver menos' : 'Ver mais' }}
+              <i class="fa" [ngClass]="descExpanded() ? 'fa-chevron-up' : 'fa-chevron-down'" aria-hidden="true"></i>
+            </button>
+          }
+        }
+      </div>
+    </header>
+
+    <!-- ── FICHA ── -->
+    @if (groups.length === 0) {
       <div class="cv-sheet-empty">
-        <i class="fa fa-circle-info"></i>
+        <i class="fa fa-circle-info" aria-hidden="true"></i>
         <span>Nenhum atributo registrado nesta ficha.</span>
       </div>
     } @else {
       <div class="cv-sheet-grid">
-        @for (col of getSheetColumns(); track $index) {
-          <div class="cv-sheet-col">
-            @if (col.scalar !== undefined) {
-              <div class="cv-scalar-badge">
-                <span class="cv-scalar-label">{{ col.key }}</span>
-                <span class="cv-scalar-val">{{ col.scalar }}</span>
-              </div>
-            }
+        @for (group of groups; track $index) {
+          <section class="cv-section-block">
+            <h4 class="cv-section-title">{{ group.title }}</h4>
 
-            @for (section of col.sections; track section.title) {
-              <div class="cv-section-block">
-                <h4 class="cv-section-title">{{ section.title }}</h4>
-                <div class="cv-props-list">
-                  @for (item of section.items; track item.name) {
-                    <div class="cv-prop-chip">
-                      <span class="cv-prop-key">{{ item.name }}</span>
-                      <span class="cv-prop-val">{{ item.value }}</span>
-                    </div>
+            @if (group.entries.length === 0) {
+              <p class="cv-group-empty">Sem atributos neste grupo.</p>
+            } @else {
+              <div class="cv-entries">
+                @for (entry of group.entries; track $index) {
+                  @switch (entry.type) {
+                    <!-- Barra de recurso (Vida/Mana) -->
+                    @case (PropertyValueEnum.ResourceBar) {
+                      <div class="cv-entry cv-entry--wide cv-resource" [ngClass]="'cv-resource--' + entry.level">
+                        <div class="cv-resource-head">
+                          <span class="cv-prop-key">{{ entry.key }}</span>
+                          <span class="cv-resource-nums">
+                            <strong>{{ entry.current }}</strong><span class="cv-res-sep">/</span>{{ entry.max }}
+                          </span>
+                        </div>
+                        <div
+                          class="cv-bar-bg"
+                          role="progressbar"
+                          [attr.aria-label]="entry.key"
+                          [attr.aria-valuenow]="entry.current"
+                          aria-valuemin="0"
+                          [attr.aria-valuemax]="entry.max"
+                        >
+                          <div class="cv-bar-fill" [style.width.%]="entry.percent"></div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Número -->
+                    @case (PropertyValueEnum.Number) {
+                      <div class="cv-entry cv-stat">
+                        <span class="cv-stat-val">{{ entry.value || 0 }}</span>
+                        <span class="cv-stat-key">{{ entry.key }}</span>
+                      </div>
+                    }
+
+                    <!-- Marcador (Sim/Não) -->
+                    @case (PropertyValueEnum.BooleanFlgs) {
+                      <div class="cv-entry cv-flag" [class.cv-flag--on]="isTrue(entry.value)">
+                        <i
+                          class="fa"
+                          [ngClass]="isTrue(entry.value) ? 'fa-circle-check' : 'fa-circle-xmark'"
+                          aria-hidden="true"
+                        ></i>
+                        <span class="cv-flag-key">{{ entry.key }}</span>
+                        <span class="cv-sr-only">{{ isTrue(entry.value) ? ': ativo' : ': inativo' }}</span>
+                      </div>
+                    }
+
+                    <!-- Texto longo / Notas -->
+                    @case (PropertyValueEnum.TextArea) {
+                      <details class="cv-entry cv-entry--wide cv-note">
+                        <summary>
+                          <i class="fa fa-chevron-right cv-note-chevron" aria-hidden="true"></i>
+                          <span class="cv-prop-key">{{ entry.key }}</span>
+                          @if (!entry.value) {
+                            <span class="cv-note-empty">vazio</span>
+                          }
+                        </summary>
+                        @if (entry.value) {
+                          <p class="cv-note-body">{{ entry.value }}</p>
+                        }
+                      </details>
+                    }
+
+                    <!-- Texto simples -->
+                    @default {
+                      <div class="cv-entry cv-entry--wide cv-prop-chip">
+                        <span class="cv-prop-key">{{ entry.key }}</span>
+                        <span class="cv-prop-val">{{ entry.value || '—' }}</span>
+                      </div>
+                    }
                   }
-                </div>
+                }
               </div>
             }
-          </div>
+          </section>
         }
       </div>
     }

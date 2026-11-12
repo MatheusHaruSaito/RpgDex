@@ -24,6 +24,9 @@ export class CreateJoinCampaignModalComponent {
   @Output() onCreate = new EventEmitter<FormData>();
   @Output() onJoin = new EventEmitter<{ campaignId: string; password?: string }>();
 
+  // Estado de submissão/carregamento
+  isSubmitting = false;
+
   // Campos de Criação
   newTitle = '';
   newDescription = '';
@@ -42,6 +45,7 @@ export class CreateJoinCampaignModalComponent {
   showCropperModal = false;
 
   close(): void {
+    if (this.isSubmitting) return; // Não fecha se estiver enviando dados
     this.isOpen = false;
     this.isOpenChange.emit(false);
     this.resetForm();
@@ -49,6 +53,7 @@ export class CreateJoinCampaignModalComponent {
 
   public setErrorMessage(msg: string): void {
     this.errorMessage = msg;
+    this.isSubmitting = false; // Reabilita os botões se houver erro
     this.cdr.detectChanges();
   }
 
@@ -102,7 +107,9 @@ export class CreateJoinCampaignModalComponent {
   }
 
   submitCreate(): void {
-    if (!this.newTitle.trim() || !this.selectedIconFile) return;
+    if (this.isSubmitting || !this.newTitle.trim() || !this.selectedIconFile) return;
+    
+    this.isSubmitting = true;
     this.errorMessage = '';
 
     const form = new FormData();
@@ -117,7 +124,9 @@ export class CreateJoinCampaignModalComponent {
   }
 
   submitJoin(): void {
-    if (!this.joinId.trim()) return;
+    if (this.isSubmitting || !this.joinId.trim()) return;
+    
+    this.isSubmitting = true;
     this.errorMessage = '';
 
     this.onJoin.emit({
@@ -127,6 +136,7 @@ export class CreateJoinCampaignModalComponent {
   }
 
   private resetForm(): void {
+    this.isSubmitting = false;
     this.newTitle = '';
     this.newDescription = '';
     this.newPassword = '';
