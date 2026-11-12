@@ -1,9 +1,10 @@
-﻿using MongoDB.Driver;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
+using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
-using RpgDex.Domain.Entities;
 
 namespace RpgDex.Infrastructure.Data
 {
@@ -34,10 +35,16 @@ namespace RpgDex.Infrastructure.Data
             _database.GetCollection<UserDocument>("UserDocuments");
         public IMongoCollection<ChatMessage> ChatMessage =>
             _database.GetCollection<ChatMessage>("ChatMessage");
-        public IMongoCollection<CampaignDiceLog> CampaignDiceLogs =>
-            _database.GetCollection<CampaignDiceLog>("CampaignDiceLogs");
+        public IMongoCollection<Payment> Payments =>
+            _database.GetCollection<Payment>("Payments");
+        public IMongoCollection<Plan> Plans =>
+            _database.GetCollection<Plan>("Plans");
+        public IMongoCollection<Subscription> Subscriptions =>
+            _database.GetCollection<Subscription>("Subscriptions");
         public IMongoCollection<CanvasElement> CanvasElements =>
             _database.GetCollection<CanvasElement>("CanvasElements");
+        public IMongoCollection<CampaignDiceLog> CampaignDiceLogs =>
+            _database.GetCollection<CampaignDiceLog>("CampaignDiceLogs");
         public IMongoDatabase GetDatabase() => _database;
     }
 }

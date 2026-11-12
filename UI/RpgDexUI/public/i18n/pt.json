@@ -49,6 +49,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "O personagem não faz parte desta campanha.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "O jogador não faz parte desta campanha.",
     "CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS": "Falha ao removed personagem das campanhas",
+    "CAMPAIGN_QUANTITY_EXCEED": "Falha ao criar campanha, capacidade maxima atingida",
 
     "CHARACTER_NOT_FOUND": "Personagem não encontrado.",
     "CHARACTER_NOT_OWNED": "Este personagem não pertence ao utilizador autenticado.",
@@ -56,6 +57,7 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Falha ao alterar o estado ativo do personagem.",
     "CHARACTER_UPDATE_FAILED": "Não foi possível atualizar o personagem.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
+    "CHARACTER_QUANTITY_EXCEED": "Falha ao criar personagem, limite de personagens atingido",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
@@ -66,6 +68,7 @@
     "USER_DOCUMENT_CREATE_FAILED": "Falha ao criar o documento do utilizador.",
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
+    "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Falha ao enviar o ficheiro, limite maximo atingido",
 
     "DICE_LOG_ADD_ROLL_FAILED": "Falha ao guardar a rolagem no registo da campanha.",
     "DICE_LOG_NOT_FOUND": "Registo de rolagens não encontrado para esta campanha.",
@@ -98,6 +101,12 @@
     "CANVAS_ELEMENT_TOO_MANY_POINTS": "O desenho tem demasiados pontos.",
     "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Número de elementos inválido no pedido.",
     "CANVAS_ELEMENT_LIMIT_REACHED": "O limite de elementos do canvas foi atingido.",
-    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório."
+    "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório.",
+
+    "PLAN_NOT_FOUND": "Plano Não encontrado.",
+    "PLAN_TAG_ALREADY_EXISTS": "Tag já existe no plano.",
+    "PLAN_TAG_NOT_FOUND": "Tag not found on the plan.",
+
+    "MERCADOPAGO_ORDER_CREATION_FAILED": "Falha ao criar ordem de pagamento"
   }
 }

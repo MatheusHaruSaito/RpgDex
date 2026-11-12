@@ -49,6 +49,7 @@
     "CAMPAIGN_CHARACTER_NOT_IN_CAMPAIGN": "The character is not part of this campaign.",
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
     "CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS": "Failed to remove character from campaigns",
+    "CAMPAIGN_QUANTITY_EXCEED": "Failed to create campaign, maximum campaign reached",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -56,6 +57,7 @@
     "CHARACTER_SET_ACTIVE_STATE_FAILED": "Failed to change character active state.",
     "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
+    "CHARACTER_QUANTITY_EXCEED": "Failed to create character, maximum character quantity exceed",
 
     "USER_UPDATE_FAILED": "Failed to update user profile.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
@@ -66,6 +68,7 @@
     "USER_DOCUMENT_CREATE_FAILED": "Failed to create user document.",
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
+    "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Failed to upload file, maximum storage exceed",
 
     "DICE_LOG_ADD_ROLL_FAILED": "Failed to save dice roll to the campaign log.",
     "DICE_LOG_NOT_FOUND": "Dice roll log not found for this campaign.",
@@ -98,6 +101,12 @@
     "CANVAS_ELEMENT_TOO_MANY_POINTS": "Drawing has too many points.",
     "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Invalid number of elements in the request.",
     "CANVAS_ELEMENT_LIMIT_REACHED": "Canvas element limit reached.",
-    "VALIDATION_DISPLAYNAME": "Character name is required."
+    "VALIDATION_DISPLAYNAME": "Character name is required.",
+
+    "PLAN_NOT_FOUND": "Plan not found.",
+    "PLAN_TAG_ALREADY_EXISTS": "Tag already exists on the plan.",
+    "PLAN_TAG_NOT_FOUND": "Tag not found on the plan.",
+
+    "MERCADOPAGO_ORDER_CREATION_FAILED": "Failed to create the payment order."
   }
 }

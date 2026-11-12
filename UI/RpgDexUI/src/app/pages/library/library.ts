@@ -1,8 +1,10 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { UserDocumentService } from '../../services/user-document-service';
+import { SubscriptionService } from '../../services/subscription-service';
 import { UserDocumentResponse } from '../../../models/userDocumentResponse';
 import { CreateUserDocumentRequest } from '../../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../../models/updateUserDocumentRequest';
@@ -11,12 +13,13 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './library.html',
   styleUrl: './library.css',
 })
 export class LibraryComponent implements OnInit {
   private documentService = inject(UserDocumentService);
+  private subscriptionService = inject(SubscriptionService);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
@@ -26,6 +29,8 @@ export class LibraryComponent implements OnInit {
   isLoading = false;
   isUploading = false;
   isUpdating = false;
+
+  hasAccess = true;
 
   errorMessage = '';
   successMessage = '';
@@ -52,18 +57,40 @@ export class LibraryComponent implements OnInit {
   editSelectedFile: File | null = null;
 
   ngOnInit(): void {
-    this.loadDocuments();
+    this.checkAccessAndLoad();
   }
 
-  loadDocuments(): void {
+  checkAccessAndLoad(): void {
     this.isLoading = true;
     this.clearMessages();
 
+    this.subscriptionService.HasEarlyAccess().subscribe({
+      next: (hasEarlyAccess: boolean) => {
+        if (!hasEarlyAccess) {
+          this.hasAccess = false;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.hasAccess = true;
+        this.loadDocuments();
+      },
+      error: (err) => {
+        console.error('Erro ao verificar Early Access:', err);
+        this.hasAccess = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadDocuments(): void {
     this.documentService.GetAllByUserId(1, 100).subscribe({
       next: (res) => {
         this.isLoading = false;
         if (res.success && res.data) {
-          this.documents = res.data;
+          this.documents = res.data.elements;
           this.applyFilters();
         }
         this.cdr.detectChanges();
@@ -87,7 +114,7 @@ export class LibraryComponent implements OnInit {
         (doc) =>
           doc.name?.toLowerCase().includes(term) ||
           doc.description?.toLowerCase().includes(term) ||
-          doc.fileName?.toLowerCase().includes(term)
+          doc.fileName?.toLowerCase().includes(term),
       );
     }
 
@@ -95,7 +122,8 @@ export class LibraryComponent implements OnInit {
       result = result.filter((doc) => {
         const ext = this.getFileExtension(doc.fileName);
         if (this.activeFilter === 'pdf') return ext === 'pdf';
-        if (this.activeFilter === 'image') return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
+        if (this.activeFilter === 'image')
+          return ['png', 'jpg', 'jpeg', 'webp', 'gif'].includes(ext);
         if (this.activeFilter === 'doc') return ['doc', 'docx', 'txt', 'rtf'].includes(ext);
         if (this.activeFilter === 'audio') return ['mp3', 'wav', 'ogg', 'm4a'].includes(ext);
         return true;
@@ -127,7 +155,10 @@ export class LibraryComponent implements OnInit {
     if (input.files && input.files.length > 0) {
       this.selectedFile = input.files[0];
       if (!this.uploadData.name) {
-        const nameWithoutExt = this.selectedFile.name.substring(0, this.selectedFile.name.lastIndexOf('.'));
+        const nameWithoutExt = this.selectedFile.name.substring(
+          0,
+          this.selectedFile.name.lastIndexOf('.'),
+        );
         this.uploadData.name = nameWithoutExt || this.selectedFile.name;
       }
     }
@@ -138,7 +169,10 @@ export class LibraryComponent implements OnInit {
     if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
       this.selectedFile = event.dataTransfer.files[0];
       if (!this.uploadData.name) {
-        const nameWithoutExt = this.selectedFile.name.substring(0, this.selectedFile.name.lastIndexOf('.'));
+        const nameWithoutExt = this.selectedFile.name.substring(
+          0,
+          this.selectedFile.name.lastIndexOf('.'),
+        );
         this.uploadData.name = nameWithoutExt || this.selectedFile.name;
       }
     }

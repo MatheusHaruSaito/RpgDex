@@ -5,13 +5,18 @@ import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { CampaignService } from '../../services/campaign-service';
+import { PlanService } from '../../services/plan-service';
+import { SubscriptionService } from '../../services/subscription-service';
 import { UserResponse } from '../../../models/userResponse';
 import { Character } from '../../../models/character';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
+import { PlanResponse } from '../../../models/planResponse';
 import { SettingsModalComponent } from '../../modals/settings-modal/settings-modal';
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 const THEME_KEY = 'rpgdex-theme';
 
@@ -33,17 +38,22 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private characterService = inject(CharacterService);
   private campaignService = inject(CampaignService);
+  private planService = inject(PlanService);
+  private subscriptionService = inject(SubscriptionService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
 
   user: UserResponse | null = null;
+  userPlanName = 'Plano Gratuito';
+  hasEarlyAccess = false;
   authOptions: AuthOptionsResponse | null = null;
   isDarkMode = false;
   isSettingsModalOpen = false;
 
   // Estados de carregamento com Skeleton
   isLoadingUser = true;
+  isLoadingPlan = true;
   isLoadingCharacters = true;
   isLoadingCampaigns = true;
 
@@ -58,6 +68,7 @@ export class ProfileComponent implements OnInit {
     this.HandleFeedBackMessage();
     this.initTheme();
     this.loadUser();
+    this.loadUserPlanInfo();
     this.loadCharacterPreview();
     this.loadCampaignPreview();
   }
@@ -127,6 +138,34 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  private loadUserPlanInfo(): void {
+    this.isLoadingPlan = true;
+
+    forkJoin({
+      userPlans: this.subscriptionService.GetAllUserPlanInfo().pipe(catchError(() => of(null))),
+      earlyAccess: this.subscriptionService.HasEarlyAccess().pipe(catchError(() => of(false))),
+    }).subscribe({
+      next: ({ userPlans, earlyAccess }) => {
+        this.hasEarlyAccess = !!earlyAccess;
+
+        if (userPlans?.data && userPlans.data.length > 0) {
+          const activeSub = userPlans.data[0];
+          this.userPlanName = activeSub.planName || 'Plano VIP';
+        } else {
+          this.userPlanName = 'Plano Gratuito';
+        }
+
+        this.isLoadingPlan = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.userPlanName = 'Plano Gratuito';
+        this.isLoadingPlan = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
   private loadAuthOptions(userId: string): void {
     this.authService.GetUserAuthOptions(userId).subscribe({
       next: (res) => {
@@ -147,13 +186,44 @@ export class ProfileComponent implements OnInit {
     this.isLoadingCharacters = true;
     this.characterService.GetAllByPage(1, 3).subscribe({
       next: (response) => {
-        this.characterTotal = response.data?.characterLenght ?? 0;
+        this.characterTotal = response.data?.characterLength ?? 0;
         this.characterPreview = response.data?.characters ?? [];
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoadingCharacters = false;
+        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
+          this.cdr.detectChanges();
+        });
+      },
+    });
+  }
+
+  private loadCampaignPreview(): void {
+    const userId = this.authService.getLoggedUserId();
+    if (!userId) {
+      this.isLoadingCampaigns = false;
+      return;
+    }
+
+    this.isLoadingCampaigns = true;
+    this.campaignService.GetAllByUserPage(0, 3).subscribe({
+      next: (response) => {
+        const allCampaigns: Campaign[] = response.data?.campaigns ?? [];
+        this.campaignTotal = response.data?.campaignLength ?? 0;
+        this.campaignPreview = allCampaigns.map((c) => ({
+          id: c.id,
+          title: c.title,
+          role: c.gameMasterId === userId ? 'Mestre' : 'Jogador',
+          iconPath: c.iconPath,
+        }));
+
+        this.isLoadingCampaigns = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoadingCampaigns = false;
         ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
           this.cdr.detectChanges();
         });
@@ -173,37 +243,6 @@ export class ProfileComponent implements OnInit {
     if (this.authOptions) {
       this.authOptions.isTwoFactorEnabled = isEnabled;
     }
-  }
-
-  private loadCampaignPreview(): void {
-    const userId = this.authService.getLoggedUserId();
-    if (!userId) {
-      this.isLoadingCampaigns = false;
-      return;
-    }
-
-    this.isLoadingCampaigns = true;
-    this.campaignService.GetAllByUserPage(0, 3).subscribe({
-      next: (response) => {
-        const allCampaigns: Campaign[] = response.data?.campaigns ?? [];
-        this.campaignTotal = response.data?.campaignLenght ?? 0;
-        this.campaignPreview = allCampaigns.map((c) => ({
-          id: c.id,
-          title: c.title,
-          role: c.gameMasterId === userId ? 'Mestre' : 'Jogador',
-          iconPath: c.iconPath,
-        }));
-
-        this.isLoadingCampaigns = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoadingCampaigns = false;
-        ErrorHandlerUtil.parseApiError(err, this.translateService, () => {
-          this.cdr.detectChanges();
-        });
-      },
-    });
   }
 
   editProfile(): void {

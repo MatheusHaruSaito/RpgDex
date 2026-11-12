@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.UserDocument;
 using RpgDex.Domain.Common;
 using System;
 using System.Collections.Generic;

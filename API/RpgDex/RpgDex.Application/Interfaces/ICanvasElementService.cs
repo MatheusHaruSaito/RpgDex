@@ -6,7 +6,7 @@ namespace RpgDex.Application.Interfaces
     public interface ICanvasElementService
     {
         Task<Result<CanvasElementResponse>> CreateElement(string userId,CreateCanvaElementRequest request);
-        Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request,decimal imageSize=0);
+        Task<Result<CanvasElementResponse>> CreateTokenElement(string userId, CreateCanvaTokenElementRequest request,decimal imageSize=0, bool checkLimit = false);
         Task<Result<CanvasElementResponse>> QuickCreateTokenElement(string userId, QuickCreateCanvaTokenElementRequest request);
         Task<Result<GetAllCanvasElementResponse>> GetAllElements(string userId,Guid campaignId, double? minX, double? minY, double? maxX, double? maxY);
         Task<Result<CanvasElementResponse>> UpdateElement(string userId, UpdateCanvasElementRequest request);

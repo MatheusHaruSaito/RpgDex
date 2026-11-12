@@ -65,6 +65,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error PlayerNotInCampaign = new("CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN", "Player is not in campaign.");
         public static readonly Error CharacterRemoveFailed = new("CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS", "Failed to remove character from campaigns");
 
+        public static readonly Error QuantityExceed = new("CAMPAIGN_QUANTITY_EXCEED", "Failed to create campaign, maximum campaign reached"); 
     }
 
     public static class CharacterError
@@ -75,6 +76,8 @@ namespace RpgDex.Domain.Common
         public static readonly Error SetActiveStateFailed = new("CHARACTER_SET_ACTIVE_STATE_FAILED", "Failed to change character active state.");
         public static readonly Error UpdateFailed = new("CHARACTER_UPDATE_FAILED", "It was not possible to update character.");
         public static readonly Error UpdateLastAccessFailed = new("CHARACTER_UPDATE_LAST_ACCESS_FAILED", "Failed to update last access time.");
+        public static readonly Error LimitExceed = new("CHARACTER_QUANTITY_EXCEED", "Failed to create character, maximum character quantity exceed");
+
     }
 
     public static class UserError
@@ -91,6 +94,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error CreateFailed = new("USER_DOCUMENT_CREATE_FAILED", "Failed to create user document.");
         public static readonly Error UpdateFailed = new("USER_DOCUMENT_UPDATE_FAILED", "Failed to update user document.");
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
+        public static readonly Error LimitExceed = new("USER_DOCUMENT_LIMIT_SIZE_EXCEED", "Failed to upload file, maximum storage exceed"); 
     }
 
     public static class DiceLogError
@@ -144,6 +148,17 @@ namespace RpgDex.Domain.Common
         public static readonly Error TooManyPoints = new("CANVAS_ELEMENT_TOO_MANY_POINTS", "Drawing has too many points.");
         public static readonly Error TooManyItems = new("CANVAS_ELEMENT_TOO_MANY_ITEMS", "Invalid number of elements in the request.");
         public static readonly Error LimitReached = new("CANVAS_ELEMENT_LIMIT_REACHED", "Canvas element limit reached.");
+    }
+    public static class PlanError
+    {
+        public static readonly Error NotFound = new("PLAN_NOT_FOUND", "Plan not found.");
+        public static readonly Error TagAlreadyExists = new("PLAN_TAG_ALREADY_EXISTS", "Tag already exists on the plan.");
+        public static readonly Error TagNotFound = new("PLAN_TAG_NOT_FOUND", "Tag not found on the plan.");
+    }
+
+    public static class MercadoPagoOrderError
+    {
+        public static readonly Error CreationFailed = new("MERCADOPAGO_ORDER_CREATION_FAILED", "Failed to create the payment order.");
     }
 }
 

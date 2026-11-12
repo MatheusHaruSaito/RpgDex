@@ -25,7 +25,7 @@ namespace RpgDex.WebApi.Controllers
             }
 
             [HttpPost]
-            public async Task<IActionResult> CreateCharacter(CreateCharacterRequest request)
+            public async Task<IActionResult> CreateCharacter([FromForm]CreateCharacterRequest request)
             {
             var result = await _characterSevice.Create(currentUser, request);
                 return result.ToIActionResult();
@@ -70,7 +70,7 @@ namespace RpgDex.WebApi.Controllers
             }
 
             [HttpPut]
-            public async Task<IActionResult> Update(UpdateCharacterRequest request)
+            public async Task<IActionResult> Update([FromForm] UpdateCharacterRequest request)
             {
             var result = await _characterSevice.UpdateAsync(currentUser, request);
                 return result.ToIActionResult();

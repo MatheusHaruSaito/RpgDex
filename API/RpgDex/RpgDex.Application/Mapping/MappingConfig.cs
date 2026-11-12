@@ -3,6 +3,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Canvas;
+using RpgDex.Application.Dto.UserDocument;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;

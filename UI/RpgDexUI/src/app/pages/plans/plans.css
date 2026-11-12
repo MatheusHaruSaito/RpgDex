@@ -1,0 +1,421 @@
+.plans-wrapper {
+  padding: 40px 20px 80px;
+  min-height: calc(100vh - 80px);
+  background: transparent;
+}
+
+.plans-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.plans-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.plans-header h1 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #3C3489;
+  margin-bottom: 10px;
+}
+
+.plans-header p {
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-muted);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── CONTAINER EM CARD (PADRÃO HOME) ── */
+.plans-main-card {
+  background: var(--rpg-surface, #ffffff);
+  border-radius: 20px;
+  padding: 32px 36px;
+  border: 1px solid var(--rpg-border-light, #e2e8f0);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.section-card-margin {
+  margin-top: 12px;
+}
+
+/* ── AVISO DE PLANO ATIVO ── */
+.active-plan-banner {
+  background: rgba(124, 58, 237, 0.08);
+  border: 1.5px solid var(--rpg-purple);
+  border-radius: 16px;
+  padding: 16px 24px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.active-plan-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: var(--rpg-text-strong);
+}
+
+.active-plan-icon {
+  font-size: 1.6rem;
+  color: var(--rpg-purple);
+}
+
+.active-plan-info p {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: var(--rpg-text-muted);
+}
+
+/* ── ESTADOS DE FEEDBACK ── */
+.error-banner {
+  background: var(--rpg-error-bg);
+  border: 1px solid var(--rpg-error-border);
+  color: var(--rpg-error);
+  padding: 14px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.error-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--rpg-text-muted);
+  font-family: 'Nunito', sans-serif;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--rpg-text-faint);
+  margin-bottom: 12px;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid var(--rpg-border);
+  border-top-color: var(--rpg-purple);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── GRID DE PLANOS ── */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  align-items: stretch;
+}
+
+.plan-card {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 2px solid var(--rpg-border-light);
+  border-radius: 18px;
+  padding: 28px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--rpg-shadow-card);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--rpg-purple);
+  box-shadow: var(--rpg-shadow-md);
+}
+
+.plan-card.current-plan-card {
+  border: 2px solid #27ae60;
+  box-shadow: 0 8px 24px rgba(39, 174, 96, 0.15);
+}
+
+.current-badge {
+  position: absolute;
+  top: -14px;
+  right: 20px;
+  background: #27ae60;
+  color: #fff;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
+}
+
+.plan-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--rpg-text-strong);
+  margin: 0 0 8px 0;
+}
+
+.plan-description {
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  min-height: 42px;
+  margin-bottom: 20px;
+}
+
+.plan-price {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.plan-price .value {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #3C3489;
+}
+
+.plan-price .duration {
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ── RECURSOS / LISTA ── */
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 32px 0;
+  flex-grow: 1;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-body);
+  font-size: 0.95rem;
+}
+
+.plan-features strong {
+  color: var(--rpg-text-strong);
+}
+
+.feature-icon {
+  font-size: 1.1rem;
+  color: var(--rpg-purple);
+  width: 20px;
+  text-align: center;
+}
+
+.feature-icon.check-icon {
+  color: #27ae60;
+}
+
+.btn-checkout {
+  width: 100%;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.btn-checkout.btn-current {
+  background: #27ae60;
+  border-color: #27ae60;
+  color: #fff;
+  opacity: 0.95;
+}
+
+.btn-checkout:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.security-note {
+  margin-top: 20px;
+  text-align: center;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  color: var(--rpg-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.security-note i {
+  color: var(--rpg-purple);
+}
+
+/* ── SEÇÃO DE BENEFÍCIOS DETALHADOS ── */
+.section-title-wrapper {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.section-title-wrapper h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #3C3489;
+  margin: 0 0 8px;
+}
+
+.section-title-wrapper p {
+  font-family: 'Nunito', sans-serif;
+  color: var(--rpg-text-muted);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 16px;
+  padding: 24px 20px;
+  box-shadow: var(--rpg-shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--rpg-purple);
+}
+
+.benefit-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--rpg-purple-tint, rgba(124, 58, 237, 0.1));
+  color: var(--rpg-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin-bottom: 14px;
+}
+
+.benefit-card h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
+  color: var(--rpg-text-strong);
+  margin: 0 0 8px;
+}
+
+.benefit-card p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--rpg-text-body);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── FAQ ── */
+.faq-accordion {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: var(--rpg-surface-2, #f8fafc);
+  border: 1.5px solid var(--rpg-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.faq-item.active {
+  border-color: var(--rpg-purple);
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.08);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 18px 24px;
+  background: transparent;
+  border: none;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--rpg-text-strong);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.faq-question i {
+  color: var(--rpg-purple);
+  font-size: 0.9rem;
+}
+
+.faq-answer {
+  padding: 0 24px 20px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--rpg-text-body);
+  line-height: 1.6;
+  border-top: 1px solid var(--rpg-border-light);
+  margin-top: 4px;
+  padding-top: 14px;
+}
+
+.faq-answer p {
+  margin: 0;
+}
+
+.fade-in-content {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

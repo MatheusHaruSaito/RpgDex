@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { CreateUserDocumentRequest } from '../../models/createUserDocumentRequest';
 import { UpdateUserDocumentRequest } from '../../models/updateUserDocumentRequest';
 import { UserDocumentResponse } from '../../models/userDocumentResponse';
+import { GetAllUserDocumentResponse } from '../../models/getAllUserDocumentResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -30,8 +31,8 @@ export class UserDocumentService {
   GetAllByUserId(
     page: number = 1,
     pageSize: number = 20,
-  ): Observable<ApiResponse<UserDocumentResponse[]>> {
-    return this.http.get<ApiResponse<UserDocumentResponse[]>>(`${this.env}`, {
+  ): Observable<ApiResponse<GetAllUserDocumentResponse>> {
+    return this.http.get<ApiResponse<GetAllUserDocumentResponse>>(`${this.env}`, {
       params: { page, pageSize },
     });
   }

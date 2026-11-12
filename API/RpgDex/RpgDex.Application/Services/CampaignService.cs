@@ -14,9 +14,9 @@ using static RpgDex.Domain.Entities.Campaign;
 namespace RpgDex.Application.Services
 {
     public class CampaignService(ICampaignRepository campaignRepository, IFileService fileService, IUserRepository userRepository,
-        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher,
+        ICharacterRepository characterRepository, IPasswordHasher<Campaign> passwordHasher, ISubscriptionService subscriptionService,
         IValidator<CreateCampaignRequest> createCampaignRequestValidator, IValidator<UpdateCampaignRequest> updateCampaignRequestValidator,
-        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator,
+        ICampaignChatService campaignChatService, ICampaignChatRepository campaignChatRepository, ICampaignQueries campaignQueries, IValidator<CampaignChatMessageRequest> campaignChatMessageValidator,
         ICampaignDiceLogRepository campaignDiceLogRepository) : ICampaignService
     {
         private string? HashPassword(Campaign campaign, string? password)
@@ -51,6 +51,12 @@ namespace RpgDex.Application.Services
             if (!checkCreateCampaignRequest.IsValid) return checkCreateCampaignRequest.ReturnErrors<CampaignResponse>();
 
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
+            var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+            var campaigns = await campaignQueries.GetAllAsync(guidUserId, 1, userLimits.Value!.CampaignQty+1);
+            if(campaigns.Total >= userLimits.Value!.CampaignQty)
+            {
+               return Result<CampaignResponse>.Failure(CampaignError.QuantityExceed);
+            }
 
             var userExisits = await userRepository.GetByIdAsync(guidUserId);
             if (userExisits is null)
@@ -61,10 +67,9 @@ namespace RpgDex.Application.Services
             var campaign = request.Adapt<Campaign>();
             campaign.GameMasterId = guidUserId;
             campaign.SetPasswordHash(HashPassword(campaign, request.Password));
-            //Temporary, change when subscriptions are defined
-            if (request.MaxPlayers > 15)
+            if (request.MaxPlayers > 20)
             {
-                campaign.MaxPlayers = 15;
+                campaign.MaxPlayers = 20;
             }
             //Save Icon, if it exists
             if (request.Icon is not null)
@@ -94,9 +99,10 @@ namespace RpgDex.Application.Services
             {
                 return Result<GetAllCampaignResponse>.Failure(AuthError.UserNotFound);
             }
-
-            var result = await campaignRepository.GetAllAsync(guidUserId);
-            var response = new GetAllCampaignResponse(result.Adapt<IEnumerable<CampaignResponse>>(), result.campaignLenght);
+            var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+            var maxCampaigns = userLimits.Value!.CampaignQty;
+            var result = await campaignQueries.GetAllAsync(guidUserId, 1, maxCampaigns);
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
             return Result<GetAllCampaignResponse>.Success(response);
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSize)
@@ -108,8 +114,10 @@ namespace RpgDex.Application.Services
                 return Result<GetAllCampaignResponse>.Failure(AuthError.UserNotFound);
             }
 
-            var result = await campaignRepository.GetAllAsync(guidUserId, page, pageSize);
-            var response = new GetAllCampaignResponse(result.campaign.Adapt<IEnumerable<CampaignResponse>>(), result.campaignLenght);
+            var result = await campaignQueries.GetAllAsync(guidUserId, page, pageSize);
+            var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
+            var maxCampaigns = userLimits.Value!.CampaignQty;
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
             return Result<GetAllCampaignResponse>.Success(response);
         }
 

@@ -17,19 +17,6 @@ namespace RpgDex.Infrastructure.Repositories
             _context = context;
             _userDocuments = context.UserDocuments;
         }
-        public async Task<IEnumerable<UserDocument>> GetAllAsync(Guid userId, int page = 1, int pageSize = 5)
-        {
-            var filter = Builders<UserDocument>.Filter.Eq(x => x.UserId, userId)
-                & Builders<UserDocument>.Filter.Eq(x => x.IsActive,true);
-
-
-
-            return await _userDocuments.Find(filter)
-                .Skip((page - 1) * pageSize)
-                .Limit(pageSize)
-                .ToListAsync();
-
-        }
 
         public async Task<UserDocument> GetByIdAsync(Guid id,Guid userId)
         {

@@ -3,7 +3,7 @@
     <!-- 1. CARD DE PERFIL -->
     <div class="profile-card">
       <!-- SKELETON: USER INFO -->
-      @if (isLoadingUser) {
+      @if (isLoadingUser || isLoadingPlan) {
         <header class="profile-header">
           <div class="user-main-info">
             <div class="avatar-wrapper">
@@ -13,13 +13,14 @@
               <app-skeleton width="180px" height="28px" radius="6px"></app-skeleton>
               <app-skeleton width="120px" height="16px" radius="6px"></app-skeleton>
               <app-skeleton width="160px" height="14px" radius="6px"></app-skeleton>
+              <app-skeleton width="140px" height="24px" radius="20px"></app-skeleton>
             </div>
           </div>
         </header>
       }
 
       <!-- CONTEÚDO REAL: USER INFO -->
-      @if (!isLoadingUser) {
+      @if (!isLoadingUser && !isLoadingPlan) {
         <header class="profile-header fade-in-content">
           <div class="user-main-info">
             <div class="avatar-wrapper">
@@ -41,7 +42,16 @@
               <span class="user-handle">@{{ user?.userName || 'viajante' }}</span>
               <!-- E-mail -->
               <p class="email">{{ user?.email }}</p>
-              <span class="badge">Aventureiro</span>
+
+              <!-- BADGES & EXIBIÇÃO DO PLANO -->
+              <div class="user-badges">
+                <span class="badge">Aventureiro</span>
+                
+                <a routerLink="/planos" class="badge badge-plan" [class.badge-early]="hasEarlyAccess">
+                  <i class="fa-solid" [ngClass]="hasEarlyAccess ? 'fa-star' : 'fa-shield-halved'"></i>
+                  <span>{{ userPlanName }}</span>
+                </a>
+              </div>
             </div>
           </div>
 
