@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
-using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Auth;
+using Microsoft.Extensions.Logging;
+using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Common;
@@ -19,7 +21,7 @@ using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService, RoleManager<ApplicationRole> rolemanager,
+    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService,
         IConfiguration configuration, IDiscordAuthService discordAuthService, IValidator<CreateUserDTO> createUserValidator, IValidator<AuthUserDTO> authUserValidator) : IAuthService
     {
         private const string GoogleProvider = "Google";
@@ -35,10 +37,18 @@ namespace RpgDex.Application.Services
 
             var validUser = await userManager.CheckPasswordAsync(user, authUser.Password);
             if (!validUser) return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
-
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                return Result<LoginResponse>.Failure(UserError.UserIsBanned);
+            }
             var IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
             if(!IsEmailConfirmed) return Result<LoginResponse>.Failure(AuthError.EmailNotConfirmed);
 
+            var result = await AddUserRoleToUser(user);
+            if (!result)
+            {
+                return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
+            }
             var response = new LoginResponse();
 
             if (user.TwoFactorEnabled)
@@ -182,6 +192,11 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.UserCreationFailed);
             }
+            var roleResult = await userManager.AddToRoleAsync(user,"User");
+            if (!roleResult.Succeeded)
+            {
+                return Result<string>.Failure(AuthError.UserCreationFailed);
+            }
             return await SendEmailVerificationAsync(authUser.Email);
 
         }
@@ -209,10 +224,14 @@ namespace RpgDex.Application.Services
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
             var userDb = await userManager.FindByEmailAsync(googleUser.email);
+
             if (userDb is not null) {
+                if (await userManager.IsLockedOutAsync(userDb))
+                {
+                    return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
+                }
                 //User Exists, but is the user already linked with Google?
                 var userLogins = await userManager.GetLoginsAsync(userDb);
-
                 var googleLoginInfo = userLogins.FirstOrDefault(l => l.LoginProvider == GoogleProvider && l.ProviderKey == googleUser.googleId);
                 
                 if (googleLoginInfo is null)
@@ -225,7 +244,6 @@ namespace RpgDex.Application.Services
                         return Result<RefreshTokenModel>.Failure(AuthError.AccountLinkingFailed);
                     }
                 }
-
                 return await LogInAsync(userDb);
             }
 
@@ -243,6 +261,11 @@ namespace RpgDex.Application.Services
             {
                 //var errors = string.Join(" | ", createResult.Errors.Select(e => e.Description));
                 //return Result<RefreshTokenModel>.Failure(errors);
+                return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
+            }
+            var roleResult = await userManager.AddToRoleAsync(user, "User");
+            if (!roleResult.Succeeded)
+            {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
             var userLoginInfo = new UserLoginInfo(GoogleProvider, googleUser.googleId, GoogleProvider);
@@ -312,6 +335,10 @@ namespace RpgDex.Application.Services
             var userDb = await userManager.FindByEmailAsync(discorduser.Email);
             if (userDb is not null)
             {
+                if (await userManager.IsLockedOutAsync(userDb))
+                {
+                    return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
+                }
                 //User Exists, but is the user already linked with Discord?
                 var userLogins = await userManager.GetLoginsAsync(userDb);
                 if (!userLogins.Any(x => x.LoginProvider == DiscordProvider))
@@ -344,6 +371,12 @@ namespace RpgDex.Application.Services
             {
                 await userManager.DeleteAsync(user);
                 return Result<RefreshTokenModel>.Failure(AuthError.ExternalLoginFailed);
+            }
+
+            var roleResult = await userManager.AddToRoleAsync(user, "User");
+            if (!roleResult.Succeeded)
+            {
+                return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
 
 
@@ -481,7 +514,11 @@ namespace RpgDex.Application.Services
 
         private async Task<Result<RefreshTokenModel>> LogInAsync(ApplicationUser user)
         {
-
+            var result = await AddUserRoleToUser(user);
+            if (!result)
+            {
+                return Result<RefreshTokenModel>.Failure(AuthError.InvalidCredentials);
+            }
             var newRefreshToken = await GenerateRefreshTokenModelAsync(user);
             if (newRefreshToken is null)
             {
@@ -530,6 +567,22 @@ namespace RpgDex.Application.Services
             {
                 return Result<T>.Failure(AuthError.EmailSendFailed);
             }
+        }
+        private async Task<bool> AddUserRoleToUser(ApplicationUser user){
+            var roles = await userManager.GetRolesAsync(user);
+            if (!roles.Any())
+            {
+                var result = await userManager.AddToRoleAsync(user, "Admin");
+                if (result.Succeeded)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

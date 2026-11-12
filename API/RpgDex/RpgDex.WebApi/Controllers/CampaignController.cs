@@ -114,6 +114,13 @@ namespace RpgDex.WebApi.Controllers
             var result = await _campaignService.LeaveCampaign(currentUser,request);
             return result.ToIActionResult();
         }
+        [Authorize(Roles="Admin")]
+        [HttpGet("admin/chart")]
+        public async Task<IActionResult> GetCampaignChart([FromQuery]DateTime startDate, [FromQuery]DateTime endDate)
+        {
+            var result = await _campaignService.GetCampaignChart(startDate, endDate);
+            return result.ToIActionResult();
+        }
         [HttpPatch("EditMessage")]
         public async Task<IActionResult> EditMessage([FromBody] EditChatMessageRequest request)
         {

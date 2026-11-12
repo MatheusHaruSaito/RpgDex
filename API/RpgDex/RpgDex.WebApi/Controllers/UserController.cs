@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Dto;
 using RpgDex.WebApi.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using RpgDex.Application.Dto.User;
 
 
 
@@ -28,12 +28,26 @@ namespace RpgDex.WebApi.Controllers
             var result = await _userService.GetUserById(Id);
             return result.ToIActionResult();
         }
+
+        [Authorize(Roles ="Admin")] 
+        [HttpGet("admin/chart")]
+        public async Task<IActionResult> GetUserChart([FromQuery]DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var result = await _userService.GetUserChart(startDate,endDate);
+            return result.ToIActionResult();
+        }
         [HttpPut]
         public async Task<IActionResult> UpdateUserProfile(UpdateUserProfileDTO updateUserProfileDTO)
         {
             var result = await _userService.UpdateUserProfileAsync(currentUser, updateUserProfileDTO);
             return result.ToIActionResult();
         }
-
+        [HttpGet("admin/getAllSummary")]
+        [Authorize(Roles ="Admin")]
+        public async Task<IActionResult> GetUserSummaryByUserNameOrEmail([FromQuery]string target, [FromQuery]int page, [FromQuery] int pageSize)
+        {
+            var result = await _userService.GetUserSummaryByUserNameOrEmail(target,page,pageSize);
+            return result.ToIActionResult();
+        }
     }
 }

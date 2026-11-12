@@ -34,7 +34,30 @@ namespace RpgDex.Infrastructure.Queries
             await Task.WhenAll(total, request);
 
             return (request.Result,(int)total.Result);
+        }
+        public async Task<ChartResponse> GetCampaignChart(DateTime startDate, DateTime endDate)
+        {
+            var filter = Builders<Campaign>.Filter.And(
+                   Builders<Campaign>.Filter.Gte(u => u.CreatedAt, startDate),
+                   Builders<Campaign>.Filter.Lte(u => u.CreatedAt, endDate));
 
+            var groupsTask = _entity.Aggregate()
+                .Match(filter)
+                .Group(u => new { u.CreatedAt.Year, u.CreatedAt.Month },
+                       g => new { g.Key.Year, g.Key.Month, Count = g.Count() })
+                .ToListAsync();
+
+            var totalTask = _entity.CountDocumentsAsync(FilterDefinition<Campaign>.Empty);
+
+            await Task.WhenAll(groupsTask, totalTask);
+
+            var points = groupsTask.Result
+                .OrderBy(g => g.Year).ThenBy(g => g.Month)
+                .Select(g => new ChartPoint(g.Year, g.Month, g.Count))
+                .ToList();
+
+
+            return new ChartResponse(points, totalTask.Result, points.Sum(p => p.Count));
         }
     }
 }

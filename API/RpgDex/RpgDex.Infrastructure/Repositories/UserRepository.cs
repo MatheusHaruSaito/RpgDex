@@ -41,9 +41,19 @@ namespace RpgDex.Infrastructure.Repositories
             return result.ModifiedCount > 0;
         }
 
-        public Task<ApplicationUser> GetByIdAsync(Guid userId)
+        public async Task<ApplicationUser> GetByIdAsync(Guid userId)
         {
-            return _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            return await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<ApplicationUser>> GetAllByEmailOrUserNameAsync(string target, int page, int pageSize)
+        {
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize < 1 ? 1 : pageSize;
+            return await _users.Find(u => u.Email!.Contains(target) ||u.UserName!.Contains( target))
+                .Skip((page - 1) * pageSize)
+                .Limit(pageSize)
+                .ToListAsync();
         }
     }
 }

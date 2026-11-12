@@ -7,6 +7,7 @@ import { UpdateCharacter } from '../../models/updateCharacter';
 import { ApiResponse } from '../../models/apiResponse';
 import { CreateCharacter } from '../../models/createCharacter';
 import { GetAllCharacterResponse } from '../../models/getAllCharacterResponse';
+import { ChartResponse } from '../../models/chartResponse';
 
 @Injectable({
   providedIn: 'root',
@@ -32,7 +33,13 @@ export class CharacterService {
       `${this.env}/All/${page}/${pageSize}`,
     );
   }
-
+  public GetCharacterChart(
+    startDate: string,
+    endDate: string,
+  ): Observable<ApiResponse<ChartResponse>> {
+    const params: Record<string, string> = { startDate, endDate };
+    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`, { params });
+  }
   public GetById(Id: String): Observable<ApiResponse<Character>> {
     return this.http.get<ApiResponse<Character>>(`${this.env}/${Id}`);
   }

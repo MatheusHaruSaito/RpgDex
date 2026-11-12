@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Validators;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -768,9 +767,17 @@ namespace RpgDex.Application.Services
         private static string BuildMessage(DiceRoll roll)
         {
             var total = roll.Entires.Select(e => e.Total).Sum();
-            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total,2)}");
+            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total, 2)}");
             return $"{string.Join("\n", lines)}\n -> {Math.Round(total)}";
-
+        }
+        public async Task<Result<ChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await campaignQueries.GetCampaignChart(startDate, endDate);
+            if (result is null)
+            {
+                Result<ChartResponse>.Failure(CampaignError.ChartNotFound);
+            }
+            return Result<ChartResponse>.Success(result!);
         }
     }
 }

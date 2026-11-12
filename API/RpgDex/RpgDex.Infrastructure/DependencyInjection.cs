@@ -22,12 +22,14 @@ using RpgDex.Infrastructure.Jobs;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
 using RpgDex.Infrastructure.Security;
+using RpgDex.Infrastructure.Resolvers;
 using RpgDex.Infrastructure.Services;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace RpgDex.Infrastructure
@@ -103,6 +105,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
             services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
+            a
             services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
@@ -110,8 +113,13 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ISubscriptionQueries, SubscriptionQueries>();
             services.AddScoped<IUserDocumentQueries, UserDocumentQueries>();
             services.AddScoped<IWebhookSignatureValidator, MercadoPagoWebhookSignatureValidator>();
-            services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<ICanvasElementQueries, CanvasElementQueries>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IReportQueries, ReportQueries>();
+            services.AddScoped<IReportTargetResolver, UserReportTargetResolver>();
+            services.AddScoped<IReportTargetResolver, CampaignReportTargetResolver>();
+            services.AddScoped<IReportTargetResolver, CharacterReportTargetResolver>();
+            services.AddScoped<IUserQueries, UserQueries>();
             services.AddScoped<ICampaignDiceLogRepository, CampaignDiceLogRepository>();
             services.AddScoped<ICharacterQueries, CharacterQueries>();
             services.AddScoped<ICampaignQueries, CampaignQueries>();
@@ -176,6 +184,19 @@ namespace RpgDex.Infrastructure
                                 context.Token = accessToken;
                             }
                             return Task.CompletedTask;
+                        },
+                        OnTokenValidated = async ctx =>
+                        {
+                            var userManager = ctx.HttpContext.RequestServices
+                                .GetRequiredService<UserManager<ApplicationUser>>();
+
+                            var userId = ctx.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                                         ?? ctx.Principal?.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+                            var user = userId is null ? null : await userManager.FindByIdAsync(userId);
+
+                            if (user is null || await userManager.IsLockedOutAsync(user))
+                                ctx.Fail("User is banned.");
                         }
                     };
                 })

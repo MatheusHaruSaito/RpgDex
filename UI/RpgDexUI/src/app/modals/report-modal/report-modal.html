@@ -1,0 +1,84 @@
+<div class="report-modal-backdrop" (click)="closeModal(false)">
+  <div class="report-modal-card" (click)="$event.stopPropagation()">
+    <div class="report-modal-header">
+      <h3>
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span>{{ modalTitle }}</span>
+      </h3>
+      <button type="button" class="close-btn" (click)="closeModal(false)">&times;</button>
+    </div>
+
+    <div class="report-modal-body">
+      <div *ngIf="errorMessage" class="report-error-alert">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="reportTitle">Motivo / Assunto:</label>
+        <input
+          id="reportTitle"
+          type="text"
+          class="rpg-input"
+          [(ngModel)]="title"
+          placeholder="Ex: Nome inadequado, Comportamento tóxico..."
+          [maxlength]="limits.maxTitleLength"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="reportDescription">Detalhes da Denúncia:</label>
+        <textarea
+          id="reportDescription"
+          rows="5"
+          class="rpg-input textarea-input"
+          [(ngModel)]="description"
+          placeholder="Descreva detalhadamente o motivo da denúncia para auxiliar a equipa de moderação..."
+          [maxlength]="limits.maxDescriptionLength"
+        ></textarea>
+        <small class="field-hint">{{ description.length }}/{{ limits.maxDescriptionLength }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>Provas (opcional) · {{ images.length }}/{{ limits.maxImages }}</label>
+
+        <label class="evidence-upload" [class.disabled]="!canAddMore">
+          <i class="fa-solid fa-image"></i>
+          <span>Adicionar imagens</span>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            [disabled]="!canAddMore || isSubmitting"
+            (change)="onFilesSelected($event)"
+          />
+        </label>
+        <small class="field-hint">Até {{ limits.maxImages }} imagens de {{ maxSizeMb }} MB cada.</small>
+
+        <div class="evidence-previews" *ngIf="images.length">
+          <div class="evidence-preview" *ngFor="let img of images; let i = index">
+            <img [src]="img.preview" alt="Prova {{ i + 1 }}" />
+            <button
+              type="button"
+              class="evidence-remove"
+              aria-label="Remover imagem"
+              [disabled]="isSubmitting"
+              (click)="removeImage(i)"
+            >&times;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-modal-footer">
+      <button type="button" class="btn btn-secondary" (click)="closeModal(false)" [disabled]="isSubmitting">
+        Cancelar
+      </button>
+      <button type="button" class="btn btn-danger" (click)="submitReport()" [disabled]="isSubmitting">
+        <i class="fa" [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+        <span>Enviar Denúncia</span>
+      </button>
+    </div>
+  </div>
+</div>

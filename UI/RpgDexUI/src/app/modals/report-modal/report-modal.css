@@ -1,0 +1,248 @@
+.report-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 12, 35, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+.report-modal-card {
+  background: var(--rpg-surface, #252342);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.15));
+  overflow: hidden;
+  animation: modalScale 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+.report-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.12));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.report-modal-header h3 {
+  margin: 0;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--rpg-text-dark, #ffffff);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-modal-header h3 i {
+  color: var(--rpg-error, #e74c3c);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--rpg-text-muted, #a0a0cc);
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-btn:hover {
+  color: var(--rpg-text-dark, #ffffff);
+}
+
+.report-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.report-error-alert {
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #ff6b6b;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--rpg-text-dark, #ffffff);
+}
+
+.rpg-input {
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  padding: 10px 14px;
+  border: 1.5px solid var(--rpg-border, rgba(255, 255, 255, 0.15));
+  border-radius: 10px;
+  background: var(--rpg-surface-2, #18162e);
+  color: var(--rpg-text-strong, #ffffff);
+  box-sizing: border-box;
+}
+
+.rpg-input:focus {
+  outline: none;
+  border-color: var(--rpg-purple, #9E74D0);
+}
+
+.textarea-input {
+  resize: vertical;
+}
+
+/* ── RODAPÉ E BOTÕES AJUSTADOS ── */
+.report-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.12));
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.report-modal-footer button,
+.report-modal-footer .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  min-height: 38px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  line-height: 1;
+  white-space: nowrap;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.report-modal-footer .btn-secondary {
+  background: var(--rpg-surface-tint, rgba(255, 255, 255, 0.08));
+  color: var(--rpg-text-body, #b0b0cc);
+  border: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.15));
+}
+
+.report-modal-footer .btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.report-modal-footer .btn-danger {
+  background: var(--rpg-error, #e74c3c);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.report-modal-footer .btn-danger:hover:not(:disabled) {
+  background: #c0392b;
+  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.5);
+}
+
+.report-modal-footer button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.report-modal-body .evidence-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 2px dashed var(--rpg-border-purple, #c4b5fd);
+  background: var(--rpg-purple-tint, #f5f3ff);
+  color: var(--rpg-purple, #7c3aed);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.report-modal-body .evidence-upload:hover {
+  background: var(--rpg-surface-tint, #ede9fe);
+}
+
+.report-modal-body .evidence-upload.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.report-modal-body .field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--rpg-text-muted, #6b7280);
+}
+
+.evidence-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.evidence-preview {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--rpg-border-light, #e5e7eb);
+}
+
+.evidence-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.evidence-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}

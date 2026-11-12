@@ -12,6 +12,8 @@ namespace RpgDex.Domain.Interfaces
         Task<RefreshToken> GetRefreshTokenByUserIdAsync(Guid userId);
         Task<bool> DeleteTokenByValueAsync(string token);
         Task<bool> DeleteTokenByUserIdAsync(Guid userId);
+        Task DeleteAllUserRefreshTokensByUserIdAsync(Guid userId);
+
 
     }
 }

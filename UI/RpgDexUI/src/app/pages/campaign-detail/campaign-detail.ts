@@ -16,6 +16,8 @@ import { CharacterViewerComponent } from '../../pages/character-viewer/character
 import { CampaignSetActiveStateRequest } from '../../../models/campaignSetActiveStateRequest';
 import { CampaignChatComponent } from '../../components/campaign-chat-component/campaign-chat-component';
 import { InfoHintComponent } from '../../components/info-hint/info-hint';
+import { ReportModalComponent } from '../../modals/report-modal/report-modal';
+import { ReportType } from '../../../models/reportType';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
@@ -29,6 +31,7 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
     CharacterViewerComponent,
     CampaignChatComponent,
     InfoHintComponent,
+    ReportModalComponent,
   ],
   providers: [DatePipe],
   templateUrl: './campaign-detail.html',
@@ -55,7 +58,7 @@ export class CampaignDetailComponent implements OnInit {
   isLoading = true;
   isGameMaster = false;
   isPlayerInCampaign = false;
-
+  reportTypes = ReportType;
   usersCache: { [id: string]: UserResponse } = {};
 
   approvedCharacters: Character[] = [];
@@ -77,6 +80,12 @@ export class CampaignDetailComponent implements OnInit {
 
   isGmSettingsOpen = false;
 
+  // ── ESTADO DO MODAL DE DENÚNCIA ──
+  isReportModalOpen = false;
+  reportTargetId = '';
+  reportTargetType: ReportType = ReportType.CampaignReport;
+  reportTargetName = '';
+
   ngOnInit(): void {
     this.currentUserId = this.authService.getLoggedUserId() ?? '';
     this.campaignId = this.route.snapshot.paramMap.get('id') ?? '';
@@ -86,6 +95,18 @@ export class CampaignDetailComponent implements OnInit {
     } else {
       this.isLoading = false;
     }
+  }
+
+  // ── MÉTODOS DE DENÚNCIA ──
+  openReportModal(targetId: string, type: ReportType, name: string): void {
+    this.reportTargetId = targetId;
+    this.reportTargetType = type;
+    this.reportTargetName = name;
+    this.isReportModalOpen = true;
+  }
+
+  onReportModalClosed(success: boolean): void {
+    this.isReportModalOpen = false;
   }
 
   showFeedback(message: string, isError: boolean = false): void {

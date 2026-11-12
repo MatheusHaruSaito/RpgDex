@@ -43,6 +43,8 @@ namespace RpgDex.Infrastructure.Data
             _database.GetCollection<Subscription>("Subscriptions");
         public IMongoCollection<CanvasElement> CanvasElements =>
             _database.GetCollection<CanvasElement>("CanvasElements");
+        public IMongoCollection<Report> Reports =>
+            _database.GetCollection<Report>("Reports");
         public IMongoCollection<CampaignDiceLog> CampaignDiceLogs =>
             _database.GetCollection<CampaignDiceLog>("CampaignDiceLogs");
         public IMongoDatabase GetDatabase() => _database;

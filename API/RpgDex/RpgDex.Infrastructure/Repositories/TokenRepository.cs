@@ -25,6 +25,8 @@ namespace RpgDex.Infrastructure.Repositories
             var deletedToken = await _refreshTokens.DeleteOneAsync(filter);
             return deletedToken.DeletedCount > 0;
         }
+        public Task DeleteAllUserRefreshTokensByUserIdAsync(Guid userId)=>
+            _refreshTokens.DeleteManyAsync(t => t.UserId == userId);
 
         public async Task<bool> DeleteTokenByValueAsync(string token)
         {

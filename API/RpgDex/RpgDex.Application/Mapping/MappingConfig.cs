@@ -4,6 +4,9 @@ using MongoDB.Bson.Serialization;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.Canvas;
 using RpgDex.Application.Dto.UserDocument;
+using RpgDex.Application.Dto.Report;
+using RpgDex.Application.Dto.User;
+using RpgDex.Application.Interfaces;
 using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
@@ -15,7 +18,7 @@ namespace RpgDex.Application.Mapping
 {
     public class MappingConfig
     {
-        public static void Configure(string baseUrl = "http://localhost:8080")
+        public static void Configure(IFileUrlBuilder urls)
         {
             //Mapeamentos para Character podem ser adicionados aqui, se necessário
             TypeAdapterConfig<CreateCharacterRequest, Character>
@@ -26,9 +29,9 @@ namespace RpgDex.Application.Mapping
             TypeAdapterConfig<Character, CharacterResponse>
                 .NewConfig()
                 .Map(dest => dest.Properties, src => ConvertToDictionary(src.Properties))
-                    .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath) 
-                    ? null 
-                    :$"{baseUrl}/api/File/{src.IconPath}"); //Tirar isso quando Implementar o uso  do cloudflare r2 / Solução Temporaria para mostrar a imagem
+                    .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
+                    ? null
+                    : urls.Build(src.IconPath));
 
             TypeAdapterConfig<UpdateCharacterRequest, Character>
                 .NewConfig()
@@ -56,7 +59,13 @@ namespace RpgDex.Application.Mapping
                  .Map(dest => dest.Email, src => src.Email)
                  .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
-                 : $"{GetApiUrlIfNotFromGoogle(src.IconPath, baseUrl)}{src.IconPath}"); //Tirar isso quando Implementar o uso  do cloudflare r2 / Solução Temporaria para mostrar a imagem
+                 : urls.Build(src.IconPath));
+
+            TypeAdapterConfig<ApplicationUser, UserSummary>
+                 .NewConfig()
+                 .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
+                 ? null
+                 : urls.Build(src.IconPath));
 
 
             //Mapeamentos para Campaign podem ser adicionados aqui, se necessário
@@ -74,13 +83,13 @@ namespace RpgDex.Application.Mapping
                 .Map(dest => dest.CharacterRequests, src => src.CharacterRequests)
                 .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
-                 : $"{baseUrl}/api/File/{src.IconPath}");
+                 : urls.Build(src.IconPath));
 
             TypeAdapterConfig<ChatMessage, CampaignChatMessagesResponse>
                 .NewConfig()
                 .Map(dest => dest.UserIcon, src => string.IsNullOrEmpty(src.UserIcon)
                     ? null
-                    : $"{GetApiUrlIfNotFromGoogle(src.UserIcon, baseUrl)}{src.UserIcon}");
+                    : urls.Build(src.UserIcon));
             //Mappings for UserDocument can be added here if necessary
             TypeAdapterConfig<UserDocument, UserDocumentResponse>
             .NewConfig()
@@ -95,7 +104,18 @@ namespace RpgDex.Application.Mapping
             .Map(dest => dest.ImageUrl, src => string.IsNullOrEmpty(src.ImageUrl)
                 ? null
                 : $"{baseUrl}/api/File/{src.ImageUrl}");
+
+           //Mappings for Reports can be added here if necessary
+
+            TypeAdapterConfig<Report, ReportResponse>
+            .NewConfig()
+            .Map(dest => dest.ImagesPath, src => src.ImagesPath.Count ==0
+                ? null
+                : urls.BuildMultiple(src.ImagesPath));
                 }
+
+
+
         private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
         {
             if (VerifyImageUrl(iconPath))
@@ -119,7 +139,13 @@ namespace RpgDex.Application.Mapping
             }
             // Se não for uma imagem do Google, retorna null
             return false;
+                : urls.Build(src.FilePath));
+
         }
+
+
+
+                
 
         // Metodos para converter Dictionary<string, object> em BsonDocument
 

@@ -82,5 +82,13 @@ namespace RpgDex.WebApi.Controllers
                 var result = await _characterSevice.UpdateLastAccess(id);
                 return result.ToIActionResult();
             }
+            [Authorize(Roles = "Admin")]
+            [HttpGet("admin/chart")]
+            public async Task<IActionResult> GetCharacterChart([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+            {
+
+                var result = await _characterSevice.GetCharacterChart(startDate, endDate);
+                return result.ToIActionResult();
+            }
     }
     }

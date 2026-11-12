@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using MongoDB.Bson;
-using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.User;
 using RpgDex.Domain.Common;
 using System;
 using System.Collections.Generic;

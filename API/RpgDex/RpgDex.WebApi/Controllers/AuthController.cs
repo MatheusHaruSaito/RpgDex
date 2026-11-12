@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RpgDex.Application.Dto;
-
+using RpgDex.Application.Dto.User;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;

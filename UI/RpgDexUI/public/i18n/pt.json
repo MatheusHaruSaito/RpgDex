@@ -50,6 +50,7 @@
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "O jogador não faz parte desta campanha.",
     "CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS": "Falha ao removed personagem das campanhas",
     "CAMPAIGN_QUANTITY_EXCEED": "Falha ao criar campanha, capacidade maxima atingida",
+    "CAMPAIGN_CHART_NOT_FOUND": "Gráfico de campanhas não encontrado",
 
     "CHARACTER_NOT_FOUND": "Personagem não encontrado.",
     "CHARACTER_NOT_OWNED": "Este personagem não pertence ao utilizador autenticado.",
@@ -58,9 +59,13 @@
     "CHARACTER_UPDATE_FAILED": "Não foi possível atualizar o personagem.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Falha ao atualizar a data do último acesso.",
     "CHARACTER_QUANTITY_EXCEED": "Falha ao criar personagem, limite de personagens atingido",
+    "CHARACTER_CHART_NOT_FOUND": "Gráfico de personagens não enctrado",
 
     "USER_UPDATE_FAILED": "Falha ao atualizar o perfil do utilizador.",
+    "USER_BAN_FAILED": "Falha ao banir usuario",
+    "USER_IS_BANNED": "Esta conta esta banida",
     "USER_IDENTITY_ERROR": "Ocorreu um erro na validação da identidade do utilizador.",
+    "USER_CHART_NOT_FOUND": "Gráfico do usuario não encontrado",
 
     "USER_DOCUMENT_NOT_FOUND": "Documento não encontrado.",
     "USER_DOCUMENT_NOT_OWNED": "Não tem permissão para aceder ou modificar este documento.",
@@ -69,6 +74,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Falha ao atualizar o documento do utilizador.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Falha ao enviar o ficheiro.",
     "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Falha ao enviar o ficheiro, limite maximo atingido",
+
+    "REPORT_NOT_FOUND": "Denúncia não encontrada.",
+    "REPORT_CREATE_FAILED": "Falha ao criar a denúncia.",
+    "REPORT_UPDATE_FAILED": "Falha ao atualizar a denúncia.",
+    "REPORT_CLOSE_FAILED": "Falha ao fechar a denúncia.",
 
     "DICE_LOG_ADD_ROLL_FAILED": "Falha ao guardar a rolagem no registo da campanha.",
     "DICE_LOG_NOT_FOUND": "Registo de rolagens não encontrado para esta campanha.",
@@ -90,6 +100,23 @@
 
     "CANVAS_DUPLICATED_ITEMS": "O mesmo elemento foi enviado mais de uma vez",
     "CANVAS_INVALID_SCALE": "A escala deve estar entre 0,1 e 10",
+    "DOCUMENT_VALIDATION_FILE_REQUIRED": "O arquivo do documento não pode estar vazio.",
+    "CANVAS_INVALID_TYPE": "Tipo de elemento do canvas inválido.",
+    "CANVAS_INVALID_IMAGE": "Imagem do canvas inválida.",
+    "CANVAS_INVALID_POINTS": "Pontos do desenho inválidos.",
+    "CANVAS_INVALID_VALUE": "Valor inválido para este elemento do canvas.",
+    "CANVAS_INVALID_COLOR": "Cor inválida.",
+    "CANVAS_TOO_MANY_ITEMS": "Há elementos demais na requisição.",
+    "REPORT_TITLE_EMPTY": "O título não pode estar vazio.",
+    "REPORT_DESCRIPTION_EMPTY": "A descrição não pode estar vazia.",
+    "REPORT_TARGET_EMPTY": "O alvo da denúncia não pode estar vazio.",
+    "REPORT_TYPE_INVALID": "Tipo de denúncia inválido.",
+    "REPORT_TOO_MANY_IMAGES": "Você pode anexar no máximo 5 imagens.",
+    "IMAGE_EMPTY": "O arquivo de imagem está vazio.",
+    "IMAGE_TOO_LARGE": "Cada imagem deve ter no máximo 5 MB.",
+    "IMAGE_INVALID_FORMAT": "Formato de imagem inválido. Use JPG, PNG ou WEBP.",
+    "IMAGE_INVALID_EXTENSION": "Extensão de arquivo inválida. Use .jpg, .jpeg, .png ou .webp.",
+
     "CANVAS_ELEMENT_NOT_FOUND": "Elemento do canvas não encontrado.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Falha ao criar o elemento do canvas.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Falha ao atualizar o elemento do canvas.",

@@ -1,11 +1,9 @@
 ﻿using FluentValidation;
 using Mapster;
-using Microsoft.AspNetCore.Identity;
-using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Validators;
+using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using System;
@@ -202,6 +200,20 @@ namespace RpgDex.Application.Services
             var tokensDeleted = await canvasElementRepository.SetActiveStateByCharacterId(tokenIds, false);
             if (!tokensDeleted) return (false, CanvaElementError.SetActiveStateFailed);
             //Delete From Both Campaign List
+
+            var characterRemoved = await campaignRepository.RemoveCharacterFromCampaigns(characterId);
+            if(!characterRemoved) return (false, CampaignError.CharacterRemoveFailed);
+            return (true, null);
+        }
+        public async Task<Result<ChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await characterQueries.GetCharacterChart(startDate, endDate);
+            if (result is null)
+            {
+                Result<ChartResponse>.Failure(CharacterError.CharacterChartNotFound);
+            }
+            return Result<ChartResponse>.Success(result!);
+        }
 
             var characterRemoved = await campaignRepository.RemoveCharacterFromCampaigns(characterId);
             if(!characterRemoved) return (false, CampaignError.CharacterRemoveFailed);
