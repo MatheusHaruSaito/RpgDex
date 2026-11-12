@@ -97,13 +97,13 @@ namespace RpgDex.Application.Mapping
             .Map(dest => dest.UserId, src => src.UserId)
             .Map(dest => dest.FilePath, src => string.IsNullOrEmpty(src.FilePath)
                 ? null
-                : $"{baseUrl}/api/File/{src.FilePath}");
+                : urls.Build(src.FilePath));
 
             TypeAdapterConfig<CanvasElement, CanvasElementResponse>
             .NewConfig()
             .Map(dest => dest.ImageUrl, src => string.IsNullOrEmpty(src.ImageUrl)
                 ? null
-                : $"{baseUrl}/api/File/{src.ImageUrl}");
+                : urls.Build(src.ImageUrl));
 
            //Mappings for Reports can be added here if necessary
 
@@ -113,39 +113,7 @@ namespace RpgDex.Application.Mapping
                 ? null
                 : urls.BuildMultiple(src.ImagesPath));
                 }
-
-
-
-        private static string GetApiUrlIfNotFromGoogle(string iconPath, string baseUrl)
-        {
-            if (VerifyImageUrl(iconPath))
-            {
-                return "";
-            }
-            return $"{baseUrl}/api/File/";
-        }
-        //Verifies if the image URL is from Google or Discord, if not, it will return false
-        private static bool VerifyImageUrl(string imageUrl)
-        {
-            if (string.IsNullOrEmpty(imageUrl))
-            {
-                return false;
-            }
-            // Verifica se a URL contém "googleusercontent.com"
-            if (imageUrl.Contains("googleusercontent.com") 
-                || imageUrl.Contains("discordapp.com"))
-            {
-                return true;
-            }
-            // Se não for uma imagem do Google, retorna null
-            return false;
-                : urls.Build(src.FilePath));
-
-        }
-
-
-
-                
+    
 
         // Metodos para converter Dictionary<string, object> em BsonDocument
 

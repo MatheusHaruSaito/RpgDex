@@ -104,8 +104,7 @@ namespace RpgDex.Infrastructure
             services.AddScoped<IDiscordAuthService, DiscordAuthService>();
             services.AddScoped<ICampaignChatService, CampaignChatService>();
             services.AddScoped<ICampaignChatRepository, CampaignChatRepository>();
-            services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();
-            a
+            services.AddScoped<IUserDocumentRepository, UserDocumentRepository>();  
             services.AddScoped<ICanvasElementRepository, CanvasElementRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();

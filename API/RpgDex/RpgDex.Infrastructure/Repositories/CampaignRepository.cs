@@ -78,6 +78,7 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.UpdateManyAsync(filter, update);
 
             return result.IsAcknowledged;
+        }
         public async Task<bool> SetAllActiveStateByUserId(Guid userId, bool ActiveState)
         {
             var filter = Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId);

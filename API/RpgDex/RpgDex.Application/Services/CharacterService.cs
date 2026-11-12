@@ -215,10 +215,6 @@ namespace RpgDex.Application.Services
             return Result<ChartResponse>.Success(result!);
         }
 
-            var characterRemoved = await campaignRepository.RemoveCharacterFromCampaigns(characterId);
-            if(!characterRemoved) return (false, CampaignError.CharacterRemoveFailed);
-            return (true, null);
-        }
         private async Task<bool> CheckCharacterLimit(Guid userId)
         {
             var limit = await subscritpionService.GetSubscritptionLimits(userId.ToString());
