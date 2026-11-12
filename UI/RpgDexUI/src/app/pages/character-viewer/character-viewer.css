@@ -1,4 +1,4 @@
-/* ── CONTAINER PRINCIPAL DO VIEWER ── */
+/* ── CONTAINER PRINCIPAL ── */
 .cv-wrapper {
   display: flex;
   flex-direction: column;
@@ -7,21 +7,21 @@
   box-sizing: border-box;
 }
 
-/* ── HEADER / PERFIL DO PERSONAGEM ── */
+/* ── HEADER / PERFIL ── */
 .cv-header {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 18px;
   background: var(--rpg-surface);
   border: 1px solid var(--rpg-border-light);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 18px;
   box-shadow: var(--rpg-shadow-sm);
 }
 
 .cv-avatar {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--rpg-gradient);
   background-size: cover;
@@ -30,36 +30,59 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.3rem;
+  color: #fff;
+  font-size: 1.6rem;
   flex-shrink: 0;
 }
 
 .cv-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+  flex: 1;
 }
 
 .cv-name {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   color: var(--rpg-text-dark);
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 .cv-desc {
   font-family: 'Nunito', sans-serif;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--rpg-text-muted);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
+
+.cv-desc--clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cv-desc-toggle {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--rpg-purple);
+  cursor: pointer;
+}
+
+.cv-desc-toggle:hover { text-decoration: underline; }
 
 /* ── ESTADO VAZIO ── */
 .cv-sheet-empty {
@@ -76,57 +99,32 @@
   border: 1.5px dashed var(--rpg-border-light);
 }
 
-/* ── GRID E COLUNAS DA FICHA ── */
+.cv-group-empty {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.82rem;
+  color: var(--rpg-text-faint);
+  font-style: italic;
+}
+
+/* ── GRID DE GRUPOS ── */
 .cv-sheet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 16px;
   align-items: start;
 }
 
-.cv-sheet-col {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* ── VALORES ESCALARES DE DESTAQUE ── */
-.cv-scalar-badge {
-  background: var(--rpg-purple-tint);
-  border: 1px solid var(--rpg-border-purple);
-  border-radius: 10px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cv-scalar-label {
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 800;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--rpg-purple);
-}
-
-.cv-scalar-val {
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: var(--rpg-text-dark);
-}
-
-/* ── BLOCOS DE SEÇÃO DA FICHA ── */
 .cv-section-block {
   background: var(--rpg-surface);
   border: 1px solid var(--rpg-border-light);
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   box-shadow: var(--rpg-shadow-sm);
+  min-width: 0;
 }
 
 .cv-section-title {
@@ -139,73 +137,244 @@
   margin: 0;
   border-bottom: 1px dashed var(--rpg-border-purple);
   padding-bottom: 6px;
+  overflow-wrap: anywhere;
 }
 
-/* ── LISTA DE PROPRIEDADES ── */
-.cv-props-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+/* ── LISTA DE ENTRADAS: números/marcadores em blocos, o resto em linha cheia ── */
+.cv-entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
 }
 
-.cv-prop-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: var(--rpg-surface-tint);
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: background 0.15s ease;
-}
-
-.cv-prop-chip:hover {
-  background: var(--rpg-purple-tint);
-}
+.cv-entry { min-width: 0; }
+.cv-entry--wide { grid-column: 1 / -1; }
 
 .cv-prop-key {
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--rpg-text-dark);
+  overflow-wrap: anywhere;
 }
+
+/* Texto simples */
+.cv-prop-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--rpg-surface-tint);
+  padding: 7px 10px;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.cv-prop-chip:hover { background: var(--rpg-purple-tint); }
 
 .cv-prop-val {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   color: var(--rpg-purple);
   text-align: right;
-  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
-.fade-in-content {
-  animation: fadeInContent 0.25s ease-in-out forwards;
+/* Número (stat tile) */
+.cv-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 10px;
+  padding: 10px 6px;
+  text-align: center;
 }
+
+.cv-stat-val {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--rpg-text-dark);
+  overflow-wrap: anywhere;
+}
+
+.cv-stat-key {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rpg-purple);
+  overflow-wrap: anywhere;
+}
+
+/* Marcador */
+.cv-flag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: var(--rpg-surface-tint);
+  border: 1px solid var(--rpg-border-light);
+  color: var(--rpg-text-faint);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.cv-flag i { font-size: 1rem; flex-shrink: 0; }
+.cv-flag-key { overflow-wrap: anywhere; }
+
+.cv-flag--on {
+  background: var(--rpg-purple-tint);
+  border-color: var(--rpg-border-purple);
+  color: var(--rpg-text-dark);
+}
+
+.cv-flag--on i { color: #2e7d32; }
+
+/* Barra de recurso */
+.cv-resource {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--rpg-surface-tint);
+  padding: 9px 10px;
+  border-radius: 8px;
+}
+
+.cv-resource-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cv-resource-nums {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--rpg-text-faint);
+  white-space: nowrap;
+}
+
+.cv-resource-nums strong {
+  font-size: 1rem;
+  color: var(--rpg-text-dark);
+}
+
+.cv-res-sep { margin: 0 2px; }
+
+.cv-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: var(--rpg-border-light);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.cv-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rpg-purple), #80e2ff);
+  border-radius: 5px;
+  transition: width 0.4s ease, background 0.2s ease;
+}
+
+.cv-resource--warn .cv-bar-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.cv-resource--low .cv-bar-fill { background: linear-gradient(90deg, var(--rpg-error), #ff8a80); }
+.cv-resource--low .cv-resource-nums strong { color: var(--rpg-error); }
+
+/* Notas / texto longo */
+.cv-note {
+  background: var(--rpg-surface-tint);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.cv-note summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.cv-note summary::-webkit-details-marker { display: none; }
+.cv-note summary:hover { background: var(--rpg-purple-tint); }
+
+.cv-note-chevron {
+  font-size: 0.7rem;
+  color: var(--rpg-purple);
+  transition: transform 0.15s ease;
+}
+
+.cv-note[open] .cv-note-chevron { transform: rotate(90deg); }
+
+.cv-note-empty {
+  margin-left: auto;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--rpg-text-faint);
+}
+
+.cv-note-body {
+  margin: 0;
+  padding: 4px 12px 12px 26px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--rpg-text-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Acessibilidade */
+.cv-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.cv-desc-toggle:focus-visible,
+.cv-note summary:focus-visible {
+  outline: 2px solid var(--rpg-purple);
+  outline-offset: 2px;
+}
+
+/* Animação de entrada */
+.fade-in-content { animation: fadeInContent 0.25s ease-in-out forwards; }
 
 @keyframes fadeInContent {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-content { animation: none; }
+  .cv-bar-fill, .cv-note-chevron, .cv-prop-chip { transition: none; }
 }
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 480px) {
-  .cv-header {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .cv-details {
-    align-items: center;
-  }
-
-  .cv-sheet-grid {
-    grid-template-columns: 1fr;
-  }
+  .cv-header { flex-direction: column; align-items: center; text-align: center; }
+  .cv-details { align-items: center; }
+  .cv-desc-toggle { align-self: center; }
+  .cv-sheet-grid { grid-template-columns: 1fr; }
 }
