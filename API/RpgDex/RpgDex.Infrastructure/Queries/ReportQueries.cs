@@ -18,13 +18,16 @@ namespace RpgDex.Infrastructure.Queries
         private readonly IMongoCollection<Report> _entitie;
         private readonly IMongoCollection<ApplicationUser> _userCollection;
         private readonly Dictionary<ReportEnum, IReportTargetResolver> _resolvers;
+        private readonly IFileUrlBuilder _urls;
 
-        public ReportQueries(MongoDbContext mongoDbContext,IEnumerable<IReportTargetResolver> resolvers)
+
+        public ReportQueries(MongoDbContext mongoDbContext,IEnumerable<IReportTargetResolver> resolvers, IFileUrlBuilder urls)
         {
             _mongoDbContext = mongoDbContext;
             _entitie = _mongoDbContext.Reports;
             _userCollection = _mongoDbContext.Users;
             _resolvers = resolvers.ToDictionary(g => g.Type);
+            _urls = urls;
         }
 
         public async Task<ReportDetailResponse?> GetDetailAsync(Guid id)
@@ -52,7 +55,8 @@ namespace RpgDex.Infrastructure.Queries
                 owner is null
                 ? new ReportOwnerResponse(report.ReportOwner, "", "")
                 : new ReportOwnerResponse(owner.Id, owner.UserName, owner.DisplayName),
-                target
+                target,
+                _urls.BuildMultiple(report.ImagesPath).ToList()
             );
         }
     }

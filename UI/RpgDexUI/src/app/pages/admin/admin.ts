@@ -62,7 +62,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { display: false },
-      tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} registro(s)` } },
+      tooltip: { callbacks: { label: (ctx) => ` ${ctx.parsed.y} registro(s)` } },
     },
     scales: {
       y: { beginAtZero: true, ticks: { precision: 0 } },
@@ -84,8 +84,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     if (typeof repAny.imagePath === 'string' && repAny.imagePath.trim() !== '') {
       return [repAny.imagePath];
     }
-
-    const currentListItem = this.reports.find(r => r.id === this.selectedReport?.id) as any;
+    const currentListItem = this.reports.find((r) => r.id === this.selectedReport?.id) as any;
     if (currentListItem) {
       if (Array.isArray(currentListItem.imagesPath) && currentListItem.imagesPath.length > 0) {
         return currentListItem.imagesPath;
@@ -93,7 +92,10 @@ export class AdminComponent implements OnInit, OnDestroy {
       if (Array.isArray(currentListItem.imagePaths) && currentListItem.imagePaths.length > 0) {
         return currentListItem.imagePaths;
       }
-      if (typeof currentListItem.imagePath === 'string' && currentListItem.imagePath.trim() !== '') {
+      if (
+        typeof currentListItem.imagePath === 'string' &&
+        currentListItem.imagePath.trim() !== ''
+      ) {
         return [currentListItem.imagePath];
       }
     }
@@ -147,31 +149,28 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.reports = [];
     }
 
-    this.reportService
-      .GetAll(this.currentPage, this.pageSize, this.showOnlyActive)
-      .subscribe({
-        next: (res: ApiResponse<any>) => {
-          this.reports = res.success && res.data ? res.data.reports || [] : [];
-          this.totalOpenReports = res.data?.count || this.reports.length;
-          this.isLoadingReports = false;
+    this.reportService.GetAll(this.currentPage, this.pageSize, this.showOnlyActive).subscribe({
+      next: (res: ApiResponse<any>) => {
+        this.reports = res.success && res.data ? res.data.reports || [] : [];
+        this.totalOpenReports = res.data?.count || this.reports.length;
+        this.isLoadingReports = false;
+        if (!this.reports.some((r) => r.id === this.selectedReport?.id)) {
+          this.selectedReport = null;
+        }
 
-          if (!this.reports.some((r) => r.id === this.selectedReport?.id)) {
-            this.selectedReport = null;
-          }
+        this.cdr.detectChanges();
 
-          this.cdr.detectChanges();
-
-          if (!this.selectedReport && this.reports.length > 0) {
-            this.selectReport(this.reports[0].id);
-          }
-        },
-        error: (err: unknown) => {
-          console.error('[Admin] Erro ao carregar reportes:', err);
-          if (!silent) this.reports = [];
-          this.isLoadingReports = false;
-          this.cdr.detectChanges();
-        },
-      });
+        if (!this.selectedReport && this.reports.length > 0) {
+          this.selectReport(this.reports[0].id);
+        }
+      },
+      error: (err: unknown) => {
+        console.error('[Admin] Erro ao carregar reportes:', err);
+        if (!silent) this.reports = [];
+        this.isLoadingReports = false;
+        this.cdr.detectChanges();
+      },
+    });
   }
 
   toggleReportStatusFilter(isActive: boolean): void {
@@ -268,15 +267,15 @@ export class AdminComponent implements OnInit, OnDestroy {
     const color =
       getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim() || '#7c3aed';
 
-    const counts = new Map(res.points.map(p => [`${p.year}-${p.month}`, p.count]));
+    const counts = new Map(res.points.map((p) => [`${p.year}-${p.month}`, p.count]));
     const months = this.monthsBetween(this.startDate, this.endDate);
 
     return {
-      labels: months.map(m => `${String(m.month).padStart(2, '0')}/${m.year}`),
+      labels: months.map((m) => `${String(m.month).padStart(2, '0')}/${m.year}`),
       datasets: [
         {
           label,
-          data: months.map(m => counts.get(`${m.year}-${m.month}`) ?? 0),
+          data: months.map((m) => counts.get(`${m.year}-${m.month}`) ?? 0),
           borderColor: color,
           backgroundColor: color + '33',
           pointBackgroundColor: color,

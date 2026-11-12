@@ -1,4 +1,6 @@
-﻿namespace RpgDex.Application.Dto.Report
+﻿using RpgDex.Domain.Enums;
+
+namespace RpgDex.Application.Dto.Report
 {
     public record ReportDetailResponse(
         Guid Id,

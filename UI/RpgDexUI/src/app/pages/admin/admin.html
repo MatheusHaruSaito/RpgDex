@@ -1,6 +1,5 @@
 <div class="admin-wrapper">
   <div class="admin-container">
-
     <!-- HEADER E NAVEGAÇÃO DO PAINEL -->
     <header class="admin-header-card">
       <div class="admin-title-group">
@@ -12,26 +11,42 @@
       </div>
 
       <nav class="admin-nav-tabs">
-        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'reportes'"
-          (click)="setTab('reportes')">
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'reportes'"
+          (click)="setTab('reportes')"
+        >
           <i class="fa-solid fa-triangle-exclamation"></i>
           <span>Reportes</span>
         </button>
 
-        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'usuarios'"
-          (click)="setTab('usuarios')">
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'usuarios'"
+          (click)="setTab('usuarios')"
+        >
           <i class="fa-solid fa-users"></i>
           <span>Usuários</span>
         </button>
 
-        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'personagens'"
-          (click)="setTab('personagens')">
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'personagens'"
+          (click)="setTab('personagens')"
+        >
           <i class="fa-solid fa-id-card"></i>
           <span>Personagens</span>
         </button>
 
-        <button type="button" class="admin-tab-btn" [class.active]="activeTab === 'campanhas'"
-          (click)="setTab('campanhas')">
+        <button
+          type="button"
+          class="admin-tab-btn"
+          [class.active]="activeTab === 'campanhas'"
+          (click)="setTab('campanhas')"
+        >
           <i class="fa-solid fa-dice-d20"></i>
           <span>Campanhas</span>
         </button>
@@ -41,18 +56,25 @@
     <!-- 1. ABA DE REPORTES -->
     <ng-container *ngIf="activeTab === 'reportes'">
       <div class="reports-filter-bar">
-        <button type="button" class="filter-toggle-btn" [class.active]="showOnlyActive"
-          (click)="toggleReportStatusFilter(true)">
+        <button
+          type="button"
+          class="filter-toggle-btn"
+          [class.active]="showOnlyActive"
+          (click)="toggleReportStatusFilter(true)"
+        >
           <i class="fa-solid fa-folder-open"></i> Abertos
         </button>
-        <button type="button" class="filter-toggle-btn" [class.active]="!showOnlyActive"
-          (click)="toggleReportStatusFilter(false)">
+        <button
+          type="button"
+          class="filter-toggle-btn"
+          [class.active]="!showOnlyActive"
+          (click)="toggleReportStatusFilter(false)"
+        >
           <i class="fa-solid fa-folder-closed"></i> Encerrados / Fechados
         </button>
       </div>
 
       <div class="reports-split-view">
-
         <!-- PAINEL DA ESQUERDA: LISTA -->
         <div class="reports-list-panel">
           <div *ngIf="isLoadingReports" class="admin-empty-state">
@@ -65,8 +87,12 @@
             <p>Nenhuma denúncia {{ showOnlyActive ? 'aberta' : 'encerrada' }} encontrada!</p>
           </div>
 
-          <div *ngFor="let rep of reports" class="report-item-card" [class.active]="selectedReport?.id === rep.id"
-            (click)="selectReport(rep.id)">
+          <div
+            *ngFor="let rep of reports"
+            class="report-item-card"
+            [class.active]="selectedReport?.id === rep.id"
+            (click)="selectReport(rep.id)"
+          >
             <div class="report-item-header">
               <h4 class="report-item-title">{{ rep.title }}</h4>
               <span class="badge" [ngClass]="rep.isActive ? 'badge-open' : 'badge-closed'">
@@ -82,8 +108,11 @@
           <div class="report-meta-header">
             <div class="report-owner-info">
               <i class="fa-solid fa-user-ninja"></i>
-              <span>Reportado por:
-                <strong>{{ selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName }}</strong>
+              <span
+                >Reportado por:
+                <strong>{{
+                  selectedReport.reportOwner.displayName || selectedReport.reportOwner.userName
+                }}</strong>
               </span>
             </div>
             <div class="report-date-tag">
@@ -106,9 +135,14 @@
               Provas anexadas ({{ reportImages.length }})
             </h3>
             <div class="evidence-grid">
-              <a *ngFor="let img of reportImages" class="evidence-thumb" [href]="getImageUrl(img)" target="_blank"
-                rel="noopener">
-                <img [src]="getImageUrl(img)" alt="Prova anexada" loading="lazy" />
+              <a
+                *ngFor="let img of reportImages"
+                class="evidence-thumb"
+                [href]="getImageUrl(img)"
+                target="_blank"
+                rel="noopener"
+              >
+                <img [src]="img" alt="Prova anexada" loading="lazy" />
               </a>
             </div>
           </div>
@@ -121,17 +155,24 @@
                 <i class="fa-solid fa-user"></i> Jogador Reportado
               </span>
               <div class="target-profile-row">
-                <img *ngIf="selectedReport.target.userSummary.iconPath"
-                  [src]="getImageUrl(selectedReport.target.userSummary.iconPath)" class="target-avatar" alt="Avatar" />
-                <div *ngIf="!selectedReport.target.userSummary.iconPath" class="target-avatar-fallback">
+                <img
+                  *ngIf="selectedReport.target.userSummary.iconPath"
+                  [src]="getImageUrl(selectedReport.target.userSummary.iconPath)"
+                  class="target-avatar"
+                  alt="Avatar"
+                />
+                <div
+                  *ngIf="!selectedReport.target.userSummary.iconPath"
+                  class="target-avatar-fallback"
+                >
                   <i class="fa-solid fa-user"></i>
                 </div>
                 <div class="target-details-text">
                   <h4>{{ selectedReport.target.userSummary.displayName }}</h4>
                   <p>&#64;{{ selectedReport.target.userSummary.userName }}</p>
                   <p>
-                    Personagens: {{ selectedReport.target.charactersCount }} |
-                    Campanhas: {{ selectedReport.target.campaignsCount }}
+                    Personagens: {{ selectedReport.target.charactersCount }} | Campanhas:
+                    {{ selectedReport.target.campaignsCount }}
                   </p>
                 </div>
               </div>
@@ -143,8 +184,12 @@
                 <i class="fa-solid fa-map-location-dot"></i> Campanha Reportada
               </span>
               <div class="target-profile-row">
-                <img *ngIf="selectedReport.target.iconPath" [src]="getImageUrl(selectedReport.target.iconPath)" class="target-avatar"
-                  alt="Avatar da Campanha" />
+                <img
+                  *ngIf="selectedReport.target.iconPath"
+                  [src]="getImageUrl(selectedReport.target.iconPath)"
+                  class="target-avatar"
+                  alt="Avatar da Campanha"
+                />
                 <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
                   <i class="fa-solid fa-dice-d20"></i>
                 </div>
@@ -152,8 +197,10 @@
                   <h4>{{ selectedReport.target.title }}</h4>
                   <p>{{ selectedReport.target.description || 'Sem descrição cadastrada' }}</p>
                   <p>
-                    Mestre: {{ selectedReport.target.gameMaster?.displayName }} |
-                    Jogadores: {{ selectedReport.target.players.length }}/{{ selectedReport.target.maxPlayers }}
+                    Mestre: {{ selectedReport.target.gameMaster?.displayName }} | Jogadores:
+                    {{ selectedReport.target.players.length }}/{{
+                      selectedReport.target.maxPlayers
+                    }}
                   </p>
                 </div>
               </div>
@@ -165,8 +212,12 @@
                 <i class="fa-solid fa-shield-halved"></i> Personagem Reportado
               </span>
               <div class="target-profile-row">
-                <img *ngIf="selectedReport.target.iconPath" [src]="getImageUrl(selectedReport.target.iconPath)" class="target-avatar"
-                  alt="Avatar do Personagem" />
+                <img
+                  *ngIf="selectedReport.target.iconPath"
+                  [src]="getImageUrl(selectedReport.target.iconPath)"
+                  class="target-avatar"
+                  alt="Avatar do Personagem"
+                />
                 <div *ngIf="!selectedReport.target.iconPath" class="target-avatar-fallback">
                   <i class="fa-solid fa-user-shield"></i>
                 </div>
@@ -189,18 +240,25 @@
 
           <!-- AÇÕES DO REPORTE -->
           <div class="report-action-buttons" *ngIf="showOnlyActive">
-            <button type="button" class="btn btn-outline-danger" (click)="punishUser(selectedReport.id)">
+            <button
+              type="button"
+              class="btn btn-outline-danger"
+              (click)="punishUser(selectedReport.id)"
+            >
               <i class="fa-solid fa-gavel"></i>
               <span>Penalizar Alvo</span>
             </button>
 
-            <button type="button" class="btn btn-secondary" (click)="closeReport(selectedReport.id)">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="closeReport(selectedReport.id)"
+            >
               <i class="fa-solid fa-check"></i>
               <span>Encerrar Denúncia</span>
             </button>
           </div>
         </div>
-
       </div>
     </ng-container>
 
@@ -209,14 +267,29 @@
       <div class="metrics-card-panel">
         <div class="chart-filter-row">
           <label>Período de análise:</label>
-          <input type="date" [(ngModel)]="startDate" (change)="loadUserChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="loadUserChart()"
+            class="admin-date-input"
+          />
           <span>até</span>
-          <input type="date" [(ngModel)]="endDate" (change)="loadUserChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="loadUserChart()"
+            class="admin-date-input"
+          />
         </div>
 
         <div class="chart-canvas-wrapper">
-          <canvas *ngIf="userChart; else semDados" baseChart [data]="userChart" [options]="lineChartOptions"
-            type="line">
+          <canvas
+            *ngIf="userChart; else semDados"
+            baseChart
+            [data]="userChart"
+            [options]="lineChartOptions"
+            type="line"
+          >
           </canvas>
           <ng-template #semDados>
             <div class="admin-empty-state">
@@ -252,14 +325,29 @@
         <h2>Crescimento de Personagens</h2>
         <div class="chart-filter-row">
           <label>Período de análise:</label>
-          <input type="date" [(ngModel)]="startDate" (change)="loadCharacterChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="loadCharacterChart()"
+            class="admin-date-input"
+          />
           <span>até</span>
-          <input type="date" [(ngModel)]="endDate" (change)="loadCharacterChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="loadCharacterChart()"
+            class="admin-date-input"
+          />
         </div>
 
         <div class="chart-canvas-wrapper">
-          <canvas *ngIf="characterChart; else semDados" baseChart [data]="characterChart" [options]="lineChartOptions"
-            type="line">
+          <canvas
+            *ngIf="characterChart; else semDados"
+            baseChart
+            [data]="characterChart"
+            [options]="lineChartOptions"
+            type="line"
+          >
           </canvas>
           <ng-template #semDados>
             <div class="admin-empty-state">
@@ -287,14 +375,29 @@
         <h2>Estatísticas de Campanhas</h2>
         <div class="chart-filter-row">
           <label>Período de análise:</label>
-          <input type="date" [(ngModel)]="startDate" (change)="loadCampaignChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            (change)="loadCampaignChart()"
+            class="admin-date-input"
+          />
           <span>até</span>
-          <input type="date" [(ngModel)]="endDate" (change)="loadCampaignChart()" class="admin-date-input" />
+          <input
+            type="date"
+            [(ngModel)]="endDate"
+            (change)="loadCampaignChart()"
+            class="admin-date-input"
+          />
         </div>
 
         <div class="chart-canvas-wrapper">
-          <canvas *ngIf="campaignChart; else semDados" baseChart [data]="campaignChart" [options]="lineChartOptions"
-            type="line">
+          <canvas
+            *ngIf="campaignChart; else semDados"
+            baseChart
+            [data]="campaignChart"
+            [options]="lineChartOptions"
+            type="line"
+          >
           </canvas>
           <ng-template #semDados>
             <div class="admin-empty-state">
@@ -315,6 +418,5 @@
         </div>
       </div>
     </ng-container>
-
   </div>
 </div>

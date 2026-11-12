@@ -12,7 +12,6 @@ interface ReportDetailBase {
   createdAt: string;
   reportOwner: ReportOwner;
   imagePaths?: string[] | null;
-  imagePath?: string | null;
 }
 
 export type ReportDetail = ReportDetailBase &
