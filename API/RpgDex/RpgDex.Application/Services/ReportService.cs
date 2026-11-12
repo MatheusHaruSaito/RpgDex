@@ -150,9 +150,14 @@ namespace RpgDex.Application.Services
         private async Task HandleUserPunishmentSetToActive(Guid userId)
         {
             await tokenRepository.DeleteAllUserRefreshTokensByUserIdAsync(userId);
-            //Characters have a method to remove all in campaign-canvas branch
             await campaignRepository.SetAllActiveStateByUserId(userId,false);
             await campaignRepository.RemoveUserFromCampaigns(userId);
+
+            //Delete From Both Campaign List
+
+            await campaignRepository.RemoveCharacterFromCampaigns(userId);
+            await campaignRepository.RemoveAllCharactersFromCampaignsByUserId(userId);
+           
         }
 
         private async Task<Guid> GetUserIdByReportType(ReportEnum type,Guid DataId)
