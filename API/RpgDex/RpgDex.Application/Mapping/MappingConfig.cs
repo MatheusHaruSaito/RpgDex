@@ -36,13 +36,6 @@ namespace RpgDex.Application.Mapping
 
 
             //Mapeamentos para ApplicationUser podem ser adicionados aqui, se necessário
-            if (!BsonClassMap.IsClassMapRegistered(typeof(ApplicationUser)))
-            {
-                BsonClassMap.RegisterClassMap<ApplicationUser>(cm =>
-                {
-                    cm.AutoMap();
-                });
-            }
             
             TypeAdapterConfig<CreateUserDTO, ApplicationUser>
                  .NewConfig()

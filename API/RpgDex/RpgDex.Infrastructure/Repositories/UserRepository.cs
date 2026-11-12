@@ -45,5 +45,14 @@ namespace RpgDex.Infrastructure.Repositories
         {
             return _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
         }
+
+        public async Task<bool> ExistsByCpfHashAsync(string cpfHash, Guid excludeUserId)
+        {
+            var filter = Builders<ApplicationUser>.Filter.And(
+                 Builders<ApplicationUser>.Filter.Eq(u => u.CpfHash, cpfHash),
+                 Builders<ApplicationUser>.Filter.Ne(u => u.Id, excludeUserId));
+
+            return await _users.Find(filter).AnyAsync();
+        }
     }
 }

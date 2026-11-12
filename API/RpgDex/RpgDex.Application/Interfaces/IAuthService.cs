@@ -1,4 +1,5 @@
 ﻿using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.AgeVerification;
 using RpgDex.Application.Dto.Auth;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
@@ -27,6 +28,8 @@ namespace RpgDex.Application.Interfaces
         Task<Result<string>> ResendEmailVerificationAsync(ResendEmailVerificationRequest request);
         Task<Result<string>> SendResetPasswordEmailAsync(SendResetPasswordEmailRequest request);
         Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<Result<AgeVerificationResponse>> SubmitAgeVerification(string userId, AgeVerificationRequest request);
+        Task<Result<string>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request);
 
     }
 }

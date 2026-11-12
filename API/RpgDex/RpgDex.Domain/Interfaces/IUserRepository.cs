@@ -10,7 +10,7 @@ namespace RpgDex.Domain.Interfaces
         Task<bool> PushCharacterAsync(Guid userId, Guid characterID);
         Task<bool> PullCharacterAsync(Guid userId, Guid characterId);
         Task<ApplicationUser> GetByIdAsync(Guid userId);
-
+        Task<bool> ExistsByCpfHashAsync(string cpfHash, Guid excludeUserId);
 
     }
 }

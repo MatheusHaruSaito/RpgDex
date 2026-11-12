@@ -1,10 +1,13 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Driver;
 using RpgDex.Application;
 using RpgDex.Application.Mapping;
+using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure;
 using RpgDex.Infrastructure.Hubs;
+using RpgDex.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
@@ -23,6 +26,12 @@ builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var database = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
+    var users = database.GetCollection<ApplicationUser>("applicationUsers");
+    await UserIndexes.EnsureAsync(users);
+}
 
 app.UseForwardedHeaders();
 app.UseRouting();

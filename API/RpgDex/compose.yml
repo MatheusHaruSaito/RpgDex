@@ -45,6 +45,7 @@
       - EmailSettings__Username=${EMAIL_SMTP_USERNAME}
       - EmailSettings__Password=${EMAIL_SMTP_PASSWORD}
       - Encryption__ChatKey=${ENCRYPTION_CHATKEY}
+      - Encryption__CpfHashKey=${ENCRYPTION_CPFHASHKEY}
       - MercadoPago__AccessToken=${MercadoPago_AccessToken}
       - MercadoPago__WebHookSecret=${MercadoPago_WebHookSecret}
       - MercadoPago__ValidateWebHookSignature=${MercadoPago_ValidateWebHookSignature}

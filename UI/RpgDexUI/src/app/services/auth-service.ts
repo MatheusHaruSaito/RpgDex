@@ -202,4 +202,18 @@ export class AuthService {
   }): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${this.env}/resetPassword`, request);
   }
+  public AgeVerification(request: {
+    birthDate: Date;
+    cpf: string;
+    guardianCpf: string;
+    guardianEmail: string;
+  }): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.env}/age-verification"`, request);
+  }
+  public GuardianConsent(request: {
+    userId: string;
+    token: string;
+  }): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.env}/guardian-consent"`, request);
+  }
 }

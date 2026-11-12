@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using RpgDex.Application.Dto;
-
+using RpgDex.Application.Dto.AgeVerification;
 using RpgDex.Application.Interfaces;
 using RpgDex.Application.Services;
 using RpgDex.Domain.Entities;
@@ -148,6 +148,20 @@ namespace RpgDex.WebApi.Controllers
         public async Task<IActionResult> RequestTwoFAActivation(ValidateTwoFactorRequest request)
         {
             var result = await _authService.RequestTwoFAActivation(request);
+            return result.ToIActionResult();
+        }
+        [Authorize]
+        [HttpPost("age-verification")]
+        public async Task<IActionResult> SubmitAgeVerification([FromBody] AgeVerificationRequest request)
+        {
+            var result = await _authService.SubmitAgeVerification(currentUser, request);
+            return result.ToIActionResult();
+        }
+
+        [AllowAnonymous]
+        [HttpPost("guardian-consent")]
+        public async Task<IActionResult> ConfirmGuardianConsent([FromBody] ConfirmGuardianConsentRequest request) {
+            var result = await _authService.ConfirmGuardianConsent(request);
             return result.ToIActionResult();
         }
     }

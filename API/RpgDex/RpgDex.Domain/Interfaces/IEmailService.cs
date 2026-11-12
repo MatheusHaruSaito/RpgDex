@@ -11,5 +11,6 @@ namespace RpgDex.Domain.Interfaces
         string GenerateTwoFactorEmailHTMLTemplate(string twoFactorCode, string userName);
         string GeneratePasswordResetHTMLTemplate(string resetLink, string userName);
         string GeneratePasswordResetConfirmationHTMLTemplate(string userName);
+        string GenerateGuardianConsentHTMLTemplate(string link, string userName);
     }
 }

@@ -37,7 +37,7 @@ namespace RpgDex.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             //Database configuration
-            FieldEncryption.Initialize(configuration["ENCRYPTION:CHATKEY"]!);
+            FieldEncryption.Initialize(configuration["Encryption:ChatKey"]!);
 
             BsonClassMap.RegisterClassMap<ChatMessage>(cm =>
             {
@@ -49,6 +49,12 @@ namespace RpgDex.Infrastructure
             {
                 cm.AutoMap();
                 cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+            BsonClassMap.RegisterClassMap<ApplicationUser>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(u => u.Cpf).SetSerializer(new EncryptedStringSerializer());
+                cm.GetMemberMap(u => u.GuardianCpf).SetSerializer(new EncryptedStringSerializer());
             });
 
             services.AddSingleton<MongoDbContext>();
@@ -117,9 +123,12 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignQueries, CampaignQueries>();
             services.AddScoped<ICanvasHubService, CanvasHubService>();
             services.AddSingleton<ILinkTicketService, LinkTicketService>();
-
+            services.AddSingleton<IFieldHasher>(
+                 new FieldHasher(configuration["Encryption:CpfHashKey"]!));
             services.AddHostedService<SyncPaymentJob>();
             services.AddHostedService<SubscriptionExpiryJob>();
+
+            services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(1));
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>

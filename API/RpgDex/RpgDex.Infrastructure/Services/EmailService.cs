@@ -2,10 +2,13 @@
 using Resend;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Settings;
+using System.Drawing;
+using System.Runtime.Intrinsics.Arm;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace RpgDex.Infrastructure.Services
 {
-  public class EmailService : IEmailService
+    public class EmailService : IEmailService
   {
     private readonly EmailSettings _settings;
     private readonly ApiSettings _apiSettings;
@@ -439,5 +442,25 @@ namespace RpgDex.Infrastructure.Services
         </body>
         </html>";
     }
-  }
+
+        public string GenerateGuardianConsentHTMLTemplate(string link, string userName)
+        {
+            return $@"<!DOCTYPE html>
+        <html lang=""pt-BR"">
+        <head>
+          <meta charset=""UTF-8"">
+          <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+          <title>Senha Alterada — RPGDex</title>
+        </head>
+        <body style=""margin:0;padding:0;background-color:#f4f2fb;font-family:'Segoe UI',Arial,sans-serif;"">
+
+            < p style = ""margin: 0 0 24px; font - size:1rem; color:#555;
+                text - align:center; line - height:1.6; "" >
+                Olá, < strong style = ""color:#7c3aed;"">{userName}</strong>!<br>
+                 seu link: {_apiSettings.UIBaseUrl}{link}
+                 </ strong >.
+            </ p >
+        </body>";
+        }
+    }
 }

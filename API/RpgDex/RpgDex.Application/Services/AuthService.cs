@@ -1,15 +1,19 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using RpgDex.Application.Dto;
+using RpgDex.Application.Dto.AgeVerification;
 using RpgDex.Application.Dto.Auth;
 using RpgDex.Application.Extension;
+using RpgDex.Application.Helpers;
 using RpgDex.Application.Interfaces;
+using RpgDex.Application.Validators.AgeVerfication;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
+using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -20,11 +24,11 @@ using System.Text;
 namespace RpgDex.Application.Services
 {
     public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService, RoleManager<ApplicationRole> rolemanager,
-        IConfiguration configuration, IDiscordAuthService discordAuthService, IValidator<CreateUserDTO> createUserValidator, IValidator<AuthUserDTO> authUserValidator) : IAuthService
+        IConfiguration configuration, IDiscordAuthService discordAuthService, IFieldHasher fieldHasher, IUserRepository userRepository, IValidator<CreateUserDTO> createUserValidator, IValidator<AuthUserDTO> authUserValidator, IValidator<AgeVerificationRequest> ageVerificationValidator) : IAuthService
     {
         private const string GoogleProvider = "Google";
         private const string DiscordProvider = "Discord";
-
+        private const string GuardianConsentPurpose = "GuardianConsent";
         public async Task<Result<LoginResponse>> LogIn(AuthUserDTO authUser)
         {
             var checkAuthUserValid = authUserValidator.Validate(authUser);
@@ -455,6 +459,92 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(AuthError.EmailSendFailed);
             }
             return Result<string>.Success("Password reset successfully.");
+        }
+        public async Task<Result<AgeVerificationResponse>> SubmitAgeVerification(string userId, AgeVerificationRequest request)
+        {
+            var check = ageVerificationValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<AgeVerificationResponse>();
+
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return Result<AgeVerificationResponse>.Failure(AuthError.UserNotFound);
+
+            if (user.AgeVerifiedAt is not null)
+                return Result<AgeVerificationResponse>.Failure(AgeVerificationError.AlreadyVerified);
+
+            var cpf = CpfValidator.Normalize(request.Cpf);
+            var cpfHash = fieldHasher.Hash(cpf);
+
+            var cpfInUse = await userRepository.ExistsByCpfHashAsync(cpfHash, user.Id);
+            if (cpfInUse) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.CpfAlreadyInUse);
+
+            user.BirthDate = request.BirthDate;
+            user.Cpf = cpf;
+            user.CpfHash = cpfHash;
+            var isMinor = AgeVerificationRequestValidator.IsMinor(request.BirthDate);
+
+
+            if (!isMinor)
+            {
+                user.GuardianCpf = null;
+                user.GuardianEmail = null;
+                user.GuardianConsent = GuardianConsentStatus.NotRequired;
+                user.AgeVerifiedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                user.GuardianCpf = CpfValidator.Normalize(request.GuardianCpf);
+                user.GuardianEmail = request.GuardianEmail!.Trim().ToLowerInvariant();
+                user.GuardianConsent = GuardianConsentStatus.Pending;
+            }
+
+            var update = await userManager.UpdateAsync(user);
+            if (!update.Succeeded)
+                return Result<AgeVerificationResponse>.Failure(AgeVerificationError.SaveFailed);
+
+            if (isMinor)
+            {
+                var sent = await SendGuardianConsentEmailAsync(user);
+                if (!sent) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSendFailed);
+            }
+
+            return Result<AgeVerificationResponse>.Success(new(isMinor, user.GuardianConsent));
+        }
+
+        public async Task<Result<string>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request)
+        {
+            var user = await userManager.FindByIdAsync(request.UserId);
+            if (user is null) return Result<string>.Failure(AuthError.UserNotFound);
+
+            if (user.GuardianConsent != GuardianConsentStatus.Pending)
+                return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
+
+            string decoded;
+            try { decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token)); }
+            catch (FormatException) { return Result<string>.Failure(AgeVerificationError.InvalidConsentToken); }
+
+            var valid = await userManager.VerifyUserTokenAsync(
+                user, TokenOptions.DefaultProvider, GuardianConsentPurpose, decoded);
+            if (!valid) return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
+
+            user.GuardianConsent = GuardianConsentStatus.Approved;
+            user.AgeVerifiedAt = DateTime.UtcNow;
+            var result = await userManager.UpdateAsync(user);
+
+            return result.Succeeded
+                ? Result<string>.Success("Guardian consent confirmed")
+                : Result<string>.Failure(AgeVerificationError.SaveFailed);
+        }
+
+        private async Task<bool> SendGuardianConsentEmailAsync(ApplicationUser user)
+        {
+            var token = await userManager.GenerateUserTokenAsync(
+                user, TokenOptions.DefaultProvider, GuardianConsentPurpose);
+            var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var link = $"/guardianConsent?userid={user.Id}&token={encoded}";
+            var html = emailService.GenerateGuardianConsentHTMLTemplate(link, user.DisplayName!);
+            var (sent, _) = await emailService.SendEmailAsync(user.GuardianEmail!, "Guardian", "Guardian Consent", html);
+            return sent;
         }
         private async Task<Result<string>> SendEmailVerificationAsync(string email)
         {
