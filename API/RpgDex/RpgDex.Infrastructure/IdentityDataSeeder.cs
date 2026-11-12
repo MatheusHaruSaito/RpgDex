@@ -12,7 +12,7 @@ namespace RpgDex.Infrastructure
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            string[] roleNames = { "Admin", "User" };
+            string[] roleNames = { "Admin", "User", "Owner" };
             foreach (var roleName in roleNames)
             {
                 if(!await roleManager.RoleExistsAsync(roleName)){
