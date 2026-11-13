@@ -85,18 +85,31 @@
 
   <!-- TOOLBAR LATERAL DE FERRAMENTAS -->
   <div class="canvas-ui canvas-toolbar">
-    <!-- Seletor de Cores -->
-    <div class="toolbar-group" *ngIf="isCampaignActive">
-      <div class="color-swatch" title="Escolher Cor da Ferramenta">
-        <input
-          type="color"
-          [(ngModel)]="selectedColor"
-          [ngModelOptions]="{ standalone: true }"
-          (ngModelChange)="onColorChange($event)"
-          [disabled]="!isCampaignActive"
-          class="color-native-input"
-        />
+    <!-- Seletor de Cores (ngx-color Sketch) -->
+    <div class="toolbar-group color-picker-wrapper" *ngIf="isCampaignActive">
+      <button
+        type="button"
+        class="color-swatch"
+        [class.is-open]="isColorPickerOpen"
+        (click)="toggleColorPicker($event)"
+        [disabled]="!isCampaignActive"
+        title="Seletor de Cores"
+      >
         <div class="color-preview-btn" [style.backgroundColor]="selectedColor"></div>
+      </button>
+
+      <div
+        class="ngx-color-popover"
+        *ngIf="isColorPickerOpen"
+        (pointerdown)="$event.stopPropagation()"
+      >
+        <color-sketch
+          [color]="selectedColor"
+          [presetColors]="presetColors"
+          [disableAlpha]="true"
+          [width]="220"
+          (onChangeComplete)="handleSketchColorChange($event)"
+        ></color-sketch>
       </div>
     </div>
 
@@ -395,17 +408,14 @@
 
             <div class="form-group">
               <label>Cor de Borda / Fundo:</label>
-              <div class="color-picker-row">
-                <div class="color-swatch">
-                  <input
-                    type="color"
-                    [(ngModel)]="customTokenColor"
-                    [ngModelOptions]="{ standalone: true }"
-                    class="color-native-input"
-                  />
-                  <div class="color-preview-btn" [style.backgroundColor]="customTokenColor"></div>
-                </div>
-                <span class="color-hex-text">{{ customTokenColor }}</span>
+              <div class="ngx-token-picker-box">
+                <color-sketch
+                  [color]="customTokenColor"
+                  [presetColors]="presetColors"
+                  [disableAlpha]="true"
+                  [width]="240"
+                  (onChangeComplete)="handleCustomTokenSketchChange($event)"
+                ></color-sketch>
               </div>
             </div>
 
@@ -550,11 +560,12 @@
       </svg>
 
       <!-- RENDER CULLING DA MESA -->
-      <ng-container *ngFor="let el of visibleElements">
+      <ng-container *ngFor="let el of visibleElements; trackBy: trackByElementId">
         <!-- DESENHOS -->
         <svg
           *ngIf="el.elementType === CanvasElementType.Drawing"
           class="board-element type-drawing"
+          [attr.data-element-id]="el.id"
           [style.z-index]="el.z"
           (pointerdown)="onElementDown($event, el)"
         >
@@ -582,6 +593,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Token"
           class="board-element type-token"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [class.name-hidden]="el.hideName"
@@ -602,6 +614,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Text"
           class="board-element type-text"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [style.left.px]="el.x"
@@ -618,6 +631,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Image"
           class="board-element type-image"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [class.is-round-image]="el.isRound"

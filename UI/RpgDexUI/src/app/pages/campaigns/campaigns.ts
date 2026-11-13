@@ -12,6 +12,7 @@ import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ReportModalComponent } from '../../modals/report-modal/report-modal';
 import { ReportType } from '../../../models/reportType';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { RecentSortUtil } from '../../utils/recent-sort.util';
 
 @Component({
   selector: 'app-campaigns',
@@ -108,7 +109,7 @@ export class CampaignsComponent implements OnInit {
     this.campaignService.GetAllByUserPage(this.campaingPageCount, this.campaingsPerPage).subscribe({
       next: (result) => {
         const fetched = result.data?.campaigns ?? [];
-        this.myCampaigns.push(...fetched);
+        this.myCampaigns = RecentSortUtil.sortByMostRecent([...this.myCampaigns, ...fetched]);
         if (result.data?.campaignGameMasterLength !== undefined) {
           this.campaignGameMasterLength = result.data.campaignGameMasterLength;
         }
@@ -134,7 +135,7 @@ export class CampaignsComponent implements OnInit {
       next: (r) => {
         const campaigns = r.data?.campaigns ?? [];
         this.showMoreButton = campaigns.length > this.campaingsPerPage - 1;
-        this.myCampaigns = campaigns;
+        this.myCampaigns = RecentSortUtil.sortByMostRecent(campaigns);
         this.campaignGameMasterLength =
           r.data?.campaignGameMasterLength ??
           campaigns.filter((c) => c.gameMasterId === this.currentUserId).length;
@@ -154,12 +155,15 @@ export class CampaignsComponent implements OnInit {
 
   private loadCharacters(): void {
     this.isLoadingCharacters = true;
-    this.characterService.GetAllByPage(1, this.showCharactersCount).subscribe({
+    this.characterService.GetAllByPage(1, 50).subscribe({
       next: (r) => {
         const all = r.data?.characters ?? [];
         const filtered = all.filter((c) => c.userId === this.currentUserId);
 
-        this.myCharacters = this.sortByLastAccessed(filtered);
+        this.myCharacters = RecentSortUtil.sortByMostRecent(filtered).slice(
+          0,
+          this.showCharactersCount,
+        );
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
@@ -167,16 +171,6 @@ export class CampaignsComponent implements OnInit {
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-    });
-  }
-
-  // --- LÓGICA DE ÚLTIMO ACESSO ---
-  private sortByLastAccessed(chars: Character[]): Character[] {
-    return [...chars].sort((a, b) => {
-      const timeA = a.lastAccess ? new Date(a.lastAccess).getTime() : 0;
-      const timeB = b.lastAccess ? new Date(b.lastAccess).getTime() : 0;
-
-      return timeB - timeA;
     });
   }
 

@@ -176,12 +176,11 @@
   top: calc(var(--ui-gap) * 2 + var(--panel-h));
   left: var(--ui-gap);
   max-height: calc(100% - var(--ui-gap) * 3 - var(--panel-h));
-  padding: 2px 10px 12px 2px;
+  padding: 2px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   z-index: 1010;
 }
 .canvas-toolbar::-webkit-scrollbar { width: 4px; }
@@ -190,7 +189,11 @@
   border-radius: 4px;
 }
 
-/* ── SELETOR DE CORES ── */
+/* ── SELETOR DE CORES (NGX-COLOR SKETCH) ── */
+.color-picker-wrapper {
+  position: relative;
+}
+
 .color-swatch {
   position: relative;
   flex-shrink: 0;
@@ -198,39 +201,89 @@
   height: var(--ui-btn);
   display: grid;
   place-items: center;
+  border: none;
+  background: transparent;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
 }
-.color-swatch:hover { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15)); }
-
-.color-native-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 2;
+.color-swatch:hover,
+.color-swatch.is-open {
+  background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.2));
 }
 
 .color-preview-btn {
   width: calc(var(--ui-btn) - 14px);
   height: calc(var(--ui-btn) - 14px);
   border-radius: 50%;
-  border: 2px solid var(--rpg-border, #ffffff);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   transition: transform 0.2s;
   pointer-events: none;
 }
 .color-swatch:hover .color-preview-btn { transform: scale(1.1); }
 
-.color-picker-row { display: flex; align-items: center; gap: 12px; }
-.color-hex-text {
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--rpg-text-strong, #ffffff);
+.ngx-color-popover {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 12px);
+  z-index: 1200;
+  animation: colorPopoverIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes colorPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.ngx-token-picker-box {
+  display: inline-block;
+}
+
+/* Estilização Dark RPGDex para o ngx-color <color-sketch> */
+::ng-deep .sketch-picker {
+  background: var(--rpg-surface, #252342) !important;
+  border: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.16)) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
+  padding: 12px 12px 6px !important;
+  font-family: 'Exo 2', sans-serif !important;
+}
+
+::ng-deep .sketch-picker .sketch-saturation {
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+::ng-deep .sketch-picker .sketch-fields input {
+  background: var(--rpg-surface-2, #18162e) !important;
+  color: var(--rpg-text-strong, #ffffff) !important;
+  border: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.16)) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-family: 'Exo 2', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+::ng-deep .sketch-picker .sketch-fields label {
+  color: var(--rpg-text-muted, #a0a0cc) !important;
+  font-weight: 700 !important;
+}
+
+::ng-deep .sketch-picker .sketch-presets {
+  border-top: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.12)) !important;
+  padding-top: 10px !important;
+}
+
+::ng-deep .sketch-picker .sketch-presets-color {
+  border-radius: 50% !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
 }
 
 /* ── MENU DE CONTEXTO ── */
@@ -652,11 +705,16 @@ image-cropper { max-height: 400px; width: 100%; }
     padding: 2px;
     flex-direction: row;
     align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
   }
   .canvas-toolbar::-webkit-scrollbar { display: none; }
   .toolbar-group { flex-direction: row; flex-shrink: 0; }
+
+  .ngx-color-popover {
+    top: auto;
+    bottom: calc(100% + 12px);
+    left: 0;
+  }
 
   .context-menu {
     bottom: calc(var(--ui-gap) * 2 + var(--panel-h) + env(safe-area-inset-bottom, 0px));

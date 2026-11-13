@@ -15,6 +15,7 @@ import { SettingsModalComponent } from '../../modals/settings-modal/settings-mod
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { RecentSortUtil } from '../../utils/recent-sort.util';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
@@ -213,10 +214,11 @@ export class ProfileComponent implements OnInit {
 
   private loadCharacterPreview(): void {
     this.isLoadingCharacters = true;
-    this.characterService.GetAllByPage(1, 3).subscribe({
+    this.characterService.GetAllByPage(1, 50).subscribe({
       next: (response) => {
-        this.characterPreview = response.data?.characters ?? [];
-        this.characterTotal = response.data?.characterLength ?? this.characterPreview.length;
+        const all = response.data?.characters ?? [];
+        this.characterPreview = RecentSortUtil.sortByMostRecent(all).slice(0, 3);
+        this.characterTotal = response.data?.characterLength ?? all.length;
         this.maxCharacters = response.data?.maxCharacters ?? 0;
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
@@ -238,7 +240,7 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isLoadingCampaigns = true;
-    this.campaignService.GetAllByUserPage(0, 3).subscribe({
+    this.campaignService.GetAllByUserPage(0, 50).subscribe({
       next: (response) => {
         const allCampaigns: Campaign[] = response.data?.campaigns ?? [];
         this.campaignGameMasterLength =
@@ -249,7 +251,9 @@ export class ProfileComponent implements OnInit {
           allCampaigns.filter((c) => c.gameMasterId !== userId).length;
         this.maxCampaigns = response.data?.maxCampaigns ?? 0;
 
-        this.campaignPreview = allCampaigns.map((c) => ({
+        const sortedCampaigns = RecentSortUtil.sortByMostRecent(allCampaigns).slice(0, 3);
+
+        this.campaignPreview = sortedCampaigns.map((c) => ({
           id: c.id,
           title: c.title,
           role: c.gameMasterId === userId ? 'Mestre' : 'Jogador',

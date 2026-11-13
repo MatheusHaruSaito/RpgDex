@@ -21,6 +21,7 @@ import { InfoHintComponent } from '../../components/info-hint/info-hint';
 import { ReportModalComponent } from '../../modals/report-modal/report-modal';
 import { ReportType } from '../../../models/reportType';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+
 @Component({
   selector: 'app-campaign-detail',
   standalone: true,
@@ -167,7 +168,15 @@ export class CampaignDetailComponent implements OnInit {
           this.isPlayerInCampaign =
             !!this.campaign.playerIds?.includes(this.currentUserId) || this.isGameMaster;
 
-          this.requireApproval = this.campaign.requireApprovalForCharacters ?? true;
+          const apiApproval =
+            (this.campaign as any).requireApprovalForCharacters ??
+            (this.campaign as any).RequireApprovalForCharacters;
+
+          if (typeof apiApproval === 'boolean') {
+            this.requireApproval = apiApproval;
+          } else if (!isSilentReload) {
+            this.requireApproval = true;
+          }
 
           this.loadUsersInfo();
           this.loadApprovedCharacters();
@@ -365,7 +374,6 @@ export class CampaignDetailComponent implements OnInit {
     const charId = customCharId || this.selectedCharacterId;
     if (!this.campaign || !charId || this.isSubmittingCharacter) return;
 
-    // Evita enviar um personagem que já está pendente ou aprovado na campanha
     const alreadyInCampaign =
       this.pendingCharacters.some((c) => c.id === charId) ||
       this.approvedCharacters.some((c) => c.id === charId);
@@ -521,6 +529,9 @@ export class CampaignDetailComponent implements OnInit {
     this.campaignService.UpdateSettings(request).subscribe({
       next: () => {
         this.isTogglingApproval = false;
+        if (this.campaign) {
+          this.campaign.requireApprovalForCharacters = this.requireApproval;
+        }
         this.showFeedback(
           this.requireApproval
             ? 'Aprovação manual ativada com sucesso!'
