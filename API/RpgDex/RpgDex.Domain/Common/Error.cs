@@ -66,6 +66,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error CharacterRemoveFailed = new("CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS", "Failed to remove character from campaigns");
 
         public static readonly Error QuantityExceed = new("CAMPAIGN_QUANTITY_EXCEED", "Failed to create campaign, maximum campaign reached"); 
+        public static readonly Error ChartNotFound = new("CAMPAIGN_CHART_NOT_FOUND", "Campaign Chart Not Found");
     }
 
     public static class CharacterError
@@ -77,12 +78,17 @@ namespace RpgDex.Domain.Common
         public static readonly Error UpdateFailed = new("CHARACTER_UPDATE_FAILED", "It was not possible to update character.");
         public static readonly Error UpdateLastAccessFailed = new("CHARACTER_UPDATE_LAST_ACCESS_FAILED", "Failed to update last access time.");
         public static readonly Error LimitExceed = new("CHARACTER_QUANTITY_EXCEED", "Failed to create character, maximum character quantity exceed");
+        public static readonly Error CharacterChartNotFound = new("CHARACTER_CHART_NOT_FOUND", "Character Chart Not Found");
 
     }
 
     public static class UserError
     {
         public static readonly Error UpdateFailed = new("USER_UPDATE_FAILED", "Failed to update user profile.");
+        public static readonly Error BanFailed = new("USER_BAN_FAILED", "Failed to ban the user.");
+        public static readonly Error UserIsBanned = new("USER_IS_BANNED", "This user account is banned.");
+        public static readonly Error UserChartNotFound = new("USER_CHART_NOT_FOUND", "User Chart Not Found");
+
         public static Error IdentityError(string description) => new("USER_IDENTITY_ERROR", description);
     }
 
@@ -96,7 +102,13 @@ namespace RpgDex.Domain.Common
         public static readonly Error UploadFailed = new("USER_DOCUMENT_UPLOAD_FAILED", "Failed to upload file.");
         public static readonly Error LimitExceed = new("USER_DOCUMENT_LIMIT_SIZE_EXCEED", "Failed to upload file, maximum storage exceed"); 
     }
-
+    public static class ReportError
+    {
+        public static readonly Error NotFound = new("REPORT_NOT_FOUND", "Report not found.");
+        public static readonly Error CreateFailed = new("REPORT_CREATE_FAILED", "Failed to create report.");
+        public static readonly Error UpdateFailed = new("REPORT_UPDATE_FAILED", "Failed to update report.");
+        public static readonly Error CloseFailed = new("REPORT_CLOSE_FAILED", "Failed to close report.");
+    }
     public static class DiceLogError
     {
         public static readonly Error AddRollFailed = new("DICE_LOG_ADD_ROLL_FAILED", "Failed to save dice roll to the campaign log.");
@@ -143,6 +155,15 @@ namespace RpgDex.Domain.Common
         public const string GuardianCpfInvalid = "GUARDIAN_CPF_INVALID";
         public const string GuardianCpfSameAsUser = "GUARDIAN_CPF_SAME_AS_USER";
         public const string GuardianEmailEmpty = "GUARDIAN_EMAIL_EMPTY";
+        public const string ReportTitleEmpty = "REPORT_TITLE_EMPTY";
+        public const string ReportDescriptionEmpty = "REPORT_DESCRIPTION_EMPTY";
+        public const string ReportTargetEmpty = "REPORT_TARGET_EMPTY";
+        public const string ReportTypeInvalid = "REPORT_TYPE_INVALID";
+        public const string ReportTooManyImages = "REPORT_TOO_MANY_IMAGES";
+        public const string ImageEmpty = "IMAGE_EMPTY";
+        public const string ImageTooLarge = "IMAGE_TOO_LARGE";
+        public const string ImageInvalidFormat = "IMAGE_INVALID_FORMAT";
+        public const string ImageInvalidExtension = "IMAGE_INVALID_EXTENSION";
     }
     public static class CanvaElementError
     {

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Identity;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Interfaces;
-using RpgDex.Application.Validators;
 using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
@@ -53,7 +52,7 @@ namespace RpgDex.Application.Services
             if (!Guid.TryParse(userId, out var guidUserId)) return Result<CampaignResponse>.Failure(Error.InvalidUserId);
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var campaigns = await campaignQueries.GetAllAsync(guidUserId, 1, userLimits.Value!.CampaignQty+1);
-            if(campaigns.Total >= userLimits.Value!.CampaignQty)
+            if(campaigns.TotalGameMaster >= userLimits.Value!.CampaignQty)
             {
                return Result<CampaignResponse>.Failure(CampaignError.QuantityExceed);
             }
@@ -102,7 +101,7 @@ namespace RpgDex.Application.Services
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var maxCampaigns = userLimits.Value!.CampaignQty;
             var result = await campaignQueries.GetAllAsync(guidUserId, 1, maxCampaigns);
-            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.TotalGameMaster,result.TotalPlayer);
             return Result<GetAllCampaignResponse>.Success(response);
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSize)
@@ -117,7 +116,7 @@ namespace RpgDex.Application.Services
             var result = await campaignQueries.GetAllAsync(guidUserId, page, pageSize);
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var maxCampaigns = userLimits.Value!.CampaignQty;
-            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.TotalGameMaster,result.TotalPlayer);
             return Result<GetAllCampaignResponse>.Success(response);
         }
 
@@ -768,9 +767,17 @@ namespace RpgDex.Application.Services
         private static string BuildMessage(DiceRoll roll)
         {
             var total = roll.Entires.Select(e => e.Total).Sum();
-            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total,2)}");
+            var lines = roll.Entires.Select(e => $"{e.Breakdown} = {Math.Round(e.Total, 2)}");
             return $"{string.Join("\n", lines)}\n -> {Math.Round(total)}";
-
+        }
+        public async Task<Result<ChartResponse>> GetCampaignChart(DateTime startDate, DateTime endDate)
+        {
+            var result = await campaignQueries.GetCampaignChart(startDate, endDate);
+            if (result is null)
+            {
+                Result<ChartResponse>.Failure(CampaignError.ChartNotFound);
+            }
+            return Result<ChartResponse>.Success(result!);
         }
     }
 }

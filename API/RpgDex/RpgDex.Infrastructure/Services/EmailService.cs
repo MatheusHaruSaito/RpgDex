@@ -443,8 +443,108 @@ namespace RpgDex.Infrastructure.Services
         </html>";
     }
 
-        public string GenerateGuardianConsentHTMLTemplate(string link, string userName)
-        {
+    public string GenerateEmailUserPunishmentHTMLTemplate(DateTimeOffset lockoutEnd, string userName)
+    {
+      var formattedDate = lockoutEnd.UtcDateTime.ToString("dd/MM/yyyy 'às' HH:mm:ss") + " UTC";
+
+      return $@"<!DOCTYPE html>
+<html lang=""pt-BR"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>Notificação de Penalidade — RPGDex</title>
+</head>
+<body style=""margin:0;padding:0;background-color:#f4f2fb;font-family:'Segoe UI',Arial,sans-serif;"">
+
+  <table width=""100%"" cellpadding=""0"" cellspacing=""0"" style=""background-color:#f4f2fb;padding:40px 20px;"">
+    <tr>
+      <td align=""center"">
+        <table width=""100%"" cellpadding=""0"" cellspacing=""0""
+               style=""max-width:520px;background:#ffffff;border-radius:20px;
+                       box-shadow:0 8px 40px rgba(100,60,200,0.12);overflow:hidden;"">
+
+          <!-- Header gradiente -->
+          <tr>
+            <td style=""background:linear-gradient(135deg,#7c3aed,#a855f7);
+                        padding:40px 40px 32px;text-align:center;"">
+              <p style=""margin:0;font-family:'Segoe UI',Arial,sans-serif;
+                         font-weight:900;font-size:2rem;color:#ffffff;
+                         letter-spacing:-1px;"">RPGDex</p>
+              <p style=""margin:10px 0 0;font-size:0.9rem;color:rgba(255,255,255,0.8);"">
+                Sua plataforma de campanhas e fichas
+              </p>
+            </td>
+          </tr>
+
+          <!-- Corpo -->
+          <tr>
+            <td style=""padding:40px 40px 32px;"">
+
+              <!-- Ícone de Alerta/Martelo de Punição -->
+              <div style=""text-align:center;margin-bottom:24px;"">
+                <div style=""display:inline-block;width:72px;height:72px;
+                             border-radius:50%;background:#fff5f5;
+                             border:3px solid #e53e3e;line-height:72px;
+                             font-size:2rem;color:#e53e3e;text-align:center;"">
+                  ⚖️
+                </div>
+              </div>
+
+              <h1 style=""margin:0 0 8px;font-size:1.5rem;font-weight:800;
+                          color:#1a1033;text-align:center;"">
+                Aviso de Penalidade
+              </h1>
+              <p style=""margin:0 0 24px;font-size:1rem;color:#555;
+                         text-align:center;line-height:1.6;"">
+                Olá, <strong style=""color:#7c3aed;"">{userName}</strong>!<br>
+                Sua conta sofreu uma suspensão temporária devido a uma violação das nossas diretrizes de comunidade.
+              </p>
+
+              <!-- Caixa Destaque de Expiração -->
+              <div style=""text-align:center;margin:32px 0;"">
+                <div style=""display:inline-block;padding:16px 28px;
+                            background:#fff5f5;border:2px dashed #e53e3e;
+                            border-radius:12px;"">
+                  <p style=""margin:0 0 6px;font-size:0.85rem;font-weight:700;
+                             color:#e53e3e;text-transform:uppercase;letter-spacing:0.05em;"">
+                    Acesso suspenso até:
+                  </p>
+                  <span style=""font-family:monospace,'Courier New',Courier;
+                               font-size:1.2rem;font-weight:900;color:#c53030;"">
+                    {formattedDate}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Orientação -->
+              <p style=""margin:0 0 20px;font-size:0.85rem;color:#718096;
+                         text-align:center;line-height:1.5;"">
+                Após essa data e horário, o seu acesso à plataforma será reestabelecido automaticamente. Se você acredita que isso foi um engano, entre em contato com nossa equipe de suporte.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style=""background:#f8f6ff;padding:20px 40px;text-align:center;
+                        border-top:1px solid #ede9f8;"">
+              <p style=""margin:0;font-size:0.8rem;color:#aaa;line-height:1.6;"">
+                © {DateTime.UtcNow.Year} RPGDex · Este é um email automático, não responda.<br>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>";
+    }
+    public string GenerateGuardianConsentHTMLTemplate(string link, string userName)
+    {
             return $@"<!DOCTYPE html>
         <html lang=""pt-BR"">
         <head>
@@ -461,6 +561,7 @@ namespace RpgDex.Infrastructure.Services
                  </ strong >.
             </ p >
         </body>";
-        }
     }
+
+  }
 }

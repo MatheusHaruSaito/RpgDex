@@ -1,9 +1,5 @@
 ﻿using RpgDex.Domain.Common;
 using RpgDex.Application.Dto;
-using RpgDex.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RpgDex.Application.Interfaces
 {
@@ -12,6 +8,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<CharacterResponse>> Create(string userId,CreateCharacterRequest request);
         Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId);
         Task<Result<GetAllCharacterResponse>> GetAllByUserIdAsync(string userId, int page = 1, int pageSize = 3);
+        Task<Result<ChartResponse>> GetCharacterChart(DateTime startDate, DateTime endDate);
         Task<Result<GetAllCharacterResponse>> GetAllFromCampaign(string userId,Guid campaignId);
 
         Task<Result<CharacterResponse>> GetByIdAsync(Guid Id);

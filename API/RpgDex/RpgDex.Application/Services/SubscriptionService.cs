@@ -14,10 +14,10 @@ namespace RpgDex.Application.Services
     {
         private static readonly PlanLimitsDTO FreeLimits = new(
             HasEarlyAccess: false,
-            CharacterQty: 10,
-            CampaignQty: 3,
-            DocumentsSpaceMB: 10,
-            CanvasSpaceMb: 15);
+            CharacterQty: 3,
+            CampaignQty: 1,
+            DocumentsSpaceMB: 100,
+            CanvasSpaceMb: 100);
         public async Task ExpireOverdueAsync()
         {
             var expired = await subscriptionRepository.GetExpiredAsync();

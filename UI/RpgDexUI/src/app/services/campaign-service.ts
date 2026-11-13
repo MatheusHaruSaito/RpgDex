@@ -15,6 +15,7 @@ import { CampaignSetActiveStateRequest } from '../../models/campaignSetActiveSta
 import { GetAllCampaignResponse } from '../../models/getAllCampaignResponse';
 import { LeaveCampaignRequest } from '../../models/leaveCampaignRequest';
 import { RemoveCharacterFromCapaignRequest } from '../../models/removecharacterFromCapaignRequest';
+import { ChartResponse } from '../../models/chartResponse';
 import { DiceRollsLogResult } from '../../models/diceRollsLogResult';
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,13 @@ export class CampaignService {
     return this.http.get<ApiResponse<GetAllCampaignResponse>>(
       `${this.env}/All/${page}/${pageSize}`,
     );
+  }
+  public GetCharacterChart(
+    startDate: string,
+    endDate: string,
+  ): Observable<ApiResponse<ChartResponse>> {
+    const params: Record<string, string> = { startDate, endDate };
+    return this.http.get<ApiResponse<ChartResponse>>(`${this.env}/admin/chart`, { params });
   }
   GetById(Id: String): Observable<ApiResponse<Campaign>> {
     return this.http.get<ApiResponse<Campaign>>(`${this.env}/${Id}`);

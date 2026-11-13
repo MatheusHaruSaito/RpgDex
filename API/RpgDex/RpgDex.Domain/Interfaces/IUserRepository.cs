@@ -11,6 +11,7 @@ namespace RpgDex.Domain.Interfaces
         Task<bool> PullCharacterAsync(Guid userId, Guid characterId);
         Task<ApplicationUser> GetByIdAsync(Guid userId);
         Task<bool> ExistsByCpfHashAsync(string cpfHash, Guid excludeUserId);
+        Task<IEnumerable<ApplicationUser>> GetAllByEmailOrUserNameAsync(string target, int page, int pageSize);
 
     }
 }

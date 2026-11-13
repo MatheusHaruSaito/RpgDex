@@ -156,6 +156,30 @@
   margin-right: 4px;
 }
 
+.cmp-card__report-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(231, 76, 60, 0.85);
+  color: #ffffff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.cmp-card__report-btn:hover {
+  transform: scale(1.1);
+  background: var(--rpg-error, #e74c3c);
+}
+
 /* ── VAZIO ── */
 .cmp-empty {
   display: flex;
@@ -534,6 +558,8 @@
 .fade-in-content {
   animation: fadeIn 0.3s ease-in-out forwards;
 }
+
+
 
 @keyframes fadeIn {
   from {

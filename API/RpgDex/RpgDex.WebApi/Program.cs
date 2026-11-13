@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using RpgDex.Application;
+using RpgDex.Application.Interfaces;
 using RpgDex.Application.Mapping;
 using RpgDex.Domain.Entities;
 using RpgDex.Infrastructure;
@@ -13,24 +14,35 @@ var builder = WebApplication.CreateBuilder(args);
 BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
 
 var baseUrl = builder.Configuration["ApiSettings:BaseUrl"] ?? "http://localhost:8080";
-MappingConfig.Configure(baseUrl);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.AddInfrastructureServices(builder.Configuration);
-builder.Services.AddApplicationServices();
+builder.Services.AddApplicationServices(builder.Configuration);
 
 //builder.Services.AddOptions();
 
 var app = builder.Build();
+MappingConfig.Configure(app.Services.GetRequiredService<IFileUrlBuilder>());
 
 using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<IMongoDatabase>();
     var users = database.GetCollection<ApplicationUser>("applicationUsers");
     await UserIndexes.EnsureAsync(users);
+    
+    var services = scope.ServiceProvider;
+    try
+    {
+        await IdentityDataSeeder.SeedRoleAsync(services);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An Error has occured while seeding roles in database");
+    }
 }
 
 app.UseForwardedHeaders();

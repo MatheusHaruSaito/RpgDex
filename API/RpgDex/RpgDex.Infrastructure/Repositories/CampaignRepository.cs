@@ -13,10 +13,12 @@ namespace RpgDex.Infrastructure.Repositories
     {
         private readonly MongoDbContext _context;
         private readonly IMongoCollection<Campaign> _entity;
+        private readonly IMongoCollection<ApplicationUser> _userEntity;
         public CampaignRepository(MongoDbContext context)
         {
             _context = context;
             _entity = context.Campaigns;
+            _userEntity = context.Users;
         }
         public async Task<Campaign> InsertAsync(Campaign campaign)
         {
@@ -74,6 +76,46 @@ namespace RpgDex.Infrastructure.Repositories
             var update = Builders<Campaign>.Update
                 .Pull("CharacterIds", characterId)
                 .Pull("CharacterRequests", characterId);
+
+            var result = await _entity.UpdateManyAsync(filter, update);
+
+            return result.IsAcknowledged;
+        }
+        public async Task<bool> SetAllActiveStateByUserId(Guid userId, bool ActiveState)
+        {
+            var filter = Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId);
+            var updatedCampaign = Builders<Campaign>.Update
+                .Set(c => c.IsActive, ActiveState);
+
+            var result = await _entity.UpdateManyAsync(filter, updatedCampaign);
+            return result.MatchedCount > 0;
+        }
+        public async Task<bool> RemoveUserFromCampaigns(Guid userId)
+        {
+            var filter = Builders<Campaign>.Filter.AnyEq("PlayerIds", userId);
+            var updatedCampaign = Builders<Campaign>.Update
+                .Pull("PlayerIds", userId);
+
+            var result = await _entity.UpdateManyAsync(filter, updatedCampaign);
+            return result.MatchedCount > 0;
+        }
+        public async Task<bool> RemoveAllCharactersFromCampaignsByUserId(Guid userId)
+        {
+            var characterIds = await _userEntity
+                .Find(u => u.Id == userId)
+                .Project(u => u.CharactersId)
+                .FirstOrDefaultAsync();
+
+            if (characterIds is null || characterIds.Count == 0)
+                return true;
+
+            var filter = Builders<Campaign>.Filter.Or(
+                Builders<Campaign>.Filter.AnyIn("CharacterIds", characterIds),
+                Builders<Campaign>.Filter.AnyIn("CharacterRequests", characterIds));
+
+            var update = Builders<Campaign>.Update
+                .PullAll("CharacterIds", characterIds)
+                .PullAll("CharacterRequests", characterIds);
 
             var result = await _entity.UpdateManyAsync(filter, update);
 

@@ -50,6 +50,7 @@
     "CAMPAIGN_PLAYER_NOT_IN_CAMPAIGN": "The player is not part of this campaign.",
     "CAMPAIGN_FAILED_TO_REMOVE_FROM_CAMPAIGNS": "Failed to remove character from campaigns",
     "CAMPAIGN_QUANTITY_EXCEED": "Failed to create campaign, maximum campaign reached",
+    "CAMPAIGN_CHART_NOT_FOUND": "Campaign Chart Not Found",
 
     "CHARACTER_NOT_FOUND": "Character not found.",
     "CHARACTER_NOT_OWNED": "Character does not belong to the logged-in user.",
@@ -58,9 +59,13 @@
     "CHARACTER_UPDATE_FAILED": "It was not possible to update character.",
     "CHARACTER_UPDATE_LAST_ACCESS_FAILED": "Failed to update last access time.",
     "CHARACTER_QUANTITY_EXCEED": "Failed to create character, maximum character quantity exceed",
+    "CHARACTER_CHART_NOT_FOUND": "Character Chart Not Found",
 
     "USER_UPDATE_FAILED": "Failed to update user profile.",
+    "USER_BAN_FAILED": "Failed to ban the user.",
+    "USER_IS_BANNED": "This user account is banned.",
     "USER_IDENTITY_ERROR": "An error occurred with user identity validation.",
+    "USER_CHART_NOT_FOUND": "User Chart Not Found",
 
     "USER_DOCUMENT_NOT_FOUND": "User document not found.",
     "USER_DOCUMENT_NOT_OWNED": "You are not the owner of this document.",
@@ -69,6 +74,11 @@
     "USER_DOCUMENT_UPDATE_FAILED": "Failed to update user document.",
     "USER_DOCUMENT_UPLOAD_FAILED": "Failed to upload file.",
     "USER_DOCUMENT_LIMIT_SIZE_EXCEED": "Failed to upload file, maximum storage exceed",
+
+    "REPORT_NOT_FOUND": "Report not found.",
+    "REPORT_CREATE_FAILED": "Failed to create report.",
+    "REPORT_UPDATE_FAILED": "Failed to update report.",
+    "REPORT_CLOSE_FAILED": "Failed to close report.",
 
     "DICE_LOG_ADD_ROLL_FAILED": "Failed to save dice roll to the campaign log.",
     "DICE_LOG_NOT_FOUND": "Dice roll log not found for this campaign.",
@@ -90,6 +100,24 @@
 
     "CANVAS_DUPLICATED_ITEMS": "The same element was sent more than once",
     "CANVAS_INVALID_SCALE": "Scale must be between 0.1 and 10",
+    "DOCUMENT_VALIDATION_FILE_REQUIRED": "Document file can't be empty.",
+    "CANVAS_INVALID_TYPE": "Invalid canvas element type.",
+    "CANVAS_INVALID_IMAGE": "Invalid canvas image.",
+    "CANVAS_INVALID_POINTS": "Invalid drawing points.",
+    "CANVAS_INVALID_VALUE": "Invalid value for this canvas element.",
+    "CANVAS_INVALID_COLOR": "Invalid color.",
+    "CANVAS_TOO_MANY_ITEMS": "Too many elements in the request.",
+    "REPORT_TITLE_EMPTY": "Title can't be empty.",
+    "REPORT_DESCRIPTION_EMPTY": "Description can't be empty.",
+    "REPORT_TARGET_EMPTY": "Report target can't be empty.",
+    "REPORT_TYPE_INVALID": "Invalid report type.",
+    "REPORT_TOO_MANY_IMAGES": "You can attach a maximum of 5 images.",
+    "IMAGE_EMPTY": "The image file is empty.",
+    "IMAGE_TOO_LARGE": "Each image must be at most 5 MB.",
+    "IMAGE_INVALID_FORMAT": "Invalid image format. Use JPG, PNG or WEBP.",
+    "IMAGE_INVALID_EXTENSION": "Invalid file extension. Use .jpg, .jpeg, .png or .webp.",
+    
+
     "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",

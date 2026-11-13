@@ -1,0 +1,545 @@
+.admin-wrapper {
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px 80px;
+  box-sizing: border-box;
+}
+
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: 'Nunito', sans-serif;
+}
+
+/* ── HEADER DA PÁGINA ADMIN ── */
+.admin-header-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 28px 36px;
+  box-shadow: var(--rpg-shadow-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.admin-title-group h1 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--rpg-text-dark);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-title-group h1 i {
+  color: var(--rpg-purple);
+}
+
+.admin-title-group p {
+  color: var(--rpg-text-muted);
+  margin: 4px 0 0 0;
+  font-size: 0.95rem;
+}
+
+/* ── ABAS DE NAVEGAÇÃO SUPERIOR / LATERAL ── */
+.admin-nav-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--rpg-surface-tint);
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid var(--rpg-border-light);
+}
+
+.admin-tab-btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--rpg-text-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+}
+
+.admin-tab-btn.active {
+  background: var(--rpg-purple);
+  color: #ffffff;
+  box-shadow: var(--rpg-shadow-btn);
+}
+
+/* ── LAYOUT DE REPORTES (SPLIT VIEW) ── */
+.reports-split-view {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Lista de Cards à Esquerda */
+.reports-list-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-item-card {
+  background: var(--rpg-surface);
+  border: 2px solid var(--rpg-border-light);
+  border-radius: 14px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.report-item-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--rpg-purple-soft);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.report-item-card.active {
+  border-color: var(--rpg-purple);
+  background: var(--rpg-purple-tint);
+  box-shadow: var(--rpg-shadow-card);
+}
+
+.report-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.report-item-title {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.report-item-desc {
+  font-size: 0.85rem;
+  color: var(--rpg-text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Painel Detalhado do Reporte à Direita */
+.report-detail-card {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--rpg-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.report-meta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-bottom: 1px solid var(--rpg-border-light);
+  padding-bottom: 16px;
+}
+
+.report-owner-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--rpg-text-body);
+}
+
+.report-owner-info strong {
+  color: var(--rpg-purple);
+  font-weight: 700;
+}
+
+.report-date-tag {
+  font-size: 0.82rem;
+  color: var(--rpg-text-faint);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.report-content-body h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--rpg-text-dark);
+  margin: 0 0 10px 0;
+}
+
+.report-description-box {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-size: 0.95rem;
+  color: var(--rpg-text-strong);
+  line-height: 1.6;
+}
+
+/* Card do Alvo Reportado */
+.report-target-box {
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.target-badge-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--rpg-purple);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  width: max-content;
+}
+
+.target-profile-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.target-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--rpg-purple);
+  flex-shrink: 0;
+}
+
+.target-avatar-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--rpg-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.target-details-text h4 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+}
+
+.target-details-text p {
+  font-size: 0.88rem;
+  color: var(--rpg-text-muted);
+  margin: 2px 0 0 0;
+}
+
+.report-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid var(--rpg-border-light);
+  padding-top: 20px;
+}
+
+/* ── ABA DE DASHBOARD & MÉTRICAS ── */
+.metrics-card-panel {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--rpg-shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chart-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-date-input {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-input);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  color: var(--rpg-text-strong);
+  transition: border-color 0.2s ease;
+}
+
+.admin-date-input:focus {
+  border-color: var(--rpg-purple);
+  outline: none;
+}
+
+/* ── GRÁFICO (CHART.JS) ── */
+.chart-canvas-wrapper {
+  background: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border);
+  border-radius: 14px;
+  padding: 24px;
+  height: 340px;
+  position: relative;
+}
+
+.metrics-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.stat-widget {
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stat-widget.success {
+  background: var(--rpg-success-bg);
+  border-color: var(--rpg-success-border);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--rpg-purple);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.stat-widget.success .stat-icon {
+  background: var(--rpg-success);
+}
+
+.stat-info span {
+  font-size: 0.82rem;
+  color: var(--rpg-text-muted);
+  font-weight: 700;
+  display: block;
+}
+
+.stat-info h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+}
+
+/* ── FILTRO ABERTOS / ENCERRADOS ── */
+.reports-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-toggle-btn {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 2px solid var(--rpg-border-light);
+  background: var(--rpg-surface);
+  color: var(--rpg-text-body);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle-btn:hover {
+  border-color: var(--rpg-purple-soft);
+  color: var(--rpg-purple);
+}
+
+.filter-toggle-btn.active {
+  background: var(--rpg-purple);
+  border-color: var(--rpg-purple);
+  color: #ffffff;
+  box-shadow: var(--rpg-shadow-btn);
+}
+
+/* ── BADGES DE STATUS ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badge-open {
+  background: var(--rpg-success-bg);
+  color: var(--rpg-success);
+  border: 1px solid var(--rpg-success-border);
+}
+
+.badge-closed {
+  background: var(--rpg-surface-tint);
+  color: var(--rpg-text-muted);
+  border: 1px solid var(--rpg-border-light);
+}
+
+/* ── ALVO INDISPONÍVEL ── */
+.report-target-missing {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 0.9rem;
+}
+
+/* ── PROVAS (IMAGENS) ── */
+.report-evidence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-evidence h3 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.evidence-thumb {
+  display: block;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--rpg-surface-2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evidence-thumb:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--rpg-shadow-sm);
+}
+
+.evidence-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Ações adicionais do reporte */
+.report-action-buttons .btn-outline-danger {
+  background: transparent;
+  color: #dc2626;
+  border: 2px solid #dc2626;
+}
+
+.report-action-buttons .btn-outline-danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Estados vazios / carregamento */
+.admin-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--rpg-text-muted);
+}
+
+.admin-empty-state i {
+  font-size: 2.5rem;
+  color: var(--rpg-purple-soft);
+  margin-bottom: 12px;
+}
+
+/* Responsividade */
+@media (max-width: 900px) {
+  .reports-split-view {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-header-card {
+    padding: 20px;
+  }
+  .report-detail-card, .metrics-card-panel {
+    padding: 20px;
+  }
+  .report-action-buttons {
+    flex-direction: column;
+  }
+  .report-action-buttons .btn {
+    width: 100%;
+  }
+}

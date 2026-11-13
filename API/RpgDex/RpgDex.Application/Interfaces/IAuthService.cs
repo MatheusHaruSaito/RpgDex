@@ -6,6 +6,7 @@ using RpgDex.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using RpgDex.Application.Dto.User;
 
 namespace RpgDex.Application.Interfaces
 {

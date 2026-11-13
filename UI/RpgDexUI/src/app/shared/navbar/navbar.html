@@ -1,3 +1,4 @@
+<!-- navbar.html -->
 <header class="site-header">
   <nav class="main-nav" aria-label="Navegação principal">
     <a class="logo" routerLink="/home" (click)="closeMenu()">RPGDex</a>
@@ -28,13 +29,31 @@
         <li><a routerLink="/home" routerLinkActive="active" (click)="closeMenu()">Início</a></li>
 
         @if (authService.isLoggedIn()) {
-          <li><a routerLink="/campanhas" routerLinkActive="active" (click)="closeMenu()">Jogar</a></li>
-          
+          <li>
+            <a routerLink="/campanhas" routerLinkActive="active" (click)="closeMenu()">Jogar</a>
+          </li>
+
           @if (hasEarlyAccess) {
-            <li><a routerLink="/biblioteca" routerLinkActive="active" (click)="closeMenu()">Biblioteca</a></li>
+            <li>
+              <a routerLink="/biblioteca" routerLinkActive="active" (click)="closeMenu()"
+                >Biblioteca</a
+              >
+            </li>
           }
 
-          <li><a routerLink="/planos" routerLinkActive="active" (click)="closeMenu()">Planos</a></li>
+          <li>
+            <a routerLink="/planos" routerLinkActive="active" (click)="closeMenu()">Planos</a>
+          </li>
+          <li>
+            <a routerLink="/biblioteca" routerLinkActive="active" (click)="closeMenu()"
+              >Biblioteca</a
+            >
+          </li>
+          @if (authService.isUserAdmin()) {
+            <li>
+              <a routerLink="/admin" routerLinkActive="active" (click)="closeMenu()">Admin</a>
+            </li>
+          }
         }
       </ul>
 
@@ -47,7 +66,7 @@
             (click)="closeMenu()"
             aria-label="Meu perfil"
           >
-            <img class="user-profile__img" [src]="userAvatarUrl" alt="Foto de perfil">
+            <img class="user-profile__img" [src]="userAvatarUrl" alt="Foto de perfil" />
           </a>
         } @else {
           <a
