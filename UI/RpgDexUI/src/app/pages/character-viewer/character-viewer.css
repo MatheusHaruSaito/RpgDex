@@ -49,7 +49,7 @@
   font-size: 1.35rem;
   color: var(--rpg-text-dark);
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .cv-desc {
@@ -59,7 +59,7 @@
   margin: 0;
   line-height: 1.5;
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .cv-desc--clamped {
@@ -82,7 +82,9 @@
   cursor: pointer;
 }
 
-.cv-desc-toggle:hover { text-decoration: underline; }
+.cv-desc-toggle:hover {
+  text-decoration: underline;
+}
 
 /* ── ESTADO VAZIO ── */
 .cv-sheet-empty {
@@ -110,16 +112,16 @@
 /* ── GRID DE GRUPOS ── */
 .cv-sheet-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
-  align-items: start;
+  align-items: stretch; /* Alinha a altura dos cards na mesma linha */
 }
 
 .cv-section-block {
   background: var(--rpg-surface);
   border: 1px solid var(--rpg-border-light);
   border-radius: 12px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -130,56 +132,96 @@
 .cv-section-title {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--rpg-purple);
   margin: 0;
   border-bottom: 1px dashed var(--rpg-border-purple);
-  padding-bottom: 6px;
-  overflow-wrap: anywhere;
+  padding-bottom: 8px;
+  overflow-wrap: break-word;
 }
 
-/* ── LISTA DE ENTRADAS: números/marcadores em blocos, o resto em linha cheia ── */
+/* ── LISTA DE ENTRADAS ── */
 .cv-entries {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 10px;
 }
 
-.cv-entry { min-width: 0; }
-.cv-entry--wide { grid-column: 1 / -1; }
+.cv-entry {
+  min-width: 0;
+}
+
+.cv-entry--wide {
+  grid-column: 1 / -1;
+}
 
 .cv-prop-key {
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--rpg-text-dark);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal; /* Evita quebrar palavras no meio como "Hac-kea-men-to" */
 }
 
-/* Texto simples */
+/* Texto simples (curto: lado a lado) */
 .cv-prop-chip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   background: var(--rpg-surface-tint);
-  padding: 7px 10px;
-  border-radius: 8px;
-  transition: background 0.15s ease;
+  border: 1px solid var(--rpg-border-light);
+  padding: 9px 12px;
+  border-radius: 10px;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.cv-prop-chip:hover { background: var(--rpg-purple-tint); }
+.cv-prop-chip:hover {
+  background: var(--rpg-purple-tint);
+  border-color: var(--rpg-border-purple);
+}
+
+.cv-prop-chip .cv-prop-key {
+  flex-shrink: 0;
+  max-width: 65%;
+}
 
 .cv-prop-val {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: var(--rpg-purple);
   text-align: right;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
   white-space: pre-wrap;
+}
+
+/* Texto longo em chave-valor (empilhado: título em cima, descrição embaixo) */
+.cv-prop-chip--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.cv-prop-chip--stacked .cv-prop-key {
+  max-width: 100%;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--rpg-purple);
+}
+
+.cv-prop-chip--stacked .cv-prop-val {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--rpg-text-body);
+  text-align: left;
 }
 
 /* Número (stat tile) */
@@ -202,36 +244,42 @@
   font-size: 1.5rem;
   line-height: 1.1;
   color: var(--rpg-text-dark);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .cv-stat-key {
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--rpg-purple);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
-/* Marcador */
+/* Marcador (alinhado com os demais blocos da coluna) */
 .cv-flag {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 999px;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
   background: var(--rpg-surface-tint);
   border: 1px solid var(--rpg-border-light);
   color: var(--rpg-text-faint);
   font-family: 'Nunito', sans-serif;
   font-weight: 700;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
 }
 
-.cv-flag i { font-size: 1rem; flex-shrink: 0; }
-.cv-flag-key { overflow-wrap: anywhere; }
+.cv-flag i {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.cv-flag-key {
+  overflow-wrap: break-word;
+}
 
 .cv-flag--on {
   background: var(--rpg-purple-tint);
@@ -239,7 +287,9 @@
   color: var(--rpg-text-dark);
 }
 
-.cv-flag--on i { color: #2e7d32; }
+.cv-flag--on i {
+  color: #2e7d32;
+}
 
 /* Barra de recurso */
 .cv-resource {
@@ -247,8 +297,9 @@
   flex-direction: column;
   gap: 6px;
   background: var(--rpg-surface-tint);
-  padding: 9px 10px;
-  border-radius: 8px;
+  border: 1px solid var(--rpg-border-light);
+  padding: 9px 12px;
+  border-radius: 10px;
 }
 
 .cv-resource-head {
@@ -271,11 +322,13 @@
   color: var(--rpg-text-dark);
 }
 
-.cv-res-sep { margin: 0 2px; }
+.cv-res-sep {
+  margin: 0 2px;
+}
 
 .cv-bar-bg {
   width: 100%;
-  height: 10px;
+  height: 9px;
   background: var(--rpg-border-light);
   border-radius: 5px;
   overflow: hidden;
@@ -288,14 +341,23 @@
   transition: width 0.4s ease, background 0.2s ease;
 }
 
-.cv-resource--warn .cv-bar-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.cv-resource--low .cv-bar-fill { background: linear-gradient(90deg, var(--rpg-error), #ff8a80); }
-.cv-resource--low .cv-resource-nums strong { color: var(--rpg-error); }
+.cv-resource--warn .cv-bar-fill {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.cv-resource--low .cv-bar-fill {
+  background: linear-gradient(90deg, var(--rpg-error), #ff8a80);
+}
+
+.cv-resource--low .cv-resource-nums strong {
+  color: var(--rpg-error);
+}
 
 /* Notas / texto longo */
 .cv-note {
   background: var(--rpg-surface-tint);
-  border-radius: 8px;
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -303,22 +365,29 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 10px;
+  padding: 9px 12px;
   cursor: pointer;
   list-style: none;
   user-select: none;
 }
 
-.cv-note summary::-webkit-details-marker { display: none; }
-.cv-note summary:hover { background: var(--rpg-purple-tint); }
+.cv-note summary::-webkit-details-marker {
+  display: none;
+}
+
+.cv-note summary:hover {
+  background: var(--rpg-purple-tint);
+}
 
 .cv-note-chevron {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--rpg-purple);
   transition: transform 0.15s ease;
 }
 
-.cv-note[open] .cv-note-chevron { transform: rotate(90deg); }
+.cv-note[open] .cv-note-chevron {
+  transform: rotate(90deg);
+}
 
 .cv-note-empty {
   margin-left: auto;
@@ -336,7 +405,7 @@
   line-height: 1.5;
   color: var(--rpg-text-body);
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 /* Acessibilidade */
@@ -359,22 +428,46 @@
 }
 
 /* Animação de entrada */
-.fade-in-content { animation: fadeInContent 0.25s ease-in-out forwards; }
+.fade-in-content {
+  animation: fadeInContent 0.25s ease-in-out forwards;
+}
 
 @keyframes fadeInContent {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fade-in-content { animation: none; }
-  .cv-bar-fill, .cv-note-chevron, .cv-prop-chip { transition: none; }
+  .fade-in-content {
+    animation: none;
+  }
+  .cv-bar-fill,
+  .cv-note-chevron,
+  .cv-prop-chip {
+    transition: none;
+  }
 }
 
 /* ── RESPONSIVIDADE ── */
 @media (max-width: 480px) {
-  .cv-header { flex-direction: column; align-items: center; text-align: center; }
-  .cv-details { align-items: center; }
-  .cv-desc-toggle { align-self: center; }
-  .cv-sheet-grid { grid-template-columns: 1fr; }
+  .cv-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .cv-details {
+    align-items: center;
+  }
+  .cv-desc-toggle {
+    align-self: center;
+  }
+  .cv-sheet-grid {
+    grid-template-columns: 1fr;
+  }
 }

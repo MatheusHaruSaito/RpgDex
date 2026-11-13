@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  Input,
-  OnChanges,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Character } from '../../../models/character';
 import { CharacterPropertyValueEnum } from '../../../models/CharacterPropertyValueEnum';
@@ -63,6 +57,10 @@ export class CharacterViewerComponent implements OnChanges {
 
   isTrue(val: string): boolean {
     return val === 'true' || val === '1';
+  }
+
+  isLongValue(entry: ViewEntry): boolean {
+    return (entry.value?.length ?? 0) > 28 || (entry.key?.length ?? 0) > 24;
   }
 
   // ── PARSER (mesmo contrato de dados do character-editor) ──

@@ -3,6 +3,8 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CampaignService } from '../../services/campaign-service';
 import { CharacterService } from '../../services/character-service';
 import { AuthService } from '../../services/auth-service';
@@ -19,7 +21,6 @@ import { InfoHintComponent } from '../../components/info-hint/info-hint';
 import { ReportModalComponent } from '../../modals/report-modal/report-modal';
 import { ReportType } from '../../../models/reportType';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
-
 @Component({
   selector: 'app-campaign-detail',
   standalone: true,
@@ -73,6 +74,15 @@ export class CampaignDetailComponent implements OnInit {
   selectedCharacterId = '';
   selectedGmCharacterId = '';
   copiedFeedback = false;
+
+  // ── TRAVAS DE REQUISIÇÃO (PREVENÇÃO DE SPAM / DUPLICIDADE) ──
+  isSubmittingCharacter = false;
+  isJoiningCampaign = false;
+  isTogglingState = false;
+  isTogglingApproval = false;
+  isLeavingCampaign = false;
+  processingCharacterIds = new Set<string>();
+  processingPlayerIds = new Set<string>();
 
   successMessage: string | null = null;
   errorMessage: string | null = null;
@@ -216,58 +226,74 @@ export class CampaignDetailComponent implements OnInit {
   }
 
   loadApprovedCharacters(): void {
-    if (!this.campaign?.characterIds || this.campaign.characterIds.length === 0) {
+    const uniqueIds = Array.from(new Set(this.campaign?.characterIds ?? []));
+    if (uniqueIds.length === 0) {
       this.approvedCharacters = [];
+      this.cdr.detectChanges();
       return;
     }
 
-    this.approvedCharacters = [];
-    this.campaign.characterIds.forEach((id) => {
-      this.characterService.GetById(id).subscribe({
-        next: (res) => {
-          if (res.data) {
-            this.approvedCharacters.push(res.data);
-            if (res.data.userId && !this.usersCache[res.data.userId]) {
-              this.userService.GetById(res.data.userId).subscribe({
-                next: (uRes) => {
-                  if (res?.data?.userId && uRes?.data) {
-                    this.usersCache[res.data.userId] = uRes.data;
-                  }
-                },
-              });
-            }
-            this.cdr.detectChanges();
+    const requests = uniqueIds.map((id) =>
+      this.characterService.GetById(id).pipe(catchError(() => of(null))),
+    );
+
+    forkJoin(requests).subscribe((responses) => {
+      const loaded: Character[] = [];
+      responses.forEach((res) => {
+        if (res?.data && !loaded.some((c) => c.id === res.data!.id)) {
+          loaded.push(res.data);
+          const ownerId = res.data.userId;
+          if (ownerId && !this.usersCache[ownerId]) {
+            this.userService.GetById(ownerId).subscribe({
+              next: (uRes) => {
+                if (uRes?.data) {
+                  this.usersCache[ownerId] = uRes.data;
+                  this.cdr.detectChanges();
+                }
+              },
+            });
           }
-        },
+        }
       });
+
+      this.approvedCharacters = loaded;
+      this.cdr.detectChanges();
     });
   }
 
   loadPendingCharacters(): void {
-    if (!this.campaign?.characterRequests || this.campaign.characterRequests.length === 0) {
+    const uniqueIds = Array.from(new Set(this.campaign?.characterRequests ?? []));
+    if (uniqueIds.length === 0) {
       this.pendingCharacters = [];
+      this.cdr.detectChanges();
       return;
     }
 
-    this.pendingCharacters = [];
-    this.campaign.characterRequests.forEach((id) => {
-      this.characterService.GetById(id).subscribe({
-        next: (res) => {
-          if (res.data) {
-            this.pendingCharacters.push(res.data);
-            if (res.data.userId && !this.usersCache[res.data.userId]) {
-              this.userService.GetById(res.data.userId).subscribe({
-                next: (uRes) => {
-                  if (res?.data?.userId && uRes?.data) {
-                    this.usersCache[res.data.userId] = uRes.data;
-                  }
-                },
-              });
-            }
-            this.cdr.detectChanges();
+    const requests = uniqueIds.map((id) =>
+      this.characterService.GetById(id).pipe(catchError(() => of(null))),
+    );
+
+    forkJoin(requests).subscribe((responses) => {
+      const loaded: Character[] = [];
+      responses.forEach((res) => {
+        if (res?.data && !loaded.some((c) => c.id === res.data!.id)) {
+          loaded.push(res.data);
+          const ownerId = res.data.userId;
+          if (ownerId && !this.usersCache[ownerId]) {
+            this.userService.GetById(ownerId).subscribe({
+              next: (uRes) => {
+                if (uRes?.data) {
+                  this.usersCache[ownerId] = uRes.data;
+                  this.cdr.detectChanges();
+                }
+              },
+            });
           }
-        },
+        }
       });
+
+      this.pendingCharacters = loaded;
+      this.cdr.detectChanges();
     });
   }
 
@@ -298,8 +324,23 @@ export class CampaignDetailComponent implements OnInit {
     }, 2000);
   }
 
+  openBoard(): void {
+    if (!this.campaign?.isActive) {
+      this.showFeedback('Reative a campanha para acessar o tabuleiro virtual.', true);
+      return;
+    }
+    this.router.navigate(['/campanha', this.campaignId, 'tabuleiro']);
+  }
+
   joinCampaign(): void {
-    if (!this.campaign) return;
+    if (!this.campaign || this.isJoiningCampaign) return;
+
+    if (!this.campaign.isActive) {
+      this.showFeedback('Não é possível entrar em uma campanha desativada.', true);
+      return;
+    }
+
+    this.isJoiningCampaign = true;
     this.campaignService
       .AddPlayer({
         campaignId: this.campaign.id,
@@ -307,18 +348,37 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          this.isJoiningCampaign = false;
           this.showFeedback('Você entrou na campanha com sucesso!');
           this.joinPassword = '';
           this.loadCampaign(true);
         },
-        error: (err) => this.handleApiError(err),
+        error: (err) => {
+          this.isJoiningCampaign = false;
+          this.cdr.detectChanges();
+          this.handleApiError(err);
+        },
       });
   }
 
   submitCharacter(customCharId?: string): void {
     const charId = customCharId || this.selectedCharacterId;
-    if (!this.campaign || !charId) return;
+    if (!this.campaign || !charId || this.isSubmittingCharacter) return;
 
+    // Evita enviar um personagem que já está pendente ou aprovado na campanha
+    const alreadyInCampaign =
+      this.pendingCharacters.some((c) => c.id === charId) ||
+      this.approvedCharacters.some((c) => c.id === charId);
+
+    if (alreadyInCampaign) {
+      this.showFeedback(
+        'Este personagem já foi enviado ou já está vinculado a esta campanha.',
+        true,
+      );
+      return;
+    }
+
+    this.isSubmittingCharacter = true;
     this.campaignService
       .AddCharacter({
         campaignId: this.campaign.id,
@@ -326,19 +386,24 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          this.isSubmittingCharacter = false;
           this.selectedGmCharacterId = '';
           this.selectedCharacterId = '';
           this.showFeedback('Ficha vinculada/enviada com sucesso!');
-
           this.loadCampaign(true);
         },
-        error: (err) => this.handleApiError(err),
+        error: (err) => {
+          this.isSubmittingCharacter = false;
+          this.cdr.detectChanges();
+          this.handleApiError(err);
+        },
       });
   }
 
   handleCharacterApproval(characterId: string, approve: boolean): void {
-    if (!this.campaign) return;
+    if (!this.campaign || this.processingCharacterIds.has(characterId)) return;
 
+    this.processingCharacterIds.add(characterId);
     this.campaignService
       .AcceptCharacter({
         userId: this.currentUserId,
@@ -348,18 +413,25 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          this.processingCharacterIds.delete(characterId);
           this.showFeedback(approve ? 'Personagem aprovado na campanha!' : 'Solicitação recusada.');
           this.loadCampaign(true);
         },
-        error: (err) => this.handleApiError(err),
+        error: (err) => {
+          this.processingCharacterIds.delete(characterId);
+          this.cdr.detectChanges();
+          this.handleApiError(err);
+        },
       });
   }
 
   removeCharacter(characterId: string): void {
-    if (!this.campaign || !this.isGameMaster) return;
+    if (!this.campaign || !this.isGameMaster || this.processingCharacterIds.has(characterId))
+      return;
 
     if (!confirm('Tem certeza de que deseja remover este personagem da campanha?')) return;
 
+    this.processingCharacterIds.add(characterId);
     this.campaignService
       .RemoveCharacter({
         campaignId: this.campaign.id,
@@ -367,20 +439,25 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          this.processingCharacterIds.delete(characterId);
           this.showFeedback('Personagem removido com sucesso!');
           this.loadCampaign(true);
         },
-        error: (err) => this.handleApiError(err),
+        error: (err) => {
+          this.processingCharacterIds.delete(characterId);
+          this.cdr.detectChanges();
+          this.handleApiError(err);
+        },
       });
   }
 
   removePlayer(userId: string): void {
-    if (!this.campaign) return;
+    if (!this.campaign || this.processingPlayerIds.has(userId)) return;
 
     const confirmMsg = 'Tem certeza de que deseja remover este jogador?';
-
     if (!confirm(confirmMsg)) return;
 
+    this.processingPlayerIds.add(userId);
     this.campaignService
       .RemovePlayer({
         campaignId: this.campaign.id,
@@ -389,6 +466,7 @@ export class CampaignDetailComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          this.processingPlayerIds.delete(userId);
           if (userId === this.currentUserId) {
             this.router.navigate(['/campanhas']);
           } else {
@@ -396,12 +474,16 @@ export class CampaignDetailComponent implements OnInit {
             this.loadCampaign(true);
           }
         },
-        error: (err) => this.handleApiError(err),
+        error: (err) => {
+          this.processingPlayerIds.delete(userId);
+          this.cdr.detectChanges();
+          this.handleApiError(err);
+        },
       });
   }
 
   toggleActiveState(): void {
-    if (!this.campaign) return;
+    if (!this.campaign || this.isTogglingState) return;
 
     const newState = !this.campaign.isActive;
     const request: CampaignSetActiveStateRequest = {
@@ -409,33 +491,46 @@ export class CampaignDetailComponent implements OnInit {
       state: newState,
     };
 
+    this.isTogglingState = true;
     this.campaignService.SetActiveState(request).subscribe({
       next: () => {
+        this.isTogglingState = false;
         this.showFeedback(`Campanha ${newState ? 'reativada' : 'desativada'} com sucesso!`);
         this.loadCampaign(true);
       },
-      error: (err) => this.handleApiError(err),
+      error: (err) => {
+        this.isTogglingState = false;
+        this.cdr.detectChanges();
+        this.handleApiError(err);
+      },
     });
   }
 
   toggleRequireApproval(): void {
-    if (!this.campaign) return;
+    if (!this.campaign || this.isTogglingApproval) return;
+
+    const previousState = this.requireApproval;
+    this.requireApproval = !this.requireApproval;
 
     const request: UpdateCampaignSettingsRequest = {
       campaignId: this.campaign.id,
       RequireApprovalForCharacters: this.requireApproval,
     };
 
+    this.isTogglingApproval = true;
     this.campaignService.UpdateSettings(request).subscribe({
       next: () => {
+        this.isTogglingApproval = false;
         this.showFeedback(
           this.requireApproval
             ? 'Aprovação manual ativada com sucesso!'
             : 'Aprovação manual desativada. Novos personagens entrarão diretamente.',
         );
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.requireApproval = !this.requireApproval;
+        this.isTogglingApproval = false;
+        this.requireApproval = previousState;
         this.cdr.detectChanges();
         this.handleApiError(err);
       },
@@ -472,13 +567,20 @@ export class CampaignDetailComponent implements OnInit {
   }
 
   leaveCampaign(userId: string): void {
+    if (this.isLeavingCampaign) return;
     if (!confirm('Tem certeza de que deseja sair desta campanha?')) return;
 
+    this.isLeavingCampaign = true;
     this.campaignService.LeaveCampaign({ campaignId: userId }).subscribe({
       next: () => {
+        this.isLeavingCampaign = false;
         this.router.navigate(['/campanhas']);
       },
-      error: (err) => this.handleApiError(err),
+      error: (err) => {
+        this.isLeavingCampaign = false;
+        this.cdr.detectChanges();
+        this.handleApiError(err);
+      },
     });
   }
 }

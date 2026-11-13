@@ -522,6 +522,103 @@
   margin-bottom: 12px;
 }
 
+/* ── TELA DE ACESSO NEGADO (EARLY ACCESS) ────────────────── */
+.access-denied-card {
+  max-width: 560px;
+  margin: 60px auto;
+  padding: 40px 32px;
+  background: var(--rpg-surface, #1e1b38);
+  border: 1px solid var(--rpg-border-purple, rgba(158, 116, 208, 0.35));
+  border-radius: 20px;
+  box-shadow: var(--rpg-shadow-md, 0 16px 40px rgba(0, 0, 0, 0.45));
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.access-icon-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15));
+  border: 1.5px solid var(--rpg-border-purple, rgba(158, 116, 208, 0.4));
+  color: var(--rpg-purple, #9e74d0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  margin-bottom: 4px;
+}
+
+.access-denied-card h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: var(--rpg-text-strong, #ffffff);
+  margin: 0;
+}
+
+.access-denied-card p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--rpg-text-muted, #b4b4d8);
+  margin: 0 0 8px;
+}
+
+.access-denied-card p strong {
+  color: var(--rpg-text-strong, #ffffff);
+}
+
+.access-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.access-actions a.btn,
+.btn-primary,
+.btn-secondary {
+  text-decoration: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.access-actions .btn-secondary {
+  background: transparent;
+  border: 1.5px solid var(--rpg-border-light, rgba(255, 255, 255, 0.2));
+  color: var(--rpg-text-strong, #ffffff);
+}
+
+.access-actions .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+@media (max-width: 520px) {
+  .access-denied-card {
+    margin: 32px 16px;
+    padding: 28px 20px;
+  }
+
+  .access-actions {
+    flex-direction: column;
+  }
+
+  .access-actions a.btn {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
 /* Responsividade */
 @media (max-width: 900px) {
   .reports-split-view {

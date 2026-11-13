@@ -46,7 +46,7 @@
               <!-- BADGES & EXIBIÇÃO DO PLANO -->
               <div class="user-badges">
                 <span class="badge">Aventureiro</span>
-                
+
                 <a routerLink="/planos" class="badge badge-plan" [class.badge-early]="hasEarlyAccess">
                   <i class="fa-solid" [ngClass]="hasEarlyAccess ? 'fa-star' : 'fa-shield-halved'"></i>
                   <span>{{ userPlanName }}</span>
@@ -98,14 +98,37 @@
       <section class="campaigns-section">
         <div class="section-header">
           <div>
-            <h2 class="section-title">Minhas Campanhas</h2>
-            @if (!isLoadingCampaigns && campaignTotal > 0) {
-              <span class="section-count">
-                {{ campaignTotal }} {{ campaignTotal === 1 ? 'campanha' : 'campanhas' }}
-              </span>
-            }
+            <div class="section-title-row">
+              <h2 class="section-title">Minhas Campanhas</h2>
+
+              @if (!isLoadingCampaigns && hasCampaignLimit) {
+                <span
+                  class="profile-limit-badge"
+                  [class.near-limit]="isCampaignNearLimit"
+                  [class.limit-reached]="isCampaignLimitReached"
+                  [title]="
+                    isCampaignLimitReached
+                      ? 'Limite máximo de campanhas criadas como Mestre atingido'
+                      : 'Campanhas criadas como Mestre no seu plano'
+                  "
+                >
+                  <i class="fa-solid fa-crown"></i>
+                  <span>Mestre: {{ campaignGameMasterLength }} / {{ maxCampaigns }}</span>
+                </span>
+              }
+
+              @if (!isLoadingCampaigns && campaignPlayerLength > 0) {
+                <span
+                  class="profile-limit-badge"
+                  title="Campanhas em que você participa como Jogador"
+                >
+                  <i class="fa-solid fa-dice-d20"></i>
+                  <span>Jogador: {{ campaignPlayerLength }}</span>
+                </span>
+              }
+            </div>
           </div>
-          @if (!isLoadingCampaigns && campaignTotal > 0) {
+          @if (!isLoadingCampaigns && totalCampaignsCount > 0) {
             <a routerLink="/campanhas" class="section-link">
               <span>Ver todas</span>
               <i class="fa-solid fa-arrow-right"></i>
@@ -131,9 +154,18 @@
         <!-- CONTEÚDO REAL: CAMPANHAS -->
         @if (!isLoadingCampaigns) {
           <div class="campaigns-grid fade-in-content">
-            <div class="campaign-card add-card" routerLink="/campanhas">
-              <i class="fa-solid fa-plus"></i>
-              <span>Nova Campanha</span>
+            <div
+              class="campaign-card add-card"
+              [class.add-card--disabled]="isCampaignLimitReached"
+              [title]="
+                isCampaignLimitReached
+                  ? 'Limite de campanhas como Mestre atingido'
+                  : 'Gerenciar ou criar nova campanha'
+              "
+              routerLink="/campanhas"
+            >
+              <i class="fa-solid" [ngClass]="isCampaignLimitReached ? 'fa-lock' : 'fa-plus'"></i>
+              <span>{{ isCampaignLimitReached ? 'Limite Atingido' : 'Nova Campanha' }}</span>
             </div>
 
             @for (camp of campaignPreview; track camp.id || camp.title) {
@@ -166,12 +198,25 @@
       <section class="characters-section">
         <div class="section-header">
           <div>
-            <h2 class="section-title">Meus Personagens</h2>
-            @if (!isLoadingCharacters && characterTotal > 0) {
-              <span class="section-count">
-                {{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}
-              </span>
-            }
+            <div class="section-title-row">
+              <h2 class="section-title">Meus Personagens</h2>
+
+              @if (!isLoadingCharacters && hasCharacterLimit) {
+                <span
+                  class="profile-limit-badge"
+                  [class.near-limit]="isCharacterNearLimit"
+                  [class.limit-reached]="isCharacterLimitReached"
+                  [title]="
+                    isCharacterLimitReached
+                      ? 'Limite máximo de personagens atingido'
+                      : 'Personagens criados no seu plano'
+                  "
+                >
+                  <i class="fa-solid fa-id-card"></i>
+                  <span>{{ characterTotal }} / {{ maxCharacters }}</span>
+                </span>
+              }
+            </div>
           </div>
           @if (!isLoadingCharacters && characterTotal > 0) {
             <a routerLink="/personagens" class="section-link">
@@ -199,9 +244,18 @@
         <!-- CONTEÚDO REAL: PERSONAGENS -->
         @if (!isLoadingCharacters) {
           <div class="campaigns-grid fade-in-content">
-            <div class="campaign-card add-card" routerLink="/personagens">
-              <i class="fa-solid fa-plus"></i>
-              <span>Novo Personagem</span>
+            <div
+              class="campaign-card add-card"
+              [class.add-card--disabled]="isCharacterLimitReached"
+              [title]="
+                isCharacterLimitReached
+                  ? 'Limite máximo de personagens atingido'
+                  : 'Criar novo personagem'
+              "
+              routerLink="/personagens"
+            >
+              <i class="fa-solid" [ngClass]="isCharacterLimitReached ? 'fa-lock' : 'fa-plus'"></i>
+              <span>{{ isCharacterLimitReached ? 'Limite Atingido' : 'Novo Personagem' }}</span>
             </div>
 
             @for (char of characterPreview; track char.id || char.name) {

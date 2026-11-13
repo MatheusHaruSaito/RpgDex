@@ -365,6 +365,14 @@
               <h3>{{ characterChartData?.total ?? 0 }} Personagens</h3>
             </div>
           </div>
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <div class="stat-info">
+              <span>Fichas no Período</span>
+              <h3>{{ characterChartData?.totalInRange ?? 0 }} Novos</h3>
+            </div>
+          </div>
         </div>
       </div>
     </ng-container>
@@ -413,6 +421,14 @@
             <div class="stat-info">
               <span>Mesas Criadas</span>
               <h3>{{ campaignChartData?.total ?? 0 }} Campanhas</h3>
+            </div>
+          </div>
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-folder-plus"></i></div>
+            <div class="stat-info">
+              <span>Campanhas no Período</span>
+              <h3>{{ campaignChartData?.totalInRange ?? 0 }} Novas</h3>
             </div>
           </div>
         </div>

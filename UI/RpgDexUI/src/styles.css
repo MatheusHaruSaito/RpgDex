@@ -1,9 +1,26 @@
+/* ══════════════════════════════════════════════════════════════════
+   GUIA RÁPIDO DE TOKENS (leia antes de criar CSS novo)
+
+   • Texto comum ............ --rpg-text-strong / -body / -muted
+   • Texto de apoio ......... --rpg-text-muted  (>= 4,5:1 nos dois temas)
+   • Ícones e decoração ..... --rpg-text-faint  (>= 3:1; NUNCA para texto)
+   • Texto roxo ............. --rpg-purple-text (não use --rpg-purple como cor de texto)
+   • Texto de erro/sucesso .. --rpg-error-text / --rpg-success-text / --rpg-warning
+   • --rpg-purple, --rpg-error e --rpg-success servem para fundo sólido
+     (com texto branco por cima) e para bordas.
+   • Nunca use cor literal (#xxx, rgb) em CSS de componente: crie um token
+     aqui, com versão clara e escura.
+   ══════════════════════════════════════════════════════════════════ */
+
 :root {
+  color-scheme: light;
+
   /* ── Brand ──────────────────────────────────────────── */
   --rpg-purple:         #9E74D0;
   --rpg-purple-dark:    #8a5bc9;
   --rpg-purple-soft:    #c8b1e4;
   --rpg-cyan:           #80E2FF;
+  --rpg-purple-text:    #7c4dbd;   /* roxo para TEXTO: 5,7:1 sobre branco */
 
   /* ── Gradientes ─────────────────────────────────────── */
   --rpg-gradient:       linear-gradient(135deg, #9e74d0 0%, #80e2ff 100%);
@@ -16,13 +33,14 @@
   --rpg-surface-2:      #fafafa;
   --rpg-surface-tint:   #fdfbff;
   --rpg-purple-tint:    #f0ebf7;
+  --rpg-cyan-tint:      #e8f8ff;
 
   /* ── Texto ───────────────────────────────────────────── */
   --rpg-text-dark:      #3C3489;
   --rpg-text-body:      #555555;
   --rpg-text-strong:    #333333;
-  --rpg-text-muted:     #777777;
-  --rpg-text-faint:     #aaaaaa;
+  --rpg-text-muted:     #6b6b6b;   /* era #777777: não passava em fundos tingidos */
+  --rpg-text-faint:     #8c8c8c;   /* só ícones/decoração (era #aaaaaa, 2,3:1) */
   --rpg-text-light:     #ffffff;
 
   /* ── Bordas ──────────────────────────────────────────── */
@@ -50,30 +68,45 @@
   --rpg-purple-85:      rgba(158, 116, 208, 0.85);
 
   /* ── Feedback ────────────────────────────────────────── */
+  /* --rpg-error / --rpg-success: fundo sólido (texto branco) e bordas.
+     --rpg-*-text: use para TEXTO. */
   --rpg-error:          #c0392b;
-  --rpg-error-text:     #e05c5c;
+  --rpg-error-text:     #c0392b;
   --rpg-error-bg:       #fdecea;
   --rpg-error-border:   #f5c6c6;
   --rpg-success:        #1e7e45;
+  --rpg-success-text:   #1e7e45;
   --rpg-success-bg:     #eafaf1;
   --rpg-success-border: #b2dfcc;
+  --rpg-warning:        #92400e;
+  --rpg-warning-bg:     #fffbeb;
+  --rpg-warning-border: #fcd34d;
+
+  /* ── Tooltip ─────────────────────────────────────────── */
+  --rpg-tooltip-bg:     #1e1e2d;
+  --rpg-tooltip-border: rgba(255, 255, 255, 0.15);
 }
 
 /* ── DARK THEME ── */
 .dark-theme {
+  color-scheme: dark;
+
   --rpg-bg:             #13131f;
   --rpg-bg-dark:        #0d0d18;
   --rpg-surface:        #1e1e30;
   --rpg-surface-2:      #252540;
   --rpg-surface-tint:   #252540;
   --rpg-purple-tint:    #2d2250;
+  --rpg-cyan-tint:      #1d3a4d;
 
-  --rpg-text-dark:      #9377d4;
-  --rpg-text-body:      #a0a0c0;
+  /* Texto: todos >= 4,5:1 sobre surface, surface-2 e purple-tint */
+  --rpg-text-dark:      #b9a0e6;
+  --rpg-text-body:      #b8b8d6;
   --rpg-text-strong:    #d8d8f0;
-  --rpg-text-muted:     #7878a0;
-  --rpg-text-faint:     #555578;
+  --rpg-text-muted:     #9090b4;
+  --rpg-text-faint:     #6e6e94;   /* só ícones/decoração (3,4:1); não use para texto */
   --rpg-text-light:     #ffffff;
+  --rpg-purple-text:    #b9a0e6;
 
   --rpg-border:         #3a3a5c;
   --rpg-border-light:   #2e2e4e;
@@ -95,10 +128,20 @@
   --rpg-purple-15:      rgba(158, 116, 208, 0.2);
   --rpg-purple-30:      rgba(158, 116, 208, 0.35);
 
+  /* --rpg-error e --rpg-success ficam como no :root (fundo sólido com texto branco).
+     Para TEXTO use os tokens *-text, que têm versão clara no escuro. */
+  --rpg-error-text:     #f28b82;   /* 6,5:1 sobre error-bg */
   --rpg-error-bg:       #3a1a1a;
   --rpg-error-border:   #7a2a2a;
+  --rpg-success-text:   #4fc47f;   /* 7,0:1 sobre success-bg */
   --rpg-success-bg:     #0f2a1a;
   --rpg-success-border: #1a5a30;
+  --rpg-warning:        #fbbf24;
+  --rpg-warning-bg:     #3a2a0f;
+  --rpg-warning-border: #7a5a1a;
+
+  --rpg-tooltip-bg:     #34345a;
+  --rpg-tooltip-border: rgba(255, 255, 255, 0.2);
 }
 
 /* ── BASE & RESET ── */
@@ -127,6 +170,11 @@ body.nav-menu-open {
 
 h1, h2, h3, h4 {
   color: var(--rpg-text-dark);
+}
+
+::placeholder {
+  color: var(--rpg-text-muted);
+  opacity: 1;
 }
 
 main {
@@ -212,7 +260,7 @@ main {
   padding: 10px 18px;
   border: 2px solid var(--rpg-error-border);
   background: transparent;
-  color: var(--rpg-error);
+  color: var(--rpg-error-text);
 }
 
 .btn-outline-danger:hover:not(:disabled) {
@@ -233,7 +281,7 @@ main {
   font-size: 0.82rem;
   padding: 7px 13px;
   background: var(--rpg-success-bg);
-  color: var(--rpg-success);
+  color: var(--rpg-success-text);
   border: 1px solid var(--rpg-success-border);
 }
 
@@ -246,7 +294,7 @@ main {
   font-size: 0.82rem;
   padding: 7px 13px;
   background: var(--rpg-error-bg);
-  color: var(--rpg-error);
+  color: var(--rpg-error-text);
   border: 1px solid var(--rpg-error-border);
 }
 
@@ -272,13 +320,13 @@ main {
 
 .btn-icon:hover {
   background: var(--rpg-purple-tint);
-  color: var(--rpg-purple);
+  color: var(--rpg-purple-text);
   transform: translateY(-1px);
 }
 
 .btn-icon.danger:hover {
   background: var(--rpg-error-bg);
-  color: var(--rpg-error);
+  color: var(--rpg-error-text);
 }
 
 /* ── CARDS GLOBAIS ── */
@@ -309,7 +357,7 @@ main {
 /* ── COMPONENTES AUXILIARES ── */
 .char-counter {
   font-size: 0.72rem;
-  color: var(--rpg-text-faint);
+  color: var(--rpg-text-muted);
   text-align: right;
   margin-top: 2px;
 }
@@ -423,13 +471,13 @@ image-cropper {
   width: max-content;
   max-width: 260px;
   padding: 10px 14px;
-  background-color: #1e1e2d;
+  background-color: var(--rpg-tooltip-bg);
   color: #ffffff;
   font-size: 0.85rem;
   font-weight: normal;
   line-height: 1.4;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--rpg-tooltip-border);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   z-index: 1000;
   pointer-events: none;
@@ -446,7 +494,7 @@ image-cropper {
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: transparent transparent #1e1e2d transparent;
+  border-color: transparent transparent var(--rpg-tooltip-bg) transparent;
 }
 
 .tooltip-balloon::after {
@@ -457,7 +505,7 @@ image-cropper {
   transform: translateX(-50%);
   border-width: 7px;
   border-style: solid;
-  border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+  border-color: transparent transparent var(--rpg-tooltip-border) transparent;
   z-index: -1;
 }
 

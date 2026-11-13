@@ -27,10 +27,29 @@ export class CharacterList implements OnInit {
 
   characterList: Character[] = [];
   filteredList: Character[] = [];
+  characterLength = 0;
+  maxCharacters = 0;
+
   searchQuery = '';
   showCreateModal = false;
   isLoading = true; // Controla o estado de carregamento da lista
   errorMessage = '';
+
+  get hasCharacterLimit(): boolean {
+    return this.maxCharacters > 0;
+  }
+
+  get isLimitReached(): boolean {
+    return this.hasCharacterLimit && this.characterLength >= this.maxCharacters;
+  }
+
+  get isNearLimit(): boolean {
+    return (
+      this.hasCharacterLimit &&
+      !this.isLimitReached &&
+      this.characterLength / this.maxCharacters >= 0.8
+    );
+  }
 
   ngOnInit(): void {
     this.GetAllCharacters();
@@ -42,6 +61,8 @@ export class CharacterList implements OnInit {
     this.characterService.GetAll().subscribe({
       next: (response) => {
         this.characterList = response.data?.characters ?? [];
+        this.characterLength = response.data?.characterLength ?? this.characterList.length;
+        this.maxCharacters = response.data?.maxCharacters ?? 0;
         this.onSearch();
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -54,6 +75,15 @@ export class CharacterList implements OnInit {
         });
       },
     });
+  }
+
+  openCreateModal(): void {
+    if (this.isLimitReached) {
+      this.errorMessage = `Você atingiu o limite máximo de ${this.maxCharacters} personagens do seu plano.`;
+      return;
+    }
+    this.errorMessage = '';
+    this.showCreateModal = true;
   }
 
   onSearch(): void {
@@ -91,6 +121,13 @@ export class CharacterList implements OnInit {
   importCharacter(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
+
+    if (this.isLimitReached) {
+      input.value = '';
+      this.errorMessage = `Você atingiu o limite máximo de ${this.maxCharacters} personagens do seu plano.`;
+      this.cdr.detectChanges();
+      return;
+    }
 
     const file = input.files[0];
     const reader = new FileReader();

@@ -906,6 +906,26 @@
   flex-shrink: 0;
 }
 
+.vtt-placeholder-card--disabled {
+  border-color: var(--rpg-border, rgba(255, 255, 255, 0.15)) !important;
+  opacity: 0.85;
+}
+
+/* ── ESTADOS DESABILITADOS DURANTE REQUISIÇÕES ── */
+.cd-wrapper button:disabled,
+.cd-input:disabled,
+.cd-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cd-toggle-row.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Campaign Chat */
 app-campaign-chat-component {
   display: block;

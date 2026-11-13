@@ -6,23 +6,28 @@
 }
 
 @if (!isLoading && !hasAccess) {
-  <div class="access-denied-card container fade-in-content">
-    <div class="access-icon-badge">
-      <i class="fa-solid fa-lock" aria-hidden="true"></i>
-    </div>
-    
-    <h2>Recurso Exclusivo de Acesso Antecipado</h2>
-    <p>
-      A Biblioteca de arquivos é um recurso exclusivo para assinantes de planos com 
-      <strong>Acesso Antecipado</strong>. Faça upgrade do seu plano para armazenar mapas, 
-      fichas, PDFs e áudios para as suas sessões.
-    </p>
+  <div class="library-access-wrapper fade-in-content">
+    <div class="access-denied-card">
+      <div class="access-icon-badge">
+        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+      </div>
 
-    <div class="access-actions">
-      <a routerLink="/planos" class="btn btn-primary btn-upgrade">
-        <i class="fa-solid fa-star" aria-hidden="true"></i> Ver Planos e Assinaturas
-      </a>
-      <a routerLink="/home" class="btn btn-secondary">Voltar ao Início</a>
+      <h2>Recurso Exclusivo de Acesso Antecipado</h2>
+      <p>
+        A Biblioteca de arquivos é um recurso exclusivo para assinantes de planos com
+        <strong>Acesso Antecipado</strong>. Faça upgrade do seu plano para armazenar mapas,
+        fichas, PDFs e documentos para as suas sessões.
+      </p>
+
+      <div class="access-actions">
+        <a routerLink="/planos" class="library-btn-upgrade">
+          <i class="fa-solid fa-star" aria-hidden="true"></i>
+          <span>Ver Planos e Assinaturas</span>
+        </a>
+        <a routerLink="/home" class="library-btn-back">
+          <span>Voltar ao Início</span>
+        </a>
+      </div>
     </div>
   </div>
 }
@@ -31,16 +36,52 @@
   <div class="library-wrapper fade-in-content">
     <header class="library-header">
       <div class="header-titles">
-        <h1 class="library-title">
-          <i class="fa-solid fa-folder-open icon-header"></i>
-          Biblioteca
-        </h1>
+        <div class="library-title-row">
+          <h1 class="library-title">
+            <i class="fa-solid fa-folder-open icon-header"></i>
+            Biblioteca
+          </h1>
+
+          @if (hasStorageLimit) {
+            <span
+              class="library-storage-badge"
+              [class.near-limit]="isStorageNearLimit"
+              [class.limit-reached]="isStorageLimitReached"
+              [title]="
+                'Armazenamento utilizado: ' +
+                (usedStorageMb | number: '1.1-2') +
+                ' MB de ' +
+                storageCapacityMb +
+                ' MB (' +
+                storagePercentage +
+                '%)'
+              "
+            >
+              <i class="fa-solid fa-hard-drive"></i>
+              <span>
+                {{ usedStorageMb | number: '1.1-1' }} / {{ storageCapacityMb }} MB ({{
+                  storagePercentage
+                }}%)
+              </span>
+            </span>
+          }
+        </div>
         <p class="library-subtitle">
-          Armazene documentos, mapas, fichas e áudios para utilizar nas suas sessões.
+          Armazene documentos, mapas, fichas e planilhas para utilizar nas suas sessões.
         </p>
       </div>
 
-      <button type="button" class="btn-upload" (click)="openUploadModal()">
+      <button
+        type="button"
+        class="btn-upload"
+        [disabled]="isStorageLimitReached"
+        [title]="
+          isStorageLimitReached
+            ? 'Limite máximo de armazenamento da biblioteca atingido'
+            : 'Enviar arquivo para a biblioteca'
+        "
+        (click)="openUploadModal()"
+      >
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <span>Enviar Arquivo</span>
       </button>
@@ -102,10 +143,10 @@
         <button
           type="button"
           class="pill-btn"
-          [class.active]="activeFilter === 'audio'"
-          (click)="setFilter('audio')"
+          [class.active]="activeFilter === 'sheet'"
+          (click)="setFilter('sheet')"
         >
-          <i class="fa-solid fa-file-audio"></i> Áudios
+          <i class="fa-solid fa-file-excel"></i> Planilhas & Slides
         </button>
       </div>
 
@@ -156,7 +197,12 @@
           <p class="empty-desc">
             Sua biblioteca não possui arquivos ou nenhum atende aos filtros aplicados.
           </p>
-          <button type="button" class="btn-secondary" (click)="openUploadModal()">
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="isStorageLimitReached"
+            (click)="openUploadModal()"
+          >
             <i class="fa-solid fa-plus"></i> Adicionar Arquivo
           </button>
         </div>
@@ -167,33 +213,50 @@
         <div class="docs-grid">
           @for (doc of filteredDocuments; track doc.id) {
             <div class="doc-card">
-              <div class="doc-card-header">
-                <div class="file-badge">
-                  <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+              <div>
+                <div class="doc-card-header">
+                  <div class="file-badge">
+                    <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+                  </div>
+                  <div class="card-menu">
+                    <button
+                      type="button"
+                      class="icon-action-btn"
+                      (click)="openPreviewModal(doc)"
+                      title="Pré-visualizar"
+                    >
+                      <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-action-btn"
+                      (click)="openEditModal(doc)"
+                      title="Editar"
+                    >
+                      <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-action-btn btn-delete"
+                      (click)="deleteDocument(doc)"
+                      title="Remover"
+                    >
+                      <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                  </div>
                 </div>
-                <div class="card-menu">
-                  <button
-                    type="button"
-                    class="icon-action-btn"
-                    (click)="openEditModal(doc)"
-                    title="Editar"
-                  >
-                    <i class="fa-solid fa-pen"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="icon-action-btn btn-delete"
-                    (click)="deleteDocument(doc)"
-                    title="Remover"
-                  >
-                    <i class="fa-solid fa-trash-can"></i>
-                  </button>
-                </div>
-              </div>
 
-              <div class="doc-card-body">
-                <h3 class="doc-title" [title]="doc.name">{{ doc.name }}</h3>
-                <p class="doc-description">{{ doc.description || 'Sem descrição.' }}</p>
+                <!-- PRÉVIA NO CARD -->
+                @if (getPreviewCategory(doc.fileName) === 'image' && doc.filePath) {
+                  <div class="doc-card-preview" (click)="openPreviewModal(doc)">
+                    <img [src]="doc.filePath" [alt]="doc.name" loading="lazy" />
+                  </div>
+                }
+
+                <div class="doc-card-body">
+                  <h3 class="doc-title" [title]="doc.name">{{ doc.name }}</h3>
+                  <p class="doc-description">{{ doc.description || 'Sem descrição.' }}</p>
+                </div>
               </div>
 
               <div class="doc-card-footer">
@@ -230,7 +293,16 @@
           @for (doc of filteredDocuments; track doc.id) {
             <div class="list-row">
               <div class="list-col-main">
-                <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+                @if (getPreviewCategory(doc.fileName) === 'image' && doc.filePath) {
+                  <img
+                    [src]="doc.filePath"
+                    [alt]="doc.name"
+                    class="list-thumb"
+                    (click)="openPreviewModal(doc)"
+                  />
+                } @else {
+                  <i class="fa-solid" [ngClass]="getFileIcon(doc.fileName)"></i>
+                }
                 <div class="list-title-group">
                   <strong class="list-title">{{ doc.name }}</strong>
                   <small class="list-filename">{{ doc.fileName }}</small>
@@ -241,13 +313,31 @@
               <div class="list-col-size">{{ formatFileSize(doc.fileSize) }}</div>
 
               <div class="list-col-actions">
+                <button
+                  type="button"
+                  class="icon-action-btn"
+                  (click)="openPreviewModal(doc)"
+                  title="Pré-visualizar"
+                >
+                  <i class="fa-solid fa-eye"></i>
+                </button>
                 <a [href]="doc.filePath" target="_blank" class="icon-action-btn" title="Download">
                   <i class="fa-solid fa-download"></i>
                 </a>
-                <button type="button" class="icon-action-btn" (click)="openEditModal(doc)" title="Editar">
+                <button
+                  type="button"
+                  class="icon-action-btn"
+                  (click)="openEditModal(doc)"
+                  title="Editar"
+                >
                   <i class="fa-solid fa-pen"></i>
                 </button>
-                <button type="button" class="icon-action-btn btn-delete" (click)="deleteDocument(doc)" title="Remover">
+                <button
+                  type="button"
+                  class="icon-action-btn btn-delete"
+                  (click)="deleteDocument(doc)"
+                  title="Remover"
+                >
                   <i class="fa-solid fa-trash-can"></i>
                 </button>
               </div>
@@ -272,13 +362,26 @@
       </div>
 
       <form (ngSubmit)="uploadDocument()" class="modal-body">
+        @if (errorMessage) {
+          <div class="feedback-toast error-toast modal-toast">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
         <div
           class="dropzone"
           (drop)="onFileDropped($event)"
           (dragover)="onDragOver($event)"
           [class.has-file]="!!selectedFile"
         >
-          <input type="file" id="libraryFileInput" (change)="onFileSelected($event)" hidden />
+          <input
+            type="file"
+            id="libraryFileInput"
+            [accept]="acceptAttribute"
+            (change)="onFileSelected($event)"
+            hidden
+          />
           <label for="libraryFileInput" class="dropzone-content">
             <i
               class="fa-solid dropzone-icon"
@@ -295,6 +398,65 @@
             </div>
           </label>
         </div>
+
+        <!-- FORMATOS ACEITOS -->
+        <div class="accepted-formats-box">
+          <span class="accepted-formats-title">
+            <i class="fa-solid fa-circle-info"></i> Formatos aceitos para importação:
+          </span>
+          <div class="accepted-formats-grid">
+            @for (group of acceptedFormatsGroups; track group.label) {
+              <div class="accepted-format-chip">
+                <i class="fa-solid" [ngClass]="group.icon"></i>
+                <div>
+                  <strong>{{ group.label }}:</strong>
+                  <span>{{ group.formats }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- PRÉVIA DO ARQUIVO SELECIONADO -->
+        @if (selectedFile) {
+          <div class="upload-preview-box">
+            <div class="upload-preview-header">
+              <span><i class="fa-solid fa-eye"></i> Prévia do Arquivo</span>
+              <button
+                type="button"
+                class="btn-clear-preview"
+                (click)="clearSelectedUploadFile($event)"
+              >
+                <i class="fa-solid fa-xmark"></i> Remover arquivo
+              </button>
+            </div>
+
+            @if (uploadPreviewType === 'image' && uploadPreviewUrl) {
+              <div class="upload-preview-media">
+                <img [src]="uploadPreviewUrl" [alt]="selectedFile.name" />
+              </div>
+            }
+
+            @if (uploadPreviewType === 'pdf' && uploadSafePdfUrl) {
+              <div class="upload-preview-pdf">
+                <iframe [src]="uploadSafePdfUrl" title="Prévia do PDF"></iframe>
+              </div>
+            }
+
+            @if (uploadPreviewType === 'other') {
+              <div class="upload-preview-file-card">
+                <i class="fa-solid" [ngClass]="getFileIcon(selectedFile.name)"></i>
+                <div>
+                  <strong>{{ selectedFile.name }}</strong>
+                  <span>
+                    {{ getFileExtension(selectedFile.name).toUpperCase() }} •
+                    {{ formatFileSize(selectedFile.size) }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
 
         <div class="form-group">
           <label for="docName">Nome do Documento *</label>
@@ -341,7 +503,7 @@
 }
 
 <!-- MODAL EDIÇÃO -->
-@if (showEditModal) {
+@if (showEditModal && editingDoc) {
   <div class="modal-backdrop fade-in" (click)="closeEditModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -353,6 +515,13 @@
       </div>
 
       <form (ngSubmit)="updateDocument()" class="modal-body">
+        @if (errorMessage) {
+          <div class="feedback-toast error-toast modal-toast">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+        }
+
         <div class="form-group">
           <label for="editDocName">Nome do Documento *</label>
           <input
@@ -380,8 +549,66 @@
 
         <div class="form-group">
           <label for="editFile">Substituir Arquivo (Opcional)</label>
-          <input type="file" id="editFile" (change)="onEditFileSelected($event)" class="rpg-input" />
+          <input
+            type="file"
+            id="editFile"
+            [accept]="acceptAttribute"
+            (change)="onEditFileSelected($event)"
+            class="rpg-input"
+          />
+          <small class="accepted-hint">
+            Aceitos: PNG, JPG, JPEG, WEBP, GIF, BMP, PDF, TXT, DOCX, XLSX, PPTX, CSV
+          </small>
         </div>
+
+        <!-- PRÉVIA DO NOVO ARQUIVO OU DO ATUAL -->
+        @if (editSelectedFile) {
+          <div class="upload-preview-box">
+            <div class="upload-preview-header">
+              <span><i class="fa-solid fa-eye"></i> Prévia do Novo Arquivo</span>
+              <button type="button" class="btn-clear-preview" (click)="clearSelectedEditFile()">
+                <i class="fa-solid fa-xmark"></i> Descartar novo
+              </button>
+            </div>
+
+            @if (editPreviewType === 'image' && editPreviewUrl) {
+              <div class="upload-preview-media">
+                <img [src]="editPreviewUrl" [alt]="editSelectedFile.name" />
+              </div>
+            }
+
+            @if (editPreviewType === 'pdf' && editSafePdfUrl) {
+              <div class="upload-preview-pdf">
+                <iframe [src]="editSafePdfUrl" title="Prévia do PDF"></iframe>
+              </div>
+            }
+
+            @if (editPreviewType === 'other') {
+              <div class="upload-preview-file-card">
+                <i class="fa-solid" [ngClass]="getFileIcon(editSelectedFile.name)"></i>
+                <div>
+                  <strong>{{ editSelectedFile.name }}</strong>
+                  <span>
+                    {{ getFileExtension(editSelectedFile.name).toUpperCase() }} •
+                    {{ formatFileSize(editSelectedFile.size) }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (editingDoc.filePath) {
+          <div class="upload-preview-box">
+            <div class="upload-preview-header">
+              <span><i class="fa-solid fa-file"></i> Arquivo Atual: {{ editingDoc.fileName }}</span>
+            </div>
+
+            @if (getPreviewCategory(editingDoc.fileName) === 'image') {
+              <div class="upload-preview-media">
+                <img [src]="editingDoc.filePath" [alt]="editingDoc.name" />
+              </div>
+            }
+          </div>
+        }
 
         <div class="modal-actions">
           <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancelar</button>
@@ -398,6 +625,62 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+<!-- MODAL PRÉ-VISUALIZAÇÃO RÁPIDA -->
+@if (previewDoc) {
+  <div class="modal-backdrop fade-in" (click)="closePreviewModal()">
+    <div class="modal-card preview-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <i class="fa-solid" [ngClass]="getFileIcon(previewDoc.fileName)"></i>
+          <h2>{{ previewDoc.name }}</h2>
+        </div>
+        <button type="button" class="btn-close" (click)="closePreviewModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        @if (getPreviewCategory(previewDoc.fileName) === 'image' && previewDoc.filePath) {
+          <div class="full-preview-media">
+            <img [src]="previewDoc.filePath" [alt]="previewDoc.name" />
+          </div>
+        } @else if (getPreviewCategory(previewDoc.fileName) === 'pdf' && previewDocSafeUrl) {
+          <div class="full-preview-pdf">
+            <iframe [src]="previewDocSafeUrl" [title]="previewDoc.name"></iframe>
+          </div>
+        } @else {
+          <div class="upload-preview-file-card">
+            <i class="fa-solid" [ngClass]="getFileIcon(previewDoc.fileName)"></i>
+            <div>
+              <strong>{{ previewDoc.fileName }}</strong>
+              <span>
+                Pré-visualização embutida indisponível para este formato ({{
+                  getFileExtension(previewDoc.fileName).toUpperCase()
+                }}).
+              </span>
+            </div>
+          </div>
+        }
+
+        @if (previewDoc.description) {
+          <p class="preview-doc-desc">{{ previewDoc.description }}</p>
+        }
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" (click)="closePreviewModal()">Fechar</button>
+          <a
+            [href]="previewDoc.filePath"
+            target="_blank"
+            download
+            class="library-btn-upgrade"
+          >
+            <i class="fa-solid fa-download"></i>
+            <span>Baixar Arquivo</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 }

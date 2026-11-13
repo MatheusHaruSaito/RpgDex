@@ -107,7 +107,48 @@
 .canvas-topbar > * { pointer-events: auto; }
 .topbar-left   { justify-self: start; }
 .topbar-center { justify-self: center; }
-.topbar-right  { justify-self: end; }
+.topbar-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.storage-indicator {
+  display: inline-flex;
+  align-items: center;
+  height: var(--panel-h, 40px);
+  padding: 0 14px;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-indicator i {
+  color: var(--rpg-purple, #9E74D0);
+  font-size: 0.85rem;
+}
+
+.storage-indicator.warning {
+  border-color: rgba(245, 158, 11, 0.65);
+  color: #d97706;
+}
+
+.storage-indicator.warning i {
+  color: #f59e0b;
+}
+
+.storage-indicator.limit-reached {
+  border-color: rgba(231, 76, 60, 0.65);
+  color: var(--rpg-error, #e74c3c);
+}
+
+.storage-indicator.limit-reached i {
+  color: var(--rpg-error, #e74c3c);
+}
 
 .canvas-brand {
   height: var(--panel-h);
@@ -496,6 +537,92 @@ image-cropper { max-height: 400px; width: 100%; }
   border: 1px solid var(--rpg-purple, #9E74D0);
   pointer-events: none;
   z-index: 2000;
+}
+
+/* ── MODO SOMENTE LEITURA (CAMPANHA DESATIVADA) ── */
+.readonly-banner {
+  height: var(--panel-h);
+  padding: 0 16px;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--rpg-error, #e74c3c);
+  border-color: var(--rpg-error-border, rgba(231, 76, 60, 0.4));
+  background: var(--rpg-error-bg, rgba(231, 76, 60, 0.15));
+  white-space: nowrap;
+}
+
+.canvas-fullscreen-wrapper.readonly-mode .board-element,
+.canvas-fullscreen-wrapper.readonly-mode .type-drawing path {
+  cursor: default !important;
+}
+
+/* ── TOAST DE ERRO FLUTUANTE ── */
+.canvas-error-toast {
+  top: calc(var(--ui-gap) * 2 + var(--panel-h));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(520px, calc(100% - var(--ui-gap) * 2));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--rpg-surface, #252342);
+  border: 1px solid var(--rpg-error, #e74c3c);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(231, 76, 60, 0.25);
+  border-radius: var(--ui-radius);
+  color: var(--rpg-text-strong, #ffffff);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 2500;
+  animation: toastDropIn 0.2s ease-out;
+}
+
+.canvas-error-toast > i {
+  color: var(--rpg-error, #e74c3c);
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.canvas-error-text {
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.canvas-error-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--rpg-text-muted, #a0a0cc);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.canvas-error-close:hover {
+  background: rgba(231, 76, 60, 0.2);
+  color: var(--rpg-error, #e74c3c);
+}
+
+@keyframes toastDropIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
 
 /* ── RESPONSIVO ── */

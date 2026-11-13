@@ -227,6 +227,46 @@
   gap: 25px;
 }
 
+.section-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profile-limit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--rpg-purple-tint);
+  border: 1px solid var(--rpg-border-purple);
+  color: var(--rpg-purple);
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.profile-limit-badge.near-limit {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #d97706;
+}
+
+.profile-limit-badge.limit-reached {
+  background: rgba(229, 62, 62, 0.14);
+  border-color: rgba(229, 62, 62, 0.45);
+  color: #e53e3e;
+}
+
+.add-card.add-card--disabled {
+  opacity: 0.6;
+  border-style: solid;
+}
+
 /* ── CARDS DE CAMPANHA / PERSONAGEM ── */
 .campaign-card {
   background: var(--rpg-surface);
