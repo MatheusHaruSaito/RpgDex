@@ -91,10 +91,16 @@ namespace RpgDex.Infrastructure.Repositories
 
         public async Task<bool> SetActiveState(IEnumerable<Guid> ids, Guid campaignId, bool state)
         {
+            DateTime? deactivatedAt = state ? null : DateTime.UtcNow;
             var models = ids.Select(i => new UpdateOneModel<CanvasElement>(
-                    Builders<CanvasElement>.Filter.Where(e => e.Id == i && e.CampaignId == campaignId),
-                    Builders<CanvasElement>.Update.Set(e => e.IsActive,state)))
-                    .ToList();
+            Builders<CanvasElement>.Filter.Where(e => e.Id == i && e.CampaignId == campaignId),
+            Builders<CanvasElement>.Update
+                .Set(e => e.IsActive, state)
+                .Set(e => e.DeactivatedAt, deactivatedAt)))
+        .ToList();
+
+            if (models.Count == 0)
+                return true;
 
             var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
             return result.IsAcknowledged && result.MatchedCount == models.Count;

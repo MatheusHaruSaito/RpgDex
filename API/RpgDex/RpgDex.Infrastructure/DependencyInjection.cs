@@ -21,9 +21,10 @@ using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Jobs;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
-using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Resolvers;
+using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Services;
+using RpgDex.Infrastructure.Services.FileReferences;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
 using System;
@@ -124,9 +125,17 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignQueries, CampaignQueries>();
             services.AddScoped<ICanvasHubService, CanvasHubService>();
             services.AddSingleton<ILinkTicketService, LinkTicketService>();
+            services.AddScoped<IFileReferenceProvider, UserFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CharacterFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CampaignFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CanvasElementsFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, UserDocumentFileReferenceProvider>();
+
 
             services.AddHostedService<SyncPaymentJob>();
             services.AddHostedService<SubscriptionExpiryJob>();
+            services.AddHostedService<OrphanFilesCleanupJob>();
+            services.AddHostedService<InactiveCanvasElementsCleanupJob>();
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
