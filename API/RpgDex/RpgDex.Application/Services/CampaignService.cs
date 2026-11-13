@@ -101,7 +101,7 @@ namespace RpgDex.Application.Services
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var maxCampaigns = userLimits.Value!.CampaignQty;
             var result = await campaignQueries.GetAllAsync(guidUserId, 1, maxCampaigns);
-            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.TotalGameMaster,result.TotalPlayer);
             return Result<GetAllCampaignResponse>.Success(response);
         }
         public async Task<Result<GetAllCampaignResponse>> GetAllByUserId(string userId, int page, int pageSize)
@@ -116,7 +116,7 @@ namespace RpgDex.Application.Services
             var result = await campaignQueries.GetAllAsync(guidUserId, page, pageSize);
             var userLimits = await subscriptionService.GetSubscritptionLimits(userId);
             var maxCampaigns = userLimits.Value!.CampaignQty;
-            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.Total);
+            var response = new GetAllCampaignResponse(result.Campaigns.Adapt<IEnumerable<CampaignResponse>>(), maxCampaigns, result.TotalGameMaster,result.TotalPlayer);
             return Result<GetAllCampaignResponse>.Success(response);
         }
 
