@@ -27,7 +27,7 @@ namespace RpgDex.Infrastructure.Queries
                 & Builders<Campaign>.Filter.Eq(c => c.IsActive, true));
 
             var totalGameMaster = _entity.CountDocumentsAsync(Builders<Campaign>.Filter.Eq(c => c.GameMasterId, userId));
-            var totalPlayer = _entity.CountDocumentsAsync((Builders<Campaign>.Filter.AnyEq("PlayerIds", userId) & Builders<Campaign>.Filter.Eq(c => c.IsActive, true));
+            var totalPlayer = _entity.CountDocumentsAsync((Builders<Campaign>.Filter.AnyEq("PlayerIds", userId) & Builders<Campaign>.Filter.Eq(c => c.IsActive, true)));
             var request = _entity.Find(filter)
                 .Skip((page - 1) * pageSize)
                 .Limit(pageSize)
