@@ -1,0 +1,141 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+}
+
+.brand-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.brand-logo-link:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+  transition: transform 0.3s ease;
+}
+
+.brand-logo-link:hover .brand-logo {
+  transform: translateY(-2px);
+}
+
+/* ── VARIANTES DE LAYOUT ── */
+.brand-logo--horizontal {
+  flex-direction: row;
+  gap: 10px;
+}
+
+.brand-logo--stacked {
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.brand-logo--icon-only {
+  justify-content: center;
+}
+
+/* ── WRAPPER DO ÍCONE + DESFOQUE TRANSPARENTE NO FUNDO ── */
+.brand-logo__icon-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-logo__icon-wrapper--glow {
+  padding: 18px;
+}
+
+.brand-logo__icon-wrapper--glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  mask-image: radial-gradient(circle, black 38%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle, black 38%, transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── ÍCONE E TEXTO ── */
+.brand-logo__icon {
+  object-fit: contain;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.brand-logo__text {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -1px;
+  line-height: 1;
+  transform: translateY(1px);
+}
+
+/* ── TAMANHOS ── */
+/* SM: Navbar / Compacto */
+.brand-logo--sm .brand-logo__icon {
+  width: 44px;
+  height: 44px;
+}
+.brand-logo--sm .brand-logo__text {
+  font-size: 1.75rem;
+}
+
+/* MD: Footer / Padrão */
+.brand-logo--md .brand-logo__icon {
+  width: 50px;
+  height: 50px;
+}
+.brand-logo--md .brand-logo__text {
+  font-size: 1.9rem;
+}
+
+/* LG: Painéis de Login e Cadastro */
+.brand-logo--lg .brand-logo__icon {
+  width: 110px;
+  height: 110px;
+}
+.brand-logo--lg .brand-logo__text {
+  font-size: 2.3rem;
+}
+
+/* XL: Hero da Home */
+.brand-logo--xl .brand-logo__icon {
+  width: 140px;
+  height: 140px;
+}
+.brand-logo--xl .brand-logo__text {
+  font-size: 2.8rem;
+}
+
+/* ── ANIMAÇÃO FLUTUANTE (HERO) ── */
+.brand-logo--animated .brand-logo__icon {
+  animation: brandLogoFloat 4s ease-in-out infinite;
+}
+
+@keyframes brandLogoFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

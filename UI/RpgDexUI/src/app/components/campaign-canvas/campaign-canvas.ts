@@ -508,28 +508,32 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     const targetX = center.x - 25;
     const targetY = center.y - 25;
     const targetZ = ++this.maxZ;
+    const tokenName = this.customTokenName.trim();
 
     if (this.customTokenFile) {
+      // Cria diretamente como CanvasElement (ElementType.Token) com imagem via /element/image, sem criar personagem
       const formData = new FormData();
+      formData.append('campaignId', this.campaignId);
+      formData.append('elementType', CanvasElementType.Token.toString());
+      formData.append('x', targetX.toString());
+      formData.append('y', targetY.toString());
+      formData.append('z', targetZ.toString());
+      formData.append('scale', '1');
+      formData.append('content', tokenName);
+      formData.append('color', this.customTokenColor);
       formData.append(
-        'CharacterIcon',
+        'image',
         this.customTokenFile,
         this.customTokenFile.name || 'token-icon.png',
       );
-      formData.append('CampaignId', this.campaignId);
-      formData.append('X', targetX.toString());
-      formData.append('Y', targetY.toString());
-      formData.append('Z', targetZ.toString());
-      formData.append('Scale', '1');
-      formData.append('Content', this.customTokenName.trim());
-      formData.append('Color', this.customTokenColor);
-      formData.append('ElementType', CanvasElementType.Token.toString());
 
-      this.canvasElementService.QuickCreateTokenElement(formData as any).subscribe({
+      this.canvasElementService.CreateImageElement(formData as any).subscribe({
         next: (res) => {
           if (res.success && res.data) {
             const newEl: ExtendedCanvasElement = {
               ...res.data,
+              content: res.data.content || tokenName,
+              color: res.data.color || this.customTokenColor,
               imageUrl:
                 res.data.imageUrl ||
                 (res.data as any).image ||
@@ -547,16 +551,17 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           this.isCreatingElement = false;
         },
         error: (err) => {
-          console.error('[Canvas] Erro ao criar token personalizado:', err);
+          console.error('[Canvas] Erro ao criar token com imagem:', err);
           this.handleApiError(err);
           this.isCreatingElement = false;
         },
       });
     } else {
+      // Cria diretamente como CanvasElement (ElementType.Token) sem imagem via /element, sem criar personagem
       const req: CreateCanvaElementRequest = {
         campaignId: this.campaignId,
         elementType: CanvasElementType.Token,
-        content: this.customTokenName.trim(),
+        content: tokenName,
         x: targetX,
         y: targetY,
         z: targetZ,
@@ -568,13 +573,18 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       this.canvasElementService.CreateElement(req).subscribe({
         next: (res) => {
           if (res.success && res.data) {
-            this.selectAndSyncElement(res.data);
+            const newEl: ExtendedCanvasElement = {
+              ...res.data,
+              content: res.data.content || tokenName,
+              color: res.data.color || this.customTokenColor,
+            };
+            this.selectAndSyncElement(newEl);
             this.customTokenName = '';
             this.clearCustomTokenImage();
             this.isTokenModalOpen = false;
             this.refreshStorageUsage();
           } else {
-            this.showError(res.message || 'Erro ao criar token.');
+            this.showError(res.message || 'Erro ao criar token personalizado.');
           }
           this.isCreatingElement = false;
         },
@@ -1097,7 +1107,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             },
           });
 
-        // 2. Imagem ou Token personalizado que já possui imageUrl no canvas
+        // 2. Imagem ou Token personalizado com imagem
         } else if (
           (el.elementType === CanvasElementType.Image ||
             el.elementType === CanvasElementType.Token) &&
@@ -1106,86 +1116,55 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           fetch(el.imageUrl)
             .then((response) => response.blob())
             .then((blob) => {
-              const fileName =
-                el.elementType === CanvasElementType.Token
-                  ? 'pasted-token.png'
-                  : 'pasted-image.png';
+              const isToken = el.elementType === CanvasElementType.Token;
+              const fileName = isToken ? 'pasted-token.png' : 'pasted-image.png';
               const file = new File([blob], fileName, { type: blob.type || 'image/png' });
 
-              if (el.elementType === CanvasElementType.Token) {
-                const formData = new FormData();
-                formData.append('CharacterIcon', file, file.name);
-                formData.append('CampaignId', this.campaignId);
-                formData.append('X', newX.toString());
-                formData.append('Y', newY.toString());
-                formData.append('Z', (++this.maxZ).toString());
-                formData.append('Scale', (el.scale || 1).toString());
-                formData.append('Content', el.content || 'Token');
-                formData.append('Color', el.color || '#9E74D0');
-                formData.append('ElementType', CanvasElementType.Token.toString());
-
-                this.canvasElementService.QuickCreateTokenElement(formData as any).subscribe({
-                  next: (res) => {
-                    if (res.success && res.data) {
-                      const createdEl: ExtendedCanvasElement = {
-                        ...res.data,
-                        imageUrl:
-                          res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                      };
-                      const index = this.elements.findIndex((e) => e.id === res.data!.id);
-                      if (index > -1) this.elements[index] = createdEl;
-                      else this.elements.push(createdEl);
-
-                      this.selectedElements = [...this.selectedElements, createdEl];
-                      this.refreshStorageUsage();
-                    }
-                  },
-                  error: (err) => {
-                    console.error('[Canvas] Erro ao colar token com imagem:', err);
-                    this.handleApiError(err);
-                  },
-                });
-              } else {
-                const formData = new FormData();
-                formData.append('campaignId', this.campaignId);
-                formData.append('elementType', CanvasElementType.Image.toString());
-                formData.append('x', newX.toString());
-                formData.append('y', newY.toString());
-                formData.append('z', (++this.maxZ).toString());
-                formData.append('scale', (el.scale || 1).toString());
-                formData.append('content', el.isRound ? 'round' : el.content || 'square');
-                formData.append('image', file, file.name);
-
-                this.canvasElementService.CreateImageElement(formData as any).subscribe({
-                  next: (res) => {
-                    if (res.success && res.data) {
-                      const createdEl: ExtendedCanvasElement = {
-                        ...res.data,
-                        imageUrl:
-                          res.data.imageUrl || (res.data as any).image || el.imageUrl,
-                        isRound: el.isRound || res.data.content === 'round',
-                      };
-                      const index = this.elements.findIndex((e) => e.id === res.data!.id);
-                      if (index > -1) this.elements[index] = createdEl;
-                      else this.elements.push(createdEl);
-
-                      this.selectedElements = [...this.selectedElements, createdEl];
-                      this.refreshStorageUsage();
-                    }
-                  },
-                  error: (err) => {
-                    console.error('[Canvas] Erro ao colar imagem do canvas:', err);
-                    this.handleApiError(err);
-                  },
-                });
+              const formData = new FormData();
+              formData.append('campaignId', this.campaignId);
+              formData.append('elementType', el.elementType.toString());
+              formData.append('x', newX.toString());
+              formData.append('y', newY.toString());
+              formData.append('z', (++this.maxZ).toString());
+              formData.append('scale', (el.scale || 1).toString());
+              formData.append(
+                'content',
+                isToken ? el.content || 'Token' : el.isRound ? 'round' : el.content || 'square',
+              );
+              if (isToken) {
+                formData.append('color', el.color || '#9E74D0');
               }
+              formData.append('image', file, file.name);
+
+              this.canvasElementService.CreateImageElement(formData as any).subscribe({
+                next: (res) => {
+                  if (res.success && res.data) {
+                    const createdEl: ExtendedCanvasElement = {
+                      ...res.data,
+                      imageUrl:
+                        res.data.imageUrl || (res.data as any).image || el.imageUrl,
+                      isRound: !isToken && (el.isRound || res.data.content === 'round'),
+                    };
+                    const index = this.elements.findIndex((e) => e.id === res.data!.id);
+                    if (index > -1) this.elements[index] = createdEl;
+                    else this.elements.push(createdEl);
+
+                    this.selectedElements = [...this.selectedElements, createdEl];
+                    this.refreshStorageUsage();
+                  }
+                },
+                error: (err) => {
+                  console.error('[Canvas] Erro ao colar elemento com imagem:', err);
+                  this.handleApiError(err);
+                },
+              });
             })
             .catch((err) => {
               console.error('[Canvas] Erro ao obter blob da imagem copiada:', err);
               this.showError('Não foi possível duplicar a imagem selecionada.');
             });
 
-        // 3. Demais elementos (Texto, Desenho, Token sem imagem)
+        // 3. Demais elementos (Texto, Desenho, Token personalizado sem imagem)
         } else {
           const req: CreateCanvaElementRequest = {
             campaignId: this.campaignId,

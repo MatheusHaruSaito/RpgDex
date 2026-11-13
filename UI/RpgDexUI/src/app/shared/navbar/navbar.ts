@@ -3,14 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth-service';
 import { SubscriptionService } from '../../services/subscription-service';
+import { BrandLogo } from '../../components/brand-logo/brand-logo';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, BrandLogo],
   templateUrl: './navbar.html',
-  styleUrl: './navbar.css'
+  styleUrl: './navbar.css',
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
@@ -21,7 +22,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   constructor(
     public authService: AuthService,
     private subscriptionService: SubscriptionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +38,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       } else {
         this.userAvatarUrl = '';
       }
-      
+
       if (user) {
         this.checkEarlyAccess();
       } else {
@@ -57,7 +58,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
       error: () => {
         this.hasEarlyAccess = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 

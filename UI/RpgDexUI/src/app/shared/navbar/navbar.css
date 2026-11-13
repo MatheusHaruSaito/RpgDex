@@ -17,14 +17,11 @@
 }
 
 .logo {
-  font-family: 'Nunito', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 900;
-  color: white;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
   text-decoration: none;
   cursor: pointer;
-  letter-spacing: -1px;
-  transition: transform 0.3s ease;
   z-index: 1100;
 }
 

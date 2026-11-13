@@ -6,12 +6,13 @@ import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { RegisterUser } from '../../../models/registerUser';
 import { GoogleAuthService } from '../../services/google-auth-service';
+import { BrandLogo } from '../../components/brand-logo/brand-logo';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-user-register',
   standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule],
+  imports: [FormsModule, RouterModule, CommonModule, BrandLogo],
   templateUrl: './user-register.component.html',
   styleUrl: './user-register.component.css',
 })
@@ -48,6 +49,20 @@ export class UserRegisterComponent implements OnInit {
     return this.isLoading || this.isGoogleLoading || this.isDiscordLoading;
   }
 
+  private setError(msg: string): void {
+    this.errorMessage = msg;
+    this.cdr.detectChanges();
+  }
+
+  private handleApiError(err: any): void {
+    this.setError('Ocorreu um erro ao processar o seu pedido. Tente novamente.');
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      if (msg && msg !== '[object Object]') {
+        this.setError(msg);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;
@@ -56,16 +71,18 @@ export class UserRegisterComponent implements OnInit {
       this.cdr.detectChanges();
 
       this.authService.GoogleSingUp(token).subscribe({
-        next: () => {
+        next: (res: any) => {
           this.isGoogleLoading = false;
+          if (res?.success === false) {
+            this.handleApiError({ error: res });
+            return;
+          }
+          this.cdr.detectChanges();
           this.router.navigate(['/home']);
         },
         error: (err) => {
           this.isGoogleLoading = false;
-          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-            this.errorMessage = msg;
-            this.cdr.detectChanges();
-          });
+          this.handleApiError(err);
         },
       });
     });
@@ -179,6 +196,7 @@ export class UserRegisterComponent implements OnInit {
     this.termsAccepted = true;
     this.isTermsModalOpen = false;
     this.errorMessage = '';
+    this.cdr.detectChanges();
   }
 
   onTermsCheckboxClick(event: MouseEvent): void {
@@ -186,9 +204,10 @@ export class UserRegisterComponent implements OnInit {
 
     if (!this.hasReadTerms) {
       this.openTermsModal();
-      this.errorMessage = 'Por favor, leia os Termos de Uso no modal antes de aceitá-los.';
+      this.setError('Por favor, leia os Termos de Uso no modal antes de aceitá-los.');
     } else {
       this.termsAccepted = !this.termsAccepted;
+      this.cdr.detectChanges();
     }
   }
 
@@ -203,7 +222,7 @@ export class UserRegisterComponent implements OnInit {
     }
   }
 
-  Register() {
+  Register(): void {
     this.errorMessage = '';
     this.successMessage = '';
 
@@ -212,7 +231,7 @@ export class UserRegisterComponent implements OnInit {
 
     const userValidation = this.isUserNameValid(rawUserName);
     if (!userValidation.valid) {
-      this.errorMessage = userValidation.error!;
+      this.setError(userValidation.error!);
       return;
     }
 
@@ -221,52 +240,58 @@ export class UserRegisterComponent implements OnInit {
     }
 
     if (!this.registerForm.email || !this.registerForm.password || !this.confirmPassword) {
-      this.errorMessage = 'Preencha todos os campos.';
+      this.setError('Preencha todos os campos.');
       return;
     }
 
     if (!this.emailRegex.test(this.registerForm.email)) {
-      this.errorMessage = 'Informe um email válido.';
+      this.setError('Informe um email válido.');
       return;
     }
 
     if (this.passwordStrengthError) {
-      this.errorMessage = this.passwordStrengthError;
+      this.setError(this.passwordStrengthError);
       return;
     }
 
     if (this.registerForm.password !== this.confirmPassword) {
-      this.errorMessage = 'As senhas não coincidem.';
+      this.setError('As senhas não coincidem.');
       return;
     }
 
     if (!this.termsAccepted || !this.hasReadTerms) {
-      this.errorMessage = 'Você precisa abrir e aceitar os Termos de Uso antes de cadastrar.';
+      this.setError('Você precisa abrir e aceitar os Termos de Uso antes de cadastrar.');
       return;
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges();
 
     this.authService.Register(this.registerForm).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.isLoading = false;
+
+        if (res?.success === false) {
+          this.handleApiError({ error: res });
+          return;
+        }
+
+        this.cdr.detectChanges();
         this.router.navigate(['/verificar-email'], {
           state: { email: this.registerForm.email },
         });
       },
       error: (err) => {
         this.isLoading = false;
-        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-          this.errorMessage = msg;
-          this.cdr.detectChanges();
-        });
+        this.handleApiError(err);
       },
     });
   }
 
-  onDiscordLogin() {
+  onDiscordLogin(): void {
     if (this.isAnyLoading) return;
     this.isDiscordLoading = true;
+    this.cdr.detectChanges();
     this.authService.DiscordSingUp();
   }
 }

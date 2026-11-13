@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { ChatMessage } from '../../../models/chatMessage';
 import { CampaignChatMessageRequest } from '../../../models/campaignChatMessageRequest';
@@ -21,6 +22,13 @@ import { CharacterService } from '../../services/character-service';
 import { UserService } from '../../services/user-service';
 import { DiceRollsLogResult } from '../../../models/diceRollsLogResult';
 import { DiceRollEntryDto } from '../../../models/diceRollEntryDto';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+
+export interface ChatCommandHint {
+  syntax: string;
+  description: string;
+  example: string;
+}
 
 @Component({
   selector: 'app-campaign-chat-component',
@@ -48,6 +56,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
 
   searchQuery: string = '';
   showSearchInput: boolean = false;
+  showCommandsHint: boolean = false;
 
   myCharacters: Character[] = [];
   selectedCharacterId: string | null = null;
@@ -67,6 +76,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   usersCache: { [id: string]: any } = {};
 
   private chatSubscription!: Subscription;
+  private errorTimeout: any;
 
   constructor(
     private chatService: CampaignChatService,
@@ -74,9 +84,35 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private characterService: CharacterService,
     private userService: UserService,
+    private translateService: TranslateService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
   ) {}
+
+  get commandPrefix(): string {
+    return this.chatService.commandPrefix || '@rpg';
+  }
+
+  get availableCommands(): ChatCommandHint[] {
+    const prefix = this.commandPrefix;
+    return [
+      {
+        syntax: `${prefix} roll <XdY>`,
+        description: 'Rola uma quantidade X de dados de Y lados.',
+        example: `${prefix} roll 1d20`,
+      },
+      {
+        syntax: `${prefix} roll <XdY+Z>`,
+        description: 'Rola dados somando ou subtraindo um modificador.',
+        example: `${prefix} roll 2d6+4`,
+      },
+      {
+        syntax: `${prefix} roll <XdY + ZdW>`,
+        description: 'Combina diferentes tipos de dados na mesma rolagem.',
+        example: `${prefix} roll 1d20 + 1d8 + 3`,
+      },
+    ];
+  }
 
   ngOnInit(): void {
     const cached = this.authService.currentUserValue;
@@ -129,6 +165,21 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       });
     });
+  }
+
+  toggleCommandsHint(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showCommandsHint = !this.showCommandsHint;
+    this.cdr.detectChanges();
+  }
+
+  applyCommandExample(example: string): void {
+    this.newMessageText = example;
+    this.showCommandsHint = false;
+    this.cdr.detectChanges();
+    this.focusInput();
   }
 
   get chatMessagesOnly(): ChatMessage[] {
@@ -216,6 +267,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
 
   setTab(tab: 'chat' | 'rolls'): void {
     this.activeTab = tab;
+    this.showCommandsHint = false;
     if (tab === 'rolls') {
       this.loadRollsLog();
     }
@@ -358,15 +410,37 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     });
   }
 
+  private showSendError(message: string): void {
+    if (this.errorTimeout) clearTimeout(this.errorTimeout);
+    this.sendError = message;
+    this.cdr.detectChanges();
+
+    this.errorTimeout = setTimeout(() => {
+      this.sendError = '';
+      this.cdr.detectChanges();
+    }, 6000);
+  }
+
+  private handleChatError(err: any, fallbackMessage: string): void {
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      const safeMsg =
+        typeof msg === 'string' && msg.trim() && msg !== '[object Object]'
+          ? msg
+          : fallbackMessage;
+      this.showSendError(safeMsg);
+    });
+  }
+
   send(): void {
     this.sendError = '';
+    this.showCommandsHint = false;
     const text = this.newMessageText.trim();
     const commandPrefix = this.chatService.commandPrefix;
 
     if (!text || this.isSending) return;
 
     if (text.length > 500) {
-      this.sendError = 'A mensagem deve ter no máximo 500 caracteres.';
+      this.showSendError('A mensagem deve ter no máximo 500 caracteres.');
       return;
     }
 
@@ -393,11 +467,19 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             this.isSending = false;
-            this.sendError = err?.error?.message ?? 'Erro ao executar o comando de rolagem.';
-            this.cdr.detectChanges();
+            this.newMessageText = textToSend;
+            this.handleChatError(err, 'Comando ou fórmula de dados inválida.');
             this.focusInput();
           },
         });
+        return;
+      } else {
+        this.isSending = false;
+        this.newMessageText = textToSend;
+        this.showSendError(
+          `Comando inválido. Use "${commandPrefix} roll <dados>" (ex: ${commandPrefix} roll 1d20).`,
+        );
+        this.focusInput();
         return;
       }
     }
@@ -417,8 +499,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.isSending = false;
         this.newMessageText = textToSend;
-        this.sendError = err?.error?.message ?? 'Erro ao enviar a mensagem.';
-        this.cdr.detectChanges();
+        this.handleChatError(err, 'Erro ao enviar a mensagem.');
         this.focusInput();
       },
     });
@@ -471,6 +552,8 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
       this.unreadCount = 0;
       this.scrollToBottom();
       this.focusInput();
+    } else {
+      this.showCommandsHint = false;
     }
   }
 
@@ -498,6 +581,9 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
     this.chatService.stopConnection(this.campaignId);
     this.chatSubscription?.unsubscribe();
   }
