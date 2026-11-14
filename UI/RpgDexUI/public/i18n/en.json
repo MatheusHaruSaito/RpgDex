@@ -151,6 +151,9 @@
     "AGE_GUARDIAN_EMAIL_SEND_FAILED": "Failed to send the email to your guardian. Check the address and try again.",
     "AGE_INVALID_CONSENT_TOKEN": "Invalid or expired consent link.",
     "AGE_NOT_VERIFIED": "User age not verified",
-    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "Guardian email must be different from your email."
+    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "Guardian email must be different from your email.",
+    "AGE_NO_PENDING_CONSENT": "There is no pending guardian consent for this account.",
+    "AGE_RESEND_TOO_SOON": "Please wait a minute before requesting another email.",
+    "AGE_INVALID_GUARDIAN_EMAIL": "Invalid guardian email."
   }
 }

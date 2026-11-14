@@ -15,6 +15,7 @@ import { ResendEmailVerificationRequest } from '../../models/resendEmailVerifica
 import { AuthOptionsResponse } from '../../models/authOptionsResponse';
 import { ValidateTwoFactorRequest } from '../../models/validateTwoFactorRequest';
 import { LoginResponse } from '../../models/loginResponse';
+import { ResendGuardianConsentRequest } from '../../models/resendGuardianConsentRequest';
 
 @Injectable({
   providedIn: 'root',
@@ -235,4 +236,10 @@ export class AuthService {
   }): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${this.env}/guardian-consent"`, request);
   }
+  resendGuardianConsentEmail(guardianEmail: ResendGuardianConsentRequest): Observable<ApiResponse<string>> {
+  return this.http.post<ApiResponse<string>>(
+    `${this.env}/resend-guardian-consent`,
+    guardianEmail,
+  );
+}
 }

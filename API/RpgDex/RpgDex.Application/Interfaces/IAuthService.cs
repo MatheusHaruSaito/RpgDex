@@ -31,6 +31,7 @@ namespace RpgDex.Application.Interfaces
         Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request);
         Task<Result<AgeVerificationResponse>> SubmitAgeVerification(string userId, AgeVerificationRequest request);
         Task<Result<string>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request);
+        Task<Result<string>> ResendGuardianConsentEmail(string userId, ResendGuardianConsentRequest request);
 
     }
 }

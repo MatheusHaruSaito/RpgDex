@@ -208,7 +208,14 @@ namespace RpgDex.Domain.Common
         public static readonly Error InvalidConsentToken =
             new("AGE_INVALID_CONSENT_TOKEN", "Invalid or expired guardian consent link");
         public static readonly Error GuardianEmailSameAsUser =
-    new("AGE_GUARDIAN_EMAIL_SAME_AS_USER", "Guardian email must be different from your email");
+            new("AGE_GUARDIAN_EMAIL_SAME_AS_USER", "Guardian email must be different from your email");
+        public static readonly Error NoPendingConsent =
+            new("AGE_NO_PENDING_CONSENT", "There is no pending guardian consent for this account");
+
+        public static readonly Error ResendTooSoon =
+            new("AGE_RESEND_TOO_SOON", "Please wait a moment before requesting another email");
+        public static readonly Error InvalidGuardianEmail =
+    new("AGE_INVALID_GUARDIAN_EMAIL", "Invalid guardian email");
     }
 }
 

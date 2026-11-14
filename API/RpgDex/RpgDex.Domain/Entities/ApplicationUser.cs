@@ -21,6 +21,6 @@ namespace RpgDex.Domain.Entities
         public string? GuardianEmail { get; set; }
         public GuardianConsentStatus GuardianConsent { get; set; } = GuardianConsentStatus.NotRequired;
         public DateTime? AgeVerifiedAt { get; set; }
-
+        public DateTime? GuardianEmailSentAt { get; set; }
     }
 }

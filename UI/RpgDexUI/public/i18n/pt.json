@@ -151,6 +151,9 @@
     "AGE_GUARDIAN_EMAIL_SEND_FAILED": "Falha ao enviar o e-mail ao responsável. Verifique o endereço e tente novamente.",
     "AGE_INVALID_CONSENT_TOKEN": "Link de consentimento inválido ou expirado.",
     "AGE_NOT_VERIFIED": "Idade do usuario não verificada",
-    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "O e-mail do responsável deve ser diferente do seu."
+    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "O e-mail do responsável deve ser diferente do seu.",
+    "AGE_NO_PENDING_CONSENT": "Não há consentimento do responsável pendente nesta conta.",
+    "AGE_RESEND_TOO_SOON": "Aguarde um minuto antes de pedir outro e-mail.",
+    "AGE_INVALID_GUARDIAN_EMAIL": "E-mail do responsável inválido."
   }
 }

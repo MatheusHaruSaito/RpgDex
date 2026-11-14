@@ -165,5 +165,13 @@ namespace RpgDex.WebApi.Controllers
             var result = await _authService.ConfirmGuardianConsent(request);
             return result.ToIActionResult();
         }
+        [Authorize]
+        [HttpPost("resend-guardian-consent")]
+        public async Task<IActionResult> ResendGuardianConsent([FromBody] ResendGuardianConsentRequest request)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _authService.ResendGuardianConsentEmail(userId, request);
+            return result.ToIActionResult();
+        }
     }
 }

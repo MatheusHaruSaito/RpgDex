@@ -32,6 +32,7 @@ namespace RpgDex.Application.Services
         private const string GoogleProvider = "Google";
         private const string DiscordProvider = "Discord";
         private const string GuardianConsentPurpose = "GuardianConsent";
+        private static readonly TimeSpan GuardianResendCooldown = TimeSpan.FromMinutes(1);
         public async Task<Result<LoginResponse>> LogIn(AuthUserDTO authUser)
         {
             var checkAuthUserValid = authUserValidator.Validate(authUser);
@@ -571,7 +572,41 @@ namespace RpgDex.Application.Services
                 ? Result<string>.Success("Guardian consent confirmed")
                 : Result<string>.Failure(AgeVerificationError.SaveFailed);
         }
+        public async Task<Result<string>> ResendGuardianConsentEmail(string userId, ResendGuardianConsentRequest request)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user is null) return Result<string>.Failure(AuthError.UserNotFound);
 
+            if (user.GuardianConsent != GuardianConsentStatus.Pending)
+                return Result<string>.Failure(AgeVerificationError.NoPendingConsent);
+
+            if (user.GuardianEmailSentAt is { } lastSent &&
+                DateTime.UtcNow - lastSent < GuardianResendCooldown)
+                return Result<string>.Failure(AgeVerificationError.ResendTooSoon);
+
+            if (!string.IsNullOrWhiteSpace(request.GuardianEmail))
+            {
+                var newEmail = request.GuardianEmail.Trim().ToLowerInvariant();
+
+                if (newEmail.Length > 255 || !System.Net.Mail.MailAddress.TryCreate(newEmail, out _))
+                    return Result<string>.Failure(AgeVerificationError.InvalidGuardianEmail);
+
+                if (string.Equals(newEmail, user.Email, StringComparison.OrdinalIgnoreCase))
+                    return Result<string>.Failure(AgeVerificationError.GuardianEmailSameAsUser);
+
+                user.GuardianEmail = newEmail;
+            }
+
+            var sent = await SendGuardianConsentEmailAsync(user);
+            if (!sent) return Result<string>.Failure(AgeVerificationError.GuardianEmailSendFailed);
+
+            user.GuardianEmailSentAt = DateTime.UtcNow;
+            var update = await userManager.UpdateAsync(user);
+
+            return update.Succeeded
+                ? Result<string>.Success("Guardian consent email sent")
+                : Result<string>.Failure(AgeVerificationError.SaveFailed);
+        }
         private async Task<bool> SendGuardianConsentEmailAsync(ApplicationUser user)
         {
             var token = await userManager.GenerateUserTokenAsync(
