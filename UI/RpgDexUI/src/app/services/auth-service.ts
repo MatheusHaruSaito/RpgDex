@@ -245,9 +245,10 @@ export class AuthService {
   public GuardianConsent(request: {
     userId: string;
     token: string;
-  }): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(`${this.env}/guardian-consent"`, request);
+  }): Observable<ApiResponse<tokenModel>> {
+    return this.http.post<ApiResponse<tokenModel>>(`${this.env}/guardian-consent`, request);
   }
+
   resendGuardianConsentEmail(guardianEmail: ResendGuardianConsentRequest): Observable<ApiResponse<string>> {
   return this.http.post<ApiResponse<string>>(
     `${this.env}/resend-guardian-consent`,

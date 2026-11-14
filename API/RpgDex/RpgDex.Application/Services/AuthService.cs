@@ -590,14 +590,13 @@ namespace RpgDex.Application.Services
             return Result<AgeVerificationResponse>.Success(new(isMinor, user.GuardianConsent));
         }
 
-        public async Task<Result<string>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request)
+        public async Task<Result<RefreshTokenModel>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request)
         {
             var user = await userManager.FindByIdAsync(request.UserId);
             if (user is null) return Result<string>.Failure(AuthError.UserNotFound);
 
             if (user.GuardianConsent != GuardianConsentStatus.Pending)
-                return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
-
+                return Result<RefreshTokenModel>.Failure(AgeVerificationError.InvalidConsentToken);
             string decoded;
             try
             {
@@ -605,20 +604,20 @@ namespace RpgDex.Application.Services
             }
             catch (FormatException)
             {
-                return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
+                return Result<RefreshTokenModel>.Failure(AgeVerificationError.InvalidConsentToken);
             }
 
             var valid = await userManager.VerifyUserTokenAsync(
                 user, TokenOptions.DefaultProvider, GuardianConsentPurpose, decoded);
-            if (!valid) return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
+            if (!valid) return Result<RefreshTokenModel>.Failure(AgeVerificationError.InvalidConsentToken);
 
             user.GuardianConsent = GuardianConsentStatus.Approved;
             user.AgeVerifiedAt = DateTime.UtcNow;
             var result = await userManager.UpdateAsync(user);
 
             return result.Succeeded
-                ? Result<string>.Success("Guardian consent confirmed")
-                : Result<string>.Failure(AgeVerificationError.SaveFailed);
+                ? await LogInAsync(user)
+                : Result<RefreshTokenModel>.Failure(AgeVerificationError.SaveFailed);
         }
 
         public async Task<Result<string>> ResendGuardianConsentEmail(string userId, ResendGuardianConsentRequest request)
