@@ -91,14 +91,7 @@ function handle401Error(req: HttpRequest<any>, next: HttpHandlerFn, authService:
     }),
   );
 }
-function handle403Error(error: HttpErrorResponse, authService: AuthService, router: Router) {
-  const status = authService.getLoggedUserAgeStatus();
-  if (status === 'unverified' && !router.url.startsWith('/age-verification')) {
-    router.navigate(['/age-verification']);
-  } else if (status === 'pending' && !router.url.startsWith('/age-pending')) {
-    router.navigate(['/age-pending']);
-  }
 
-  // sempre devolve um Observable, propagando o erro para quem chamou
+function handle403Error(error: HttpErrorResponse, authService: AuthService, router: Router) {
   return throwError(() => error);
 }

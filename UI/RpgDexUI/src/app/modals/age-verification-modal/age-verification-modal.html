@@ -149,12 +149,14 @@
               type="button"
               class="btn-age-secondary"
               (click)="resendConsent()"
-              [disabled]="isResending() || resendCooldown() > 0"
+              [disabled]="isResending() || (!editingGuardianEmail() && resendCooldown() > 0)"
             >
               @if (isResending()) {
                 <span><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
-              } @else if (resendCooldown() > 0) {
+              } @else if (!editingGuardianEmail() && resendCooldown() > 0) {
                 <span>Reenviar em {{ resendCooldown() }}s</span>
+              } @else if (editingGuardianEmail()) {
+                <span>Enviar para Novo E-mail</span>
               } @else {
                 <span>Reenviar E-mail</span>
               }
@@ -176,6 +178,15 @@
           (click)="verified.emit({ isMinor: true }); close.emit()"
         >
           Entendi
+        </button>
+
+        <button
+          type="button"
+          class="btn-link-toggle"
+          style="width: 100%; margin-top: 12px;"
+          (click)="logout()"
+        >
+          Sair da conta
         </button>
       }
     </div>

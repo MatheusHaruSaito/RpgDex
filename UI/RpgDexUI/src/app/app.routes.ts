@@ -1,4 +1,3 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home';
 import { UserLoginComponent } from './pages/user-login/user-login.component';
@@ -14,8 +13,6 @@ import { EmailConfirmation } from './pages/email-confirmation/email-confirmation
 import { EmailPending } from './pages/email-pending/email-pending';
 import { DiscordAuth } from './callbacks/discord-auth/discord-auth';
 
-// ... imports existentes ...
-
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
@@ -24,6 +21,11 @@ export const routes: Routes = [
   { path: 'emailConfirmation', component: EmailConfirmation },
   { path: 'verificar-email', component: EmailPending },
   { path: 'auth/callback', component: DiscordAuth },
+  {
+    path: 'guardianConsent',
+    loadComponent: () =>
+      import('./components/guardian-consent/guardian-consent').then((m) => m.GuardianConsentComponent),
+  },
 
   {
     path: 'esqueci-senha',

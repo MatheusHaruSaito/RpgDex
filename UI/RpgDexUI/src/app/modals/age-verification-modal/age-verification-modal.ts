@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
@@ -26,6 +27,7 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 export class AgeVerificationModalComponent implements OnChanges, OnDestroy {
   private authService = inject(AuthService);
   private translateService = inject(TranslateService);
+  private router = inject(Router);
   private cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
   @Input() visible = false;
@@ -191,16 +193,18 @@ export class AgeVerificationModalComponent implements OnChanges, OnDestroy {
   }
 
   resendConsent(): void {
-    if (this.isResending() || this.resendCooldown() > 0) return;
+    if (this.isResending() || (!this.editingGuardianEmail() && this.resendCooldown() > 0)) return;
 
     this.errorMessage.set('');
     this.resendMessage.set('');
 
     const updatedEmail = this.editingGuardianEmail() ? this.newGuardianEmail().trim() : null;
 
-    if (updatedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updatedEmail)) {
-      this.errorMessage.set('Informe um e-mail válido para o responsável.');
-      return;
+    if (this.editingGuardianEmail()) {
+      if (!updatedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updatedEmail)) {
+        this.errorMessage.set('Informe um e-mail válido para o responsável.');
+        return;
+      }
     }
 
     this.isResending.set(true);
@@ -232,5 +236,11 @@ export class AgeVerificationModalComponent implements OnChanges, OnDestroy {
           });
         },
       });
+  }
+
+  logout(): void {
+    this.authService.Logout();
+    this.close.emit();
+    this.router.navigate(['/login']);
   }
 }

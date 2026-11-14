@@ -629,13 +629,16 @@ namespace RpgDex.Application.Services
             if (user.GuardianConsent != GuardianConsentStatus.Pending)
                 return Result<string>.Failure(AgeVerificationError.NoPendingConsent);
 
-            if (user.GuardianEmailSentAt is { } lastSent &&
+            var isChangingEmail = !string.IsNullOrWhiteSpace(request.GuardianEmail);
+
+            if (!isChangingEmail &&
+                user.GuardianEmailSentAt is { } lastSent &&
                 DateTime.UtcNow - lastSent < GuardianResendCooldown)
                 return Result<string>.Failure(AgeVerificationError.ResendTooSoon);
 
-            if (!string.IsNullOrWhiteSpace(request.GuardianEmail))
+            if (isChangingEmail)
             {
-                var newEmail = request.GuardianEmail.Trim().ToLowerInvariant();
+                var newEmail = request.GuardianEmail!.Trim().ToLowerInvariant();
 
                 if (newEmail.Length > 255 || !System.Net.Mail.MailAddress.TryCreate(newEmail, out _))
                     return Result<string>.Failure(AgeVerificationError.InvalidGuardianEmail);

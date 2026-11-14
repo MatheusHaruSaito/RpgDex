@@ -66,6 +66,7 @@ export class AppComponent implements OnInit {
       .subscribe((event: NavigationEnd) => {
         const currentUrl = event.urlAfterRedirects.split('?')[0];
         this.showBackButton = !this.backButtonHiddenRoutes.includes(currentUrl);
+        this.ageModalDismissed = false;
         this.evaluateAgeModal(currentUrl);
       });
   }

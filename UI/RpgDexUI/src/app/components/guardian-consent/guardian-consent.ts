@@ -16,11 +16,16 @@ export class GuardianConsentComponent implements OnInit {
 
   status = signal<'loading' | 'success' | 'error'>('loading');
   errorMessage = signal<string>('Não foi possível validar a autorização.');
+  private alreadyRequested = false;
 
   ngOnInit(): void {
+    if (this.alreadyRequested) return;
+    this.alreadyRequested = true;
+
     const queryMap = this.route.snapshot.queryParamMap;
     const userId = queryMap.get('userId') || queryMap.get('userid') || '';
-    const token = queryMap.get('token') || '';
+    const rawToken = queryMap.get('token') || '';
+    const token = rawToken.replace(/ /g, '+');
 
     if (!userId || !token) {
       this.status.set('error');
