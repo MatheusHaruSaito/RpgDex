@@ -147,6 +147,14 @@ namespace RpgDex.Domain.Common
         public const string CanvasEmptyItems = "CANVAS_EMPTY_ITEMS";
         public const string CanvasDuplicatedItems = "CANVAS_DUPLICATED_ITEMS";
 
+        public const string BirthDateFuture = "BIRTH_DATE_FUTURE";
+        public const string BirthDateInvalid = "BIRTH_DATE_INVALID";
+        public const string CpfEmpty = "CPF_EMPTY";
+        public const string CpfInvalid = "CPF_INVALID";
+        public const string GuardianCpfEmpty = "GUARDIAN_CPF_EMPTY";
+        public const string GuardianCpfInvalid = "GUARDIAN_CPF_INVALID";
+        public const string GuardianCpfSameAsUser = "GUARDIAN_CPF_SAME_AS_USER";
+        public const string GuardianEmailEmpty = "GUARDIAN_EMAIL_EMPTY";
         public const string ReportTitleEmpty = "REPORT_TITLE_EMPTY";
         public const string ReportDescriptionEmpty = "REPORT_DESCRIPTION_EMPTY";
         public const string ReportTargetEmpty = "REPORT_TARGET_EMPTY";
@@ -181,6 +189,33 @@ namespace RpgDex.Domain.Common
     public static class MercadoPagoOrderError
     {
         public static readonly Error CreationFailed = new("MERCADOPAGO_ORDER_CREATION_FAILED", "Failed to create the payment order.");
+    }
+
+    public static class AgeVerificationError
+    {
+        public static readonly Error AlreadyVerified =
+            new("AGE_ALREADY_VERIFIED", "Age has already been verified for this account");
+
+        public static readonly Error CpfAlreadyInUse =
+            new("AGE_CPF_ALREADY_IN_USE", "This CPF is already in use");
+
+        public static readonly Error SaveFailed =
+            new("AGE_SAVE_FAILED", "Failed to save age verification data");
+
+        public static readonly Error GuardianEmailSendFailed =
+            new("AGE_GUARDIAN_EMAIL_SEND_FAILED", "Failed to send the email to the guardian");
+
+        public static readonly Error InvalidConsentToken =
+            new("AGE_INVALID_CONSENT_TOKEN", "Invalid or expired guardian consent link");
+        public static readonly Error GuardianEmailSameAsUser =
+            new("AGE_GUARDIAN_EMAIL_SAME_AS_USER", "Guardian email must be different from your email");
+        public static readonly Error NoPendingConsent =
+            new("AGE_NO_PENDING_CONSENT", "There is no pending guardian consent for this account");
+
+        public static readonly Error ResendTooSoon =
+            new("AGE_RESEND_TOO_SOON", "Please wait a moment before requesting another email");
+        public static readonly Error InvalidGuardianEmail =
+    new("AGE_INVALID_GUARDIAN_EMAIL", "Invalid guardian email");
     }
 }
 

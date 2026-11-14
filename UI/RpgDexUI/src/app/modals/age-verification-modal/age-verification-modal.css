@@ -1,0 +1,275 @@
+.age-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 10, 30, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: fadeInOverlay 0.2s ease-out;
+}
+
+.age-modal-card {
+  background: var(--rpg-surface, #ffffff);
+  border: 2px solid var(--rpg-border, #e2e8f0);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px 28px;
+  box-shadow: var(--rpg-shadow-lg, 0 20px 40px rgba(0, 0, 0, 0.25));
+  box-sizing: border-box;
+  animation: slideUpModal 0.25s ease-out;
+}
+
+/* ── CABEÇALHO ── */
+.age-modal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.age-badge-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 16px;
+  background: rgba(158, 116, 208, 0.14);
+  color: var(--rpg-purple, #9e74d0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+
+.age-badge-icon.pending {
+  background: rgba(16, 185, 129, 0.14);
+  color: #059669;
+}
+
+.age-modal-header h2 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.55rem;
+  color: var(--rpg-text-dark, #3c3489);
+  margin: 0 0 8px;
+}
+
+.age-modal-header p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.95rem;
+  color: var(--rpg-text-muted, #64748b);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ── FORMULÁRIO ── */
+.age-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field label {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--rpg-text-strong, #1e293b);
+}
+
+.form-field input {
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  padding: 13px 15px;
+  border: 2px solid var(--rpg-border, #cbd5e1);
+  border-radius: 10px;
+  background: var(--rpg-surface-2, #f8fafc);
+  color: var(--rpg-text-strong, #1e293b);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: var(--rpg-purple, #9e74d0);
+  background: var(--rpg-surface, #ffffff);
+}
+
+.form-field input:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* ── BLOCO DO RESPONSÁVEL LEGAL (< 18 ANOS) ── */
+.guardian-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(158, 116, 208, 0.08);
+  border: 1.5px solid rgba(158, 116, 208, 0.35);
+  animation: slideUpModal 0.2s ease-out;
+}
+
+.guardian-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--rpg-text-dark, #3c3489);
+  line-height: 1.45;
+}
+
+.guardian-alert i {
+  color: var(--rpg-purple, #9e74d0);
+  font-size: 1.1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* ── REENVIO DE E-MAIL DO RESPONSÁVEL ── */
+.resend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.resend-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-age-secondary {
+  width: 100%;
+  padding: 12px 20px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--rpg-purple, #9e74d0);
+  background: rgba(158, 116, 208, 0.12);
+  border: 1.5px solid var(--rpg-purple, #9e74d0);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-age-secondary:hover:not(:disabled) {
+  background: rgba(158, 116, 208, 0.2);
+}
+
+.btn-age-secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn-link-toggle {
+  background: none;
+  border: none;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--rpg-text-muted, #64748b);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-link-toggle:hover {
+  color: var(--rpg-purple, #9e74d0);
+}
+
+/* ── FEEDBACKS & BOTÃO PRINCIPAL ── */
+.age-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--rpg-error, #dc2626);
+  background: var(--rpg-error-bg, #fef2f2);
+  border: 1px solid var(--rpg-error-border, #fecaca);
+}
+
+.age-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.btn-age-submit {
+  width: 100%;
+  margin-top: 4px;
+  padding: 15px 24px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  background: var(--rpg-purple, #9e74d0);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: var(--rpg-shadow-btn, 0 4px 12px rgba(158, 116, 208, 0.35));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-age-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.btn-age-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUpModal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .age-modal-card {
+    padding: 24px 20px;
+  }
+}

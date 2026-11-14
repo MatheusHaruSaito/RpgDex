@@ -1,0 +1,183 @@
+@if (visible) {
+  <div class="age-modal-overlay" (click)="!blocking && close.emit()">
+    <div class="age-modal-card" (click)="$event.stopPropagation()">
+      @if (!pendingGuardianApproval()) {
+        <div class="age-modal-header">
+          <div class="age-badge-icon">
+            <i class="fa-solid fa-id-card-clip"></i>
+          </div>
+          <h2>Verificação de Idade</h2>
+          <p>
+            Para garantir a segurança da comunidade RPGDex, precisamos confirmar sua faixa etária.
+          </p>
+        </div>
+
+        <form class="age-modal-form" (ngSubmit)="submit()">
+          <div class="form-field">
+            <label for="birthDate">Data de Nascimento</label>
+            <input
+              id="birthDate"
+              type="date"
+              [max]="todayStr"
+              [ngModel]="birthDate()"
+              (ngModelChange)="birthDate.set($event)"
+              name="birthDate"
+              [disabled]="isLoading()"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="userCpf">Seu CPF</label>
+            <input
+              id="userCpf"
+              type="text"
+              placeholder="000.000.000-00"
+              maxlength="14"
+              [ngModel]="cpf()"
+              (ngModelChange)="formatCpf($event, 'user')"
+              name="userCpf"
+              [disabled]="isLoading()"
+              required
+            />
+          </div>
+
+          @if (isMinor()) {
+            <div class="guardian-box">
+              <div class="guardian-alert">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>
+                  Como você tem menos de 18 anos, precisamos da autorização de um responsável legal.
+                </span>
+              </div>
+
+              <div class="form-field">
+                <label for="guardianCpf">CPF do Responsável</label>
+                <input
+                  id="guardianCpf"
+                  type="text"
+                  placeholder="000.000.000-00"
+                  maxlength="14"
+                  [ngModel]="guardianCpf()"
+                  (ngModelChange)="formatCpf($event, 'guardian')"
+                  name="guardianCpf"
+                  [disabled]="isLoading()"
+                  required
+                />
+              </div>
+
+              <div class="form-field">
+                <label for="guardianEmail">E-mail do Responsável</label>
+                <input
+                  id="guardianEmail"
+                  type="email"
+                  placeholder="responsavel@email.com"
+                  [ngModel]="guardianEmail()"
+                  (ngModelChange)="guardianEmail.set($event)"
+                  name="guardianEmail"
+                  [disabled]="isLoading()"
+                  required
+                />
+              </div>
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div class="age-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <button type="submit" class="btn-age-submit" [disabled]="isLoading()">
+            @if (!isLoading()) {
+              <span>Confirmar Dados</span>
+            } @else {
+              <span><i class="fa-solid fa-spinner fa-spin"></i> Verificando...</span>
+            }
+          </button>
+        </form>
+      } @else {
+        <!-- TELA DE AGUARDANDO RESPONSÁVEL -->
+        <div class="age-modal-header">
+          <div class="age-badge-icon pending">
+            <i class="fa-solid fa-envelope-circle-check"></i>
+          </div>
+          <h2>Aguardando Responsável</h2>
+          <p>
+            Enviamos um link de confirmação para
+            @if (guardianEmail()) {
+              <strong>{{ guardianEmail() }}</strong>
+            } @else {
+              o e-mail do seu responsável legal
+            }. Assim que ele aprovar, seu acesso será liberado.
+          </p>
+        </div>
+
+        <div class="resend-section">
+          @if (editingGuardianEmail()) {
+            <div class="form-field">
+              <label for="newGuardianEmail">Novo e-mail do responsável</label>
+              <input
+                id="newGuardianEmail"
+                type="email"
+                placeholder="novo.responsavel@email.com"
+                [ngModel]="newGuardianEmail()"
+                (ngModelChange)="newGuardianEmail.set($event)"
+                name="newGuardianEmail"
+                [disabled]="isResending()"
+              />
+            </div>
+          }
+
+          @if (resendMessage()) {
+            <div class="age-success">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>{{ resendMessage() }}</span>
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div class="age-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <div class="resend-actions">
+            <button
+              type="button"
+              class="btn-age-secondary"
+              (click)="resendConsent()"
+              [disabled]="isResending() || resendCooldown() > 0"
+            >
+              @if (isResending()) {
+                <span><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
+              } @else if (resendCooldown() > 0) {
+                <span>Reenviar em {{ resendCooldown() }}s</span>
+              } @else {
+                <span>Reenviar E-mail</span>
+              }
+            </button>
+
+            <button
+              type="button"
+              class="btn-link-toggle"
+              (click)="editingGuardianEmail.set(!editingGuardianEmail()); errorMessage.set('')"
+            >
+              {{ editingGuardianEmail() ? 'Cancelar alteração' : 'Informou o e-mail errado?' }}
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="btn-age-submit"
+          (click)="verified.emit({ isMinor: true }); close.emit()"
+        >
+          Entendi
+        </button>
+      }
+    </div>
+  </div>
+}

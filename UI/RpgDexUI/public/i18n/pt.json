@@ -134,6 +134,26 @@
     "PLAN_TAG_ALREADY_EXISTS": "Tag já existe no plano.",
     "PLAN_TAG_NOT_FOUND": "Tag not found on the plan.",
 
-    "MERCADOPAGO_ORDER_CREATION_FAILED": "Falha ao criar ordem de pagamento"
+    "MERCADOPAGO_ORDER_CREATION_FAILED": "Falha ao criar ordem de pagamento",
+
+    "BIRTH_DATE_FUTURE": "A data de nascimento não pode estar no futuro.",
+    "BIRTH_DATE_INVALID": "Data de nascimento inválida.",
+    "CPF_EMPTY": "O CPF não pode estar vazio.",
+    "CPF_INVALID": "CPF inválido.",
+    "GUARDIAN_CPF_EMPTY": "O CPF do responsável não pode estar vazio.",
+    "GUARDIAN_CPF_INVALID": "CPF do responsável inválido.",
+    "GUARDIAN_CPF_SAME_AS_USER": "O CPF do responsável deve ser diferente do seu.",
+    "GUARDIAN_EMAIL_EMPTY": "O e-mail do responsável não pode estar vazio.",
+
+    "AGE_ALREADY_VERIFIED": "Sua idade já foi verificada.",
+    "AGE_CPF_ALREADY_IN_USE": "Este CPF já está em uso.",
+    "AGE_SAVE_FAILED": "Falha ao salvar seus dados. Tente novamente.",
+    "AGE_GUARDIAN_EMAIL_SEND_FAILED": "Falha ao enviar o e-mail ao responsável. Verifique o endereço e tente novamente.",
+    "AGE_INVALID_CONSENT_TOKEN": "Link de consentimento inválido ou expirado.",
+    "AGE_NOT_VERIFIED": "Idade do usuario não verificada",
+    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "O e-mail do responsável deve ser diferente do seu.",
+    "AGE_NO_PENDING_CONSENT": "Não há consentimento do responsável pendente nesta conta.",
+    "AGE_RESEND_TOO_SOON": "Aguarde um minuto antes de pedir outro e-mail.",
+    "AGE_INVALID_GUARDIAN_EMAIL": "E-mail do responsável inválido."
   }
 }

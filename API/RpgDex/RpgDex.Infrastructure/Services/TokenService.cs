@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Identity.MongoDbCore.Models;
+using MercadoPago.Resource.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver.Linq;
 using RpgDex.Domain.Entities;
+using RpgDex.Domain.Enums;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Settings;
 using System;
@@ -34,6 +36,12 @@ namespace RpgDex.Infrastructure.Services
                 new Claim(JwtRegisteredClaimNames.Sub, authUser.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+
+            var status = authUser.AgeVerifiedAt is null
+            ? "unverified"
+            : authUser.GuardianConsent == GuardianConsentStatus.Pending ? "pending" : "verified";
+
+            claims.Add(new Claim("age_status", status));
 
             var userRoles = await _userManager.GetRolesAsync(authUser);
             foreach (var role in userRoles)

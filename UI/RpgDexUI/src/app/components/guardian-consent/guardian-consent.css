@@ -1,0 +1,96 @@
+.consent-wrapper {
+  min-height: calc(100vh - 160px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.consent-card {
+  background: var(--rpg-surface, #ffffff);
+  border: 2px solid var(--rpg-border, #e2e8f0);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  padding: 44px 36px;
+  text-align: center;
+  box-shadow: var(--rpg-shadow-lg, 0 20px 40px rgba(0, 0, 0, 0.15));
+  box-sizing: border-box;
+  animation: fadeInConsent 0.25s ease-out;
+}
+
+.status-icon {
+  font-size: 3.5rem;
+  color: var(--rpg-purple, #9e74d0);
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.status-icon.success {
+  color: #059669;
+}
+
+.status-icon.error {
+  color: var(--rpg-error, #dc2626);
+}
+
+.consent-card h1 {
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 800;
+  font-size: 1.75rem;
+  color: var(--rpg-text-dark, #3c3489);
+  margin: 0 0 12px;
+}
+
+.consent-card p {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1rem;
+  color: var(--rpg-text-body, #475569);
+  line-height: 1.6;
+  margin: 0 0 28px;
+}
+
+.btn-consent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 32px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  color: #ffffff;
+  background: var(--rpg-purple, #9e74d0);
+  border-radius: 10px;
+  box-shadow: var(--rpg-shadow-btn, 0 4px 12px rgba(158, 116, 208, 0.35));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.btn-consent:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+@keyframes fadeInConsent {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .consent-card {
+    padding: 32px 24px;
+  }
+
+  .consent-card h1 {
+    font-size: 1.5rem;
+  }
+}

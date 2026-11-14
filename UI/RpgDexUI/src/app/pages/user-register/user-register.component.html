@@ -225,47 +225,734 @@
 
 <!-- MODAL DE TERMOS DE USO -->
 @if (isTermsModalOpen) {
-  <div class="terms-modal-overlay" (click)="closeTermsModal()">
-    <div class="terms-modal" (click)="$event.stopPropagation()">
-      <div class="terms-modal-header">
-        <h3>Termos de Uso e Serviço - RPGDex</h3>
-        <button
-          type="button"
-          class="close-modal-btn"
-          aria-label="Fechar"
-          (click)="closeTermsModal()"
-        >
-          &times;
-        </button>
+<div class="terms-modal-overlay" (click)="closeTermsModal()">
+  <div class="terms-modal" (click)="$event.stopPropagation()">
+    <div class="terms-modal-header">
+      <div>
+        <h3>Termos de Uso e Serviço — RPGDex</h3>
+        <span class="terms-version-badge">Versão 0.2</span>
+      </div>
+      <button type="button" class="close-modal-btn" aria-label="Fechar" (click)="closeTermsModal()">
+        &times;
+      </button>
+    </div>
+
+    <div class="terms-modal-body">
+      <div class="terms-meta-box">
+        <p>
+          <strong>Responsável pela plataforma:</strong> Empresa RPGDex regida por João Miguel Novais
+          de Souza, Matheus Haru Saito e Vitor Hugo Gilhi da Silva.
+        </p>
+        <p><strong>Site:</strong> <code>www.rpgdex.com.br</code></p>
+        <p><strong>Contato:</strong> <code>rpgdexoficial&#64;gmail.com</code></p>
       </div>
 
-      <div class="terms-modal-body">
-        <p>
-          Seja bem-vindo ao site da RPGDex. Antes de explorar nossos conteúdos e funcionalidades, é
-          fundamental que você leia, compreenda e concorde com estes Termos de Uso e Serviço, que
-          regem a navegação e a utilização do nosso site (<code>rpgdex.com.br</code>).
-        </p>
+      <h4>1. APRESENTAÇÃO E OBJETO</h4>
+      <p>
+        <strong>1.1.</strong> O RPGDex é uma plataforma digital destinada a jogadores de RPG
+        (Role-Playing Game), com a finalidade de permitir a organização e a realização de
+        campanhas de RPG em ambiente virtual.
+      </p>
+      <p>
+        <strong>1.2.</strong> A plataforma poderá disponibilizar funcionalidades para criação e
+        organização de campanhas, comunicação entre participantes, armazenamento de anotações e
+        materiais, compartilhamento de imagens e utilização de mesas virtuais com mapas e
+        representação da posição dos personagens.
+      </p>
+      <p>
+        <strong>1.3.</strong> A disponibilidade de cada funcionalidade dependerá de sua
+        implementação e das condições informadas na própria plataforma.
+      </p>
+      <p>
+        <strong>1.4.</strong> Estes Termos de Uso estabelecem as condições de acesso, cadastro,
+        utilização dos recursos, publicação de conteúdos, contratação de assinaturas e
+        relacionamento entre os usuários e o responsável pelo RPGDex.
+      </p>
 
-        <h4>1. Aceitação dos Termos e Modificações</h4>
-        <p>
-          Ao navegar e utilizar a plataforma da RPGDex, você expressa sua concordância automática e
-          integral com as regras e condições aqui estipuladas.
-        </p>
+      <h4>2. DEFINIÇÕES</h4>
+      <p>
+        <strong>2.1. Plataforma:</strong> o site RPGDex e suas funcionalidades digitais
+        disponibilizadas pelo responsável.
+      </p>
+      <p><strong>2.2. Usuário:</strong> pessoa que acessa ou utiliza a plataforma.</p>
+      <p>
+        <strong>2.3. Conta:</strong> cadastro individual utilizado para acessar os recursos que
+        exigem autenticação.
+      </p>
+      <p>
+        <strong>2.4. Campanha:</strong> espaço virtual destinado à organização de uma ou mais
+        sessões de RPG por seus participantes.
+      </p>
+      <p>
+        <strong>2.5. Criador ou administrador da campanha:</strong> usuário autorizado a criar ou
+        administrar determinada campanha, conforme os recursos disponibilizados.
+      </p>
+      <p>
+        <strong>2.6. Conteúdo do usuário:</strong> textos, anotações, imagens, mapas, personagens,
+        arquivos e demais materiais enviados, criados ou armazenados pelo usuário na plataforma.
+      </p>
+      <p>
+        <strong>2.7. Assinatura:</strong> modalidade paga de acesso a funcionalidades ou benefícios
+        específicos, conforme a oferta apresentada no momento da contratação.
+      </p>
+      <p>
+        <strong>2.8. Responsável legal:</strong> pessoa que representa ou assiste o usuário menor
+        de idade, conforme a legislação aplicável.
+      </p>
 
-        <h4>2. Condições de Acesso e Conta de Usuário</h4>
-        <ul>
-          <li>
-            <strong>Cadastro e Segurança:</strong> Você se compromete a fornecer informações
-            verdadeiras e a manter a segurança do seu nome de usuário único.
-          </li>
-        </ul>
+      <h4>3. ACEITAÇÃO E ALTERAÇÕES DOS TERMOS</h4>
+      <p>
+        <strong>3.1.</strong> O usuário deverá ter acesso a estes Termos antes de concluir o
+        procedimento de cadastro ou contratar funcionalidades pagas.
+      </p>
+      <p>
+        <strong>3.2.</strong> Quando necessária a manifestação expressa de concordância, ela será
+        solicitada por meio de mecanismo claro, acessível e separado de autorizações opcionais que
+        tenham finalidade diferente.
+      </p>
+      <p>
+        <strong>3.3.</strong> O RPGDex poderá manter registros da versão dos Termos aceita e das
+        informações necessárias para demonstrar a manifestação de concordância, observadas as
+        regras de proteção de dados pessoais.
+      </p>
+      <p>
+        <strong>3.4.</strong> Alterações serão disponibilizadas em local acessível e comunicadas de
+        maneira compatível com sua relevância. Quando exigido pela legislação ou pela natureza da
+        alteração, será solicitada nova concordância antes da continuidade da utilização afetada.
+      </p>
+      <p>
+        <strong>3.5.</strong> A simples publicação de uma nova versão não afastará direitos já
+        adquiridos, obrigações legais ou condições contratuais que devam ser preservadas.
+      </p>
 
-        <h4>Canais de Atendimento e Dúvidas</h4>
+      <h4>4. REQUISITOS DE ACESSO E PROTEÇÃO POR IDADE</h4>
+      <p>
+        <strong>4.1.</strong> O RPGDex pretende atender jogadores de diferentes faixas etárias. A
+        disponibilização do serviço a crianças e adolescentes estará condicionada à implementação
+        de medidas de proteção adequadas e ao cumprimento da legislação aplicável.
+      </p>
+      <p>
+        <strong>4.2.</strong> O acesso de usuários menores de idade deverá observar as regras de
+        capacidade civil, representação ou assistência, proteção de dados pessoais e demais
+        exigências aplicáveis a cada operação.
+      </p>
+      <p>
+        <strong>4.3.</strong> Quando determinada funcionalidade, contratação ou tratamento de
+        dados exigir participação, autorização ou consentimento de responsável legal, o RPGDex
+        deverá disponibilizar procedimento adequado para esse fim.
+      </p>
+      <p>
+        <strong>4.4.</strong> A plataforma poderá estabelecer restrições de acesso a
+        funcionalidades, conteúdos ou interações conforme a idade, os riscos identificados e as
+        exigências legais.
+      </p>
+      <p>
+        <strong>4.5.</strong> Não será permitido utilizar a plataforma para explorar a
+        vulnerabilidade de crianças e adolescentes, solicitar informações inadequadas, promover
+        contatos abusivos ou expor menores a riscos evitáveis.
+      </p>
+      <p>
+        <strong>4.6.</strong> As informações destinadas a crianças e adolescentes serão
+        apresentadas em linguagem compatível com sua compreensão, observadas as obrigações
+        aplicáveis.
+      </p>
+      <p>
+        <strong>4.7.</strong> Os procedimentos de aferição de idade, quando necessários, deverão
+        ser proporcionais ao risco e observar a legislação de proteção de dados. O RPGDex não deverá
+        coletar documentos ou dados adicionais sem necessidade e fundamento apropriado.
+      </p>
+      <p>
+        <strong>4.8.</strong> A idade informada no cadastro não será considerada, isoladamente,
+        mecanismo suficiente de verificação para liberar conteúdos, produtos ou funcionalidades
+        legalmente restritos por idade. Quando a legislação exigir verificação confiável, o RPGDex
+        adotará mecanismo proporcional ao risco, com minimização de dados e sem coleta excessiva de
+        documentos ou informações.
+      </p>
+      <p>
+        <strong>4.9.</strong> O RPGDex deverá definir e exibir classificação indicativa adequada
+        aos conteúdos e às experiências que disponibilizar ou permitir compartilhar, observando a
+        legislação e os critérios oficiais aplicáveis. Campanhas, imagens, textos e materiais com
+        temas sensíveis deverão possuir sinalização e controles de acesso compatíveis com sua
+        classificação.
+      </p>
+      <p>
+        <strong>4.10.</strong> Por padrão, contas de crianças e adolescentes deverão operar com o
+        nível mais elevado de proteção de privacidade e segurança disponível. A exposição pública de
+        perfil, dados de contato, localização, campanhas ou conteúdos pessoais deverá permanecer
+        desativada, salvo quando houver justificativa legítima, configuração válida e observância do
+        melhor interesse.
+      </p>
+      <p>
+        <strong>4.11.</strong> O RPGDex deverá disponibilizar, em local de fácil acesso e em
+        linguagem adequada, informações sobre riscos digitais, medidas de segurança e recursos de
+        proteção destinados a crianças, adolescentes e seus responsáveis, independentemente da
+        contratação de plano pago.
+      </p>
+      <p>
+        <strong>4.12.</strong> Antes da publicação, o responsável deverá documentar a avaliação de
+        risco das funcionalidades destinadas ou provavelmente acessadas por menores, incluindo
+        comunicação, compartilhamento de conteúdo, campanhas públicas, convites, compras e exposição
+        a conteúdo gerado por usuários. As medidas deverão ser revistas quando houver alteração
+        relevante do serviço.
+      </p>
+
+      <h4>5. CADASTRO E SEGURANÇA DA CONTA</h4>
+      <p>
+        <strong>5.1.</strong> Para utilizar funcionalidades que exijam autenticação, o usuário
+        deverá fornecer as informações solicitadas, de acordo com a finalidade e a necessidade de
+        cada dado.
+      </p>
+      <p>
+        <strong>5.2.</strong> O usuário deverá manter atualizadas as informações necessárias à
+        utilização de sua conta e não deverá fornecer intencionalmente informações falsas para
+        burlar requisitos de acesso ou segurança.
+      </p>
+      <p>
+        <strong>5.3.</strong> As credenciais de acesso deverão ser protegidas contra utilização
+        indevida. O usuário deverá comunicar ao canal oficial qualquer suspeita de comprometimento
+        da conta.
+      </p>
+      <p>
+        <strong>5.4.</strong> O usuário não deverá acessar contas alheias, contornar mecanismos de
+        autenticação ou tentar obter acesso não autorizado a sistemas, dados ou campanhas.
+      </p>
+      <p>
+        <strong>5.5.</strong> As regras para recuperação de conta, alteração de e-mail e
+        encerramento do cadastro serão informadas em procedimentos próprios da plataforma.
+      </p>
+      <p>
+        <strong>5.6.</strong> A responsabilidade por incidentes de segurança será apurada conforme
+        as circunstâncias, as obrigações legais e as medidas efetivamente adotadas por cada parte.
+        Nenhuma disposição desta seção exclui responsabilidade legalmente aplicável ao RPGDex.
+      </p>
+
+      <h4>6. CAMPANHAS E MESAS VIRTUAIS</h4>
+      <p>
+        <strong>6.1.</strong> Os usuários poderão organizar campanhas e utilizar os recursos de mesa
+        virtual efetivamente disponibilizados pela plataforma.
+      </p>
+      <p>
+        <strong>6.2.</strong> O criador ou administrador de uma campanha poderá organizar seus
+        participantes e materiais conforme as permissões e os controles existentes no sistema.
+      </p>
+      <p>
+        <strong>6.3.</strong> Antes de compartilhar uma campanha, mapa ou material, o usuário
+        deverá observar as opções de acesso e visibilidade apresentadas pela plataforma.
+      </p>
+      <p>
+        <strong>6.4.</strong> A possibilidade de visualizar, editar, convidar participantes ou
+        remover materiais dependerá das permissões implementadas e informadas no RPGDex.
+      </p>
+      <p>
+        <strong>6.5.</strong> O usuário deverá evitar compartilhar informações pessoais
+        desnecessárias em mapas, anotações, imagens ou outros materiais de campanha.
+      </p>
+      <p>
+        <strong>6.6.</strong> O RPGDex deverá informar, de maneira clara, eventuais limites de
+        armazenamento, formatos de arquivo, tamanhos máximos e restrições técnicas antes ou durante
+        a utilização do recurso correspondente.
+      </p>
+      <p>
+        <strong>6.7.</strong> A plataforma não deverá ser considerada um serviço de armazenamento
+        com garantia absoluta de preservação de dados, salvo se houver compromisso expresso nesse
+        sentido. As condições reais de cópia de segurança, recuperação e exportação de materiais
+        deverão ser informadas aos usuários.
+      </p>
+
+      <h4>7. COMUNICAÇÃO ENTRE USUÁRIOS</h4>
+      <p>
+        <strong>7.1.</strong> Os recursos de comunicação disponibilizados pelo RPGDex deverão ser
+        utilizados para fins legítimos relacionados às campanhas e às atividades permitidas pela
+        plataforma.
+      </p>
+      <p>
+        <strong>7.2.</strong> É proibido utilizar os recursos de comunicação para praticar assédio,
+        perseguição, ameaças, discriminação, fraude, extorsão, exploração sexual, aliciamento
+        abusivo ou qualquer outra conduta ilícita.
+      </p>
+      <p>
+        <strong>7.3.</strong> O usuário não deverá solicitar ou divulgar dados pessoais de
+        terceiros sem fundamento legítimo, nem utilizar as ferramentas do RPGDex para invadir a
+        privacidade de outras pessoas.
+      </p>
+      <p>
+        <strong>7.4.</strong> O RPGDex deverá disponibilizar canais adequados para denúncias de
+        abuso, conteúdo ilícito e situações de risco, com procedimentos compatíveis com a natureza e
+        a gravidade de cada ocorrência.
+      </p>
+      <p>
+        <strong>7.5.</strong> As medidas de moderação poderão incluir advertência, remoção de
+        conteúdo, limitação de funcionalidades ou suspensão de acesso, conforme a gravidade, a
+        reincidência, os riscos e a legislação aplicável.
+      </p>
+      <p>
+        <strong>7.6.</strong> O tratamento de denúncias envolvendo crianças e adolescentes deverá
+        observar as medidas de proteção e os encaminhamentos legalmente exigidos.
+      </p>
+      <p>
+        <strong>7.7.</strong> As funcionalidades de comunicação envolvendo contas identificadas como
+        pertencentes a crianças ou adolescentes deverão adotar, por padrão, salvaguardas que
+        restrinjam contatos de usuários não autorizados, especialmente adultos, observada a
+        legislação aplicável e a autonomia progressiva do menor.
+      </p>
+      <p>
+        <strong>7.8.</strong> O RPGDex deverá disponibilizar controles acessíveis para bloquear
+        usuários, limitar ou desativar mensagens privadas, gerenciar convites e denunciar
+        conversas, perfis ou conteúdos. As opções de segurança deverão ser apresentadas em
+        linguagem clara e não poderão ser ocultadas ou dificultadas.
+      </p>
+      <p>
+        <strong>7.9.</strong> Quando o serviço ou determinada funcionalidade for juridicamente
+        enquadrado como jogo eletrônico com interação entre usuários, serão observadas as
+        salvaguardas do art. 16 da Lei nº 14.852/2024 e do art. 21 da Lei nº 15.211/2025, inclusive
+        a limitação padrão das interações e a obtenção do consentimento dos pais ou responsáveis nos
+        casos exigidos.
+      </p>
+      <p>
+        <strong>7.10.</strong> Denúncias que indiquem risco atual à integridade física ou
+        psicológica de criança ou adolescente terão prioridade de análise. O RPGDex poderá
+        restringir preventivamente contas, mensagens ou conteúdos quando necessário para proteger
+        usuários, sem prejuízo de revisão posterior e das comunicações legalmente exigidas.
+      </p>
+      <p>
+        <strong>7.11.</strong> É vedado utilizar campanhas, personagens, mensagens ou convites
+        para solicitar imagens íntimas, dados de contato externos, localização, encontros
+        presenciais ou qualquer conteúdo que facilite exploração, abuso, intimidação ou aliciamento
+        de crianças e adolescentes.
+      </p>
+
+      <h4>8. CONTEÚDO DOS USUÁRIOS</h4>
+      <p>
+        <strong>8.1.</strong> O usuário conserva os direitos que detenha sobre os conteúdos que
+        criar ou enviar à plataforma, respeitados os direitos de terceiros e as licenças
+        eventualmente aplicáveis.
+      </p>
+      <p>
+        <strong>8.2.</strong> O usuário declara que possui os direitos ou as autorizações
+        necessárias para enviar e compartilhar os materiais que disponibilizar no RPGDex.
+      </p>
+      <p>
+        <strong>8.3.</strong> Ao enviar conteúdo, o usuário autoriza o RPGDex a armazená-lo,
+        reproduzi-lo tecnicamente, transmiti-lo aos participantes autorizados e exibi-lo na medida
+        necessária para fornecer as funcionalidades solicitadas.
+      </p>
+      <p>
+        <strong>8.4.</strong> A autorização prevista na cláusula anterior limita-se às finalidades
+        de operação e disponibilização do serviço, não constituindo transferência automática da
+        titularidade do conteúdo nem autorização irrestrita para publicidade ou exploração
+        comercial.
+      </p>
+      <p>
+        <strong>8.5.</strong> O usuário não deverá enviar conteúdos que violem direitos autorais,
+        marcas, imagem, privacidade, confidencialidade ou outros direitos de terceiros.
+      </p>
+      <p>
+        <strong>8.6.</strong> Não será permitido publicar material ilegal, fraudulento,
+        ameaçador, discriminatório ou destinado à exploração, ao abuso ou à exposição indevida de
+        crianças e adolescentes.
+      </p>
+      <p>
+        <strong>8.7.</strong> Os procedimentos para denunciar conteúdos, solicitar sua análise e
+        contestar decisões de moderação deverão ser disponibilizados em canal apropriado.
+      </p>
+      <p>
+        <strong>8.8.</strong> As condições específicas de compartilhamento, exportação, exclusão e
+        retenção de conteúdos serão informadas conforme as funcionalidades efetivamente
+        implementadas.
+      </p>
+      <p>
+        <strong>8.9.</strong> O RPGDex deverá disponibilizar mecanismo de notificação de violações
+        aos direitos de crianças e adolescentes. Quando receber notificação válida de conteúdo que
+        viole tais direitos, deverá adotar as providências de análise e retirada previstas na
+        legislação, inclusive independentemente de ordem judicial nas hipóteses legais, assegurado
+        procedimento de contestação ao responsável pela publicação quando cabível.
+      </p>
+      <p>
+        <strong>8.10.</strong> Conteúdos de aparente exploração ou abuso sexual, sequestro ou
+        aliciamento de crianças e adolescentes deverão ser tratados conforme os deveres legais de
+        remoção, preservação de registros e comunicação às autoridades competentes, observados os
+        prazos e procedimentos regulamentares. O conteúdo não deverá ser reproduzido, encaminhado
+        desnecessariamente ou disponibilizado a pessoas sem necessidade funcional ou legal de
+        acesso.
+      </p>
+
+      <h4>9. DIREITOS AUTORAIS E PROPRIEDADE INTELECTUAL</h4>
+      <p>
+        <strong>9.1.</strong> Os direitos sobre o nome RPGDex, sua identidade visual, seu software,
+        sua interface e os materiais próprios da plataforma pertencem aos respectivos titulares ou
+        licenciantes.
+      </p>
+      <p>
+        <strong>9.2.</strong> A utilização do RPGDex não transfere ao usuário direitos de
+        propriedade intelectual sobre a plataforma.
+      </p>
+      <p>
+        <strong>9.3.</strong> O usuário não poderá copiar, comercializar, descompilar, distribuir
+        ou explorar componentes protegidos da plataforma sem autorização ou fundamento legal.
+      </p>
+      <p>
+        <strong>9.4.</strong> A criação de campanhas poderá envolver conteúdos de terceiros,
+        incluindo sistemas de RPG, ilustrações, mapas, personagens e materiais publicados sob
+        licenças específicas. O usuário deverá respeitar os direitos e as condições aplicáveis a
+        esses materiais.
+      </p>
+      <p>
+        <strong>9.5.</strong> Eventuais licenças concedidas pelos usuários ao RPGDex deverão
+        limitar-se às finalidades necessárias ao funcionamento do serviço, salvo autorização
+        separada, específica e válida para outra finalidade.
+      </p>
+
+      <h4>10. ASSINATURAS, PAGAMENTOS E CANCELAMENTOS</h4>
+      <p>
+        <strong>10.1.</strong> O RPGDex poderá oferecer planos de assinatura pagos, cujos preços,
+        benefícios, limitações, periodicidade e condições serão apresentados antes da contratação.
+      </p>
+      <p>
+        <strong>10.2.</strong> As condições de cada plano deverão informar claramente quais
+        funcionalidades estão incluídas, os limites de utilização e as diferenças em relação a
+        outras modalidades.
+      </p>
+      <p>
+        <strong>10.3.</strong> Quando houver renovação automática, sua frequência, forma de
+        cobrança e procedimento de cancelamento deverão ser informados previamente e de maneira
+        destacada.
+      </p>
+      <p>
+        <strong>10.4.</strong> O usuário poderá solicitar o cancelamento conforme o procedimento
+        divulgado na plataforma, sem prejuízo dos direitos previstos na legislação aplicável.
+      </p>
+      <p>
+        <strong>10.5.</strong> O cancelamento, a interrupção de cobranças futuras e eventual
+        reembolso serão tratados de acordo com as condições da oferta e os direitos legais do
+        consumidor, incluindo o direito de arrependimento quando aplicável.
+      </p>
+      <p>
+        <strong>10.6.</strong> Eventuais alterações de preço deverão ser comunicadas previamente,
+        respeitados os contratos vigentes e as exigências legais.
+      </p>
+      <p>
+        <strong>10.7.</strong> A contratação em nome de usuário menor de idade deverá observar as
+        regras de capacidade civil, representação ou assistência e as exigências aplicáveis à
+        operação.
+      </p>
+      <p>
+        <strong>10.8.</strong> As informações sobre meios de pagamento, intermediadores, tributos,
+        moeda de cobrança e disponibilidade internacional deverão ser apresentadas antes da
+        contratação, conforme aplicável.
+      </p>
+      <p>
+        <strong>10.9.</strong> O RPGDex deverá oferecer controles que permitam aos responsáveis
+        legais restringir compras e transações financeiras realizadas por contas de crianças e
+        adolescentes, quando aplicável, e deverá informar de forma clara o preço total, a
+        periodicidade, a renovação, os benefícios e o procedimento de cancelamento antes da
+        contratação.
+      </p>
+      <p>
+        <strong>10.10.</strong> Não serão realizadas cobranças em conta de menor sem a participação
+        ou autorização válida do responsável legal, quando exigida pela legislação. A plataforma
+        não deverá utilizar mensagens, temporizadores, recompensas ou interfaces manipulativas para
+        pressionar crianças e adolescentes a contratar planos ou realizar compras.
+      </p>
+      <p>
+        <strong>10.11.</strong> Caso sejam futuramente introduzidas caixas de recompensa (loot
+        boxes) ou mecanismos equivalentes, sua disponibilização deverá ser previamente submetida à
+        análise jurídica e de classificação indicativa. É vedada a oferta de loot boxes em jogos
+        eletrônicos direcionados a crianças e adolescentes ou de acesso provável por eles, nos
+        termos do art. 20 da Lei nº 15.211/2025.
+      </p>
+
+      <h4>11. CONDUTAS PROIBIDAS</h4>
+      <p><strong>11.1.</strong> É proibido utilizar o RPGDex para:</p>
+      <ul class="terms-alpha-list">
+        <li><strong>a)</strong> praticar crimes, fraudes ou outras atividades ilícitas;</li>
+        <li><strong>b)</strong> acessar sistemas, contas ou campanhas sem autorização;</li>
+        <li>
+          <strong>c)</strong> distribuir malware, explorar vulnerabilidades ou prejudicar a
+          infraestrutura;
+        </li>
+        <li>
+          <strong>d)</strong> assediar, ameaçar, perseguir ou discriminar outros usuários;
+        </li>
+        <li>
+          <strong>e)</strong> explorar, aliciar, abusar ou colocar em risco crianças e
+          adolescentes;
+        </li>
+        <li><strong>f)</strong> violar direitos autorais ou outros direitos de terceiros;</li>
+        <li><strong>g)</strong> utilizar a plataforma para spam, golpes ou comunicações abusivas;</li>
+        <li>
+          <strong>h)</strong> burlar limites de uso, controles de segurança ou restrições
+          contratuais;
+        </li>
+        <li>
+          <strong>i)</strong> obter ou divulgar dados pessoais sem autorização ou fundamento
+          legítimo;
+        </li>
+        <li>
+          <strong>j)</strong> praticar qualquer outra conduta vedada pela legislação aplicável.
+        </li>
+      </ul>
+      <p>
+        <strong>11.2.</strong> As restrições deverão ser aplicadas de forma compatível com a
+        natureza do serviço, sem impedir indevidamente o uso legítimo das funcionalidades de RPG.
+      </p>
+
+      <h4>12. MODERAÇÃO, SUSPENSÃO E ENCERRAMENTO</h4>
+      <p>
+        <strong>12.1.</strong> O RPGDex poderá adotar medidas sobre contas e conteúdos quando
+        houver indícios de violação destes Termos, riscos à segurança, obrigação legal ou outra
+        justificativa legítima.
+      </p>
+      <p>
+        <strong>12.2.</strong> As medidas poderão incluir solicitação de correção, advertência,
+        limitação de funcionalidades, remoção de conteúdo, suspensão temporária ou encerramento da
+        conta.
+      </p>
+      <p>
+        <strong>12.3.</strong> A medida deverá ser proporcional às circunstâncias. Quando viável e
+        compatível com a segurança dos usuários e as obrigações legais, o usuário será informado
+        sobre o motivo e os meios de solicitar revisão.
+      </p>
+      <p>
+        <strong>12.4.</strong> Situações de risco imediato, suspeita de abuso ou obrigação legal
+        poderão exigir medidas urgentes, sem prejuízo das comunicações e revisões cabíveis.
+      </p>
+      <p>
+        <strong>12.5.</strong> O encerramento da conta deverá observar as condições contratuais, os
+        direitos do consumidor, as obrigações de retenção de dados e os direitos de terceiros.
+      </p>
+      <p>
+        <strong>12.6.</strong> A exclusão da conta não implica necessariamente a eliminação
+        imediata de todos os registros, quando houver fundamento legal para retenção. As condições
+        aplicáveis serão descritas na Política de Privacidade.
+      </p>
+      <p>
+        <strong>12.7.</strong> Os procedimentos relativos a campanhas compartilhadas, conteúdos de
+        outros participantes e continuidade de uma campanha após a saída de um usuário deverão ser
+        definidos e informados pela plataforma.
+      </p>
+      <p>
+        <strong>12.8.</strong> As decisões de remoção de conteúdo ou aplicação de penalidade
+        deverão, quando cabível, informar ao usuário a medida adotada, sua fundamentação, se a
+        identificação decorreu de análise humana ou automatizada e os meios e prazos para
+        apresentação de recurso.
+      </p>
+      <p>
+        <strong>12.9.</strong> O RPGDex deverá estabelecer procedimento interno para identificar e
+        coibir denúncias abusivas utilizadas para perseguição, censura indevida ou intimidação,
+        sem desestimular denúncias legítimas nem expor denunciantes ou vítimas a riscos adicionais.
+      </p>
+
+      <h4>13. DISPONIBILIDADE E LIMITAÇÕES TÉCNICAS</h4>
+      <p>
+        <strong>13.1.</strong> O RPGDex poderá passar por manutenção, atualização ou interrupção
+        técnica necessária à operação e à segurança.
+      </p>
+      <p>
+        <strong>13.2.</strong> A plataforma informará interrupções programadas relevantes quando
+        possível.
+      </p>
+      <p>
+        <strong>13.3.</strong> Não se garante disponibilidade ininterrupta, ausência absoluta de
+        erros ou compatibilidade com todos os dispositivos e sistemas, sem prejuízo das obrigações
+        legais aplicáveis.
+      </p>
+      <p>
+        <strong>13.4.</strong> Limitações técnicas, alterações de funcionalidades e eventuais
+        restrições de armazenamento deverão ser comunicadas de maneira adequada.
+      </p>
+      <p>
+        <strong>13.5.</strong> Esta seção não exclui responsabilidade por falhas, danos ou
+        descumprimentos pelos quais o responsável deva responder legalmente.
+      </p>
+
+      <h4>14. PRIVACIDADE E PROTEÇÃO DE DADOS</h4>
+      <p>
+        <strong>14.1.</strong> O tratamento de dados pessoais relacionado ao RPGDex será descrito
+        na Política de Privacidade da plataforma.
+      </p>
+      <p>
+        <strong>14.2.</strong> O usuário deverá ter acesso à Política de Privacidade antes de
+        fornecer dados pessoais no procedimento de cadastro, nos termos da legislação aplicável.
+      </p>
+      <p>
+        <strong>14.3.</strong> A aceitação destes Termos não representa, por si só, consentimento
+        irrestrito para publicidade, compartilhamento não necessário ou qualquer tratamento de dados
+        sem base legal.
+      </p>
+      <p>
+        <strong>14.4.</strong> O RPGDex adotará medidas técnicas e administrativas compatíveis com
+        os riscos do serviço e observará os direitos dos titulares de dados pessoais.
+      </p>
+      <p>
+        <strong>14.5.</strong> O tratamento de dados de crianças e adolescentes deverá respeitar o
+        melhor interesse desses titulares e as exigências legais específicas.
+      </p>
+      <p>
+        <strong>14.6.</strong> O tratamento de dados pessoais de crianças e adolescentes deverá
+        observar o melhor interesse em cada operação, os princípios da necessidade, finalidade,
+        adequação, transparência, segurança e prevenção, bem como as bases legais aplicáveis da
+        LGPD. Quando o titular for criança, será observado o regime específico do art. 14 da LGPD,
+        inclusive quanto ao consentimento destacado de pelo menos um dos pais ou responsável nas
+        hipóteses legalmente exigidas.
+      </p>
+      <p>
+        <strong>14.7.</strong> O RPGDex deverá mapear os riscos de privacidade e proteção de dados
+        relacionados a crianças e adolescentes e adotar medidas de mitigação. Quando exigido pela
+        legislação ou pela autoridade competente, deverá elaborar e manter relatório de impacto à
+        proteção de dados pessoais.
+      </p>
+      <p>
+        <strong>14.8.</strong> Dados de crianças e adolescentes não serão utilizados para
+        publicidade comportamental, perfilamento comercial ou recomendação que explore
+        vulnerabilidades. Qualquer publicidade ou monetização futura deverá ser previamente avaliada
+        à luz das restrições legais aplicáveis à publicidade dirigida a esse público.
+      </p>
+
+      <h4>15. SERVIÇOS E FORNECEDORES EXTERNOS</h4>
+      <p>
+        <strong>15.1.</strong> A plataforma poderá depender de serviços externos para
+        funcionalidades como hospedagem, envio de mensagens, processamento de pagamentos ou
+        armazenamento, caso tais integrações sejam implementadas.
+      </p>
+      <p>
+        <strong>15.2.</strong> Quando houver compartilhamento de dados com fornecedores, o RPGDex
+        deverá observar a legislação aplicável, informar as práticas relevantes em sua Política de
+        Privacidade e adotar medidas contratuais e técnicas adequadas.
+      </p>
+      <p>
+        <strong>15.3.</strong> A existência de links ou integrações com serviços de terceiros não
+        significa que o RPGDex controle integralmente esses serviços.
+      </p>
+      <p>
+        <strong>15.4.</strong> As condições de serviços externos contratados pelo usuário deverão
+        ser apresentadas de maneira clara quando relevantes para a utilização da plataforma.
+      </p>
+
+      <h4>16. RESPONSABILIDADES</h4>
+      <p>
+        <strong>16.1.</strong> O usuário deverá utilizar a plataforma conforme estes Termos e a
+        legislação aplicável, respeitando os direitos dos demais participantes.
+      </p>
+      <p>
+        <strong>16.2.</strong> O RPGDex será responsável pelas obrigações que lhe forem atribuídas
+        pela legislação e pelos compromissos válidos assumidos perante os usuários.
+      </p>
+      <p>
+        <strong>16.3.</strong> Nenhuma cláusula deste documento poderá ser interpretada como
+        renúncia antecipada a direitos indisponíveis, exclusão de responsabilidade legalmente
+        obrigatória ou afastamento de direitos assegurados aos consumidores.
+      </p>
+      <p>
+        <strong>16.4.</strong> A responsabilidade por conteúdos publicados por usuários, atos de
+        terceiros, indisponibilidades e incidentes será apurada conforme as circunstâncias e o
+        regime jurídico aplicável, não se estabelecendo imunidade automática para qualquer parte.
+      </p>
+
+      <h4>17. ATENDIMENTO E DENÚNCIAS</h4>
+      <p>
+        <strong>17.1.</strong> O usuário poderá entrar em contato com o RPGDex pelo canal oficial:
+        <code>rpgdexoficial&#64;gmail.com</code>.
+      </p>
+      <p>
+        <strong>17.2.</strong> Denúncias de abuso, violação de direitos, conteúdo ilegal ou riscos
+        a menores deverão ser encaminhadas por: <code>rpgdexoficial&#64;gmail.com</code>.
+      </p>
+      <p>
+        <strong>17.3.</strong> O RPGDex deverá disponibilizar informações suficientes sobre o
+        recebimento e o tratamento das solicitações, observadas as obrigações legais e a
+        necessidade de proteger os envolvidos.
+      </p>
+      <p>
+        <strong>17.4.</strong> Os pedidos relacionados a dados pessoais deverão poder ser
+        encaminhados pelo canal indicado na Política de Privacidade.
+      </p>
+      <p>
+        <strong>17.5.</strong> Antes da disponibilização pública, o RPGDex deverá manter canal
+        funcional, gratuito e de fácil acesso para denúncias de abuso, aliciamento, exploração,
+        conteúdo ilegal, violação de privacidade e outros riscos a crianças e adolescentes. O canal
+        deverá permitir a identificação técnica do conteúdo denunciado quando exigida pela lei e
+        informar os dados mínimos necessários para o processamento.
+      </p>
+      <p>
+        <strong>17.6.</strong> O RPGDex deverá manter procedimento documentado para triagem,
+        priorização, preservação segura de evidências, remoção de conteúdo e comunicação às
+        autoridades competentes, inclusive nos casos previstos no art. 27 da Lei nº 15.211/2025 e
+        em sua regulamentação. A preservação de registros deverá respeitar os prazos legais, a
+        segurança e a restrição de acesso.
+      </p>
+      <p>
+        <strong>17.7.</strong> O RPGDex deverá informar ao usuário denunciante, quando possível e
+        sem comprometer investigações ou a segurança dos envolvidos, o recebimento e o
+        encaminhamento da denúncia. A pessoa afetada deverá ter acesso a orientações sobre bloqueio,
+        proteção da conta e canais de apoio adequados.
+      </p>
+      <p>
+        <strong>17.8.</strong> Os canais de atendimento e denúncia deverão ser divulgados em
+        português, com instruções compreensíveis para crianças, adolescentes e responsáveis.
+      </p>
+
+      <h4>18. ALTERAÇÕES E ENCERRAMENTO DO SERVIÇO</h4>
+      <p>
+        <strong>18.1.</strong> Estes Termos poderão ser atualizados para refletir mudanças legais,
+        técnicas, comerciais ou funcionais.
+      </p>
+      <p>
+        <strong>18.2.</strong> As alterações serão disponibilizadas em local acessível e
+        comunicadas conforme sua relevância e as exigências legais.
+      </p>
+      <p>
+        <strong>18.3.</strong> A eventual descontinuação do serviço deverá observar os contratos
+        vigentes, os direitos dos usuários e as obrigações legais, inclusive quanto a conteúdos,
+        pagamentos e dados pessoais.
+      </p>
+
+      <h4>19. LEGISLAÇÃO E DISPOSIÇÕES FINAIS</h4>
+      <p>
+        <strong>19.1.</strong> A interpretação destes Termos observará a legislação aplicável,
+        incluindo, conforme o caso, o Código Civil, o Código de Defesa do Consumidor, o Marco Civil
+        da Internet, a Lei Geral de Proteção de Dados, o Estatuto da Criança e do Adolescente e o
+        Estatuto Digital da Criança e do Adolescente.
+      </p>
+      <p>
+        <strong>19.2.</strong> A disponibilização internacional do RPGDex poderá exigir a
+        observância de normas adicionais, conforme os países atendidos, a localização dos usuários e
+        as operações realizadas.
+      </p>
+      <p>
+        <strong>19.3.</strong> Eventual disposição inválida não afastará automaticamente a validade
+        das demais cláusulas, na medida permitida pela legislação aplicável.
+      </p>
+      <p>
+        <strong>19.4.</strong> O canal oficial para dúvidas relacionadas a estes Termos será
+        <code>rpgdexoficial&#64;gmail.com</code>.
+      </p>
+      <p>
+        <strong>19.5.</strong> Aplicam-se, conforme a natureza do serviço e das operações
+        realizadas, a Lei nº 15.211/2025 (Estatuto Digital da Criança e do Adolescente), o Decreto
+        nº 12.880/2026, a Lei nº 14.852/2024 (Marco Legal dos Jogos Eletrônicos), a Lei nº
+        13.709/2018 (LGPD), a Lei nº 12.965/2014 (Marco Civil da Internet), a Lei nº 8.069/1990
+        (ECA), a Lei nº 8.078/1990 (CDC) e as demais normas pertinentes.
+      </p>
+      <p>
+        <strong>19.6.</strong> As obrigações do Estatuto Digital da Criança e do Adolescente
+        deverão ser implementadas de forma proporcional às características, funcionalidades, grau
+        de interferência sobre conteúdos, número de usuários e porte do fornecedor, sem afastar as
+        obrigações aplicáveis ao RPGDex.
+      </p>
+      <p>
+        <strong>19.7.</strong> A classificação jurídica do RPGDex como jogo eletrônico, rede
+        social, serviço de comunicação ou outra categoria deverá ser validada antes da publicação,
+        considerando as funcionalidades efetivamente oferecidas. A aplicação das regras específicas
+        do Marco Legal dos Jogos Eletrônicos dependerá desse enquadramento.
+      </p>
+
+      <div class="terms-meta-box terms-footer-box">
         <p>
-          Em caso de dúvidas, entre em contato através do e-mail oficial:
-          <code>rpgdexoficial@gmail.com</code>.
+          <strong>Responsável pela plataforma:</strong> Empresa RPGDex regida por João Miguel Novais
+          de Souza, Matheus Haru Saito e Vitor Hugo Gilhi da Silva.
         </p>
       </div>
+    </div>
 
       <div class="terms-modal-footer">
         <button type="button" class="btn-accept-terms" (click)="acceptTermsAndClose()">

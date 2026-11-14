@@ -430,8 +430,8 @@
   border: 2px solid var(--rpg-border);
   border-radius: 16px;
   width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
+  max-width: 740px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: var(--rpg-shadow-lg);
@@ -440,18 +440,30 @@
 }
 
 .terms-modal-header {
-  padding: 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--rpg-border-light);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .terms-modal-header h3 {
   font-family: 'Exo 2', sans-serif;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   color: var(--rpg-text-strong);
-  margin: 0;
+  margin: 0 0 4px;
+}
+
+.terms-version-badge {
+  display: inline-block;
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+  background: rgba(158, 116, 208, 0.14);
+  padding: 2px 10px;
+  border-radius: 999px;
 }
 
 .close-modal-btn {
@@ -469,26 +481,64 @@
 }
 
 .terms-modal-body {
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   font-family: 'Nunito', sans-serif;
   color: var(--rpg-text-body);
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.93rem;
+  line-height: 1.65;
+}
+
+.terms-meta-box {
+  background-color: var(--rpg-surface-2);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+}
+
+.terms-meta-box p {
+  margin: 0 0 6px;
+  font-size: 0.88rem;
+}
+
+.terms-meta-box p:last-child {
+  margin-bottom: 0;
+}
+
+.terms-footer-box {
+  margin-top: 24px;
+  margin-bottom: 0;
 }
 
 .terms-modal-body h4 {
   font-family: 'Exo 2', sans-serif;
+  font-size: 1.02rem;
   color: var(--rpg-purple);
-  margin: 15px 0 5px;
+  margin: 22px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--rpg-border-light);
 }
 
 .terms-modal-body h4:first-child {
   margin-top: 0;
 }
 
+.terms-modal-body p {
+  margin: 0 0 10px;
+}
+
+.terms-alpha-list {
+  list-style: none;
+  padding-left: 14px;
+  margin: 6px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .terms-modal-footer {
-  padding: 15px 20px;
+  padding: 16px 24px;
   border-top: 1px solid var(--rpg-border-light);
   display: flex;
   justify-content: flex-end;
@@ -564,21 +614,6 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-
-.fade-in-content {
-  animation: fadeInContent 0.3s ease-in-out forwards;
-}
-
-@keyframes fadeInContent {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* ── ACCESSIBILITY & MEDIA QUERIES ── */

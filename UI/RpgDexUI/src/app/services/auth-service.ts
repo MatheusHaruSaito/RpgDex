@@ -15,6 +15,7 @@ import { ResendEmailVerificationRequest } from '../../models/resendEmailVerifica
 import { AuthOptionsResponse } from '../../models/authOptionsResponse';
 import { ValidateTwoFactorRequest } from '../../models/validateTwoFactorRequest';
 import { LoginResponse } from '../../models/loginResponse';
+import { ResendGuardianConsentRequest } from '../../models/resendGuardianConsentRequest';
 
 @Injectable({
   providedIn: 'root',
@@ -128,7 +129,11 @@ export class AuthService {
     if (!jwtToken) return undefined;
     return jwtDecode<JwtPayload>(jwtToken).sub;
   }
-
+  public getLoggedUserAgeStatus(): string | undefined {
+    const jwtToken = this.cookieService.get(this.JWT_Token);
+    if (!jwtToken) return undefined;
+    return jwtDecode<JwtPayload>(jwtToken).age_status;
+  }
   public isLoggedIn(): boolean {
     return this.cookieService.check(this.JWT_Token);
   }
@@ -217,4 +222,36 @@ export class AuthService {
   }): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${this.env}/resetPassword`, request);
   }
+ public AgeVerification(request: {
+    birthDate: string;
+    cpf: string;
+    guardianCpf?: string | null;
+    guardianEmail?: string | null;
+  }): Observable<ApiResponse<{ isMinor: boolean; guardianConsent: string | number }>> {
+    return this.http
+      .post<ApiResponse<{ isMinor: boolean; guardianConsent: string | number }>>(
+        `${this.env}/age-verification`,
+        request,
+      )
+      .pipe(
+        tap((res) => {
+          if (res.success && !res.data?.isMinor) {
+            this.RefreshToken().subscribe();
+          }
+        }),
+      );
+  }
+  
+  public GuardianConsent(request: {
+    userId: string;
+    token: string;
+  }): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${this.env}/guardian-consent"`, request);
+  }
+  resendGuardianConsentEmail(guardianEmail: ResendGuardianConsentRequest): Observable<ApiResponse<string>> {
+  return this.http.post<ApiResponse<string>>(
+    `${this.env}/resend-guardian-consent`,
+    guardianEmail,
+  );
+}
 }

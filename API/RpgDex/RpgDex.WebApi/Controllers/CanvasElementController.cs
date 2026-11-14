@@ -10,7 +10,7 @@ namespace RpgDex.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "AgeVerified")]
     public class CanvasElementController : ControllerBase
     {
         private string currentUser => User.FindFirst(ClaimTypes.NameIdentifier).Value;

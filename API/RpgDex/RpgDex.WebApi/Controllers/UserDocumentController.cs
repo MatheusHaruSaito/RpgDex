@@ -11,7 +11,7 @@ namespace RpgDex.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "AgeVerified")]
     [EarlyAccess]
     public class UserDocumentController(IUserDocumentService userDocumentService) : ControllerBase
     {

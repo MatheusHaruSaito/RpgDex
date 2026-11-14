@@ -40,7 +40,7 @@ namespace RpgDex.Infrastructure
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
             //Database configuration
-            FieldEncryption.Initialize(configuration["ENCRYPTION:CHATKEY"]!);
+            FieldEncryption.Initialize(configuration["Encryption:ChatKey"]!);
 
             BsonClassMap.RegisterClassMap<ChatMessage>(cm =>
             {
@@ -52,6 +52,12 @@ namespace RpgDex.Infrastructure
             {
                 cm.AutoMap();
                 cm.GetMemberMap(m => m.Data).SetSerializer(new EncryptedStringSerializer());
+            });
+            BsonClassMap.RegisterClassMap<ApplicationUser>(cm =>
+            {
+                cm.AutoMap();
+                cm.GetMemberMap(u => u.Cpf).SetSerializer(new EncryptedStringSerializer());
+                cm.GetMemberMap(u => u.GuardianCpf).SetSerializer(new EncryptedStringSerializer());
             });
 
             services.AddSingleton<MongoDbContext>();
@@ -125,6 +131,8 @@ namespace RpgDex.Infrastructure
             services.AddScoped<ICampaignQueries, CampaignQueries>();
             services.AddScoped<ICanvasHubService, CanvasHubService>();
             services.AddSingleton<ILinkTicketService, LinkTicketService>();
+            services.AddSingleton<IFieldHasher>(
+                 new FieldHasher(configuration["Encryption:CpfHashKey"]!));
             services.AddScoped<IFileReferenceProvider, UserFileReferenceProvider>();
             services.AddScoped<IFileReferenceProvider, CharacterFileReferenceProvider>();
             services.AddScoped<IFileReferenceProvider, CampaignFileReferenceProvider>();
@@ -136,6 +144,8 @@ namespace RpgDex.Infrastructure
             services.AddHostedService<SubscriptionExpiryJob>();
             services.AddHostedService<OrphanFilesCleanupJob>();
             services.AddHostedService<InactiveCanvasElementsCleanupJob>();
+
+            services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(1));
 
             //Identity
             services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
@@ -161,11 +171,17 @@ namespace RpgDex.Infrastructure
                 ?? throw new InvalidOperationException("Jwt Not Found");
 
 
+            services.AddAuthorization(option =>
+            {
+                option.AddPolicy("AgeVerified", p => p.RequireClaim("age_status", "verified"));
+            });
+
             services.AddAuthentication(option =>
             {
                 option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+
                 .AddJwtBearer(options =>
                 {
                     options.TokenValidationParameters = new TokenValidationParameters

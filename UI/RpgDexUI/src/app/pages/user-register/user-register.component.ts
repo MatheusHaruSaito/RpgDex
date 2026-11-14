@@ -94,9 +94,7 @@ export class UserRegisterComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input) return;
 
-    const sanitized = input.value
-      .toLowerCase()
-      .replace(/[^a-z0-9_.]/g, '');
+    const sanitized = input.value.toLowerCase().replace(/[^a-z0-9_.]/g, '');
 
     this.registerForm.userName = sanitized;
     input.value = sanitized;
@@ -167,7 +165,8 @@ export class UserRegisterComponent implements OnInit {
     if (!/^[a-z0-9_.]{2,32}$/.test(value)) {
       return {
         valid: false,
-        error: 'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
+        error:
+          'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
       };
     }
 
@@ -176,7 +175,10 @@ export class UserRegisterComponent implements OnInit {
     }
 
     if (reservedWords.some((word) => value.includes(word))) {
-      return { valid: false, error: 'Este nome de usuário contém palavras reservadas e não pode ser usado.' };
+      return {
+        valid: false,
+        error: 'Este nome de usuário contém palavras reservadas e não pode ser usado.',
+      };
     }
 
     return { valid: true };
@@ -282,6 +284,7 @@ export class UserRegisterComponent implements OnInit {
         });
       },
       error: (err) => {
+        console.log(err);
         this.isLoading = false;
         this.handleApiError(err);
       },

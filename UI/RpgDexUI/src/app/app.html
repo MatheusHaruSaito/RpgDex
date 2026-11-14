@@ -13,4 +13,11 @@
   <router-outlet></router-outlet>
 </main>
 
+<app-age-verification-modal
+  [visible]="showAgeVerificationModal()"
+  [initialPending]="isGuardianConsentPending()"
+  [blocking]="true"
+  (close)="onAgeModalClose()"
+></app-age-verification-modal>
+
 <app-footer></app-footer>
