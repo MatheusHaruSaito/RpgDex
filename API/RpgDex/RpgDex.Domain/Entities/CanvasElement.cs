@@ -23,6 +23,7 @@ namespace RpgDex.Domain.Entities
         public double? StrokeWidth { get; set; }
         public bool IsActive { get; set; } = true;
         public decimal ElementSize { get; set; }
+        public DateTime? DeactivatedAt { get; set; }
 
     }
 

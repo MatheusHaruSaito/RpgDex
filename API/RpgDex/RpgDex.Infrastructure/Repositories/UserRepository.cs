@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Infrastructure.Data;
@@ -45,7 +46,17 @@ namespace RpgDex.Infrastructure.Repositories
         {
             return await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
         }
+        public async Task<List<string>> GetAllProfilePhotoIdsAsync(CancellationToken ct = default)
+        {
+            var values = await _users
+            .Find(u => u.IconPath != null && u.IconPath != "")
+            .Project(u => u.IconPath)
+            .ToListAsync(ct);
 
+
+            return values.Where(v => ObjectId.TryParse(v, out _)).ToList();
+        }
+            
         public async Task<IEnumerable<ApplicationUser>> GetAllByEmailOrUserNameAsync(string target, int page, int pageSize)
         {
             page = page < 1 ? 1 : page;

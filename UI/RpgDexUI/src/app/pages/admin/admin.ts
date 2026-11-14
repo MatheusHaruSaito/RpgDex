@@ -12,6 +12,7 @@ import { ChartResponse } from '../../../models/chartResponse';
 import { ReportType } from '../../../models/reportType';
 import { ReportResponse } from '../../../models/reportResponse';
 import { ApiResponse } from '../../../models/apiResponse';
+import { UserSummary } from '../../../models/userSummary';
 import { environment } from '../../../environments/environment';
 
 export type AdminTab = 'reportes' | 'usuarios' | 'personagens' | 'campanhas';
@@ -36,6 +37,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   public ReportType = ReportType;
   activeTab: AdminTab = 'reportes';
 
+  // Reportes
   reports: ReportResponse[] = [];
   selectedReport: ReportDetail | null = null;
   totalOpenReports: number = 0;
@@ -44,6 +46,18 @@ export class AdminComponent implements OnInit, OnDestroy {
   currentPage = 1;
   pageSize = 10;
 
+  // Pesquisa de Usuários (Target)
+  userSearchTarget: string = '';
+  searchedUsers: UserSummary[] = [];
+  isSearchingUsers = false;
+  hasSearchedUsers = false;
+  userSearchError: string = '';
+  userSearchPage = 1;
+  userSearchPageSize = 10;
+  hasMoreUsers = false;
+  copiedUserId: string | null = null;
+
+  // Gráficos e Período
   startDate: string = '2026-01-01';
   endDate: string = '2027-01-01';
 
@@ -142,6 +156,159 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── PESQUISA DE USUÁRIOS POR TARGET ─────────────────────────────
+  searchUsers(resetPage = true): void {
+    const target = this.userSearchTarget.trim();
+
+    if (!target) {
+      this.userSearchError = 'Digite um nome de usuário ou e-mail para pesquisar.';
+      this.searchedUsers = [];
+      this.hasSearchedUsers = false;
+      this.cdr.detectChanges();
+      return;
+    }
+
+    if (resetPage) {
+      this.userSearchPage = 1;
+    }
+
+    this.isSearchingUsers = true;
+    this.userSearchError = '';
+    this.cdr.detectChanges();
+
+    this.userService
+      .GetUserSummaryByUserNameOrEmail(
+        target,
+        String(this.userSearchPage),
+        String(this.userSearchPageSize),
+      )
+      .subscribe({
+        next: (res: ApiResponse<any>) => {
+          this.isSearchingUsers = false;
+          this.hasSearchedUsers = true;
+
+          if (res.success && res.data) {
+            const list = Array.isArray(res.data)
+              ? res.data
+              : res.data.items || res.data.users || [];
+            this.searchedUsers = list;
+            this.hasMoreUsers = list.length >= this.userSearchPageSize;
+          } else {
+            this.searchedUsers = [];
+            this.hasMoreUsers = false;
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          this.isSearchingUsers = false;
+          this.hasSearchedUsers = true;
+          this.searchedUsers = [];
+          this.hasMoreUsers = false;
+          this.userSearchError =
+            typeof err?.error?.message === 'string'
+              ? err.error.message
+              : 'Erro ao buscar usuários. Verifique o termo digitado.';
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  clearUserSearch(): void {
+    this.userSearchTarget = '';
+    this.userSearchError = '';
+    this.searchedUsers = [];
+    this.hasSearchedUsers = false;
+    this.userSearchPage = 1;
+    this.hasMoreUsers = false;
+    this.cdr.detectChanges();
+  }
+
+  changeUserSearchPage(delta: number): void {
+    const nextPage = this.userSearchPage + delta;
+    if (nextPage < 1) return;
+    this.userSearchPage = nextPage;
+    this.searchUsers(false);
+  }
+
+  copyUserId(userId: string): void {
+    if (!userId) return;
+    navigator.clipboard?.writeText(userId).then(() => {
+      this.copiedUserId = userId;
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        if (this.copiedUserId === userId) {
+          this.copiedUserId = null;
+          this.cdr.detectChanges();
+        }
+      }, 2000);
+    });
+  }
+
+  banUserDirectly(user: UserSummary): void {
+    const uAny = user as any;
+    const userId = uAny.id || uAny.userId;
+    const display = user.displayName || user.userName || userId;
+
+    if (!userId) {
+      alert('ID do usuário não encontrado.');
+      return;
+    }
+
+    const reason = prompt(
+      `Informe o motivo do banimento/penalidade para "${display}" (@${user.userName}):`,
+    );
+    if (reason === null) return;
+
+    const trimmedReason = reason.trim();
+    if (!trimmedReason) {
+      alert('É necessário informar um motivo para aplicar a punição.');
+      return;
+    }
+
+    const reportPayload: any = {
+      title: `Punição Administrativa - @${user.userName}`,
+      description: trimmedReason,
+      reportType: ReportType.UserReport,
+      targetId: userId,
+    };
+
+    const reportServiceAny = this.reportService as any;
+    if (typeof reportServiceAny.Create === 'function') {
+      reportServiceAny.Create(reportPayload).subscribe({
+        next: (createRes: ApiResponse<any>) => {
+          const createdReportId = createRes?.data?.id || createRes?.data;
+          if (createdReportId) {
+            this.reportService.PunishUser({ reportId: createdReportId }).subscribe({
+              next: (punishRes: ApiResponse<any>) => {
+                if (punishRes.success) {
+                  alert(`Usuário @${user.userName} banido/penalizado com sucesso!`);
+                  this.searchUsers(false);
+                }
+              },
+              error: () => alert('Reporte criado, mas houve falha ao aplicar a punição.'),
+            });
+          } else {
+            alert('Reporte administrativo registrado. Verifique a aba de Reportes.');
+          }
+        },
+        error: () => alert('Erro ao registrar a punição do usuário.'),
+      });
+    } else {
+      this.reportService
+        .PunishUser({ reportId: userId, userId, reason: trimmedReason } as any)
+        .subscribe({
+          next: (res: ApiResponse<any>) => {
+            if (res.success) {
+              alert(`Usuário @${user.userName} banido/penalizado com sucesso!`);
+              this.searchUsers(false);
+            }
+          },
+          error: () => alert('Não foi possível aplicar a punição diretamente.'),
+        });
+    }
+  }
+
+  // ── REPORTES ────────────────────────────────────────────────────
   loadReports(silent = false): void {
     if (!silent) {
       this.isLoadingReports = true;
@@ -219,6 +386,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ── GRÁFICOS ────────────────────────────────────────────────────
   loadUserChart(): void {
     this.isLoadingUserChart = true;
     this.userService.GetUserChart(this.startDate, this.endDate).subscribe({

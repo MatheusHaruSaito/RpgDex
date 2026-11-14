@@ -178,8 +178,56 @@
       </div>
     </ng-container>
 
-    <!-- ABA 2: DADOS & COMANDOS (EXIBIÇÃO COM NOVO FORMATO VISUAL) -->
+    <!-- ABA 2: DADOS & COMANDOS -->
     <ng-container *ngIf="activeTab === 'rolls'">
+      <!-- Barra superior da aba de comandos com botão de dica -->
+      <div class="commands-toolbar">
+        <span class="commands-toolbar-label">
+          <i class="fa fa-terminal"></i> Histórico & Comandos
+        </span>
+        <button
+          type="button"
+          class="btn-command-hint"
+          [class.active]="showCommandsHint"
+          (click)="toggleCommandsHint($event)"
+          title="Ver comandos disponíveis"
+        >
+          <i class="fa fa-circle-question"></i>
+          <span>Comandos</span>
+        </button>
+      </div>
+
+      <!-- Painel expansível de dica com os comandos disponíveis -->
+      <div class="commands-hint-panel" *ngIf="showCommandsHint">
+        <div class="commands-hint-header">
+          <span><i class="fa fa-wand-magic-sparkles"></i> Comandos Disponíveis</span>
+          <button
+            type="button"
+            class="btn-close-hint"
+            (click)="showCommandsHint = false"
+            aria-label="Fechar dica de comandos"
+          >
+            <i class="fa fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="commands-hint-list">
+          <div
+            *ngFor="let cmd of availableCommands"
+            class="command-hint-item"
+            (click)="applyCommandExample(cmd.example)"
+            title="Clique para usar o exemplo"
+          >
+            <div class="command-hint-top">
+              <code class="command-syntax">{{ cmd.syntax }}</code>
+              <span class="command-use-tag">Usar <i class="fa fa-arrow-turn-down"></i></span>
+            </div>
+            <p class="command-desc">{{ cmd.description }}</p>
+            <span class="command-example">Ex: <code>{{ cmd.example }}</code></span>
+          </div>
+        </div>
+      </div>
+
       <div class="rolls-container" #rollsScrollContainer>
         <div class="chat-empty" *ngIf="isLoadingRolls">
           <i class="fa fa-spinner fa-spin"></i>
@@ -188,7 +236,7 @@
 
         <div class="chat-empty" *ngIf="!isLoadingRolls && rollsList.length === 0">
           <i class="fa fa-dice-d20"></i>
-          <span>Nenhuma rolagem gravada ainda.<br />Use <b>@rpg roll 2d20</b> para rolar!</span>
+          <span>Nenhuma rolagem gravada ainda.<br />Use <b>{{ commandPrefix }} roll 2d20</b> para rolar!</span>
         </div>
 
         <div *ngFor="let roll of rollsList" class="roll-card">
@@ -248,6 +296,17 @@
       </div>
 
       <form (ngSubmit)="send()" class="chat-form">
+        <button
+          *ngIf="activeTab === 'rolls'"
+          type="button"
+          class="btn-input-hint"
+          [class.active]="showCommandsHint"
+          (click)="toggleCommandsHint($event)"
+          title="Ajuda de comandos"
+        >
+          <i class="fa fa-circle-question"></i>
+        </button>
+
         <input
           #chatInput
           class="chat-input"
@@ -256,7 +315,7 @@
           [(ngModel)]="newMessageText"
           [placeholder]="
             activeTab === 'rolls'
-              ? 'Digite um comando (@rpg roll 2d20)...'
+              ? 'Digite um comando (' + commandPrefix + ' roll 2d20)...'
               : 'Digite sua mensagem...'
           "
           maxlength="500"
@@ -273,8 +332,18 @@
       </form>
 
       <div class="chat-error-toast" *ngIf="sendError">
-        <i class="fa fa-circle-exclamation"></i>
-        <span>{{ sendError }}</span>
+        <div class="chat-error-content">
+          <i class="fa fa-circle-exclamation"></i>
+          <span>{{ sendError }}</span>
+        </div>
+        <button
+          type="button"
+          class="btn-close-error"
+          (click)="sendError = ''"
+          aria-label="Fechar erro"
+        >
+          <i class="fa fa-xmark"></i>
+        </button>
       </div>
     </div>
   </div>

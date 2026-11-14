@@ -1,7 +1,7 @@
 <div class="register-wrapper">
   <div class="register-card fade-in-content">
     <div class="register-side">
-      <div class="register-logo" routerLink="/home">RPGDex</div>
+      <app-brand-logo variant="stacked" size="lg" [backdropGlow]="true"></app-brand-logo>
       <div class="register-side__content">
         <h1 class="register-side__title">Junte-se à Aventura!</h1>
         <p class="register-side__text">
@@ -25,33 +25,60 @@
         <div class="field-section">
           <div class="input-group">
             <i class="fa fa-at icon-field"></i>
-            <input type="text" placeholder="Nome de usuário (ex: aragorn123)" name="userName"
-              [(ngModel)]="registerForm.userName" (input)="onUserNameInput($event)" autocomplete="username"
-              maxlength="32" [disabled]="isAnyLoading" required />
+            <input
+              type="text"
+              placeholder="Nome de usuário (ex: aragorn123)"
+              name="userName"
+              [(ngModel)]="registerForm.userName"
+              (input)="onUserNameInput($event)"
+              autocomplete="username"
+              maxlength="32"
+              [disabled]="isAnyLoading"
+              required
+            />
           </div>
           <span class="field-info-hint">
-            <i class="fa fa-circle-info"></i> Apenas letras minúsculas (a-z), números, "." e "_".
-            Servirá como nome de exibição inicial.
+            <i class="fa fa-circle-info"></i> Apenas letras minúsculas (a-z), números e "_". Servirá
+            como nome de exibição inicial.
           </span>
         </div>
 
         <div class="input-group">
           <i class="fa fa-envelope icon-field"></i>
-          <input type="email" placeholder="Email" name="email" [(ngModel)]="registerForm.email"
-            (ngModelChange)="onEmailInput($event)" (keydown.space)="$event.preventDefault()" autocomplete="email"
-            [disabled]="isAnyLoading" required />
+          <input
+            type="email"
+            placeholder="Email"
+            name="email"
+            [(ngModel)]="registerForm.email"
+            (ngModelChange)="onEmailInput($event)"
+            (keydown.space)="$event.preventDefault()"
+            autocomplete="email"
+            [disabled]="isAnyLoading"
+            required
+          />
         </div>
 
         @if (emailInvalid) {
-        <span class="field-hint">Informe um email válido.</span>
+          <span class="field-hint">Informe um email válido.</span>
         }
 
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
-          <input [type]="showPassword ? 'text' : 'password'" placeholder="Senha" name="password"
-            [(ngModel)]="registerForm.password" autocomplete="new-password" [disabled]="isAnyLoading" required />
-          <button type="button" class="password-toggle-btn" (click)="togglePasswordVisibility()"
-            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Senha"
+            name="password"
+            [(ngModel)]="registerForm.password"
+            autocomplete="new-password"
+            [disabled]="isAnyLoading"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Exibir senha'"
+          >
             <i class="fa" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
         </div>
@@ -84,22 +111,39 @@
 
         <div class="input-group">
           <i class="fa fa-lock icon-field"></i>
-          <input [type]="showConfirmPassword ? 'text' : 'password'" placeholder="Confirmar Senha" name="confirmPassword"
-            [(ngModel)]="confirmPassword" autocomplete="new-password" [disabled]="isAnyLoading" required />
-          <button type="button" class="password-toggle-btn" (click)="toggleConfirmPasswordVisibility()"
-            [attr.aria-label]="showConfirmPassword ? 'Ocultar senha' : 'Exibir senha'">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Confirmar Senha"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            autocomplete="new-password"
+            [disabled]="isAnyLoading"
+            required
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="toggleConfirmPasswordVisibility()"
+            [attr.aria-label]="showConfirmPassword ? 'Ocultar senha' : 'Exibir senha'"
+          >
             <i class="fa" [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
           </button>
         </div>
 
         @if (passwordsMismatch) {
-        <span class="field-hint">As senhas não coincidem.</span>
+          <span class="field-hint">As senhas não coincidem.</span>
         }
 
         <div class="form-options">
           <label class="checkbox-container">
-            <input type="checkbox" id="terms" name="terms" [ngModel]="termsAccepted" [disabled]="isAnyLoading"
-              (click)="onTermsCheckboxClick($event)" />
+            <input
+              type="checkbox"
+              id="terms"
+              name="terms"
+              [ngModel]="termsAccepted"
+              [disabled]="isAnyLoading"
+              (click)="onTermsCheckboxClick($event)"
+            />
             <span class="terms-text">
               Eu li e aceito os
               <button type="button" class="terms-link-btn" (click)="openTermsModal($event)">
@@ -110,24 +154,24 @@
         </div>
 
         @if (errorMessage) {
-        <div class="feedback-message error-message">
-          <i class="fa fa-circle-exclamation"></i>
-          <span>{{ errorMessage }}</span>
-        </div>
+          <div class="feedback-message error-message">
+            <i class="fa fa-circle-exclamation"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
         }
 
         @if (successMessage) {
-        <div class="feedback-message success-message">
-          <i class="fa fa-circle-check"></i>
-          <span>{{ successMessage }}</span>
-        </div>
+          <div class="feedback-message success-message">
+            <i class="fa fa-circle-check"></i>
+            <span>{{ successMessage }}</span>
+          </div>
         }
 
         <button type="submit" class="btn-register" [disabled]="isAnyLoading">
           @if (!isLoading) {
-          <span>CADASTRAR</span>
+            <span>CADASTRAR</span>
           } @else {
-          <span><i class="fa fa-spinner fa-spin"></i> Aguarde...</span>
+            <span><i class="fa fa-spinner fa-spin"></i> Aguarde...</span>
           }
         </button>
       </form>
@@ -137,28 +181,43 @@
       </div>
 
       <div class="social-registers">
-        <button type="button" class="social-btn" [class.loading]="isGoogleLoading" [disabled]="isAnyLoading"
-          (click)="loginComGoogle()" title="Cadastrar com Google" aria-label="Cadastrar com Google">
+        <button
+          type="button"
+          class="social-btn"
+          [class.loading]="isGoogleLoading"
+          [disabled]="isAnyLoading"
+          (click)="loginComGoogle()"
+          title="Cadastrar com Google"
+          aria-label="Cadastrar com Google"
+        >
           @if (!isGoogleLoading) {
-          <i class="fa-brands fa-google"></i>
+            <i class="fa-brands fa-google"></i>
           } @else {
-          <i class="fa fa-spinner fa-spin"></i>
+            <i class="fa fa-spinner fa-spin"></i>
           }
         </button>
         <div id="google-btn" style="display: none; position: absolute"></div>
 
-        <button type="button" class="social-btn" [class.loading]="isDiscordLoading" [disabled]="isAnyLoading"
-          (click)="onDiscordLogin()" title="Cadastrar com Discord" aria-label="Cadastrar com Discord">
+        <button
+          type="button"
+          class="social-btn"
+          [class.loading]="isDiscordLoading"
+          [disabled]="isAnyLoading"
+          (click)="onDiscordLogin()"
+          title="Cadastrar com Discord"
+          aria-label="Cadastrar com Discord"
+        >
           @if (!isDiscordLoading) {
-          <i class="fa-brands fa-discord"></i>
+            <i class="fa-brands fa-discord"></i>
           } @else {
-          <i class="fa fa-spinner fa-spin"></i>
+            <i class="fa fa-spinner fa-spin"></i>
           }
         </button>
       </div>
 
       <p class="register-footer mobile-only">
-        Já tem conta? <a routerLink="/login">Entrar</a> ou <a routerLink="/esqueci-senha">Esqueceu a senha?</a>
+        Já tem conta? <a routerLink="/login">Entrar</a> ou
+        <a routerLink="/esqueci-senha">Esqueceu a senha?</a>
       </p>
     </div>
   </div>
@@ -895,11 +954,11 @@
       </div>
     </div>
 
-    <div class="terms-modal-footer">
-      <button type="button" class="btn-accept-terms" (click)="acceptTermsAndClose()">
-        Li e Aceito os Termos
-      </button>
+      <div class="terms-modal-footer">
+        <button type="button" class="btn-accept-terms" (click)="acceptTermsAndClose()">
+          Li e Aceito os Termos
+        </button>
+      </div>
     </div>
   </div>
-</div>
 }

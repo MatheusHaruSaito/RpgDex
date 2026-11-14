@@ -1,0 +1,37 @@
+<ng-template #logoContent>
+  <span
+    class="brand-logo"
+    [ngClass]="['brand-logo--' + variant, 'brand-logo--' + size]"
+    [class.brand-logo--animated]="animated"
+  >
+    <span
+      class="brand-logo__icon-wrapper"
+      [class.brand-logo__icon-wrapper--glow]="backdropGlow"
+    >
+      <img
+        [src]="iconSrc"
+        [alt]="variant === 'icon-only' ? label : ''"
+        [attr.aria-hidden]="variant !== 'icon-only'"
+        class="brand-logo__icon"
+      />
+    </span>
+
+    @if (variant !== 'icon-only') {
+      <span class="brand-logo__text" [style.color]="textColor || null">
+        {{ label }}
+      </span>
+    }
+  </span>
+</ng-template>
+
+@if (link) {
+  <a
+    [routerLink]="link"
+    class="brand-logo-link"
+    [attr.aria-label]="label + ' - Voltar para o início'"
+  >
+    <ng-container *ngTemplateOutlet="logoContent"></ng-container>
+  </a>
+} @else {
+  <ng-container *ngTemplateOutlet="logoContent"></ng-container>
+}

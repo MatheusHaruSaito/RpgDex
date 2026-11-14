@@ -7,12 +7,13 @@ import { CommonModule } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { GoogleAuthService } from '../../services/google-auth-service';
 import { TwoFactorModalComponent } from '../../modals/two-factor-modal/two-factor-modal';
+import { BrandLogo } from '../../components/brand-logo/brand-logo';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-user-login',
   standalone: true,
-  imports: [FormsModule, RouterModule, CommonModule, TwoFactorModalComponent],
+  imports: [FormsModule, RouterModule, CommonModule, TwoFactorModalComponent, BrandLogo],
   templateUrl: './user-login.component.html',
   styleUrl: './user-login.component.css',
 })
@@ -52,6 +53,20 @@ export class UserLoginComponent implements OnInit {
     }
   }
 
+  private setError(msg: string): void {
+    this.errorMessage = msg;
+    this.cdr.detectChanges();
+  }
+
+  private handleApiError(err: any): void {
+    this.setError('Ocorreu um erro ao processar o seu pedido. Tente novamente.');
+    ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+      if (msg && msg !== '[object Object]') {
+        this.setError(msg);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.googleAuth.initLogin((response: any) => {
       const token = response.credential;
@@ -60,16 +75,18 @@ export class UserLoginComponent implements OnInit {
       this.cdr.detectChanges();
 
       this.authService.GoogleSingUp(token).subscribe({
-        next: () => {
+        next: (res: any) => {
           this.isGoogleLoading = false;
+          if (res?.success === false) {
+            this.handleApiError({ error: res });
+            return;
+          }
+          this.cdr.detectChanges();
           this.router.navigate(['/home']);
         },
         error: (err) => {
           this.isGoogleLoading = false;
-          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-            this.errorMessage = msg;
-            this.cdr.detectChanges();
-          });
+          this.handleApiError(err);
         },
       });
     });
@@ -96,33 +113,38 @@ export class UserLoginComponent implements OnInit {
     this.errorMessage = '';
 
     if (!this.emailRegex.test(this.authUserForm.email)) {
-      this.errorMessage = 'Informe um email válido.';
+      this.setError('Informe um email válido.');
       return;
     }
 
     if (!this.authUserForm.password) {
-      this.errorMessage = 'Informe a sua senha.';
+      this.setError('Informe a sua senha.');
       return;
     }
 
     this.isLoading = true;
+    this.cdr.detectChanges();
+
     this.authService.Login(this.authUserForm).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.isLoading = false;
+
+        if (res?.success === false) {
+          this.handleApiError({ error: res });
+          return;
+        }
 
         if (res.data?.twoFactorEnabled) {
           this.showTwoFactorModal = true;
           this.cdr.detectChanges();
         } else {
+          this.cdr.detectChanges();
           this.router.navigate(['/home']);
         }
       },
       error: (err) => {
         this.isLoading = false;
-        ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
-          this.errorMessage = msg;
-          this.cdr.detectChanges();
-        });
+        this.handleApiError(err);
       },
     });
   }
@@ -136,6 +158,7 @@ export class UserLoginComponent implements OnInit {
   onDiscordLogin(): void {
     if (this.isAnyLoading) return;
     this.isDiscordLoading = true;
+    this.cdr.detectChanges();
     this.authService.DiscordSingUp('');
   }
 }

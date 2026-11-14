@@ -37,6 +37,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await IdentityDataSeeder.SeedRoleAsync(services);
+        await PlanDataSeeder.SeedAsync(services);
     }
     catch (Exception ex)
     {

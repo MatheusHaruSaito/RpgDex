@@ -7,18 +7,17 @@ import { CharacterService } from '../../services/character-service';
 import { CampaignService } from '../../services/campaign-service';
 import { PlanService } from '../../services/plan-service';
 import { SubscriptionService } from '../../services/subscription-service';
+import { ThemeService } from '../../services/theme-service';
 import { UserResponse } from '../../../models/userResponse';
 import { Character } from '../../../models/character';
 import { AuthOptionsResponse } from '../../../models/authOptionsResponse';
-import { PlanResponse } from '../../../models/planResponse';
 import { SettingsModalComponent } from '../../modals/settings-modal/settings-modal';
 import { Campaign } from '../../../models/campaign';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { RecentSortUtil } from '../../utils/recent-sort.util';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-
-const THEME_KEY = 'rpgdex-theme';
 
 export interface CampaignDisplayItem {
   id: string;
@@ -40,6 +39,7 @@ export class ProfileComponent implements OnInit {
   private campaignService = inject(CampaignService);
   private planService = inject(PlanService);
   private subscriptionService = inject(SubscriptionService);
+  private theme = inject(ThemeService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private translateService = inject(TranslateService);
@@ -48,7 +48,6 @@ export class ProfileComponent implements OnInit {
   userPlanName = 'Plano Gratuito';
   hasEarlyAccess = false;
   authOptions: AuthOptionsResponse | null = null;
-  isDarkMode = false;
   isSettingsModalOpen = false;
 
   // Estados de carregamento com Skeleton
@@ -59,14 +58,60 @@ export class ProfileComponent implements OnInit {
 
   characterPreview: Character[] = [];
   characterTotal = 0;
+  maxCharacters = 0;
+
   feedBackMessage = { text: '', type: '' };
+
   campaignPreview: CampaignDisplayItem[] = [];
-  campaignTotal = 0;
+  campaignGameMasterLength = 0;
+  campaignPlayerLength = 0;
+  maxCampaigns = 0;
+
+  /** O tema agora vive no ThemeService (global); o template continua usando isDarkMode. */
+  get isDarkMode(): boolean {
+    return this.theme.isDark();
+  }
+
+  get hasCharacterLimit(): boolean {
+    return this.maxCharacters > 0;
+  }
+
+  get isCharacterLimitReached(): boolean {
+    return this.hasCharacterLimit && this.characterTotal >= this.maxCharacters;
+  }
+
+  get isCharacterNearLimit(): boolean {
+    return (
+      this.hasCharacterLimit &&
+      !this.isCharacterLimitReached &&
+      this.characterTotal / this.maxCharacters >= 0.8
+    );
+  }
+
+  get hasCampaignLimit(): boolean {
+    return this.maxCampaigns > 0;
+  }
+
+  get isCampaignLimitReached(): boolean {
+    return this.hasCampaignLimit && this.campaignGameMasterLength >= this.maxCampaigns;
+  }
+
+  get isCampaignNearLimit(): boolean {
+    return (
+      this.hasCampaignLimit &&
+      !this.isCampaignLimitReached &&
+      this.campaignGameMasterLength / this.maxCampaigns >= 0.8
+    );
+  }
+
+  get totalCampaignsCount(): number {
+    return this.campaignGameMasterLength + this.campaignPlayerLength;
+  }
+
   constructor(private activatedRoute: ActivatedRoute) {}
 
   ngOnInit(): void {
     this.HandleFeedBackMessage();
-    this.initTheme();
     this.loadUser();
     this.loadUserPlanInfo();
     this.loadCharacterPreview();
@@ -92,24 +137,9 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
-  private initTheme(): void {
-    const saved = localStorage.getItem(THEME_KEY);
-    this.isDarkMode = saved === 'dark';
-    this.applyTheme();
-  }
-
-  private applyTheme(): void {
-    if (this.isDarkMode) {
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.documentElement.classList.remove('dark-theme');
-    }
-  }
 
   toggleTheme(): void {
-    this.isDarkMode = !this.isDarkMode;
-    localStorage.setItem(THEME_KEY, this.isDarkMode ? 'dark' : 'light');
-    this.applyTheme();
+    this.theme.toggle();
   }
 
   private loadUser(): void {
@@ -184,10 +214,12 @@ export class ProfileComponent implements OnInit {
 
   private loadCharacterPreview(): void {
     this.isLoadingCharacters = true;
-    this.characterService.GetAllByPage(1, 3).subscribe({
+    this.characterService.GetAllByPage(1, 50).subscribe({
       next: (response) => {
-        this.characterTotal = response.data?.characterLength ?? 0;
-        this.characterPreview = response.data?.characters ?? [];
+        const all = response.data?.characters ?? [];
+        this.characterPreview = RecentSortUtil.sortByMostRecent(all).slice(0, 3);
+        this.characterTotal = response.data?.characterLength ?? all.length;
+        this.maxCharacters = response.data?.maxCharacters ?? 0;
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
@@ -208,11 +240,20 @@ export class ProfileComponent implements OnInit {
     }
 
     this.isLoadingCampaigns = true;
-    this.campaignService.GetAllByUserPage(0, 3).subscribe({
+    this.campaignService.GetAllByUserPage(0, 50).subscribe({
       next: (response) => {
         const allCampaigns: Campaign[] = response.data?.campaigns ?? [];
-        this.campaignTotal = response.data?.campaignGameMasterLength ?? 0;
-        this.campaignPreview = allCampaigns.map((c) => ({
+        this.campaignGameMasterLength =
+          response.data?.campaignGameMasterLength ??
+          allCampaigns.filter((c) => c.gameMasterId === userId).length;
+        this.campaignPlayerLength =
+          response.data?.campaignPlayerLength ??
+          allCampaigns.filter((c) => c.gameMasterId !== userId).length;
+        this.maxCampaigns = response.data?.maxCampaigns ?? 0;
+
+        const sortedCampaigns = RecentSortUtil.sortByMostRecent(allCampaigns).slice(0, 3);
+
+        this.campaignPreview = sortedCampaigns.map((c) => ({
           id: c.id,
           title: c.title,
           role: c.gameMasterId === userId ? 'Mestre' : 'Jogador',

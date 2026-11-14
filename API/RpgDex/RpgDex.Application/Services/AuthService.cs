@@ -765,7 +765,18 @@ namespace RpgDex.Application.Services
             if (!roles.Any())
             {
                 var result = await userManager.AddToRoleAsync(user, "User");
+<<<<<<< HEAD
                 return result.Succeeded;
+=======
+                if (result.Succeeded)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+>>>>>>> ebc4829e9e345cb07e9253fd9742a1f93191248c
             }
             return true;
         }

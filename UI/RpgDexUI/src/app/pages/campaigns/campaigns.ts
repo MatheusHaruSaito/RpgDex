@@ -12,6 +12,7 @@ import { SkeletonComponent } from '../../components/skeleton/skeleton';
 import { ReportModalComponent } from '../../modals/report-modal/report-modal';
 import { ReportType } from '../../../models/reportType';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { RecentSortUtil } from '../../utils/recent-sort.util';
 
 @Component({
   selector: 'app-campaigns',
@@ -40,6 +41,11 @@ export class CampaignsComponent implements OnInit {
   myCharacters: Character[] = [];
   currentUserId = '';
   reportTypes = ReportType;
+
+  campaignGameMasterLength = 0;
+  campaignPlayerLength = 0;
+  maxCampaigns = 0;
+
   // Estados de carregamento
   isLoadingCampaigns = true;
   isLoadingCharacters = true;
@@ -58,6 +64,22 @@ export class CampaignsComponent implements OnInit {
   reportTargetId = '';
   reportTargetType: ReportType = ReportType.CampaignReport;
   reportTargetName = '';
+
+  get hasCampaignLimit(): boolean {
+    return this.maxCampaigns > 0;
+  }
+
+  get isCampaignLimitReached(): boolean {
+    return this.hasCampaignLimit && this.campaignGameMasterLength >= this.maxCampaigns;
+  }
+
+  get isCampaignNearLimit(): boolean {
+    return (
+      this.hasCampaignLimit &&
+      !this.isCampaignLimitReached &&
+      this.campaignGameMasterLength / this.maxCampaigns >= 0.8
+    );
+  }
 
   ngOnInit(): void {
     this.currentUserId = this.authService.getLoggedUserId() ?? '';
@@ -86,9 +108,19 @@ export class CampaignsComponent implements OnInit {
   public showMoreCampaigns(): void {
     this.campaignService.GetAllByUserPage(this.campaingPageCount, this.campaingsPerPage).subscribe({
       next: (result) => {
-        this.myCampaigns.push(...(result.data?.campaigns ? result.data.campaigns : []));
+        const fetched = result.data?.campaigns ?? [];
+        this.myCampaigns = RecentSortUtil.sortByMostRecent([...this.myCampaigns, ...fetched]);
+        if (result.data?.campaignGameMasterLength !== undefined) {
+          this.campaignGameMasterLength = result.data.campaignGameMasterLength;
+        }
+        if (result.data?.campaignPlayerLength !== undefined) {
+          this.campaignPlayerLength = result.data.campaignPlayerLength;
+        }
+        if (result.data?.maxCampaigns !== undefined) {
+          this.maxCampaigns = result.data.maxCampaigns;
+        }
         this.campaingPageCount++;
-        if (result.data!.campaigns.length < 3) {
+        if (fetched.length < 3) {
           this.showMoreButton = false;
         }
         this.cdr.detectChanges();
@@ -101,10 +133,16 @@ export class CampaignsComponent implements OnInit {
     this.isLoadingCampaigns = true;
     this.campaignService.GetAllByUserPage(0, this.campaingsPerPage).subscribe({
       next: (r) => {
-        if (r.data!.campaigns.length > this.campaingsPerPage - 1) {
-          this.showMoreButton = true;
-        }
-        this.myCampaigns = r.data?.campaigns ?? [];
+        const campaigns = r.data?.campaigns ?? [];
+        this.showMoreButton = campaigns.length > this.campaingsPerPage - 1;
+        this.myCampaigns = RecentSortUtil.sortByMostRecent(campaigns);
+        this.campaignGameMasterLength =
+          r.data?.campaignGameMasterLength ??
+          campaigns.filter((c) => c.gameMasterId === this.currentUserId).length;
+        this.campaignPlayerLength =
+          r.data?.campaignPlayerLength ??
+          campaigns.filter((c) => c.gameMasterId !== this.currentUserId).length;
+        this.maxCampaigns = r.data?.maxCampaigns ?? 0;
         this.isLoadingCampaigns = false;
         this.cdr.detectChanges();
       },
@@ -117,12 +155,15 @@ export class CampaignsComponent implements OnInit {
 
   private loadCharacters(): void {
     this.isLoadingCharacters = true;
-    this.characterService.GetAllByPage(1, this.showCharactersCount).subscribe({
+    this.characterService.GetAllByPage(1, 50).subscribe({
       next: (r) => {
         const all = r.data?.characters ?? [];
         const filtered = all.filter((c) => c.userId === this.currentUserId);
 
-        this.myCharacters = this.sortByLastAccessed(filtered);
+        this.myCharacters = RecentSortUtil.sortByMostRecent(filtered).slice(
+          0,
+          this.showCharactersCount,
+        );
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
@@ -130,16 +171,6 @@ export class CampaignsComponent implements OnInit {
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },
-    });
-  }
-
-  // --- LÓGICA DE ÚLTIMO ACESSO ---
-  private sortByLastAccessed(chars: Character[]): Character[] {
-    return [...chars].sort((a, b) => {
-      const timeA = a.lastAccess ? new Date(a.lastAccess).getTime() : 0;
-      const timeB = b.lastAccess ? new Date(b.lastAccess).getTime() : 0;
-
-      return timeB - timeA;
     });
   }
 
@@ -175,6 +206,9 @@ export class CampaignsComponent implements OnInit {
 
   // --- MODAL & CAMPANHAS ---
   openModal(tab: 'create' | 'join'): void {
+    if (tab === 'create' && this.isCampaignLimitReached) {
+      return;
+    }
     this.activeModalTab = tab;
     this.isModalOpen = true;
   }
@@ -183,6 +217,7 @@ export class CampaignsComponent implements OnInit {
     this.campaignService.Post(formData as any).subscribe({
       next: () => {
         this.isModalOpen = false;
+        this.campaingPageCount = 2;
         this.loadCampaigns();
       },
       error: (err: any) => {
@@ -200,6 +235,7 @@ export class CampaignsComponent implements OnInit {
     this.campaignService.AddPlayer(requestBody as any).subscribe({
       next: () => {
         this.isModalOpen = false;
+        this.campaingPageCount = 2;
         this.loadCampaigns();
       },
       error: (err: any) => {
