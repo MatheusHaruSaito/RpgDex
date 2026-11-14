@@ -150,6 +150,7 @@
     "AGE_SAVE_FAILED": "Failed to save your data. Please try again.",
     "AGE_GUARDIAN_EMAIL_SEND_FAILED": "Failed to send the email to your guardian. Check the address and try again.",
     "AGE_INVALID_CONSENT_TOKEN": "Invalid or expired consent link.",
-    "AGE_NOT_VERIFIED": "User age not verified"
+    "AGE_NOT_VERIFIED": "User age not verified",
+    "AGE_GUARDIAN_EMAIL_SAME_AS_USER": "Guardian email must be different from your email."
   }
 }

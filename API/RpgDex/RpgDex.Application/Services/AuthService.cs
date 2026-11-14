@@ -535,8 +535,11 @@ namespace RpgDex.Application.Services
             if (!update.Succeeded)
                 return Result<AgeVerificationResponse>.Failure(AgeVerificationError.SaveFailed);
 
-            if (isMinor)
+
+            if (isMinor )
             {
+                if (string.Equals(request.GuardianEmail?.Trim(), user.Email,
+                    StringComparison.OrdinalIgnoreCase)) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSameAsUser);
                 var sent = await SendGuardianConsentEmailAsync(user);
                 if (!sent) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSendFailed);
             }

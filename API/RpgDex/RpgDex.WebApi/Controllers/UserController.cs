@@ -12,7 +12,7 @@ namespace RpgDex.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Policy = "AgeVerified")]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -36,7 +36,9 @@ namespace RpgDex.WebApi.Controllers
             var result = await _userService.GetUserChart(startDate,endDate);
             return result.ToIActionResult();
         }
+
         [HttpPut]
+        [Authorize(Policy = "AgeVerified")]
         public async Task<IActionResult> UpdateUserProfile(UpdateUserProfileDTO updateUserProfileDTO)
         {
             var result = await _userService.UpdateUserProfileAsync(currentUser, updateUserProfileDTO);
