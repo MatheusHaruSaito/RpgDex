@@ -593,7 +593,7 @@ namespace RpgDex.Application.Services
         public async Task<Result<RefreshTokenModel>> ConfirmGuardianConsent(ConfirmGuardianConsentRequest request)
         {
             var user = await userManager.FindByIdAsync(request.UserId);
-            if (user is null) return Result<string>.Failure(AuthError.UserNotFound);
+            if (user is null) return Result<RefreshTokenModel>.Failure(AuthError.UserNotFound);
 
             if (user.GuardianConsent != GuardianConsentStatus.Pending)
                 return Result<RefreshTokenModel>.Failure(AgeVerificationError.InvalidConsentToken);
