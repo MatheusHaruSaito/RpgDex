@@ -1,4 +1,15 @@
-import { Component, EventEmitter, Input, Output, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnChanges,
+  OnDestroy,
+  SimpleChanges,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateService } from '@ngx-translate/core';
@@ -12,12 +23,14 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
   templateUrl: './age-verification-modal.html',
   styleUrl: './age-verification-modal.css',
 })
-export class AgeVerificationModalComponent {
+export class AgeVerificationModalComponent implements OnChanges, OnDestroy {
   private authService = inject(AuthService);
   private translateService = inject(TranslateService);
+  private cooldownTimer: ReturnType<typeof setInterval> | null = null;
 
   @Input() visible = false;
-  @Input() blocking = true; // Impede fechar sem concluir se for obrigatório
+  @Input() blocking = true;
+  @Input() initialPending = false;
   @Output() close = new EventEmitter<void>();
   @Output() verified = new EventEmitter<{ isMinor: boolean }>();
 
@@ -27,12 +40,30 @@ export class AgeVerificationModalComponent {
   guardianEmail = signal<string>('');
 
   isLoading = signal<boolean>(false);
+  isResending = signal<boolean>(false);
+  resendCooldown = signal<number>(0);
   errorMessage = signal<string>('');
+  resendMessage = signal<string>('');
   pendingGuardianApproval = signal<boolean>(false);
+  editingGuardianEmail = signal<boolean>(false);
+  newGuardianEmail = signal<string>('');
 
   readonly todayStr = new Date().toISOString().split('T')[0];
 
-  // Calcula automaticamente se é menor de 18 anos com base na data de nascimento
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['initialPending'] || changes['visible']) {
+      if (this.visible && this.initialPending) {
+        this.pendingGuardianApproval.set(true);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.cooldownTimer) {
+      clearInterval(this.cooldownTimer);
+    }
+  }
+
   isMinor = computed<boolean>(() => {
     const dob = this.birthDate();
     if (!dob) return false;
@@ -79,6 +110,21 @@ export class AgeVerificationModalComponent {
     return rev === parseInt(digits[10], 10);
   }
 
+  private startCooldown(seconds = 60): void {
+    this.resendCooldown.set(seconds);
+    if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+
+    this.cooldownTimer = setInterval(() => {
+      const current = this.resendCooldown();
+      if (current <= 1) {
+        this.resendCooldown.set(0);
+        if (this.cooldownTimer) clearInterval(this.cooldownTimer);
+      } else {
+        this.resendCooldown.set(current - 1);
+      }
+    }, 1000);
+  }
+
   submit(): void {
     this.errorMessage.set('');
 
@@ -115,8 +161,8 @@ export class AgeVerificationModalComponent {
       .AgeVerification({
         birthDate: this.birthDate(),
         cpf: this.cpf().replace(/\D/g, ''),
-        guardianCpf: minor ? this.guardianCpf().replace(/\D/g, '') : '',
-        guardianEmail: minor ? this.guardianEmail().trim() : '',
+        guardianCpf: minor ? this.guardianCpf().replace(/\D/g, '') : null,
+        guardianEmail: minor ? this.guardianEmail().trim() : null,
       })
       .subscribe({
         next: (res) => {
@@ -128,6 +174,7 @@ export class AgeVerificationModalComponent {
 
           if (minor) {
             this.pendingGuardianApproval.set(true);
+            this.startCooldown(60);
           } else {
             this.verified.emit({ isMinor: false });
             this.close.emit();
@@ -136,6 +183,50 @@ export class AgeVerificationModalComponent {
         error: (err) => {
           this.isLoading.set(false);
           this.errorMessage.set('Erro ao processar a verificação de idade.');
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            if (msg) this.errorMessage.set(msg);
+          });
+        },
+      });
+  }
+
+  resendConsent(): void {
+    if (this.isResending() || this.resendCooldown() > 0) return;
+
+    this.errorMessage.set('');
+    this.resendMessage.set('');
+
+    const updatedEmail = this.editingGuardianEmail() ? this.newGuardianEmail().trim() : null;
+
+    if (updatedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(updatedEmail)) {
+      this.errorMessage.set('Informe um e-mail válido para o responsável.');
+      return;
+    }
+
+    this.isResending.set(true);
+
+    this.authService
+      .resendGuardianConsentEmail({ guardianEmail: updatedEmail || null })
+      .subscribe({
+        next: (res) => {
+          this.isResending.set(false);
+          if (!res.success) {
+            this.errorMessage.set(res.message || 'Não foi possível reenviar o e-mail.');
+            return;
+          }
+
+          if (updatedEmail) {
+            this.guardianEmail.set(updatedEmail);
+            this.editingGuardianEmail.set(false);
+            this.newGuardianEmail.set('');
+          }
+
+          this.resendMessage.set('Novo link enviado para o e-mail do responsável!');
+          this.startCooldown(60);
+        },
+        error: (err) => {
+          this.isResending.set(false);
+          this.errorMessage.set('Aguarde antes de solicitar um novo envio.');
           ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
             if (msg) this.errorMessage.set(msg);
           });

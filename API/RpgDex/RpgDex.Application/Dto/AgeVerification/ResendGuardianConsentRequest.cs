@@ -4,7 +4,6 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.AgeVerification
 {
-    internal class ResendGuardianConsentRequest
-    {
-    }
+    public record ResendGuardianConsentRequest(string? GuardianEmail);
+    
 }

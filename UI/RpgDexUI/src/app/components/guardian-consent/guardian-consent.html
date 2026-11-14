@@ -1,1 +1,19 @@
-<p>guardian-consent works!</p>
+<div class="consent-wrapper">
+  <div class="consent-card">
+    @if (status() === 'loading') {
+      <i class="fa-solid fa-spinner fa-spin status-icon"></i>
+      <h1>Validando autorização...</h1>
+      <p>Aguarde enquanto confirmamos o consentimento do responsável.</p>
+    } @else if (status() === 'success') {
+      <i class="fa-solid fa-circle-check status-icon success"></i>
+      <h1>Consentimento Confirmado!</h1>
+      <p>A conta do menor foi autorizada com sucesso no RPGDex.</p>
+      <a routerLink="/login" class="btn-consent">Ir para o RPGDex</a>
+    } @else {
+      <i class="fa-solid fa-circle-xmark status-icon error"></i>
+      <h1>Link Inválido ou Expirado</h1>
+      <p>{{ errorMessage() }}</p>
+      <a routerLink="/home" class="btn-consent">Voltar ao Início</a>
+    }
+  </div>
+</div>

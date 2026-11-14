@@ -222,14 +222,26 @@ export class AuthService {
   }): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${this.env}/resetPassword`, request);
   }
-  public AgeVerification(request: {
-    birthDate: Date;
+ public AgeVerification(request: {
+    birthDate: string;
     cpf: string;
-    guardianCpf: string;
-    guardianEmail: string;
-  }): Observable<ApiResponse<string>> {
-    return this.http.post<ApiResponse<string>>(`${this.env}/age-verification"`, request);
+    guardianCpf?: string | null;
+    guardianEmail?: string | null;
+  }): Observable<ApiResponse<{ isMinor: boolean; guardianConsent: string | number }>> {
+    return this.http
+      .post<ApiResponse<{ isMinor: boolean; guardianConsent: string | number }>>(
+        `${this.env}/age-verification`,
+        request,
+      )
+      .pipe(
+        tap((res) => {
+          if (res.success && !res.data?.isMinor) {
+            this.RefreshToken().subscribe();
+          }
+        }),
+      );
   }
+  
   public GuardianConsent(request: {
     userId: string;
     token: string;

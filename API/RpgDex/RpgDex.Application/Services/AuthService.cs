@@ -2,13 +2,10 @@
 using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.AgeVerification;
 using RpgDex.Application.Dto.Auth;
-using Microsoft.Extensions.Logging;
-using RpgDex.Application.Dto;
 using RpgDex.Application.Dto.User;
 using RpgDex.Application.Extension;
 using RpgDex.Application.Helpers;
@@ -21,18 +18,29 @@ using RpgDex.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace RpgDex.Application.Services
 {
-    public class AuthService(UserManager<ApplicationUser> userManager, ITokenService tokenService, IEmailService emailService, IGoogleAuthService googleAuthService, RoleManager<ApplicationRole> rolemanager,
-        IConfiguration configuration, IDiscordAuthService discordAuthService, IFieldHasher fieldHasher, IUserRepository userRepository, IValidator<CreateUserDTO> createUserValidator, IValidator<AuthUserDTO> authUserValidator, IValidator<AgeVerificationRequest> ageVerificationValidator) : IAuthService
+    public class AuthService(
+        UserManager<ApplicationUser> userManager,
+        ITokenService tokenService,
+        IEmailService emailService,
+        IGoogleAuthService googleAuthService,
+        RoleManager<ApplicationRole> rolemanager,
+        IConfiguration configuration,
+        IDiscordAuthService discordAuthService,
+        IFieldHasher fieldHasher,
+        IUserRepository userRepository,
+        IValidator<CreateUserDTO> createUserValidator,
+        IValidator<AuthUserDTO> authUserValidator,
+        IValidator<AgeVerificationRequest> ageVerificationValidator) : IAuthService
     {
         private const string GoogleProvider = "Google";
         private const string DiscordProvider = "Discord";
         private const string GuardianConsentPurpose = "GuardianConsent";
         private static readonly TimeSpan GuardianResendCooldown = TimeSpan.FromMinutes(1);
+
         public async Task<Result<LoginResponse>> LogIn(AuthUserDTO authUser)
         {
             var checkAuthUserValid = authUserValidator.Validate(authUser);
@@ -43,31 +51,36 @@ namespace RpgDex.Application.Services
 
             var validUser = await userManager.CheckPasswordAsync(user, authUser.Password);
             if (!validUser) return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
+
             if (await userManager.IsLockedOutAsync(user))
             {
                 return Result<LoginResponse>.Failure(UserError.UserIsBanned);
             }
-            var IsEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
-            if(!IsEmailConfirmed) return Result<LoginResponse>.Failure(AuthError.EmailNotConfirmed);
+
+            var isEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
+            if (!isEmailConfirmed) return Result<LoginResponse>.Failure(AuthError.EmailNotConfirmed);
 
             var result = await AddUserRoleToUser(user);
             if (!result)
             {
                 return Result<LoginResponse>.Failure(AuthError.InvalidCredentials);
             }
+
             var response = new LoginResponse();
 
             if (user.TwoFactorEnabled)
             {
-               response.TwoFactorEnabled = true;
-               response.Email = user.Email;
+                response.TwoFactorEnabled = true;
+                response.Email = user.Email;
 
-               return await SendTwoFatorEmail(user,response);
+                return await SendTwoFatorEmail(user, response);
             }
 
-            var accessToken = await tokenService.GenerateTokenAsync(user);
-
             var newRefreshToken = await GenerateRefreshTokenModelAsync(user);
+            if (newRefreshToken is null)
+            {
+                return Result<LoginResponse>.Failure(AuthError.TokenGenerationFailed);
+            }
 
             response.RefreshToken = newRefreshToken.RefreshToken;
             response.AccessToken = newRefreshToken.AccessToken;
@@ -78,33 +91,37 @@ namespace RpgDex.Application.Services
         public async Task<Result<AuthOptionsResponse>> GetUserAuthOptions(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
-            if(user is null)
+            if (user is null)
             {
                 return Result<AuthOptionsResponse>.Failure(AuthError.UserNotFound);
             }
+
             var hasPassword = await userManager.HasPasswordAsync(user);
             var isTwoFactorEnabled = user.TwoFactorEnabled;
 
             var logins = await userManager.GetLoginsAsync(user);
-            var extrenalProviders = logins.Select(l => l.LoginProvider).ToList();
-            var authoptions = new AuthOptionsResponse
+            var externalProviders = logins.Select(l => l.LoginProvider).ToList();
+
+            var authOptions = new AuthOptionsResponse
             {
                 HasPassword = hasPassword,
-                ExternalProviders = extrenalProviders,
+                ExternalProviders = externalProviders,
                 IsTwoFactorEnabled = isTwoFactorEnabled,
-
             };
-            return Result<AuthOptionsResponse>.Success(authoptions);
+
+            return Result<AuthOptionsResponse>.Success(authOptions);
         }
+
         public async Task<Result<RefreshTokenModel>> ValidateTwoFactor(ValidateTwoFactorRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
-            if(user is null)
+            if (user is null)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserNotFound);
             }
 
-            var isTokenValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, request.Token);
+            var isTokenValid = await userManager.VerifyTwoFactorTokenAsync(
+                user, TokenOptions.DefaultEmailProvider, request.Token);
 
             if (!isTokenValid)
             {
@@ -113,6 +130,7 @@ namespace RpgDex.Application.Services
 
             return await LogInAsync(user);
         }
+
         public async Task<Result<string>> RequestTwoFAActivation(ValidateTwoFactorRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
@@ -120,7 +138,9 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.UserNotFound);
             }
-            var isValid = await userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider,request.Token);
+
+            var isValid = await userManager.VerifyTwoFactorTokenAsync(
+                user, TokenOptions.DefaultEmailProvider, request.Token);
 
             if (!isValid)
             {
@@ -132,6 +152,7 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.TwoFactorActivationFailed);
             }
+
             return Result<string>.Success("Two Factor Authentication Activated");
         }
 
@@ -149,14 +170,15 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
+
             var token = await tokenService.GetRefreshTokenByToken(tokenModel.RefreshToken);
-            if(token is null || token.ExpiryDate <= DateTime.UtcNow)
+            if (token is null || token.ExpiryDate <= DateTime.UtcNow)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.ExpiredRefreshToken);
             }
 
             var principal = tokenService.GetPrincipalFromExpiredToken(tokenModel.AccessToken);
-            if(principal is null)
+            if (principal is null)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
@@ -167,50 +189,55 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
+
             var user = await userManager.FindByIdAsync(userId);
-            if (user is null|| tokenModel.RefreshToken != token.Token)
+            if (user is null || tokenModel.RefreshToken != token.Token)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
 
             var tokenRevoked = await tokenService.RevokeTokenByValue(tokenModel.RefreshToken);
-            if (!tokenRevoked) { 
+            if (!tokenRevoked)
+            {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
 
             var newTokenModel = await GenerateRefreshTokenModelAsync(user);
-
             if (newTokenModel is null)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.TokenGenerationFailed);
             }
+
             return Result<RefreshTokenModel>.Success(newTokenModel);
         }
 
-        public async Task<Result<string>> RegisterUser(CreateUserDTO authUser) {
+        public async Task<Result<string>> RegisterUser(CreateUserDTO authUser)
+        {
             var checkUserValid = createUserValidator.Validate(authUser);
             if (!checkUserValid.IsValid) return checkUserValid.ReturnErrors<string>();
 
             var user = authUser.Adapt<ApplicationUser>();
             user.DisplayName = user.UserName;
+
             var result = await userManager.CreateAsync(user, authUser.Password);
             if (!result.Succeeded)
             {
                 return Result<string>.Failure(AuthError.UserCreationFailed);
             }
-            var roleResult = await userManager.AddToRoleAsync(user,"User");
+
+            var roleResult = await userManager.AddToRoleAsync(user, "User");
             if (!roleResult.Succeeded)
             {
                 return Result<string>.Failure(AuthError.UserCreationFailed);
             }
-            return await SendEmailVerificationAsync(authUser.Email);
 
+            return await SendEmailVerificationAsync(authUser.Email);
         }
 
         public async Task<Result<string>> ValidateEmailByTokenAsync(ValidateEmailByTokenRequest request)
         {
             var isValid = await tokenService.ValidateEmailToken(request.UserId, request.Token);
-            if(isValid)
+            if (isValid)
             {
                 return Result<string>.Success("Email verified successfully");
             }
@@ -219,7 +246,7 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<string>> ResendEmailVerificationAsync(ResendEmailVerificationRequest request)
         {
-          return await SendEmailVerificationAsync(request.Email);
+            return await SendEmailVerificationAsync(request.Email);
         }
 
         public async Task<Result<RefreshTokenModel>> GoogleSignUp(GoogleLoginRequest request)
@@ -229,31 +256,33 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidToken);
             }
+
             var userDb = await userManager.FindByEmailAsync(googleUser.email);
 
-            if (userDb is not null) {
+            if (userDb is not null)
+            {
                 if (await userManager.IsLockedOutAsync(userDb))
                 {
                     return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
                 }
-                //User Exists, but is the user already linked with Google?
+
                 var userLogins = await userManager.GetLoginsAsync(userDb);
-                var googleLoginInfo = userLogins.FirstOrDefault(l => l.LoginProvider == GoogleProvider && l.ProviderKey == googleUser.googleId);
-                
+                var googleLoginInfo = userLogins.FirstOrDefault(
+                    l => l.LoginProvider == GoogleProvider && l.ProviderKey == googleUser.googleId);
+
                 if (googleLoginInfo is null)
                 {
-                    // User exists but is not linked with Google
                     var userDbLoginInfo = new UserLoginInfo(GoogleProvider, googleUser.googleId, GoogleProvider);
-                    var addLoginResult =await userManager.AddLoginAsync(userDb, userDbLoginInfo);
+                    var addLoginResult = await userManager.AddLoginAsync(userDb, userDbLoginInfo);
                     if (!addLoginResult.Succeeded)
                     {
                         return Result<RefreshTokenModel>.Failure(AuthError.AccountLinkingFailed);
                     }
                 }
+
                 return await LogInAsync(userDb);
             }
 
-            //User does not exist, create a new user and link with Google
             var user = new ApplicationUser
             {
                 DisplayName = googleUser.displayName,
@@ -262,37 +291,39 @@ namespace RpgDex.Application.Services
                 IconPath = googleUser.iconUrl,
                 EmailConfirmed = true
             };
+
             var createResult = await userManager.CreateAsync(user);
             if (!createResult.Succeeded)
             {
-                //var errors = string.Join(" | ", createResult.Errors.Select(e => e.Description));
-                //return Result<RefreshTokenModel>.Failure(errors);
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
+
             var roleResult = await userManager.AddToRoleAsync(user, "User");
             if (!roleResult.Succeeded)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
+
             var userLoginInfo = new UserLoginInfo(GoogleProvider, googleUser.googleId, GoogleProvider);
             await userManager.AddLoginAsync(user, userLoginInfo);
 
-
             return await LogInAsync(user);
         }
-        public async Task<Result<bool>> LinkGoogleAccount(string userId,GoogleLoginRequest request)
+
+        public async Task<Result<bool>> LinkGoogleAccount(string userId, GoogleLoginRequest request)
         {
             var user = await userManager.FindByIdAsync(userId);
             if (user is null)
             {
                 return Result<bool>.Failure(AuthError.UserNotFound);
             }
+
             var googleUser = await googleAuthService.ValidateTokenAsync(request.Token);
             if (googleUser is null)
                 return Result<bool>.Failure(AuthError.InvalidToken);
-            
+
             var owner = await userManager.FindByLoginAsync(GoogleProvider, googleUser.googleId);
-            if(owner is not null)
+            if (owner is not null)
             {
                 return Result<bool>.Failure(AuthError.AccountAlreadyLinked);
             }
@@ -308,6 +339,7 @@ namespace RpgDex.Application.Services
                 ? Result<bool>.Success(true)
                 : Result<bool>.Failure(AuthError.AccountLinkingFailed);
         }
+
         public async Task<Result<bool>> UnlinkGoogleAsync(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -329,49 +361,47 @@ namespace RpgDex.Application.Services
 
         public async Task<Result<RefreshTokenModel>> DiscordSignUp()
         {
-            var discorduser = await discordAuthService.GetDiscordUserAsync();
-            var userLoginInfo = new UserLoginInfo(DiscordProvider, discorduser.Id, DiscordProvider);
+            var discordUser = await discordAuthService.GetDiscordUserAsync();
+            var userLoginInfo = new UserLoginInfo(DiscordProvider, discordUser.Id, DiscordProvider);
 
-            var userByDiscord = await userManager.FindByLoginAsync(DiscordProvider, discorduser.Id);
-            if(userByDiscord is not null)
+            var userByDiscord = await userManager.FindByLoginAsync(DiscordProvider, discordUser.Id);
+            if (userByDiscord is not null)
             {
                 return await LogInAsync(userByDiscord);
             }
-            //Verify if user exists in the database
-            var userDb = await userManager.FindByEmailAsync(discorduser.Email);
+
+            var userDb = await userManager.FindByEmailAsync(discordUser.Email);
             if (userDb is not null)
             {
                 if (await userManager.IsLockedOutAsync(userDb))
                 {
                     return Result<RefreshTokenModel>.Failure(UserError.UserIsBanned);
                 }
-                //User Exists, but is the user already linked with Discord?
+
                 var userLogins = await userManager.GetLoginsAsync(userDb);
                 if (!userLogins.Any(x => x.LoginProvider == DiscordProvider))
                 {
-                    //Account exists but is not linked with Discord, link the account
                     await userManager.AddLoginAsync(userDb, userLoginInfo);
-
                 }
-                //User Login with Discord already exists, proceed to login
+
                 return await LogInAsync(userDb);
             }
-            //User does not exist, create a new user and link with Discord
+
             var user = new ApplicationUser
             {
-                //Change this later when DisplayName is available
-                DisplayName = discorduser.DisplayName,
-                UserName = discorduser.UserName,
-                Email = discorduser.Email,
-                IconPath = discorduser.IconUrl,
+                DisplayName = discordUser.DisplayName,
+                UserName = discordUser.UserName,
+                Email = discordUser.Email,
+                IconPath = discordUser.IconUrl,
                 EmailConfirmed = true
             };
 
-            var createdResult =  await userManager.CreateAsync(user);
-            if(!createdResult.Succeeded)
+            var createdResult = await userManager.CreateAsync(user);
+            if (!createdResult.Succeeded)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
+
             var addLogin = await userManager.AddLoginAsync(user, userLoginInfo);
             if (!addLogin.Succeeded)
             {
@@ -385,9 +415,9 @@ namespace RpgDex.Application.Services
                 return Result<RefreshTokenModel>.Failure(AuthError.UserCreationFailed);
             }
 
-
             return await LogInAsync(user);
         }
+
         public async Task<Result<bool>> LinkDiscordAccount(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -405,13 +435,14 @@ namespace RpgDex.Application.Services
             if (logins.Any(l => l.LoginProvider == DiscordProvider))
                 return Result<bool>.Failure(AuthError.UserAlreadyHasDiscord);
 
-            var result = await userManager.AddLoginAsync(user,
-                new UserLoginInfo(DiscordProvider, discordUser.Id, DiscordProvider));
+            var result = await userManager.AddLoginAsync(
+                user, new UserLoginInfo(DiscordProvider, discordUser.Id, DiscordProvider));
 
             return result.Succeeded
                 ? Result<bool>.Success(true)
                 : Result<bool>.Failure(AuthError.AccountLinkingFailed);
         }
+
         public async Task<Result<bool>> UnlinkDiscordAsync(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -430,6 +461,7 @@ namespace RpgDex.Application.Services
                 ? Result<bool>.Success(true)
                 : Result<bool>.Failure(AuthError.AccountLinkingFailed);
         }
+
         public async Task<Result<string>> SendResetPasswordEmailAsync(SendResetPasswordEmailRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
@@ -437,8 +469,9 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.UserNotFound);
             }
+
             var isEmailConfirmed = await userManager.IsEmailConfirmedAsync(user);
-            if(!isEmailConfirmed)
+            if (!isEmailConfirmed)
             {
                 return Result<string>.Failure(AuthError.EmailNotConfirmed);
             }
@@ -448,24 +481,28 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.TokenGenerationFailed);
             }
+
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             string resetLink = $"/resetPassword?email={user.Email}&token={encodedToken}";
             var htmlBody = emailService.GeneratePasswordResetHTMLTemplate(resetLink, user.UserName!);
             var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email!, user.UserName!, "Password Reset", htmlBody);
+
             if (!isEmailSent)
             {
                 return Result<string>.Failure(AuthError.EmailSendFailed);
             }
+
             return Result<string>.Success(message);
         }
-        
+
         public async Task<Result<string>> ResetPasswordAsync(ResetPasswordRequest request)
         {
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user is null)
             {
-                if(user is null) return Result<string>.Failure(AuthError.UserNotFound);
+                return Result<string>.Failure(AuthError.UserNotFound);
             }
+
             string decodedToken;
             try
             {
@@ -483,18 +520,22 @@ namespace RpgDex.Application.Services
             }
 
             var revoked = await tokenService.RevokeTokenByUserId(user.Id);
-            if(!revoked)
+            if (!revoked)
             {
                 return Result<string>.Failure(AuthError.TokenGenerationFailed);
             }
+
             var htmlBody = emailService.GeneratePasswordResetConfirmationHTMLTemplate(user.UserName!);
             var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email!, user.UserName!, "Password Reset Confirmation", htmlBody);
+
             if (!isEmailSent)
             {
                 return Result<string>.Failure(AuthError.EmailSendFailed);
             }
+
             return Result<string>.Success("Password reset successfully.");
         }
+
         public async Task<Result<AgeVerificationResponse>> SubmitAgeVerification(string userId, AgeVerificationRequest request)
         {
             var check = ageVerificationValidator.Validate(request);
@@ -512,11 +553,14 @@ namespace RpgDex.Application.Services
             var cpfInUse = await userRepository.ExistsByCpfHashAsync(cpfHash, user.Id);
             if (cpfInUse) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.CpfAlreadyInUse);
 
+            var isMinor = AgeVerificationRequestValidator.IsMinor(request.BirthDate);
+
+            if (isMinor && string.Equals(request.GuardianEmail?.Trim(), user.Email, StringComparison.OrdinalIgnoreCase))
+                return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSameAsUser);
+
             user.BirthDate = request.BirthDate;
             user.Cpf = cpf;
             user.CpfHash = cpfHash;
-            var isMinor = AgeVerificationRequestValidator.IsMinor(request.BirthDate);
-
 
             if (!isMinor)
             {
@@ -530,17 +574,15 @@ namespace RpgDex.Application.Services
                 user.GuardianCpf = CpfValidator.Normalize(request.GuardianCpf);
                 user.GuardianEmail = request.GuardianEmail!.Trim().ToLowerInvariant();
                 user.GuardianConsent = GuardianConsentStatus.Pending;
+                user.GuardianEmailSentAt = DateTime.UtcNow;
             }
 
             var update = await userManager.UpdateAsync(user);
             if (!update.Succeeded)
                 return Result<AgeVerificationResponse>.Failure(AgeVerificationError.SaveFailed);
 
-
-            if (isMinor )
+            if (isMinor)
             {
-                if (string.Equals(request.GuardianEmail?.Trim(), user.Email,
-                    StringComparison.OrdinalIgnoreCase)) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSameAsUser);
                 var sent = await SendGuardianConsentEmailAsync(user);
                 if (!sent) return Result<AgeVerificationResponse>.Failure(AgeVerificationError.GuardianEmailSendFailed);
             }
@@ -557,8 +599,14 @@ namespace RpgDex.Application.Services
                 return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
 
             string decoded;
-            try { decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token)); }
-            catch (FormatException) { return Result<string>.Failure(AgeVerificationError.InvalidConsentToken); }
+            try
+            {
+                decoded = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+            }
+            catch (FormatException)
+            {
+                return Result<string>.Failure(AgeVerificationError.InvalidConsentToken);
+            }
 
             var valid = await userManager.VerifyUserTokenAsync(
                 user, TokenOptions.DefaultProvider, GuardianConsentPurpose, decoded);
@@ -572,6 +620,7 @@ namespace RpgDex.Application.Services
                 ? Result<string>.Success("Guardian consent confirmed")
                 : Result<string>.Failure(AgeVerificationError.SaveFailed);
         }
+
         public async Task<Result<string>> ResendGuardianConsentEmail(string userId, ResendGuardianConsentRequest request)
         {
             var user = await userManager.FindByIdAsync(userId);
@@ -607,17 +656,20 @@ namespace RpgDex.Application.Services
                 ? Result<string>.Success("Guardian consent email sent")
                 : Result<string>.Failure(AgeVerificationError.SaveFailed);
         }
+
         private async Task<bool> SendGuardianConsentEmailAsync(ApplicationUser user)
         {
             var token = await userManager.GenerateUserTokenAsync(
                 user, TokenOptions.DefaultProvider, GuardianConsentPurpose);
             var encoded = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
-            var link = $"/guardianConsent?userid={user.Id}&token={encoded}";
+            var link = $"/guardianConsent?userId={user.Id}&token={encoded}";
             var html = emailService.GenerateGuardianConsentHTMLTemplate(link, user.DisplayName!);
-            var (sent, _) = await emailService.SendEmailAsync(user.GuardianEmail!, "Guardian", "Guardian Consent", html);
+            var (sent, _) = await emailService.SendEmailAsync(
+                user.GuardianEmail!, "Responsável Legal", "Autorização de Responsável — RPGDex", html);
             return sent;
         }
+
         private async Task<Result<string>> SendEmailVerificationAsync(string email)
         {
             var user = await userManager.FindByEmailAsync(email);
@@ -631,13 +683,17 @@ namespace RpgDex.Application.Services
             {
                 return Result<string>.Failure(AuthError.TokenGenerationFailed);
             }
+
             string verificationLink = $"/emailConfirmation?userid={user.Id}&token={token}";
             var htmlBody = emailService.GenerateEmailVerificationHTMLTemplate(verificationLink, user.UserName);
-            var (isEmailSent, message) = await emailService.SendEmailAsync(user.Email, user.UserName, "Email Verification", htmlBody);
+            var (isEmailSent, message) = await emailService.SendEmailAsync(
+                user.Email, user.UserName, "Email Verification", htmlBody);
+
             if (!isEmailSent)
             {
                 return Result<string>.Failure(AuthError.EmailSendFailed);
             }
+
             return Result<string>.Success(message);
         }
 
@@ -648,11 +704,13 @@ namespace RpgDex.Application.Services
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.InvalidCredentials);
             }
+
             var newRefreshToken = await GenerateRefreshTokenModelAsync(user);
             if (newRefreshToken is null)
             {
                 return Result<RefreshTokenModel>.Failure(AuthError.TokenGenerationFailed);
             }
+
             return Result<RefreshTokenModel>.Success(newRefreshToken);
         }
 
@@ -664,9 +722,10 @@ namespace RpgDex.Application.Services
             {
                 RefreshToken = refreshToken,
                 AccessToken = accessToken,
-
             };
-            var result = await tokenService.StoreRefreshTokenAsync(newRefreshToken.AccessToken, newRefreshToken.RefreshToken, user.Id);
+
+            var result = await tokenService.StoreRefreshTokenAsync(
+                newRefreshToken.AccessToken, newRefreshToken.RefreshToken, user.Id);
 
             if (!result)
             {
@@ -680,16 +739,18 @@ namespace RpgDex.Application.Services
         {
             try
             {
-                var twoFactorToken = await userManager.GenerateTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider);
+                var twoFactorToken = await userManager.GenerateTwoFactorTokenAsync(
+                    user, TokenOptions.DefaultEmailProvider);
 
-                //Generate Email and sendUser
                 var htmlTemplate = emailService.GenerateTwoFactorEmailHTMLTemplate(twoFactorToken, user.DisplayName);
-                var emailResult = await emailService.SendEmailAsync(user.Email, user.DisplayName, "Two Factor Authentication", htmlTemplate);
+                var emailResult = await emailService.SendEmailAsync(
+                    user.Email, user.DisplayName, "Two Factor Authentication", htmlTemplate);
 
                 if (!emailResult.isEmailSent)
                 {
                     return Result<T>.Failure(AuthError.EmailSendFailed);
                 }
+
                 return Result<T>.Success(response);
             }
             catch
@@ -697,19 +758,14 @@ namespace RpgDex.Application.Services
                 return Result<T>.Failure(AuthError.EmailSendFailed);
             }
         }
-        private async Task<bool> AddUserRoleToUser(ApplicationUser user){
+
+        private async Task<bool> AddUserRoleToUser(ApplicationUser user)
+        {
             var roles = await userManager.GetRolesAsync(user);
             if (!roles.Any())
             {
-                var result = await userManager.AddToRoleAsync(user, "Admin");
-                if (result.Succeeded)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+                var result = await userManager.AddToRoleAsync(user, "User");
+                return result.Succeeded;
             }
             return true;
         }

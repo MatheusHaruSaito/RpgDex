@@ -103,11 +103,71 @@
           <div class="age-badge-icon pending">
             <i class="fa-solid fa-envelope-circle-check"></i>
           </div>
-          <h2>Autorização Enviada!</h2>
+          <h2>Aguardando Responsável</h2>
           <p>
-            Enviamos um link de confirmação para <strong>{{ guardianEmail() }}</strong>. Assim que
-            seu responsável aprovar, seu acesso será liberado automaticamente.
+            Enviamos um link de confirmação para
+            @if (guardianEmail()) {
+              <strong>{{ guardianEmail() }}</strong>
+            } @else {
+              o e-mail do seu responsável legal
+            }. Assim que ele aprovar, seu acesso será liberado.
           </p>
+        </div>
+
+        <div class="resend-section">
+          @if (editingGuardianEmail()) {
+            <div class="form-field">
+              <label for="newGuardianEmail">Novo e-mail do responsável</label>
+              <input
+                id="newGuardianEmail"
+                type="email"
+                placeholder="novo.responsavel@email.com"
+                [ngModel]="newGuardianEmail()"
+                (ngModelChange)="newGuardianEmail.set($event)"
+                name="newGuardianEmail"
+                [disabled]="isResending()"
+              />
+            </div>
+          }
+
+          @if (resendMessage()) {
+            <div class="age-success">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>{{ resendMessage() }}</span>
+            </div>
+          }
+
+          @if (errorMessage()) {
+            <div class="age-error">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>{{ errorMessage() }}</span>
+            </div>
+          }
+
+          <div class="resend-actions">
+            <button
+              type="button"
+              class="btn-age-secondary"
+              (click)="resendConsent()"
+              [disabled]="isResending() || resendCooldown() > 0"
+            >
+              @if (isResending()) {
+                <span><i class="fa-solid fa-spinner fa-spin"></i> Enviando...</span>
+              } @else if (resendCooldown() > 0) {
+                <span>Reenviar em {{ resendCooldown() }}s</span>
+              } @else {
+                <span>Reenviar E-mail</span>
+              }
+            </button>
+
+            <button
+              type="button"
+              class="btn-link-toggle"
+              (click)="editingGuardianEmail.set(!editingGuardianEmail()); errorMessage.set('')"
+            >
+              {{ editingGuardianEmail() ? 'Cancelar alteração' : 'Informou o e-mail errado?' }}
+            </button>
+          </div>
         </div>
 
         <button

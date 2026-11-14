@@ -7,27 +7,8 @@ import { AuthService } from '../../services/auth-service';
   selector: 'app-guardian-consent',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: `
-    <div class="consent-wrapper">
-      <div class="consent-card">
-        @if (status() === 'loading') {
-          <i class="fa-solid fa-spinner fa-spin status-icon"></i>
-          <h1>Validando autorização...</h1>
-          <p>Aguarde enquanto confirmamos o consentimento do responsável.</p>
-        } @else if (status() === 'success') {
-          <i class="fa-solid fa-circle-check status-icon success"></i>
-          <h1>Consentimento Confirmado!</h1>
-          <p>A conta do menor foi autorizada com sucesso no RPGDex.</p>
-          <a routerLink="/login" class="btn-consent">Ir para o RPGDex</a>
-        } @else {
-          <i class="fa-solid fa-circle-xmark status-icon error"></i>
-          <h1>Link Inválido ou Expirado</h1>
-          <p>{{ errorMessage() }}</p>
-          <a routerLink="/home" class="btn-consent">Voltar ao Início</a>
-        }
-      </div>
-    </div>
-  `,
+  templateUrl: './guardian-consent.html',
+  styleUrl: './guardian-consent.css',
 })
 export class GuardianConsentComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -37,8 +18,9 @@ export class GuardianConsentComponent implements OnInit {
   errorMessage = signal<string>('Não foi possível validar a autorização.');
 
   ngOnInit(): void {
-    const userId = this.route.snapshot.queryParamMap.get('userId') || '';
-    const token = this.route.snapshot.queryParamMap.get('token') || '';
+    const queryMap = this.route.snapshot.queryParamMap;
+    const userId = queryMap.get('userId') || queryMap.get('userid') || '';
+    const token = queryMap.get('token') || '';
 
     if (!userId || !token) {
       this.status.set('error');
