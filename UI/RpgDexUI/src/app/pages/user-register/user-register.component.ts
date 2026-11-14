@@ -94,7 +94,7 @@ export class UserRegisterComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input) return;
 
-    const sanitized = input.value.toLowerCase().replace(/[^a-z0-9_.]/g, '');
+    const sanitized = input.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
 
     this.registerForm.userName = sanitized;
     input.value = sanitized;
@@ -152,7 +152,7 @@ export class UserRegisterComponent implements OnInit {
     return '';
   }
 
-  private isUserNameValid(userName: string): { valid: boolean; error?: string } {
+private isUserNameValid(userName: string): { valid: boolean; error?: string } {
     if (!userName) return { valid: false, error: 'O nome de usuário é obrigatório.' };
 
     const value = userName.toLowerCase().trim();
@@ -162,16 +162,12 @@ export class UserRegisterComponent implements OnInit {
       return { valid: false, error: 'O nome de usuário deve ter entre 2 e 32 caracteres.' };
     }
 
-    if (!/^[a-z0-9_.]{2,32}$/.test(value)) {
+    if (!/^[a-z0-9_]{2,32}$/.test(value)) {
       return {
         valid: false,
         error:
-          'Apenas letras minúsculas (a-z), números (0-9), sublinhado (_) e ponto (.) são permitidos.',
+          'Apenas letras minúsculas (a-z), números (0-9) e sublinhado (_) são permitidos.',
       };
-    }
-
-    if (value.includes('..')) {
-      return { valid: false, error: 'O nome de usuário não pode conter pontos consecutivos (..).' };
     }
 
     if (reservedWords.some((word) => value.includes(word))) {
