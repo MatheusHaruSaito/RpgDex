@@ -1,11 +1,14 @@
 import { TranslateService } from '@ngx-translate/core';
 
 export class ErrorHandlerUtil {
-
-    public static parseApiError(err: any, translateService: TranslateService, callback: (errorMessage: string) => void): void {
+  public static parseApiError(
+    err: any,
+    translateService: TranslateService,
+    callback: (errorMessage: string) => void,
+  ): void {
     const body = err?.error;
 
-    if (body?.errors && typeof body.errors === 'object') {
+    if (body?.errors && typeof body.errors === 'object' && !Array.isArray(body.errors)) {
       const errorKeys = Object.keys(body.errors);
       if (errorKeys.length > 0) {
         const firstErrorVal = body.errors[errorKeys[0]];
@@ -16,8 +19,8 @@ export class ErrorHandlerUtil {
           if (typeof primaryError === 'object' && primaryError?.code) {
             const translationKey = `ERRORS.${primaryError.code}`;
             translateService.get(translationKey).subscribe((translatedText: string) => {
-              const hasTranslation = translatedText !== translationKey;
-              callback(hasTranslation ? translatedText : primaryError.message);
+              const hasTranslation = translatedText && translatedText !== translationKey;
+              callback(hasTranslation ? translatedText : primaryError.message || 'Erro de validação.');
             });
             return;
           }
@@ -37,17 +40,33 @@ export class ErrorHandlerUtil {
     const errorList = Array.isArray(body?.message)
       ? body.message
       : Array.isArray(body?.errors)
-      ? body.errors
-      : [];
+        ? body.errors
+        : [];
 
     const primaryError = errorList[0];
 
-    if (primaryError?.code) {
-      const translationKey = `ERRORS.${primaryError.code}`;
-      translateService.get(translationKey).subscribe((translatedText: string) => {
-        const hasTranslation = translatedText !== translationKey;
-        callback(hasTranslation ? translatedText : primaryError.message);
-      });
+    if (primaryError && typeof primaryError === 'object') {
+      if (primaryError.code) {
+        const translationKey = `ERRORS.${primaryError.code}`;
+        translateService.get(translationKey).subscribe((translatedText: string) => {
+          const hasTranslation = translatedText && translatedText !== translationKey;
+          callback(
+            hasTranslation
+              ? translatedText
+              : primaryError.message || 'Ocorreu um erro ao processar o seu pedido.',
+          );
+        });
+        return;
+      }
+
+      if (typeof primaryError.message === 'string') {
+        callback(primaryError.message);
+        return;
+      }
+    }
+
+    if (typeof primaryError === 'string') {
+      callback(primaryError);
       return;
     }
 
@@ -61,7 +80,7 @@ export class ErrorHandlerUtil {
     } else {
       translateService.get('ERRORS.COMMON_DEFAULT').subscribe((res: string) => {
         const defaultMsg =
-          res !== 'ERRORS.COMMON_DEFAULT'
+          res && res !== 'ERRORS.COMMON_DEFAULT'
             ? res
             : 'Ocorreu um erro ao processar o seu pedido. Tente novamente.';
         callback(defaultMsg);

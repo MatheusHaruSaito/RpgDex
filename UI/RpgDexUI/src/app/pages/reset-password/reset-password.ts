@@ -1,8 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../services/auth-service';
+import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 
 @Component({
   selector: 'app-reset-password',
@@ -15,6 +17,8 @@ export class ResetPasswordComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private authService = inject(AuthService);
+  private translateService = inject(TranslateService);
+  private cdr = inject(ChangeDetectorRef);
 
   email: string = '';
   token: string = '';
@@ -36,26 +40,30 @@ export class ResetPasswordComponent implements OnInit {
         text: 'Link de redefinição inválido ou incompleto.',
         type: 'error',
       };
+      this.cdr.detectChanges();
     }
   }
 
   submitNewPassword(): void {
     if (!this.newPassword || !this.confirmPassword) {
       this.message = { text: 'Preencha os campos de senha.', type: 'error' };
+      this.cdr.detectChanges();
       return;
     }
 
     if (this.newPassword !== this.confirmPassword) {
       this.message = { text: 'As senhas não coincidem.', type: 'error' };
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.message = { text: '', type: '' };
+    this.cdr.detectChanges();
 
     this.authService
       .ResetPassword({
-        email: this.email, // A API utiliza o userId codificado e o token
+        email: this.email,
         token: this.token,
         newPassword: this.newPassword,
       })
@@ -69,6 +77,7 @@ export class ResetPasswordComponent implements OnInit {
               text: 'Senha definida com sucesso! Redirecionando para o login...',
               type: 'success',
             };
+            this.cdr.detectChanges();
             setTimeout(() => {
               this.router.navigate(['/login']);
             }, 2500);
@@ -77,6 +86,7 @@ export class ResetPasswordComponent implements OnInit {
               text: res?.message || 'Erro ao redefinir a senha. O token pode ter expirado.',
               type: 'error',
             };
+            this.cdr.detectChanges();
           }
         },
         error: (err) => {
@@ -85,6 +95,12 @@ export class ResetPasswordComponent implements OnInit {
             text: 'Falha ao comunicar com o servidor. Tente novamente mais tarde.',
             type: 'error',
           };
+          this.cdr.detectChanges();
+
+          ErrorHandlerUtil.parseApiError(err, this.translateService, (msg) => {
+            this.message = { text: msg, type: 'error' };
+            this.cdr.detectChanges();
+          });
         },
       });
   }

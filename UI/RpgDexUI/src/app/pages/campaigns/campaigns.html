@@ -3,14 +3,52 @@
     <!-- ── HEADER ── -->
     <div class="cmp-page-header">
       <div>
-        <h1 class="cmp-page-title">Campanhas</h1>
+        <div class="cmp-title-row">
+          <h1 class="cmp-page-title">Campanhas</h1>
+
+          @if (!isLoadingCampaigns && hasCampaignLimit) {
+            <span
+              class="cmp-limit-badge"
+              [class.near-limit]="isCampaignNearLimit"
+              [class.limit-reached]="isCampaignLimitReached"
+              [title]="
+                isCampaignLimitReached
+                  ? 'Limite máximo de campanhas criadas como Mestre atingido'
+                  : 'Campanhas criadas como Mestre no seu plano'
+              "
+            >
+              <i class="fa-solid fa-crown"></i>
+              <span>Mestre: {{ campaignGameMasterLength }} / {{ maxCampaigns }}</span>
+            </span>
+          }
+
+          @if (!isLoadingCampaigns && campaignPlayerLength > 0) {
+            <span
+              class="cmp-limit-badge"
+              title="Campanhas em que você participa como Jogador"
+            >
+              <i class="fa-solid fa-dice-d20"></i>
+              <span>Jogador: {{ campaignPlayerLength }}</span>
+            </span>
+          }
+        </div>
         <p class="cmp-page-sub">Gerencie suas aventuras e sessões.</p>
       </div>
       <div class="cmp-header-actions">
         <button type="button" class="btn btn-secondary" (click)="openModal('join')">
           <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
         </button>
-        <button type="button" class="btn btn-primary" (click)="openModal('create')">
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isLoadingCampaigns || isCampaignLimitReached"
+          [title]="
+            isCampaignLimitReached
+              ? 'Limite de campanhas como Mestre atingido'
+              : 'Criar nova campanha'
+          "
+          (click)="openModal('create')"
+        >
           <i class="fa fa-plus"></i> Nova Campanha
         </button>
       </div>
@@ -96,7 +134,17 @@
             <button type="button" class="btn btn-secondary" (click)="openModal('join')">
               <i class="fa fa-right-to-bracket"></i> Entrar em uma Campanha
             </button>
-            <button type="button" class="btn btn-primary" (click)="openModal('create')">
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="isCampaignLimitReached"
+              [title]="
+                isCampaignLimitReached
+                  ? 'Limite de campanhas como Mestre atingido'
+                  : 'Criar nova campanha'
+              "
+              (click)="openModal('create')"
+            >
               <i class="fa fa-plus"></i> Nova Campanha
             </button>
           </div>

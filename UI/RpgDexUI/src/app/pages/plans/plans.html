@@ -7,10 +7,10 @@
     </header>
 
     <!-- Banner de Erro com Re-tentativa -->
-    <div *ngIf="errorMessage" class="error-banner">
+    <div *ngIf="errorMessage()" class="error-banner">
       <div class="error-content">
         <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-        <span>{{ errorMessage }}</span>
+        <span>{{ errorMessage() }}</span>
       </div>
       <button type="button" class="btn btn-secondary btn-sm" (click)="loadPlans()">
         <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Tentar novamente
@@ -22,7 +22,7 @@
       <div class="active-plan-info">
         <i class="fa-solid fa-shield-halved active-plan-icon"></i>
         <div>
-          <strong>Você já possui uma assinatura ativa ({{ activePlanInfo?.planName }}).</strong>
+          <strong>Você já possui uma assinatura ativa ({{ activePlanInfo()?.planName }}).</strong>
           <p>Ao assinar um novo plano, sua assinatura atual será substituída pela nova.</p>
         </div>
       </div>
@@ -32,28 +32,41 @@
     <div class="plans-main-card">
       
       <!-- State de Carregamento -->
-      <div *ngIf="isLoadingPlans" class="loading-state">
+      <div *ngIf="isLoadingPlans()" class="loading-state">
         <div class="spinner"></div>
         <p>Carregando planos disponíveis...</p>
       </div>
 
       <!-- State Vazio -->
-      <div *ngIf="!isLoadingPlans && plans.length === 0 && !errorMessage" class="empty-state">
+      <div *ngIf="!isLoadingPlans() && plans().length === 0 && !errorMessage()" class="empty-state">
         <i class="fa-solid fa-box-open empty-icon" aria-hidden="true"></i>
         <h3>Nenhum plano disponível</h3>
         <p>Nenhum plano foi encontrado no momento. Volte novamente mais tarde.</p>
       </div>
 
       <!-- Grid de Planos -->
-      <div *ngIf="!isLoadingPlans && plans.length > 0" class="plans-grid">
+      <div *ngIf="!isLoadingPlans() && plans().length > 0" class="plans-grid">
         <div
-          *ngFor="let plan of plans"
+          *ngFor="let plan of plans()"
           class="plan-card"
           [class.current-plan-card]="isUserCurrentPlan(plan.id)"
+          [class.recommended-plan-card]="isRecommendedPlan(plan) && !isUserCurrentPlan(plan.id)"
         >
           <!-- Badge de Plano Atual do Usuário -->
           <div *ngIf="isUserCurrentPlan(plan.id)" class="current-badge">
             <i class="fa-solid fa-circle-check" aria-hidden="true"></i> Seu Plano Atual
+          </div>
+
+          <!-- Tags do Plano (Recomendado, Desconto, Novo) -->
+          <div *ngIf="getPlanTags(plan).length > 0" class="plan-tags">
+            <span
+              *ngFor="let tag of getPlanTags(plan)"
+              class="plan-tag"
+              [ngClass]="getTagClass(tag)"
+            >
+              <i [class]="getTagIcon(tag)" aria-hidden="true"></i>
+              <span>{{ getTagLabel(tag) }}</span>
+            </span>
           </div>
 
           <h2 class="plan-title">{{ plan.name }}</h2>
@@ -92,14 +105,14 @@
             class="btn btn-primary btn-checkout"
             [class.btn-current]="isUserCurrentPlan(plan.id)"
             (click)="subscribeToPlan(plan.id)"
-            [disabled]="loadingPlanId !== null || isUserCurrentPlan(plan.id) || plan.price === 0"
+            [disabled]="loadingPlanId() !== null || isUserCurrentPlan(plan.id) || plan.price === 0"
           >
             <span *ngIf="isUserCurrentPlan(plan.id)">Plano Ativo</span>
             <span *ngIf="!isUserCurrentPlan(plan.id) && plan.price === 0">Plano Gratuito</span>
-            <span *ngIf="!isUserCurrentPlan(plan.id) && plan.price > 0 && loadingPlanId !== plan.id">
+            <span *ngIf="!isUserCurrentPlan(plan.id) && plan.price > 0 && loadingPlanId() !== plan.id">
               {{ hasPaidPlanActive() ? 'Trocar para este Plano' : 'Assinar Plano' }}
             </span>
-            <span *ngIf="loadingPlanId === plan.id">
+            <span *ngIf="loadingPlanId() === plan.id">
               <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Redirecionando...
             </span>
           </button>

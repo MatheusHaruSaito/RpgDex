@@ -475,12 +475,58 @@
 
 .chat-error-toast {
   font-family: 'Nunito', sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   color: var(--rpg-error);
-  margin-top: 4px;
+  background-color: var(--rpg-error-bg, #fde8e8);
+  border: 1px solid var(--rpg-error-border, #f8b4b4);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-top: 8px;
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1.35;
+  animation: fadeInError 0.2s ease-out;
+}
+
+.chat-error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  word-break: break-word;
+}
+
+.chat-error-content i {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.btn-close-error {
+  background: transparent;
+  border: none;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+  padding: 0 2px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.btn-close-error:hover {
+  opacity: 1;
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .btn-send {
@@ -695,4 +741,179 @@
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--rpg-purple);
+}
+
+/* ── BARRA & PAINEL DE DICA DE COMANDOS ─────────────────────── */
+.commands-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--rpg-surface-tint);
+  border-bottom: 1px solid var(--rpg-border-light);
+  flex-shrink: 0;
+}
+
+.commands-toolbar-label {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--rpg-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-command-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+  border: 1px solid var(--rpg-purple-soft, rgba(124, 58, 237, 0.25));
+  border-radius: 12px;
+  padding: 3px 9px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-command-hint:hover,
+.btn-command-hint.active {
+  background: var(--rpg-purple);
+  color: #fff;
+  border-color: var(--rpg-purple);
+}
+
+.commands-hint-panel {
+  background: var(--rpg-surface);
+  border-bottom: 1px solid var(--rpg-border);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.commands-hint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--rpg-purple);
+}
+
+.btn-close-hint {
+  background: transparent;
+  border: none;
+  color: var(--rpg-text-faint);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
+.btn-close-hint:hover {
+  color: var(--rpg-text-strong);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.commands-hint-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.command-hint-item {
+  background: var(--rpg-surface-tint);
+  border: 1px solid var(--rpg-border-light);
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.command-hint-item:hover {
+  border-color: var(--rpg-purple);
+  background: var(--rpg-purple-tint);
+}
+
+.command-hint-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.command-syntax {
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--rpg-purple);
+}
+
+.command-use-tag {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--rpg-text-faint);
+}
+
+.command-hint-item:hover .command-use-tag {
+  color: var(--rpg-purple);
+}
+
+.command-desc {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  color: var(--rpg-text-body);
+  margin: 0 0 3px;
+  line-height: 1.3;
+}
+
+.command-example {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.72rem;
+  color: var(--rpg-text-muted);
+}
+
+.command-example code {
+  background: var(--rpg-surface);
+  border: 1px solid var(--rpg-border-light);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--rpg-text-strong);
+  font-weight: 600;
+}
+
+.btn-input-hint {
+  width: 34px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1.5px solid var(--rpg-border-input);
+  background: var(--rpg-surface-2);
+  color: var(--rpg-purple);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.btn-input-hint:hover,
+.btn-input-hint.active {
+  background: var(--rpg-purple);
+  color: #fff;
+  border-color: var(--rpg-purple);
 }

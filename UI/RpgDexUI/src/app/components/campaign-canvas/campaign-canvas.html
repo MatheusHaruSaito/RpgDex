@@ -1,10 +1,11 @@
-<div class="canvas-fullscreen-wrapper">
+<div class="canvas-fullscreen-wrapper" [class.readonly-mode]="!isCampaignActive">
   <!-- BARRA SUPERIOR (TOPBAR GRID) -->
   <div class="canvas-ui canvas-topbar">
     <div class="topbar-left canvas-panel">
       <button
         class="tool-btn tool-btn--text"
         [routerLink]="['/campanha', campaignId]"
+        [replaceUrl]="true"
         title="Voltar para a Campanha"
       >
         <i class="fa fa-arrow-left"></i> <span class="hide-mobile">Voltar</span>
@@ -16,7 +17,7 @@
       <button
         class="tool-btn"
         (click)="undo()"
-        [disabled]="history.length === 0"
+        [disabled]="!isCampaignActive || history.length === 0"
         title="Desfazer (Ctrl+Z)"
       >
         <i class="fa fa-rotate-left"></i>
@@ -24,14 +25,43 @@
       <button
         class="tool-btn"
         (click)="redo()"
-        [disabled]="redoHistory.length === 0"
+        [disabled]="!isCampaignActive || redoHistory.length === 0"
         title="Refazer (Ctrl+Y)"
       >
         <i class="fa fa-rotate-right"></i>
       </button>
     </div>
 
+    <div class="topbar-center">
+      <div class="canvas-panel readonly-banner" *ngIf="!isCampaignActive">
+        <i class="fa fa-lock"></i>
+        <span>Campanha Desativada • Modo Somente Leitura</span>
+      </div>
+    </div>
+
     <div class="topbar-right">
+      <!-- Indicador de Armazenamento (Somente Valores) -->
+      <div
+        class="canvas-panel storage-indicator"
+        *ngIf="campaignStorageCapacity > 0"
+        [class.warning]="isStorageNearLimit"
+        [class.limit-reached]="canvasSizeMb >= campaignStorageCapacity"
+        [title]="
+          'Armazenamento utilizado: ' +
+          (canvasSizeMb | number: '1.1-2') +
+          ' MB de ' +
+          campaignStorageCapacity +
+          ' MB (' +
+          storagePercentage +
+          '%)'
+        "
+      >
+        <i class="fa fa-hard-drive"></i>
+        <span class="storage-text">
+          {{ canvasSizeMb | number: '1.1-1' }} / {{ campaignStorageCapacity }} MB
+        </span>
+      </div>
+
       <div class="canvas-brand canvas-panel">
         <i class="fa fa-chess-board"></i>
         <span class="hide-mobile">Tabuleiro Virtual</span>
@@ -39,28 +69,57 @@
     </div>
   </div>
 
+  <!-- TOAST DE ERRO DO TABULEIRO -->
+  <div class="canvas-ui canvas-error-toast" *ngIf="errorMessage" role="alert">
+    <i class="fa fa-circle-exclamation"></i>
+    <span class="canvas-error-text">{{ errorMessage }}</span>
+    <button
+      type="button"
+      class="canvas-error-close"
+      (click)="dismissError()"
+      aria-label="Fechar aviso"
+    >
+      &times;
+    </button>
+  </div>
+
   <!-- TOOLBAR LATERAL DE FERRAMENTAS -->
   <div class="canvas-ui canvas-toolbar">
-    <!-- Seletor de Cores -->
-    <div class="toolbar-group">
-      <div class="color-swatch" title="Escolher Cor da Ferramenta">
-        <input
-          type="color"
-          [(ngModel)]="selectedColor"
-          [ngModelOptions]="{standalone: true}"
-          (ngModelChange)="onColorChange($event)"
-          class="color-native-input"
-        />
+    <!-- Seletor de Cores (ngx-color Sketch) -->
+    <div class="toolbar-group color-picker-wrapper" *ngIf="isCampaignActive">
+      <button
+        type="button"
+        class="color-swatch"
+        [class.is-open]="isColorPickerOpen"
+        (click)="toggleColorPicker($event)"
+        [disabled]="!isCampaignActive"
+        title="Seletor de Cores"
+      >
         <div class="color-preview-btn" [style.backgroundColor]="selectedColor"></div>
+      </button>
+
+      <div
+        class="ngx-color-popover"
+        *ngIf="isColorPickerOpen"
+        (pointerdown)="$event.stopPropagation()"
+      >
+        <color-sketch
+          [color]="selectedColor"
+          [presetColors]="presetColors"
+          [disableAlpha]="true"
+          [width]="220"
+          (onChangeComplete)="handleSketchColorChange($event)"
+        ></color-sketch>
       </div>
     </div>
 
     <!-- Ferramentas Principais -->
-    <div class="toolbar-group">
+    <div class="toolbar-group" *ngIf="isCampaignActive">
       <button
         class="tool-btn"
         [class.active]="activeTool === 'cursor'"
         (click)="setTool('cursor')"
+        [disabled]="!isCampaignActive"
         title="Selecionar / Mover"
       >
         <i class="fa fa-arrow-pointer"></i>
@@ -69,6 +128,7 @@
         class="tool-btn"
         [class.active]="activeTool === 'draw'"
         (click)="setTool('draw')"
+        [disabled]="!isCampaignActive"
         title="Pincel"
       >
         <i class="fa fa-pen"></i>
@@ -77,6 +137,7 @@
         class="tool-btn"
         [class.active]="activeTool === 'eraser'"
         (click)="setTool('eraser')"
+        [disabled]="!isCampaignActive"
         title="Borracha"
       >
         <i class="fa fa-eraser"></i>
@@ -84,32 +145,53 @@
     </div>
 
     <!-- Adicionar Elementos -->
-    <div class="toolbar-group">
-      <button class="tool-btn" (click)="openTokenModal()" title="Gerenciar Tokens">
+    <div class="toolbar-group" *ngIf="isCampaignActive">
+      <button
+        class="tool-btn"
+        (click)="openTokenModal()"
+        [disabled]="!isCampaignActive"
+        title="Gerenciar Tokens"
+      >
         <i class="fa fa-user-astronaut"></i>
       </button>
-      <button class="tool-btn" (click)="addText()" title="Adicionar Anotação">
+      <button
+        class="tool-btn"
+        (click)="addText()"
+        [disabled]="!isCampaignActive"
+        title="Adicionar Anotação"
+      >
         <i class="fa fa-font"></i>
       </button>
-      <button class="tool-btn" (click)="triggerImageUpload()" title="Adicionar Imagem">
+      <button
+        class="tool-btn"
+        (click)="triggerImageUpload()"
+        [disabled]="!isCampaignActive"
+        title="Adicionar Imagem"
+      >
         <i class="fa fa-image"></i>
       </button>
       <input type="file" #fileInput hidden accept="image/*" (change)="onImageSelected($event)" />
     </div>
 
-    <!-- Zoom -->
+    <!-- Zoom (Sempre habilitado para visualização) -->
     <div class="toolbar-group">
-      <button class="tool-btn" (click)="zoomIn()" title="Aumentar Zoom"><i class="fa fa-plus"></i></button>
+      <button class="tool-btn" (click)="zoomIn()" title="Aumentar Zoom">
+        <i class="fa fa-plus"></i>
+      </button>
       <span class="zoom-text">{{ scale * 100 | number: '1.0-0' }}%</span>
-      <button class="tool-btn" (click)="zoomOut()" title="Diminuir Zoom"><i class="fa fa-minus"></i></button>
-      <button class="tool-btn" (click)="centerCamera()" title="Resetar Câmera"><i class="fa fa-expand"></i></button>
+      <button class="tool-btn" (click)="zoomOut()" title="Diminuir Zoom">
+        <i class="fa fa-minus"></i>
+      </button>
+      <button class="tool-btn" (click)="centerCamera()" title="Resetar Câmera">
+        <i class="fa fa-expand"></i>
+      </button>
     </div>
   </div>
 
   <!-- MENU DE CONTEXTO DO ELEMENTO SELECIONADO -->
   <div
     class="canvas-ui canvas-panel context-menu"
-    *ngIf="selectedElements.length > 0 && activeTool === 'cursor'"
+    *ngIf="isCampaignActive && selectedElements.length > 0 && activeTool === 'cursor'"
   >
     <div class="context-info">
       <strong>Editando:</strong>
@@ -137,12 +219,18 @@
         [title]="selectedElements[0]?.isLocked ? 'Destravar' : 'Travar'"
       >
         <i class="fa" [ngClass]="selectedElements[0]?.isLocked ? 'fa-lock-open' : 'fa-lock'"></i>
-        <span class="hide-mobile">{{ selectedElements[0]?.isLocked ? 'Destravar' : 'Travar' }}</span>
+        <span class="hide-mobile">{{
+          selectedElements[0]?.isLocked ? 'Destravar' : 'Travar'
+        }}</span>
       </button>
 
       <ng-container *ngIf="selectedElements.length === 1 && !selectedElements[0].isLocked">
         <button
-          *ngIf="(selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token) && selectedElements[0].imageUrl"
+          *ngIf="
+            (selectedElements[0].elementType === CanvasElementType.Image ||
+              selectedElements[0].elementType === CanvasElementType.Token) &&
+            selectedElements[0].imageUrl
+          "
           class="tool-btn tool-btn--text"
           (click)="startCropping()"
           title="Cortar Imagem"
@@ -152,7 +240,10 @@
 
         <div
           class="context-range"
-          *ngIf="selectedElements[0].elementType === CanvasElementType.Image || selectedElements[0].elementType === CanvasElementType.Token"
+          *ngIf="
+            selectedElements[0].elementType === CanvasElementType.Image ||
+            selectedElements[0].elementType === CanvasElementType.Token
+          "
         >
           <i class="fa fa-down-left-and-up-right-to-center"></i>
           <input
@@ -197,7 +288,7 @@
   </div>
 
   <!-- MODAL DE ADICIONAR TEXTO -->
-  <div class="token-modal-backdrop" *ngIf="isTextModalOpen">
+  <div class="token-modal-backdrop" *ngIf="isTextModalOpen && isCampaignActive">
     <div class="token-modal-card text-modal-card">
       <div class="token-modal-header">
         <h3><i class="fa fa-font"></i> Adicionar Anotação</h3>
@@ -212,17 +303,26 @@
               rows="4"
               class="rpg-input text-area-input"
               [(ngModel)]="customTextContent"
-              [ngModelOptions]="{standalone: true}"
+              [ngModelOptions]="{ standalone: true }"
               placeholder="Digite aqui sua anotação ou aviso para a mesa..."
             ></textarea>
           </div>
 
           <div class="form-actions">
-            <button class="btn btn-secondary" style="margin-right: 10px;" (click)="isTextModalOpen = false">
+            <button
+              class="btn btn-secondary"
+              style="margin-right: 10px"
+              (click)="isTextModalOpen = false"
+            >
               Cancelar
             </button>
-            <button class="btn btn-primary" [disabled]="isCreatingElement" (click)="confirmAddText()">
-              <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i> Adicionar ao Canva
+            <button
+              class="btn btn-primary"
+              [disabled]="isCreatingElement"
+              (click)="confirmAddText()"
+            >
+              <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+              Adicionar ao Canva
             </button>
           </div>
         </div>
@@ -231,7 +331,7 @@
   </div>
 
   <!-- MODAL DE TOKENS -->
-  <div class="token-modal-backdrop" *ngIf="isTokenModalOpen">
+  <div class="token-modal-backdrop" *ngIf="isTokenModalOpen && isCampaignActive">
     <div class="token-modal-card">
       <div class="token-modal-header">
         <h3><i class="fa fa-user-astronaut"></i> Tokens & Personagens</h3>
@@ -261,15 +361,15 @@
             <i class="fa fa-spinner fa-spin"></i> Carregando personagens da mesa...
           </div>
 
-          <div
-            class="empty-state"
-            *ngIf="!isLoadingCharacters && campaignCharacters.length === 0"
-          >
+          <div class="empty-state" *ngIf="!isLoadingCharacters && campaignCharacters.length === 0">
             <i class="fa fa-id-card-clip"></i>
             <p>Nenhum personagem vinculado a esta campanha ainda.</p>
           </div>
 
-          <div class="character-tokens-grid" *ngIf="!isLoadingCharacters && campaignCharacters.length > 0">
+          <div
+            class="character-tokens-grid"
+            *ngIf="!isLoadingCharacters && campaignCharacters.length > 0"
+          >
             <div class="character-token-card" *ngFor="let char of campaignCharacters">
               <div
                 class="char-avatar-circle"
@@ -286,7 +386,8 @@
                 [disabled]="isCreatingElement"
                 (click)="addCharacterToken(char)"
               >
-                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-plus'"></i> Adicionar
+                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-plus'"></i>
+                Adicionar
               </button>
             </div>
           </div>
@@ -300,24 +401,21 @@
                 type="text"
                 class="rpg-input"
                 [(ngModel)]="customTokenName"
-                [ngModelOptions]="{standalone: true}"
+                [ngModelOptions]="{ standalone: true }"
                 placeholder="Ex: Goblim Arqueiro, Guarda, NPC..."
               />
             </div>
 
             <div class="form-group">
               <label>Cor de Borda / Fundo:</label>
-              <div class="color-picker-row">
-                <div class="color-swatch">
-                  <input
-                    type="color"
-                    [(ngModel)]="customTokenColor"
-                    [ngModelOptions]="{standalone: true}"
-                    class="color-native-input"
-                  />
-                  <div class="color-preview-btn" [style.backgroundColor]="customTokenColor"></div>
-                </div>
-                <span class="color-hex-text">{{ customTokenColor }}</span>
+              <div class="ngx-token-picker-box">
+                <color-sketch
+                  [color]="customTokenColor"
+                  [presetColors]="presetColors"
+                  [disableAlpha]="true"
+                  [width]="240"
+                  (onChangeComplete)="handleCustomTokenSketchChange($event)"
+                ></color-sketch>
               </div>
             </div>
 
@@ -327,7 +425,9 @@
                 <div
                   class="preview-circle"
                   [style.background-color]="customTokenColor"
-                  [style.background-image]="customTokenImagePreview ? 'url(' + customTokenImagePreview + ')' : ''"
+                  [style.background-image]="
+                    customTokenImagePreview ? 'url(' + customTokenImagePreview + ')' : ''
+                  "
                 >
                   <i class="fa fa-image" *ngIf="!customTokenImagePreview"></i>
                 </div>
@@ -336,7 +436,8 @@
                   class="btn btn-secondary btn-sm"
                   (click)="customFileInput.click()"
                 >
-                  <i class="fa fa-upload"></i> {{ customTokenImagePreview ? 'Alterar' : 'Carregar' }}
+                  <i class="fa fa-upload"></i>
+                  {{ customTokenImagePreview ? 'Alterar' : 'Carregar' }}
                 </button>
                 <button
                   type="button"
@@ -370,7 +471,8 @@
                 [disabled]="isCreatingElement"
                 (click)="createCustomToken()"
               >
-                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i> Criar Token no Canva
+                <i class="fa" [ngClass]="isCreatingElement ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                Criar Token no Canva
               </button>
             </div>
           </div>
@@ -380,7 +482,7 @@
   </div>
 
   <!-- MODAL DE CORTE DE IMAGEM -->
-  <div class="cropper-backdrop" *ngIf="isCropping">
+  <div class="cropper-backdrop" *ngIf="isCropping && isCampaignActive">
     <div class="cropper-card">
       <div class="cropper-header">
         <h3>Ajustar Imagem</h3>
@@ -426,7 +528,7 @@
 
       <!-- CAIXA DE SELEÇÃO MÚLTIPLA -->
       <div
-        *ngIf="selectionBox.active"
+        *ngIf="selectionBox.active && isCampaignActive"
         class="selection-box"
         [style.left.px]="getMin(selectionBox.startX, selectionBox.currentX)"
         [style.top.px]="getMin(selectionBox.startY, selectionBox.currentY)"
@@ -435,7 +537,17 @@
       ></div>
 
       <!-- RASTRO VISUAL DA BORRACHA -->
-      <svg style="position: absolute; top: -50000px; left: -50000px; width: 100000px; height: 100000px; z-index: 9999; pointer-events: none;">
+      <svg
+        style="
+          position: absolute;
+          top: -50000px;
+          left: -50000px;
+          width: 100000px;
+          height: 100000px;
+          z-index: 9999;
+          pointer-events: none;
+        "
+      >
         <circle
           *ngFor="let p of eraserTrail"
           [attr.cx]="p.x + 50000"
@@ -448,11 +560,12 @@
       </svg>
 
       <!-- RENDER CULLING DA MESA -->
-      <ng-container *ngFor="let el of visibleElements">
+      <ng-container *ngFor="let el of visibleElements; trackBy: trackByElementId">
         <!-- DESENHOS -->
         <svg
           *ngIf="el.elementType === CanvasElementType.Drawing"
           class="board-element type-drawing"
+          [attr.data-element-id]="el.id"
           [style.z-index]="el.z"
           (pointerdown)="onElementDown($event, el)"
         >
@@ -463,7 +576,7 @@
             fill="none"
             stroke-linecap="round"
             stroke-linejoin="round"
-            style="pointer-events: stroke; cursor: pointer;"
+            style="pointer-events: stroke; cursor: pointer"
           />
           <path
             [class.selected-path]="selectedElements.includes(el)"
@@ -480,6 +593,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Token"
           class="board-element type-token"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [class.name-hidden]="el.hideName"
@@ -500,6 +614,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Text"
           class="board-element type-text"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [style.left.px]="el.x"
@@ -516,6 +631,7 @@
         <div
           *ngIf="el.elementType === CanvasElementType.Image"
           class="board-element type-image"
+          [attr.data-element-id]="el.id"
           [class.is-selected]="selectedElements.includes(el)"
           [class.is-locked]="el.isLocked"
           [class.is-round-image]="el.isRound"

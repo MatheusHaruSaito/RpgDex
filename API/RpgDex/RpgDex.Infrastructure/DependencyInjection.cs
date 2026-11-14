@@ -21,9 +21,10 @@ using RpgDex.Infrastructure.Data;
 using RpgDex.Infrastructure.Jobs;
 using RpgDex.Infrastructure.Queries;
 using RpgDex.Infrastructure.Repositories;
-using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Resolvers;
+using RpgDex.Infrastructure.Security;
 using RpgDex.Infrastructure.Services;
+using RpgDex.Infrastructure.Services.FileReferences;
 using RpgDex.Infrastructure.Settings;
 using StackExchange.Redis;
 using System;
@@ -132,8 +133,17 @@ namespace RpgDex.Infrastructure
             services.AddSingleton<ILinkTicketService, LinkTicketService>();
             services.AddSingleton<IFieldHasher>(
                  new FieldHasher(configuration["Encryption:CpfHashKey"]!));
+            services.AddScoped<IFileReferenceProvider, UserFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CharacterFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CampaignFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, CanvasElementsFileReferenceProvider>();
+            services.AddScoped<IFileReferenceProvider, UserDocumentFileReferenceProvider>();
+
+
             services.AddHostedService<SyncPaymentJob>();
             services.AddHostedService<SubscriptionExpiryJob>();
+            services.AddHostedService<OrphanFilesCleanupJob>();
+            services.AddHostedService<InactiveCanvasElementsCleanupJob>();
 
             services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromDays(1));
 

@@ -1,14 +1,15 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PlanService } from '../../services/plan-service';
 import { PaymentService } from '../../services/payment-service';
 import { SubscriptionService } from '../../services/subscription-service';
 import { AuthService } from '../../services/auth-service';
 import { PlanResponse } from '../../../models/planResponse';
+import { PlanTagType } from '../../../models/planTagType';
 import { PaymentInitiateResult } from '../../../models/paymentInitiateResult';
 import { UserSubscriptionInfo } from '../../../models/userSubscriptionInfo';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize } from 'rxjs/operators';
 
 interface FaqItem {
   question: string;
@@ -28,14 +29,13 @@ export class PlansComponent implements OnInit {
   private subscriptionService = inject(SubscriptionService);
   private paymentService = inject(PaymentService);
   private authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
 
-  plans: PlanResponse[] = [];
-  userActivePlanIds: string[] = [];
-  activePlanInfo: UserSubscriptionInfo | null = null;
-  isLoadingPlans: boolean = true;
-  loadingPlanId: string | null = null;
-  errorMessage: string | null = null;
+  plans = signal<PlanResponse[]>([]);
+  userActivePlanIds = signal<string[]>([]);
+  activePlanInfo = signal<UserSubscriptionInfo | null>(null);
+  isLoadingPlans = signal<boolean>(true);
+  loadingPlanId = signal<string | null>(null);
+  errorMessage = signal<string | null>(null);
 
   faqItems: FaqItem[] = [
     {
@@ -69,8 +69,8 @@ export class PlansComponent implements OnInit {
   }
 
   loadPlans(): void {
-    this.isLoadingPlans = true;
-    this.errorMessage = null;
+    this.isLoadingPlans.set(true);
+    this.errorMessage.set(null);
 
     const isLoggedIn = this.authService.isLoggedIn();
 
@@ -92,89 +92,153 @@ export class PlansComponent implements OnInit {
             })
           )
         : of(null),
-    }).subscribe({
-      next: ({ allPlans, freePlanLimit, userPlans }) => {
-        let assembledPlans: PlanResponse[] = [];
+    })
+      .pipe(finalize(() => this.isLoadingPlans.set(false)))
+      .subscribe({
+        next: ({ allPlans, freePlanLimit, userPlans }) => {
+          let assembledPlans: PlanResponse[] = [];
 
-        if (allPlans?.data && allPlans.data.length > 0) {
-          assembledPlans = [...allPlans.data];
-        }
+          if (allPlans?.data && allPlans.data.length > 0) {
+            assembledPlans = [...allPlans.data];
+          }
 
-        const hasFreeInAllPlans = assembledPlans.some(
-          (p) => p.id === 'free' || p.price === 0 || p.name.toLowerCase().includes('gratuito')
-        );
+          const hasFreeInAllPlans = assembledPlans.some(
+            (p) => p.id === 'free' || p.price === 0 || p.name.toLowerCase().includes('gratuito')
+          );
 
-        if (!hasFreeInAllPlans && freePlanLimit?.data) {
-          const freeData = freePlanLimit.data;
-          assembledPlans.unshift({
-            id: 'free',
-            name: 'Plano Gratuito',
-            description: 'Acesso básico com recursos limitados.',
-            price: 0,
-            hasEarlyAccess: freeData.hasEarlyAccess,
-            characterQty: freeData.characterQty,
-            campaignQty: freeData.campaignQty,
-            documentsSpaceMB: freeData.documentsSpaceMB,
-            canvasSpaceMb: freeData.canvasSpaceMb,
-            durationDays: freeData.durationDays || 33550336,
-            tags: [],
-          });
-        }
+          if (!hasFreeInAllPlans && freePlanLimit?.data) {
+            const freeData = freePlanLimit.data;
+            assembledPlans.unshift({
+              id: 'free',
+              name: 'Plano Gratuito',
+              description: 'Acesso básico com recursos limitados.',
+              price: 0,
+              hasEarlyAccess: freeData.hasEarlyAccess,
+              characterQty: freeData.characterQty,
+              campaignQty: freeData.campaignQty,
+              documentsSpaceMB: freeData.documentsSpaceMB,
+              canvasSpaceMb: freeData.canvasSpaceMb,
+              durationDays: freeData.durationDays || 33550336,
+              tags: [],
+            });
+          }
 
-        this.plans = assembledPlans.sort((a, b) => a.price - b.price);
+          const sortedPlans = assembledPlans.sort((a, b) => a.price - b.price);
+          this.plans.set(sortedPlans);
 
-        if (userPlans?.data && userPlans.data.length > 0) {
-          this.activePlanInfo = userPlans.data[0];
-          this.userActivePlanIds = userPlans.data.map((u: UserSubscriptionInfo) => u.planId);
-        } else {
-          const freePlanObj = this.plans.find((p) => p.price === 0 || p.id === 'free');
-          this.userActivePlanIds = freePlanObj ? [freePlanObj.id] : ['free'];
-        }
+          if (userPlans?.data && userPlans.data.length > 0) {
+            this.activePlanInfo.set(userPlans.data[0]);
+            this.userActivePlanIds.set(userPlans.data.map((u: UserSubscriptionInfo) => u.planId));
+          } else {
+            this.activePlanInfo.set(null);
+            const freePlanObj = sortedPlans.find((p) => p.price === 0 || p.id === 'free');
+            this.userActivePlanIds.set(freePlanObj ? [freePlanObj.id] : ['free']);
+          }
+        },
+        error: (err) => {
+          console.error('Erro geral ao carregar dados dos planos:', err);
+          this.errorMessage.set('Não foi possível carregar os planos no momento.');
+        },
+      });
+  }
 
-        this.isLoadingPlans = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Erro geral ao carregar dados dos planos:', err);
-        this.errorMessage = 'Não foi possível carregar os planos no momento.';
-        this.isLoadingPlans = false;
-        this.cdr.detectChanges();
-      },
-    });
+  // ── HELPERS PARA TAGS DE PLANO ──
+  private normalizeTag(tag: PlanTagType | string | number): PlanTagType | null {
+    if (tag === PlanTagType.Discount || tag === 'Discount' || tag === 0) {
+      return PlanTagType.Discount;
+    }
+    if (tag === PlanTagType.Recommended || tag === 'Recommended' || tag === 1) {
+      return PlanTagType.Recommended;
+    }
+    if (tag === PlanTagType.New || tag === 'New' || tag === 2) {
+      return PlanTagType.New;
+    }
+    return null;
+  }
+
+  getPlanTags(plan: PlanResponse): PlanTagType[] {
+    if (!plan.tags || plan.tags.length === 0) return [];
+    const normalized = plan.tags
+      .map((t) => this.normalizeTag(t))
+      .filter((t): t is PlanTagType => t !== null);
+
+    const priority: Record<PlanTagType, number> = {
+      [PlanTagType.Recommended]: 0,
+      [PlanTagType.Discount]: 1,
+      [PlanTagType.New]: 2,
+    };
+
+    return Array.from(new Set(normalized)).sort((a, b) => priority[a] - priority[b]);
+  }
+
+  isRecommendedPlan(plan: PlanResponse): boolean {
+    return this.getPlanTags(plan).includes(PlanTagType.Recommended);
+  }
+
+  getTagLabel(tag: PlanTagType): string {
+    switch (tag) {
+      case PlanTagType.Discount:
+        return 'Desconto';
+      case PlanTagType.Recommended:
+        return 'Recomendado';
+      case PlanTagType.New:
+        return 'Novo';
+    }
+  }
+
+  getTagIcon(tag: PlanTagType): string {
+    switch (tag) {
+      case PlanTagType.Discount:
+        return 'fa-solid fa-tag';
+      case PlanTagType.Recommended:
+        return 'fa-solid fa-star';
+      case PlanTagType.New:
+        return 'fa-solid fa-bolt';
+    }
+  }
+
+  getTagClass(tag: PlanTagType): string {
+    switch (tag) {
+      case PlanTagType.Discount:
+        return 'plan-tag--discount';
+      case PlanTagType.Recommended:
+        return 'plan-tag--recommended';
+      case PlanTagType.New:
+        return 'plan-tag--new';
+    }
   }
 
   isUserCurrentPlan(planId: string): boolean {
     if (!planId) return false;
-    return this.userActivePlanIds.includes(planId);
+    return this.userActivePlanIds().includes(planId);
   }
 
   hasPaidPlanActive(): boolean {
-    return !!this.activePlanInfo && this.activePlanInfo.planId !== 'free';
+    const info = this.activePlanInfo();
+    return !!info && info.planId !== 'free';
   }
 
   subscribeToPlan(planId: string): void {
-    if (!planId || this.loadingPlanId !== null || this.isUserCurrentPlan(planId)) {
+    if (!planId || this.loadingPlanId() !== null || this.isUserCurrentPlan(planId)) {
       return;
     }
 
-    this.loadingPlanId = planId;
-    this.errorMessage = null;
+    this.loadingPlanId.set(planId);
+    this.errorMessage.set(null);
 
     this.paymentService.InitiatePayment({ planId }).subscribe({
       next: (res: PaymentInitiateResult) => {
         if (res?.checkoutUrl) {
           window.location.href = res.checkoutUrl;
         } else {
-          this.errorMessage = 'Não foi possível gerar o link de checkout.';
-          this.loadingPlanId = null;
-          this.cdr.detectChanges();
+          this.errorMessage.set('Não foi possível gerar o link de checkout.');
+          this.loadingPlanId.set(null);
         }
       },
       error: (err: unknown) => {
         console.error('Erro ao iniciar o pagamento:', err);
-        this.errorMessage = 'Ocorreu um erro ao comunicar com o servidor de pagamentos.';
-        this.loadingPlanId = null;
-        this.cdr.detectChanges();
+        this.errorMessage.set('Ocorreu um erro ao comunicar com o servidor de pagamentos.');
+        this.loadingPlanId.set(null);
       },
     });
   }

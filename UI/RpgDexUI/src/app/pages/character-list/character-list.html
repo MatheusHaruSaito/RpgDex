@@ -1,10 +1,28 @@
 <div class="cl-wrapper">
   <div class="cl-header">
     <div>
-      <h1 class="cl-title"><span>Meus Personagens</span></h1>
+      <div class="cl-title-row">
+        <h1 class="cl-title"><span>Meus Personagens</span></h1>
+
+        @if (!isLoading && hasCharacterLimit) {
+          <span
+            class="cl-limit-badge"
+            [class.near-limit]="isNearLimit"
+            [class.limit-reached]="isLimitReached"
+            [title]="
+              isLimitReached
+                ? 'Limite máximo de personagens atingido'
+                : 'Personagens criados no seu plano'
+            "
+          >
+            <i class="fa-solid fa-users"></i>
+            <span>{{ characterLength }} / {{ maxCharacters }}</span>
+          </span>
+        }
+      </div>
       <p class="cl-subtitle">Gerencie todas as fichas da sua coleção.</p>
     </div>
-    
+
     <div class="cl-header-actions">
       <!-- Input oculto para carregar o ficheiro JSON/ficha -->
       <input
@@ -14,12 +32,24 @@
         class="file-input-hidden"
         (change)="importCharacter($event)"
       />
-      
-      <button type="button" class="btn btn-secondary" (click)="importInput.click()">
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="isLoading || isLimitReached"
+        [title]="isLimitReached ? 'Limite de personagens atingido' : 'Importar personagem em JSON'"
+        (click)="importInput.click()"
+      >
         <i class="fa fa-file-import"></i> Importar Personagem
       </button>
 
-      <button type="button" class="btn btn-primary" (click)="showCreateModal = true">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isLoading || isLimitReached"
+        [title]="isLimitReached ? 'Limite de personagens atingido' : 'Criar novo personagem'"
+        (click)="openCreateModal()"
+      >
         <i class="fa fa-plus"></i> Novo Personagem
       </button>
     </div>

@@ -4,6 +4,16 @@
     <div class="hero__grid" [style.background-image]="gridStyle()"></div>
 
     <div class="hero__content">
+      <div style="margin-bottom: 14px">
+        <app-brand-logo
+          variant="icon-only"
+          size="xl"
+          [link]="null"
+          [animated]="true"
+          [backdropGlow]="true"
+        ></app-brand-logo>
+      </div>
+
       <span
         class="hero__tag"
         [style.background]="activeTheme().tagBg"
@@ -88,16 +98,13 @@
     <div class="cta-band__bg" [style.background]="activeTheme().band"></div>
     <div class="container cta-band__content">
       <h2 class="cta-band__title">Pronto para rolar os dados?</h2>
-      <button type="button" class="btn-white" routerLink="/cadastro">
-        Criar Conta Grátis
-      </button>
+      <button type="button" class="btn-white" routerLink="/cadastro">Criar Conta Grátis</button>
     </div>
   </section>
 } @else {
   <!-- HOME PARA USUÁRIOS LOGADOS -->
   <div class="home-wrapper fade-in-content">
     <div class="home-container">
-
       <!-- 1. HEADER HERO BANNER -->
       <header class="dash-welcome">
         <div class="welcome-user">
@@ -113,12 +120,14 @@
           <div class="welcome-titles">
             @if (isLoadingUser) {
               <app-skeleton width="220px" height="28px" radius="6px"></app-skeleton>
-              <div style="margin-top: 6px;">
+              <div style="margin-top: 6px">
                 <app-skeleton width="280px" height="16px" radius="6px"></app-skeleton>
               </div>
             } @else {
               <h1 class="welcome-heading">Bem-vindo, {{ userName }}!</h1>
-              <p class="welcome-sub">Sua mesa de jogo e suas ferramentas estão prontas para a próxima sessão.</p>
+              <p class="welcome-sub">
+                Sua mesa de jogo e suas ferramentas estão prontas para a próxima sessão.
+              </p>
             }
           </div>
         </div>
@@ -179,7 +188,10 @@
                 Seus Personagens
               </h2>
               @if (!isLoadingCharacters && characterTotal > 0) {
-                <span class="section-count">{{ characterTotal }} {{ characterTotal === 1 ? 'personagem' : 'personagens' }}</span>
+                <span class="section-count"
+                  >{{ characterTotal }}
+                  {{ characterTotal === 1 ? 'personagem' : 'personagens' }}</span
+                >
               }
             </div>
             @if (!isLoadingCharacters && characterTotal > 0) {
@@ -224,7 +236,9 @@
                   </div>
                   <div class="char-meta">
                     <strong class="char-name">{{ char.name }}</strong>
-                    <span class="char-subtitle">{{ char.description || 'Clique para abrir a ficha' }}</span>
+                    <span class="char-subtitle">{{
+                      char.description || 'Clique para abrir a ficha'
+                    }}</span>
                   </div>
                   <i class="fa-solid fa-pen-to-square edit-icon"></i>
                 </a>
@@ -233,7 +247,6 @@
           }
         </section>
       </div>
-
     </div>
   </div>
 }

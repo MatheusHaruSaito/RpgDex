@@ -80,7 +80,7 @@
 
                     <!-- Marcador (Sim/Não) -->
                     @case (PropertyValueEnum.BooleanFlgs) {
-                      <div class="cv-entry cv-flag" [class.cv-flag--on]="isTrue(entry.value)">
+                      <div class="cv-entry cv-entry--wide cv-flag" [class.cv-flag--on]="isTrue(entry.value)">
                         <i
                           class="fa"
                           [ngClass]="isTrue(entry.value) ? 'fa-circle-check' : 'fa-circle-xmark'"
@@ -109,7 +109,10 @@
 
                     <!-- Texto simples -->
                     @default {
-                      <div class="cv-entry cv-entry--wide cv-prop-chip">
+                      <div
+                        class="cv-entry cv-entry--wide cv-prop-chip"
+                        [class.cv-prop-chip--stacked]="isLongValue(entry)"
+                      >
                         <span class="cv-prop-key">{{ entry.key }}</span>
                         <span class="cv-prop-val">{{ entry.value || '—' }}</span>
                       </div>

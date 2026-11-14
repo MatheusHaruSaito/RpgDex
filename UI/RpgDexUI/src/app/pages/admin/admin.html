@@ -262,8 +262,152 @@
       </div>
     </ng-container>
 
-    <!-- 2. ABA DE USUÁRIOS -->
+<!-- 2. ABA DE USUÁRIOS -->
     <ng-container *ngIf="activeTab === 'usuarios'">
+      <!-- PESQUISA DE USUÁRIOS POR TARGET (NOME OU E-MAIL) -->
+      <div class="metrics-card-panel">
+        <div class="user-search-header">
+          <div>
+            <h2><i class="fa-solid fa-user-slash"></i> Moderação e Busca de Usuários</h2>
+            <p class="section-subtitle">
+              Pesquise jogadores pelo nome de usuário ou e-mail para consultar dados ou aplicar banimento.
+            </p>
+          </div>
+        </div>
+
+        <form class="user-search-bar" (ngSubmit)="searchUsers(true)">
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="text"
+              [(ngModel)]="userSearchTarget"
+              name="userSearchTarget"
+              placeholder="Digite o nome de usuário ou e-mail (ex: jogador@email.com)..."
+              class="admin-search-input"
+            />
+            <button
+              *ngIf="userSearchTarget"
+              type="button"
+              class="btn-clear-input"
+              (click)="clearUserSearch()"
+              title="Limpar pesquisa"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <button type="submit" class="btn btn-primary" [disabled]="isSearchingUsers">
+            <i
+              class="fa-solid"
+              [ngClass]="isSearchingUsers ? 'fa-spinner fa-spin' : 'fa-magnifying-glass'"
+            ></i>
+            <span>{{ isSearchingUsers ? 'Buscando...' : 'Pesquisar' }}</span>
+          </button>
+        </form>
+
+        <div class="user-search-error" *ngIf="userSearchError">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span>{{ userSearchError }}</span>
+        </div>
+
+        <!-- LOADING -->
+        <div class="admin-empty-state" *ngIf="isSearchingUsers">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <p>Buscando usuários...</p>
+        </div>
+
+        <!-- RESULTADOS DA BUSCA -->
+        <div class="users-results-list" *ngIf="!isSearchingUsers && searchedUsers.length > 0">
+          <div *ngFor="let u of searchedUsers" class="user-result-card">
+            <div class="user-result-main">
+              <img
+                *ngIf="u.iconPath"
+                [src]="getImageUrl(u.iconPath)"
+                class="target-avatar"
+                alt="Avatar do usuário"
+              />
+              <div *ngIf="!u.iconPath" class="target-avatar-fallback">
+                <i class="fa-solid fa-user"></i>
+              </div>
+
+              <div class="user-result-info">
+                <div class="user-result-name-row">
+                  <h4>{{ u.displayName || u.userName }}</h4>
+                  <span class="user-username-tag">&#64;{{ u.userName }}</span>
+                </div>
+
+                <p class="user-result-email" *ngIf="$any(u).email">
+                  <i class="fa-regular fa-envelope"></i> {{ $any(u).email }}
+                </p>
+
+                <div class="user-result-id-row" *ngIf="$any(u).id || $any(u).userId">
+                  <span class="user-id-code">ID: {{ $any(u).id || $any(u).userId }}</span>
+                  <button
+                    type="button"
+                    class="btn-copy-id"
+                    (click)="copyUserId($any(u).id || $any(u).userId)"
+                    title="Copiar ID do usuário"
+                  >
+                    <i
+                      class="fa-solid"
+                      [ngClass]="
+                        copiedUserId === ($any(u).id || $any(u).userId) ? 'fa-check' : 'fa-copy'
+                      "
+                    ></i>
+                    <span>{{
+                      copiedUserId === ($any(u).id || $any(u).userId) ? 'Copiado!' : 'Copiar ID'
+                    }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="user-result-actions">
+              <button
+                type="button"
+                class="btn btn-danger-ban"
+                (click)="banUserDirectly(u)"
+                title="Banir ou penalizar este usuário"
+              >
+                <i class="fa-solid fa-gavel"></i>
+                <span>Banir Usuário</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- PAGINAÇÃO -->
+          <div class="user-search-pagination" *ngIf="userSearchPage > 1 || hasMoreUsers">
+            <button
+              type="button"
+              class="filter-toggle-btn"
+              [disabled]="userSearchPage === 1"
+              (click)="changeUserSearchPage(-1)"
+            >
+              <i class="fa-solid fa-chevron-left"></i> Anterior
+            </button>
+            <span class="pagination-page-label">Página {{ userSearchPage }}</span>
+            <button
+              type="button"
+              class="filter-toggle-btn"
+              [disabled]="!hasMoreUsers"
+              (click)="changeUserSearchPage(1)"
+            >
+              Próxima <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- NENHUM RESULTADO -->
+        <div
+          class="admin-empty-state"
+          *ngIf="!isSearchingUsers && hasSearchedUsers && searchedUsers.length === 0 && !userSearchError"
+        >
+          <i class="fa-solid fa-user-xmark"></i>
+          <p>Nenhum usuário encontrado para "{{ userSearchTarget }}".</p>
+        </div>
+      </div>
+
+      <!-- MÉTRICAS E GRÁFICO DE USUÁRIOS -->
       <div class="metrics-card-panel">
         <div class="chart-filter-row">
           <label>Período de análise:</label>
@@ -318,7 +462,7 @@
         </div>
       </div>
     </ng-container>
-
+    
     <!-- 3. ABA DE PERSONAGENS -->
     <ng-container *ngIf="activeTab === 'personagens'">
       <div class="metrics-card-panel">
@@ -363,6 +507,14 @@
             <div class="stat-info">
               <span>Total de Fichas</span>
               <h3>{{ characterChartData?.total ?? 0 }} Personagens</h3>
+            </div>
+          </div>
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+            <div class="stat-info">
+              <span>Fichas no Período</span>
+              <h3>{{ characterChartData?.totalInRange ?? 0 }} Novos</h3>
             </div>
           </div>
         </div>
@@ -413,6 +565,14 @@
             <div class="stat-info">
               <span>Mesas Criadas</span>
               <h3>{{ campaignChartData?.total ?? 0 }} Campanhas</h3>
+            </div>
+          </div>
+
+          <div class="stat-widget success">
+            <div class="stat-icon"><i class="fa-solid fa-folder-plus"></i></div>
+            <div class="stat-info">
+              <span>Campanhas no Período</span>
+              <h3>{{ campaignChartData?.totalInRange ?? 0 }} Novas</h3>
             </div>
           </div>
         </div>

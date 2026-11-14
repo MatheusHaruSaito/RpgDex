@@ -14,8 +14,10 @@ import { AuthService } from '../../services/auth-service';
 import { CharacterService } from '../../services/character-service';
 import { Character } from '../../../models/character';
 import { SkeletonComponent } from '../../components/skeleton/skeleton';
+import { BrandLogo } from '../../components/brand-logo/brand-logo';
 import { UserResponse } from '../../../models/userResponse';
 import { ErrorHandlerUtil } from '../../utils/error-handler.util';
+import { RecentSortUtil } from '../../utils/recent-sort.util';
 
 export interface Theme {
   tag: string;
@@ -36,7 +38,7 @@ export interface Theme {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, SkeletonComponent],
+  imports: [CommonModule, RouterModule, SkeletonComponent, BrandLogo],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -171,10 +173,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private loadCharacterPreview(): void {
     this.isLoadingCharacters = true;
-    this.characterService.GetAllByPage(1, 6).subscribe({
+    this.characterService.GetAllByPage(1, 50).subscribe({
       next: (response) => {
-        this.characterTotal = response.data?.characterLength ?? 0;
-        this.characterPreview = response.data?.characters ?? [];
+        const all = response.data?.characters ?? [];
+        this.characterTotal = response.data?.characterLength ?? all.length;
+        this.characterPreview = RecentSortUtil.sortByMostRecent(all).slice(0, 6);
         this.isLoadingCharacters = false;
         this.cdr.detectChanges();
       },

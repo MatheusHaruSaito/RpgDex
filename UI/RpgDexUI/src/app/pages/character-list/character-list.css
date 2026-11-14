@@ -17,6 +17,13 @@
   margin-bottom: 24px;
 }
 
+.cl-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .cl-title {
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
@@ -27,6 +34,33 @@
 
 .cl-title span {
   color: var(--rpg-purple);
+}
+
+.cl-limit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 800;
+  background: var(--rpg-purple-tint);
+  color: var(--rpg-purple);
+  border: 1.5px solid var(--rpg-border-purple, rgba(108, 92, 231, 0.35));
+  transition: all 0.2s ease;
+}
+
+.cl-limit-badge.near-limit {
+  background: rgba(237, 137, 54, 0.14);
+  color: #dd6b20;
+  border-color: rgba(237, 137, 54, 0.45);
+}
+
+.cl-limit-badge.limit-reached {
+  background: var(--rpg-error-bg, rgba(229, 62, 62, 0.14));
+  color: var(--rpg-error, #e53e3e);
+  border-color: rgba(229, 62, 62, 0.45);
 }
 
 .cl-subtitle {
@@ -305,12 +339,19 @@ table td:nth-child(2) {
   white-space: nowrap;
 }
 
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: none;
+}
+
 .btn-primary {
   background: var(--rpg-purple, #6c5ce7);
   color: #ffffff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   filter: brightness(1.1);
   box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
 }
@@ -321,7 +362,7 @@ table td:nth-child(2) {
   border-color: var(--rpg-border);
 }
 
-.btn-secondary:hover {
+.btn-secondary:hover:not(:disabled) {
   background: var(--rpg-purple-tint);
   color: var(--rpg-purple);
   border-color: var(--rpg-purple);

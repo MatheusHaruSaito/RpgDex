@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.GridFS;
 using MongoDbGenericRepository;
 using RpgDex.Domain.Interfaces;
@@ -18,7 +19,7 @@ namespace RpgDex.Infrastructure.Repositories
         public async Task<(byte[] fileBytes, string fileName)> DownloadFileAsync(string fileId)
         {
 
-            if (!MongoDB.Bson.ObjectId.TryParse(fileId, out var objectId))
+            if (!ObjectId.TryParse(fileId, out var objectId))
             {
                 return (null, null);
             }
@@ -48,6 +49,53 @@ namespace RpgDex.Infrastructure.Repositories
         {
             var fileId = await _gridFSBucket.UploadFromStreamAsync(fileName, fileStream);
             return fileId.ToString();
+        }
+        public async Task<bool> DeleteFileAsync(string fileId)
+        {
+            if (!ObjectId.TryParse(fileId, out var objectId))
+            {
+                return false;
+            }
+
+            try
+            {
+                await _gridFSBucket.DeleteAsync(objectId);
+                return true;
+            }
+            catch (GridFSFileNotFoundException)
+            {
+                return false;
+            }
+        }
+        public async Task<int> DeleteOrphanFilesAsync( IEnumerable<string> idsInUse,TimeSpan minimumAge, CancellationToken ct = default)
+        {
+            var inUse = idsInUse
+                .Where(id => ObjectId.TryParse(id, out _))
+                .Select(ObjectId.Parse)
+                .ToHashSet();
+
+            var cutoff = DateTime.UtcNow - minimumAge;
+            var filter = Builders<GridFSFileInfo>.Filter.Lt(f => f.UploadDateTime, cutoff);
+
+            var orphans = new List<ObjectId>();
+
+            using var cursor = await _gridFSBucket.FindAsync(filter, cancellationToken: ct);
+            while (await cursor.MoveNextAsync(ct))
+            {
+                foreach (var file in cursor.Current)
+                {
+                    if (!inUse.Contains(file.Id))
+                        orphans.Add(file.Id);
+                }
+            }
+
+            foreach (var id in orphans)
+            {
+                ct.ThrowIfCancellationRequested();
+                await _gridFSBucket.DeleteAsync(id, ct);
+            }
+
+            return orphans.Count;
         }
     }
 }

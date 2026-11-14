@@ -107,7 +107,48 @@
 .canvas-topbar > * { pointer-events: auto; }
 .topbar-left   { justify-self: start; }
 .topbar-center { justify-self: center; }
-.topbar-right  { justify-self: end; }
+.topbar-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.storage-indicator {
+  display: inline-flex;
+  align-items: center;
+  height: var(--panel-h, 40px);
+  padding: 0 14px;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.storage-indicator i {
+  color: var(--rpg-purple, #9E74D0);
+  font-size: 0.85rem;
+}
+
+.storage-indicator.warning {
+  border-color: rgba(245, 158, 11, 0.65);
+  color: #d97706;
+}
+
+.storage-indicator.warning i {
+  color: #f59e0b;
+}
+
+.storage-indicator.limit-reached {
+  border-color: rgba(231, 76, 60, 0.65);
+  color: var(--rpg-error, #e74c3c);
+}
+
+.storage-indicator.limit-reached i {
+  color: var(--rpg-error, #e74c3c);
+}
 
 .canvas-brand {
   height: var(--panel-h);
@@ -135,12 +176,11 @@
   top: calc(var(--ui-gap) * 2 + var(--panel-h));
   left: var(--ui-gap);
   max-height: calc(100% - var(--ui-gap) * 3 - var(--panel-h));
-  padding: 2px 10px 12px 2px;
+  padding: 2px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   z-index: 1010;
 }
 .canvas-toolbar::-webkit-scrollbar { width: 4px; }
@@ -149,7 +189,11 @@
   border-radius: 4px;
 }
 
-/* ── SELETOR DE CORES ── */
+/* ── SELETOR DE CORES (NGX-COLOR SKETCH) ── */
+.color-picker-wrapper {
+  position: relative;
+}
+
 .color-swatch {
   position: relative;
   flex-shrink: 0;
@@ -157,39 +201,89 @@
   height: var(--ui-btn);
   display: grid;
   place-items: center;
+  border: none;
+  background: transparent;
   border-radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
 }
-.color-swatch:hover { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15)); }
-
-.color-native-input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  cursor: pointer;
-  z-index: 2;
+.color-swatch:hover,
+.color-swatch.is-open {
+  background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.2));
 }
 
 .color-preview-btn {
   width: calc(var(--ui-btn) - 14px);
   height: calc(var(--ui-btn) - 14px);
   border-radius: 50%;
-  border: 2px solid var(--rpg-border, #ffffff);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
   transition: transform 0.2s;
   pointer-events: none;
 }
 .color-swatch:hover .color-preview-btn { transform: scale(1.1); }
 
-.color-picker-row { display: flex; align-items: center; gap: 12px; }
-.color-hex-text {
-  font-family: 'Exo 2', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--rpg-text-strong, #ffffff);
+.ngx-color-popover {
+  position: absolute;
+  top: 0;
+  left: calc(100% + 12px);
+  z-index: 1200;
+  animation: colorPopoverIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes colorPopoverIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.ngx-token-picker-box {
+  display: inline-block;
+}
+
+/* Estilização Dark RPGDex para o ngx-color <color-sketch> */
+::ng-deep .sketch-picker {
+  background: var(--rpg-surface, #252342) !important;
+  border: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.16)) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55) !important;
+  padding: 12px 12px 6px !important;
+  font-family: 'Exo 2', sans-serif !important;
+}
+
+::ng-deep .sketch-picker .sketch-saturation {
+  border-radius: 10px !important;
+  overflow: hidden;
+}
+
+::ng-deep .sketch-picker .sketch-fields input {
+  background: var(--rpg-surface-2, #18162e) !important;
+  color: var(--rpg-text-strong, #ffffff) !important;
+  border: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.16)) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-family: 'Exo 2', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+::ng-deep .sketch-picker .sketch-fields label {
+  color: var(--rpg-text-muted, #a0a0cc) !important;
+  font-weight: 700 !important;
+}
+
+::ng-deep .sketch-picker .sketch-presets {
+  border-top: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.12)) !important;
+  padding-top: 10px !important;
+}
+
+::ng-deep .sketch-picker .sketch-presets-color {
+  border-radius: 50% !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
 }
 
 /* ── MENU DE CONTEXTO ── */
@@ -498,6 +592,92 @@ image-cropper { max-height: 400px; width: 100%; }
   z-index: 2000;
 }
 
+/* ── MODO SOMENTE LEITURA (CAMPANHA DESATIVADA) ── */
+.readonly-banner {
+  height: var(--panel-h);
+  padding: 0 16px;
+  gap: 8px;
+  font-family: 'Exo 2', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--rpg-error, #e74c3c);
+  border-color: var(--rpg-error-border, rgba(231, 76, 60, 0.4));
+  background: var(--rpg-error-bg, rgba(231, 76, 60, 0.15));
+  white-space: nowrap;
+}
+
+.canvas-fullscreen-wrapper.readonly-mode .board-element,
+.canvas-fullscreen-wrapper.readonly-mode .type-drawing path {
+  cursor: default !important;
+}
+
+/* ── TOAST DE ERRO FLUTUANTE ── */
+.canvas-error-toast {
+  top: calc(var(--ui-gap) * 2 + var(--panel-h));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(520px, calc(100% - var(--ui-gap) * 2));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--rpg-surface, #252342);
+  border: 1px solid var(--rpg-error, #e74c3c);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(231, 76, 60, 0.25);
+  border-radius: var(--ui-radius);
+  color: var(--rpg-text-strong, #ffffff);
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 2500;
+  animation: toastDropIn 0.2s ease-out;
+}
+
+.canvas-error-toast > i {
+  color: var(--rpg-error, #e74c3c);
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.canvas-error-text {
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.canvas-error-close {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--rpg-text-muted, #a0a0cc);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.canvas-error-close:hover {
+  background: rgba(231, 76, 60, 0.2);
+  color: var(--rpg-error, #e74c3c);
+}
+
+@keyframes toastDropIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* ── RESPONSIVO ── */
 @media (max-height: 560px) and (min-width: 601px) {
   .canvas-fullscreen-wrapper { --ui-btn: 36px; --ui-gap: 12px; }
@@ -525,11 +705,16 @@ image-cropper { max-height: 400px; width: 100%; }
     padding: 2px;
     flex-direction: row;
     align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: visible;
   }
   .canvas-toolbar::-webkit-scrollbar { display: none; }
   .toolbar-group { flex-direction: row; flex-shrink: 0; }
+
+  .ngx-color-popover {
+    top: auto;
+    bottom: calc(100% + 12px);
+    left: 0;
+  }
 
   .context-menu {
     bottom: calc(var(--ui-gap) * 2 + var(--panel-h) + env(safe-area-inset-bottom, 0px));
