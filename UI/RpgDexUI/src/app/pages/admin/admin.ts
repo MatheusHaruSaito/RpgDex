@@ -187,7 +187,6 @@ export class AdminComponent implements OnInit, OnDestroy {
         next: (res: ApiResponse<any>) => {
           this.isSearchingUsers = false;
           this.hasSearchedUsers = true;
-
           if (res.success && res.data) {
             const list = Array.isArray(res.data)
               ? res.data
@@ -280,7 +279,6 @@ export class AdminComponent implements OnInit, OnDestroy {
   formData.append('TargetId', reportPayload.targetId);
 
     const reportServiceAny = this.reportService as any;
-    console.log(typeof reportServiceAny.CreateReport === 'function');
     if (typeof reportServiceAny.CreateReport === 'function') {
       this.reportService.CreateReport(formData).subscribe({
         next: (createRes: ApiResponse<any>) => {
