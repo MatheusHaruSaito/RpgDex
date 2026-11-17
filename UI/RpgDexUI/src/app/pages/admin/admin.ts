@@ -14,6 +14,7 @@ import { ReportResponse } from '../../../models/reportResponse';
 import { ApiResponse } from '../../../models/apiResponse';
 import { UserSummary } from '../../../models/userSummary';
 import { environment } from '../../../environments/environment';
+import { CreateReportRequest } from '../../../models/createReportRequest';
 
 export type AdminTab = 'reportes' | 'usuarios' | 'personagens' | 'campanhas';
 
@@ -158,7 +159,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   // ── PESQUISA DE USUÁRIOS POR TARGET ─────────────────────────────
   searchUsers(resetPage = true): void {
-    const target = this.userSearchTarget.trim();
+    const target = this.userSearchTarget.trim().replaceAll(" ","");
 
     if (!target) {
       this.userSearchError = 'Digite um nome de usuário ou e-mail para pesquisar.';
@@ -265,16 +266,23 @@ export class AdminComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const reportPayload: any = {
+    const reportPayload: CreateReportRequest = {
       title: `Punição Administrativa - @${user.userName}`,
       description: trimmedReason,
       reportType: ReportType.UserReport,
       targetId: userId,
+      images: undefined
     };
+  const formData = new FormData();
+  formData.append('Title', reportPayload.title);
+  formData.append('Description', reportPayload.description);
+  formData.append('ReportType', reportPayload.reportType.toString());
+  formData.append('TargetId', reportPayload.targetId);
 
     const reportServiceAny = this.reportService as any;
-    if (typeof reportServiceAny.Create === 'function') {
-      reportServiceAny.Create(reportPayload).subscribe({
+    console.log(typeof reportServiceAny.CreateReport === 'function');
+    if (typeof reportServiceAny.CreateReport === 'function') {
+      this.reportService.CreateReport(formData).subscribe({
         next: (createRes: ApiResponse<any>) => {
           const createdReportId = createRes?.data?.id || createRes?.data;
           if (createdReportId) {
@@ -293,19 +301,7 @@ export class AdminComponent implements OnInit, OnDestroy {
         },
         error: () => alert('Erro ao registrar a punição do usuário.'),
       });
-    } else {
-      this.reportService
-        .PunishUser({ reportId: userId, userId, reason: trimmedReason } as any)
-        .subscribe({
-          next: (res: ApiResponse<any>) => {
-            if (res.success) {
-              alert(`Usuário @${user.userName} banido/penalizado com sucesso!`);
-              this.searchUsers(false);
-            }
-          },
-          error: () => alert('Não foi possível aplicar a punição diretamente.'),
-        });
-    }
+    } 
   }
 
   // ── REPORTES ────────────────────────────────────────────────────

@@ -56,7 +56,7 @@ namespace RpgDex.Infrastructure.Queries
                 ? new ReportOwnerResponse(report.ReportOwner, "", "")
                 : new ReportOwnerResponse(owner.Id, owner.UserName, owner.DisplayName),
                 target,
-                _urls.BuildMultiple(report.ImagesPath).ToList()
+                _urls.BuildMultiple(report.ImagesPath ?? new List<string>())?.ToList() ?? new List<string>()
             );
         }
     }
