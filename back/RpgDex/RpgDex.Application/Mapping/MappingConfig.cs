@@ -56,6 +56,10 @@ namespace RpgDex.Application.Mapping
 
             TypeAdapterConfig<ApplicationUser, UserSummary>
                  .NewConfig()
+                 .Map(dest => dest.IsLocked,
+                     src => src.LockoutEnabled
+                        && src.LockoutEnd.HasValue
+                        && src.LockoutEnd.Value > DateTimeOffset.UtcNow)
                  .Map(dest => dest.IconPath, src => string.IsNullOrEmpty(src.IconPath)
                  ? null
                  : urls.Build(src.IconPath));
