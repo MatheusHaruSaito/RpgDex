@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: API/RpgDex
+        working-directory: back/RpgDex
 
     steps:
     - uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
       runs-on: ubuntu-latest
       defaults:
         run:
-          working-directory: UI/RpgDexUI
+          working-directory: web/RpgDexUI
   
       steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: UI/RpgDexUI/package-lock.json
+          cache-dependency-path: web/RpgDexUI/package-lock.json
   
       - name: Install dependencies
         run: npm ci
