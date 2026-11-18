@@ -52,7 +52,7 @@ O mestre cria a campanha, os jogadores entram com seus personagens e todos compa
 - Visualização da ficha (modo leitura) e editor de ficha
 
 ### Biblioteca
-- Armazenamento de documentos importantes para a campanha: anotações, imagens, áudios, etc. (arquivos salvos no GridFS do MongoDB)
+- Armazenamento de documentos importantes para a campanha: anotações, imagens, áudios, etc. (arqvos salvos no GridFS do MongoDB)
 - Compartilhamento: o dono pode dar ou remover acesso de outros usuários a cada documento
 
 ### Planos e assinaturas
@@ -71,7 +71,7 @@ O mestre cria a campanha, os jogadores entram com seus personagens e todos compa
 
 ## Tech stack
 
-### Front-end (`UI/RpgDexUI`)
+### Front-end (`/RpgDexUI`)
 - Angular 21 + TypeScript
 - RxJS
 - `@microsoft/signalr` (tempo real)
@@ -81,7 +81,7 @@ O mestre cria a campanha, os jogadores entram com seus personagens e todos compa
 - SSR (`@angular/ssr`) com Express
 - Vitest (testes)
 
-### Back-end (`API/RpgDex`)
+### Back-end (`back/RpgDex`)
 - C# / .NET 10 (ASP.NET Core Web API)
 - ASP.NET Core Identity com armazenamento no MongoDB
 - MongoDB (MongoDB.Driver, GridFS para arquivos)
@@ -101,7 +101,7 @@ O mestre cria a campanha, os jogadores entram com seus personagens e todos compa
 ```
 RpgDex/
 ├── .github/workflows/main.yml      # CI: build da API e do front
-├── API/
+├── back/
 │   └── RpgDex/
 │       ├── RpgDex.slnx
 │       ├── compose.yml             # API + MongoDB + Redis
@@ -110,7 +110,7 @@ RpgDex/
 │       ├── RpgDex.Application/     # Serviços, DTOs, validadores, mapeamentos
 │       ├── RpgDex.Infrastructure/  # MongoDB, repositórios, hubs SignalR, e-mail, jobs, seeders
 │       └── RpgDex.WebApi/          # Controllers, Program.cs, Dockerfile, appsettings
-└── UI/
+└── web/
     └── RpgDexUI/
         ├── angular.json
         ├── wrangler.toml           # configuração de deploy (Cloudflare)
@@ -151,7 +151,7 @@ cd RpgDex
 ### 2. Back-end (API)
 
 ```bash
-cd API/RpgDex
+cd back/RpgDex
 cp .env.example .env
 Configure o env para que funcione corretamente
 docker compose up
@@ -170,7 +170,7 @@ A API ficará disponível em `http://localhost:8080`. Na primeira execução, os
 **Rodando sem Docker:**
 
 ```bash
-cd API/RpgDex
+cd back/RpgDex
 dotnet restore
 dotnet run --project RpgDex.WebApi
 ```
@@ -180,7 +180,7 @@ Neste caso, configure as chaves em `appsettings.Development.json`, nos *user sec
 ### 3. Front-end (Angular)
 
 ```bash
-cd UI/RpgDexUI
+cd web/RpgDexUI
 npm install
 ng s        
 ```
@@ -200,7 +200,7 @@ Em desenvolvimento, o front usa `src/environments/environment.development.ts` (A
 
 ## Variáveis de ambiente
 
-Copie `API/RpgDex/.env.example` para `API/RpgDex/.env` e preencha:
+Copie `back/RpgDex/.env.example` para `back/RpgDex/.env` e preencha:
 
 | Variável | Descrição |
 |----------|-----------|
