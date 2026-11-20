@@ -113,6 +113,12 @@ export class AuthService {
             sameSite: 'Lax',
             path: '/',
           });
+        if (response.data.refreshToken) {
+          this.cookieService.set(this.REFRESH_Token, response.data.refreshToken, {
+            sameSite: 'Lax',
+            path: '/',
+          });
+        }
           this.currentUserSubject.next(currentUser);
         }
         return response;
@@ -235,7 +241,7 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          if (res.success && !res.data?.isMinor) {
+          if (res.success ) {
             this.RefreshToken().subscribe();
           }
         }),

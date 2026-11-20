@@ -35,8 +35,13 @@ export class GuardianConsentComponent implements OnInit {
 
     this.authService.GuardianConsent({ userId, token }).subscribe({
       next: (res) => {
+        console.log(res)
         if (res.success) {
-          this.authService.Logout()
+          const loggedId = this.authService.getLoggedUserId();
+
+          if (loggedId && loggedId === userId && res.data?.accessToken) {
+            this.authService.StoreToken(res.data.accessToken, res.data.refreshToken);
+          }
           this.status.set('success');
         } else {
           this.status.set('error');
