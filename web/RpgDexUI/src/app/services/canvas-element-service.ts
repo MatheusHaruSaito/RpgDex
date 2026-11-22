@@ -15,6 +15,7 @@ import { CreateCanvaTokenElementRequest as CreateCanvasTokenElementRequest } fro
 import { QuickCreateCanvaTokenElementRequest } from '../../models/quickCreateCanvaTokenElementRequest';
 import { ScaleElementRequest } from '../../models/scaleElementRequest';
 import { ChangeColorCanvasElementsRequest } from '../../models/changeColorCanvasElementsRequest';
+import { UpdateElementContentRequest } from '../../models/updateElementContentRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -28,6 +29,7 @@ export class CanvasElementService {
   private readonly reordered$ = new Subject<{ id: string; z: number }[]>();
   private readonly activeChanged$ = new Subject<{ ids: string[]; state: boolean }>();
   private readonly colorChanged$ = new Subject<{ ids: string[]; color: string }>();
+  private readonly contentChanged$ = new Subject<{ id: string; content: string}>();
   constructor(private http: HttpClient) {}
 
   public async startConnection(campaignId: string, getToken: () => string): Promise<void> {
@@ -61,6 +63,9 @@ export class CanvasElementService {
     });
     this.hubConnection.on('ElementColorChanged', (elements: { ids: string[]; color: string }) => {
       this.colorChanged$.next(elements);
+    });
+    this.hubConnection.on('ElementContentChanged', (elements: { id: string; content: string }) => {
+      this.contentChanged$.next(elements);
     });
     this.hubConnection.onreconnected(() => {
       this.hubConnection!.invoke('JoinCampaignCanvas', this.currentCampaignId).catch((err) =>
@@ -106,6 +111,9 @@ export class CanvasElementService {
   }
   public onElementsColorChanged(): Observable<{ ids: string[]; color: string}> {
     return this.colorChanged$.asObservable();
+  }
+  public onElementContentChanged(): Observable<{ id: string; content: string}> {
+    return this.contentChanged$.asObservable();
   }
   public CreateElement(
     request: CreateCanvaElementRequest | FormData,
@@ -200,6 +208,11 @@ export class CanvasElementService {
   }
   public ScaleElement(request: ScaleElementRequest): Observable<ApiResponse<boolean>> {
     return this.http.patch<ApiResponse<boolean>>(`${this.env}/ScaleElement`, request, {
+      headers: this.connectionHeaders(),
+    });
+  }
+  public UpdateElementContent(request: UpdateElementContentRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/UpdateElementContent`, request, {
       headers: this.connectionHeaders(),
     });
   }

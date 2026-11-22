@@ -210,6 +210,13 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       this.elements.forEach((el)=>{
         if(idSet.has(el.id)) el.color = color;
       })
+      this.refreshStorageUsage();
+    });
+
+    this.canvasElementService.onElementContentChanged().subscribe(({id,content}) => {
+        const element = this.elements.find((c) => c.id === id);
+        if (element) element.content = content;
+      this.refreshStorageUsage();
     });
 
     this.canvasElementService.onCreateElement().subscribe((newEl) => {

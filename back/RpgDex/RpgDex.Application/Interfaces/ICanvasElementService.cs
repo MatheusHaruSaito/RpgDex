@@ -15,5 +15,6 @@ namespace RpgDex.Application.Interfaces
         Task<Result<bool>> ScaleElement(string userId, ScaleCanvasElementsRequest request);
         Task<Result<bool>> SetElementActiveState(string userId,SetElementActiveStateRequest request,bool state);
         Task<Result<bool>> ChangeElementsColor(string userId, ChangeColorCanvasElementsRequest request);
+        Task<Result<bool>> UpdateElementContent(string userId, UpdateElementContentRequest request);
     }
 }

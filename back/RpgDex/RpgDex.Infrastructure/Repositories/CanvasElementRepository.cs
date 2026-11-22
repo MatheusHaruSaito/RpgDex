@@ -155,5 +155,17 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
             return result.IsAcknowledged && result.MatchedCount == models.Count;
         }
+
+        public async Task<bool> UpdateElementContentAsync(Guid campaignId,Guid elementId, string content)
+        {
+            var f = Builders<CanvasElement>.Filter;
+            var filter = f.And(
+                f.Eq(ce => ce.CampaignId,campaignId),
+                f.Eq(ce => ce.Id,elementId)
+                );
+            var update = Builders<CanvasElement>.Update.Set(ce => ce.Content, content);
+            var result = await _entity.UpdateOneAsync(filter,update);
+            return result.IsAcknowledged && result.ModifiedCount > 0;
+        }
     }
 }

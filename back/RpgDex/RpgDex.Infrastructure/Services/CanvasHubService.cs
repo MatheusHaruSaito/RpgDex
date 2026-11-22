@@ -27,6 +27,10 @@ namespace RpgDex.Infrastructure.Services
         public Task SetActiveElements(string campaignId, SetActiveElementsEvent evt)
             => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementsActiveChanged", new { ids = evt.ElementIds, state = evt.State });
 
+        public Task UpdateElementContent(string campaignId, UpdateElementContentEvent evt)
+         => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementContentChanged", new { id = evt.ElementId, content = evt.Content });
+
+
         private IClientProxy Target(string campaignId, string? exceptConnectionId)
             => exceptConnectionId is null
                 ? hub.Clients.Group(Group(campaignId))

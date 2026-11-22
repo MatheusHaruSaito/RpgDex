@@ -14,6 +14,7 @@ namespace RpgDex.Application.Interfaces
         Task ReOrderElements(string campaignId, ReOrderElementsEvent evt);
         Task SetActiveElements(string campaignId, SetActiveElementsEvent evt);
         Task ChangeColorElements(string campaignId, ChangeColorElementsEvent evt);
+        Task UpdateElementContent(string campaignId, UpdateElementContentEvent evt);
 
     }
 }

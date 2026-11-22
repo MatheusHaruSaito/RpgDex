@@ -22,7 +22,7 @@ namespace RpgDex.Application.Services
     public class CanvasElementService(ICanvasElementRepository canvasElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
         SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvasElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
-        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator, IValidator<ChangeColorCanvasElementsRequest> changeColorValidator, ISubscriptionService subscriptionService
+        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator, IValidator<ChangeColorCanvasElementsRequest> changeColorValidator, IValidator<UpdateElementContentRequest> updateContentValidator, ISubscriptionService subscriptionService
         ) : ICanvasElementService
     {
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
@@ -273,6 +273,25 @@ namespace RpgDex.Application.Services
                 new ChangeColorElementsEvent(
                     request.Ids,
                     request.Color,
+                    request.ExceptConnectionId));
+
+            return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.UpdateFailed);
+        }
+        public async Task<Result<bool>> UpdateElementContent(string userId, UpdateElementContentRequest request)
+        {
+            var check = updateContentValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
+
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            var ok = await canvasElementRepository.UpdateElementContentAsync(request.CampaignId,request.ElementId, request.Content);
+
+            await canvasHubService.UpdateElementContent(
+                request.CampaignId.ToString(),
+                new UpdateElementContentEvent(
+                    request.ElementId,
+                    request.Content,
                     request.ExceptConnectionId));
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.UpdateFailed);

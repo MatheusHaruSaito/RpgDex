@@ -99,5 +99,11 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvasElementService.ScaleElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
+        [HttpPatch("UpdateElementContent")]
+        public async Task<IActionResult> UpdateElementContent([FromBody] UpdateElementContentRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
+        {
+            var result = await _canvasElementService.UpdateElementContent(currentUser, request with { ExceptConnectionId = exceptConnectionId });
+            return result.ToIActionResult();
+        }
     }
 }
