@@ -23,5 +23,6 @@ namespace RpgDex.Domain.Interfaces
         Task<bool> ChangeColorAsync(IEnumerable<Guid> ids, string color);
         Task<bool> UpdateElementContentAsync(Guid campaignId,Guid elementId, string content);
         Task<bool> SetIsLockedStateAsync(Guid campaignId, IEnumerable<Guid> elementsIds, bool state);
+        Task<HashSet<Guid>> GetLockedIdsAsync(Guid campaignId, IEnumerable<Guid> ids);
     }
 }

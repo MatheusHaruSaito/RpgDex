@@ -181,5 +181,15 @@ namespace RpgDex.Infrastructure.Repositories
 
             return result.IsAcknowledged && result.MatchedCount > 0;
         }
+        public async Task<HashSet<Guid>> GetLockedIdsAsync(Guid campaignId, IEnumerable<Guid> ids)
+        {
+            var filter = Builders<CanvasElement>.Filter.And(
+                Builders<CanvasElement>.Filter.Eq(e => e.CampaignId, campaignId),
+                Builders<CanvasElement>.Filter.In(e => e.Id, ids),
+                Builders<CanvasElement>.Filter.Eq(e => e.IsLocked, true));
+
+            var locked = await _entity.Find(filter).Project(e => e.Id).ToListAsync();
+            return locked.ToHashSet();
+        }
     }
 }

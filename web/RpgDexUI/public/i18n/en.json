@@ -117,7 +117,6 @@
     "IMAGE_INVALID_FORMAT": "Invalid image format. Use JPG, PNG or WEBP.",
     "IMAGE_INVALID_EXTENSION": "Invalid file extension. Use .jpg, .jpeg, .png or .webp.",
     
-
     "CANVAS_ELEMENT_NOT_FOUND": "Canvas element not found.",
     "CANVAS_ELEMENT_CREATE_FAILED": "Failed to create canvas element.",
     "CANVAS_ELEMENT_UPDATE_FAILED": "Failed to update canvas element.",
@@ -129,6 +128,8 @@
     "CANVAS_ELEMENT_TOO_MANY_POINTS": "Drawing has too many points.",
     "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Invalid number of elements in the request.",
     "CANVAS_ELEMENT_LIMIT_REACHED": "Canvas element limit reached.",
+    "CANVAS_ELEMENT_LOCKED": "This element is locked and can't be changed.",
+
     "VALIDATION_DISPLAYNAME": "Character name is required.",
 
     "PLAN_NOT_FOUND": "Plan not found.",

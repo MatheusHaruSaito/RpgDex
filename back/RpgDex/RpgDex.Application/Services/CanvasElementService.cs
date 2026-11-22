@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Mapster;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using RpgDex.Application.Dto;
@@ -13,9 +12,6 @@ using RpgDex.Domain.Common;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace RpgDex.Application.Services
 {
@@ -159,7 +155,11 @@ namespace RpgDex.Application.Services
             var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var positions = request.Items.Select(i => new ElementPosition(i.Id, i.X, i.Y));
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, request.Items.Select(i => i.Id));
+            var allowed = request.Items.Where(i => !blocked.Contains(i.Id)).ToList();
+            if (allowed.Count == 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
+
+            var positions = allowed.Select(i => new ElementPosition(i.Id, i.X, i.Y));
             var ok = await canvasElementRepository.MoveElementAsync(request.CampaignId, positions);
 
             await canvasHubService.MoveElements(
@@ -177,7 +177,11 @@ namespace RpgDex.Application.Services
             var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var orders = request.Items.Select(i => new ElementOrder(i.Id, i.Z));
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, request.Items.Select(i => i.Id));
+            var allowed = request.Items.Where(i => !blocked.Contains(i.Id)).ToList();
+            if (allowed.Count == 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
+
+            var orders = allowed.Select(i => new ElementOrder(i.Id, i.Z));
             var ok = await canvasElementRepository.ReorderElementsAsync(request.CampaignId, orders);
 
             await canvasHubService.ReOrderElements(
@@ -195,7 +199,11 @@ namespace RpgDex.Application.Services
             var (_,_, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var scales = request.Items.Select(i => new ElementScale(i.Id, i.Scale));
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, request.Items.Select(i => i.Id));
+            var allowed = request.Items.Where(i => !blocked.Contains(i.Id)).ToList();
+            if (allowed.Count == 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
+
+            var scales = allowed.Select(i => new ElementScale(i.Id, i.Scale));
             var ok = await canvasElementRepository.ScaleElement(request.CampaignId, scales);
 
             await canvasHubService.ScaleElements(
@@ -212,7 +220,11 @@ namespace RpgDex.Application.Services
             var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            var ok = await canvasElementRepository.SetActiveState(request.Ids, request.CampaignId,state);
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, request.Ids.Select(i => i));
+            var allowed = request.Ids.Where(i => !blocked.Contains(i)).ToList();
+            if (allowed.Count == 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
+
+            var ok = await canvasElementRepository.SetActiveState(allowed, request.CampaignId,state);
 
             await canvasHubService.SetActiveElements(
                 request.CampaignId.ToString(),
@@ -230,6 +242,8 @@ namespace RpgDex.Application.Services
             if (accessError is not null) return Result<CanvasElementResponse>.Failure(accessError);
             if (await CheckCanvasStorageAsync(gmId.ToString(), request.CampaignId)) return Result<CanvasElementResponse>.Failure(CanvaElementError.LimitReached);
 
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, [request.Id]);
+            if (blocked.Count>0) return Result<CanvasElementResponse>.Failure(CanvaElementError.ElementLocked);
 
             var element = await canvasElementRepository.GetByIdAsync(request.CampaignId, request.Id);
             if (element is null) return Result<CanvasElementResponse>.Failure(CanvaElementError.NotFound);
@@ -266,8 +280,11 @@ namespace RpgDex.Application.Services
             var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
 
-            //var colors = request.Items.Select(i => new ChangeColorCanvasElement(i.Id, i.Color));
-            var ok = await canvasElementRepository.ChangeColorAsync(request.Ids, request.Color);
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, request.Ids.Select(i => i));
+            var allowed = request.Ids.Where(i => !blocked.Contains(i)).ToList();
+            if (allowed.Count == 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
+
+            var ok = await canvasElementRepository.ChangeColorAsync(allowed, request.Color);
 
             await canvasHubService.ChangeColorElements(
                 request.CampaignId.ToString(),
@@ -285,6 +302,9 @@ namespace RpgDex.Application.Services
 
             var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
             if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            var blocked = await GetBlockedIdsAsync(request.CampaignId, [request.ElementId]);
+            if (blocked.Count > 0) return Result<bool>.Failure(CanvaElementError.ElementLocked);
 
             var ok = await canvasElementRepository.UpdateElementContentAsync(request.CampaignId,request.ElementId, request.Content);
 
@@ -343,6 +363,8 @@ namespace RpgDex.Application.Services
 
             return (guidUserId, campaign.GameMasterId, null);
         }
+        private Task<HashSet<Guid>> GetBlockedIdsAsync(Guid campaignId, IEnumerable<Guid> ids)
+            => canvasElementRepository.GetLockedIdsAsync(campaignId, ids);
 
     }
 }

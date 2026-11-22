@@ -178,6 +178,7 @@ namespace RpgDex.Domain.Common
         public static readonly Error TooManyPoints = new("CANVAS_ELEMENT_TOO_MANY_POINTS", "Drawing has too many points.");
         public static readonly Error TooManyItems = new("CANVAS_ELEMENT_TOO_MANY_ITEMS", "Invalid number of elements in the request.");
         public static readonly Error LimitReached = new("CANVAS_ELEMENT_LIMIT_REACHED", "Canvas element limit reached.");
+        public static readonly Error ElementLocked = new("CANVAS_ELEMENT_LOCKED", "Canvas element is locked.");
     }
     public static class PlanError
     {

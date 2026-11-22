@@ -128,6 +128,8 @@
     "CANVAS_ELEMENT_TOO_MANY_POINTS": "O desenho tem demasiados pontos.",
     "CANVAS_ELEMENT_TOO_MANY_ITEMS": "Número de elementos inválido no pedido.",
     "CANVAS_ELEMENT_LIMIT_REACHED": "O limite de elementos do canvas foi atingido.",
+    "CANVAS_ELEMENT_LOCKED": "Este elemento está travado e não pode ser alterado.",
+    
     "VALIDATION_DISPLAYNAME": "O nome do personagem é obrigatório.",
 
     "PLAN_NOT_FOUND": "Plano Não encontrado.",
