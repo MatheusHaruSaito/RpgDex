@@ -2,6 +2,7 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
+  HostListener,
   Input,
   NgZone,
   OnDestroy,
@@ -73,6 +74,20 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   isMinimized: boolean = false;
   unreadCount: number = 0;
 
+  /** Em telas pequenas o chat vira um botão circular flutuante que abre um painel inferior. */
+  isCompactLayout: boolean = false;
+  private compactMediaQuery?: MediaQueryList;
+  private readonly onCompactChange = (e: MediaQueryListEvent) => {
+    this.ngZone.run(() => {
+      this.isCompactLayout = e.matches;
+      if (e.matches) {
+        this.isMinimized = true;
+        this.showCommandsHint = false;
+      }
+      this.cdr.detectChanges();
+    });
+  };
+
   usersCache: { [id: string]: any } = {};
 
   private chatSubscription!: Subscription;
@@ -115,6 +130,14 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      // Manter o breakpoint igual ao do CSS (campaign-chat-component.css).
+      this.compactMediaQuery = window.matchMedia('(max-width: 768px)');
+      this.isCompactLayout = this.compactMediaQuery.matches;
+      this.isMinimized = this.isCompactLayout; // no celular começa como bolha
+      this.compactMediaQuery.addEventListener('change', this.onCompactChange);
+    }
+
     const cached = this.authService.currentUserValue;
     if (cached) {
       this.currentUsername = cached.userName ?? '';
@@ -551,9 +574,17 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
     if (!this.isMinimized) {
       this.unreadCount = 0;
       this.scrollToBottom();
-      this.focusInput();
+      // No celular, focar o campo abriria o teclado e cobriria as mensagens assim que o chat abre.
+      if (!this.isCompactLayout) this.focusInput();
     } else {
       this.showCommandsHint = false;
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.isCompactLayout && !this.isMinimized) {
+      this.toggleMinimize();
     }
   }
 
@@ -581,6 +612,7 @@ export class CampaignChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.compactMediaQuery?.removeEventListener('change', this.onCompactChange);
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
     }

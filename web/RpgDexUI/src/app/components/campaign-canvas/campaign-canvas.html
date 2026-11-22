@@ -83,17 +83,23 @@
     </button>
   </div>
 
-  <!-- TOOLBAR LATERAL DE FERRAMENTAS -->
-  <div class="canvas-ui canvas-toolbar">
+  <!-- TOOLBAR DE FERRAMENTAS (vertical no desktop, barra inferior no celular) -->
+  <div
+    class="canvas-ui canvas-toolbar"
+    *ngIf="isCampaignActive"
+    role="toolbar"
+    aria-label="Ferramentas do tabuleiro"
+  >
     <!-- Seletor de Cores (ngx-color Sketch) -->
-    <div class="toolbar-group color-picker-wrapper" *ngIf="isCampaignActive">
+    <div class="toolbar-group color-picker-wrapper">
       <button
         type="button"
         class="color-swatch"
         [class.is-open]="isColorPickerOpen"
         (click)="toggleColorPicker($event)"
-        [disabled]="!isCampaignActive"
         title="Seletor de Cores"
+        aria-label="Seletor de cores"
+        [attr.aria-expanded]="isColorPickerOpen"
       >
         <div class="color-preview-btn" [style.backgroundColor]="selectedColor"></div>
       </button>
@@ -114,78 +120,121 @@
     </div>
 
     <!-- Ferramentas Principais -->
-    <div class="toolbar-group" *ngIf="isCampaignActive">
+    <div class="toolbar-group">
       <button
+        type="button"
         class="tool-btn"
         [class.active]="activeTool === 'cursor'"
+        [attr.aria-pressed]="activeTool === 'cursor'"
         (click)="setTool('cursor')"
-        [disabled]="!isCampaignActive"
         title="Selecionar / Mover"
+        aria-label="Selecionar e mover"
       >
         <i class="fa fa-arrow-pointer"></i>
       </button>
       <button
+        type="button"
         class="tool-btn"
         [class.active]="activeTool === 'draw'"
+        [attr.aria-pressed]="activeTool === 'draw'"
         (click)="setTool('draw')"
-        [disabled]="!isCampaignActive"
         title="Pincel"
+        aria-label="Pincel"
       >
         <i class="fa fa-pen"></i>
       </button>
       <button
+        type="button"
         class="tool-btn"
         [class.active]="activeTool === 'eraser'"
+        [attr.aria-pressed]="activeTool === 'eraser'"
         (click)="setTool('eraser')"
-        [disabled]="!isCampaignActive"
         title="Borracha"
+        aria-label="Borracha"
       >
         <i class="fa fa-eraser"></i>
       </button>
     </div>
 
-    <!-- Adicionar Elementos -->
-    <div class="toolbar-group" *ngIf="isCampaignActive">
+    <!-- Adicionar Elementos: itens soltos no desktop, menu "+" em telas pequenas -->
+    <div class="toolbar-group add-menu" [class.is-open]="isAddMenuOpen">
       <button
-        class="tool-btn"
-        (click)="openTokenModal()"
-        [disabled]="!isCampaignActive"
-        title="Gerenciar Tokens"
+        type="button"
+        class="tool-btn add-menu-toggle"
+        [class.active]="isAddMenuOpen"
+        (click)="toggleAddMenu($event)"
+        title="Adicionar elementos"
+        aria-label="Adicionar elementos"
+        [attr.aria-expanded]="isAddMenuOpen"
       >
-        <i class="fa fa-user-astronaut"></i>
-      </button>
-      <button
-        class="tool-btn"
-        (click)="addText()"
-        [disabled]="!isCampaignActive"
-        title="Adicionar Anotação"
-      >
-        <i class="fa fa-font"></i>
-      </button>
-      <button
-        class="tool-btn"
-        (click)="triggerImageUpload()"
-        [disabled]="!isCampaignActive"
-        title="Adicionar Imagem"
-      >
-        <i class="fa fa-image"></i>
-      </button>
-      <input type="file" #fileInput hidden accept="image/*" (change)="onImageSelected($event)" />
-    </div>
-
-    <!-- Zoom (Sempre habilitado para visualização) -->
-    <div class="toolbar-group">
-      <button class="tool-btn" (click)="zoomIn()" title="Aumentar Zoom">
         <i class="fa fa-plus"></i>
       </button>
-      <span class="zoom-text">{{ scale * 100 | number: '1.0-0' }}%</span>
-      <button class="tool-btn" (click)="zoomOut()" title="Diminuir Zoom">
-        <i class="fa fa-minus"></i>
-      </button>
-      <button class="tool-btn" (click)="centerCamera()" title="Resetar Câmera">
-        <i class="fa fa-expand"></i>
-      </button>
+
+      <div class="add-menu-items">
+        <button
+          type="button"
+          class="tool-btn"
+          (click)="openTokenModal(); closeAddMenu()"
+          title="Gerenciar Tokens"
+          aria-label="Gerenciar tokens"
+        >
+          <i class="fa fa-user-astronaut"></i>
+          <span class="add-menu-label">Token</span>
+        </button>
+        <button
+          type="button"
+          class="tool-btn"
+          (click)="addText(); closeAddMenu()"
+          title="Adicionar Anotação"
+          aria-label="Adicionar anotação"
+        >
+          <i class="fa fa-font"></i>
+          <span class="add-menu-label">Anotação</span>
+        </button>
+        <button
+          type="button"
+          class="tool-btn"
+          (click)="triggerImageUpload(); closeAddMenu()"
+          title="Adicionar Imagem"
+          aria-label="Adicionar imagem"
+        >
+          <i class="fa fa-image"></i>
+          <span class="add-menu-label">Imagem</span>
+        </button>
+      </div>
+      <input type="file" #fileInput hidden accept="image/*" (change)="onImageSelected($event)" />
     </div>
+  </div>
+
+  <!-- ZOOM (sempre visível; no celular vira só a pílula de % — use pinça para zoom) -->
+  <div class="canvas-ui canvas-panel canvas-zoom">
+    <button
+      type="button"
+      class="tool-btn zoom-step"
+      (click)="zoomOut()"
+      title="Diminuir Zoom"
+      aria-label="Diminuir zoom"
+    >
+      <i class="fa fa-magnifying-glass-minus"></i>
+    </button>
+    <button
+      type="button"
+      class="tool-btn zoom-text"
+      (click)="centerCamera()"
+      title="Resetar câmera (100%)"
+      aria-label="Resetar câmera"
+    >
+      {{ scale * 100 | number: '1.0-0' }}%
+    </button>
+    <button
+      type="button"
+      class="tool-btn zoom-step"
+      (click)="zoomIn()"
+      title="Aumentar Zoom"
+      aria-label="Aumentar zoom"
+    >
+      <i class="fa fa-magnifying-glass-plus"></i>
+    </button>
   </div>
 
   <!-- MENU DE CONTEXTO DO ELEMENTO SELECIONADO -->
@@ -216,12 +265,10 @@
       <button
         class="tool-btn tool-btn--text"
         (click)="toggleLockSelected()"
-        [title]="selectedElements[0]?.isLocked ? 'Destravar' : 'Travar'"
+        [title]="areAllSelectedLocked() ? 'Destravar' : 'Travar'"
       >
-        <i class="fa" [ngClass]="selectedElements[0]?.isLocked ? 'fa-lock-open' : 'fa-lock'"></i>
-        <span class="hide-mobile">{{
-          selectedElements[0]?.isLocked ? 'Destravar' : 'Travar'
-        }}</span>
+        <i class="fa" [ngClass]="areAllSelectedLocked() ? 'fa-lock-open' : 'fa-lock'"></i>
+        <span class="hide-mobile">{{ areAllSelectedLocked() ? 'Destravar' : 'Travar' }}</span>
       </button>
 
       <ng-container *ngIf="selectedElements.length === 1 && !selectedElements[0].isLocked">
@@ -279,7 +326,7 @@
       <button
         class="tool-btn danger"
         (click)="deleteSelected()"
-        [disabled]="selectedElements[0]?.isLocked"
+        [disabled]="areAllSelectedLocked()"
         title="Apagar elemento"
       >
         <i class="fa fa-trash"></i>
@@ -649,4 +696,8 @@
   </div>
 </div>
 
-<app-campaign-chat-component [campaignId]="campaignId"></app-campaign-chat-component>
+<!-- Esconde o chat flutuante enquanto um modal do tabuleiro está aberto (o botão cobria as ações do modal) -->
+<app-campaign-chat-component
+  [campaignId]="campaignId"
+  [class.chat-hidden]="isAnyModalOpen"
+></app-campaign-chat-component>

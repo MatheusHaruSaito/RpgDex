@@ -1,16 +1,36 @@
+<!-- Fundo escurecido do painel do chat no celular: tocar fora fecha -->
+<div
+  class="chat-backdrop"
+  *ngIf="isCompactLayout && !isMinimized"
+  (click)="toggleMinimize()"
+></div>
+
 <div class="chat-container" [class.is-minimized]="isMinimized">
-  <!-- HEADER DO CHAT -->
-  <div class="chat-header" (click)="toggleMinimize()">
+  <!-- HEADER DO CHAT (no celular minimizado, vira o botão circular) -->
+  <div
+    class="chat-header"
+    role="button"
+    tabindex="0"
+    [attr.aria-expanded]="!isMinimized"
+    [attr.aria-label]="
+      isMinimized
+        ? 'Abrir bate-papo da mesa' + (unreadCount > 0 ? ' (' + unreadCount + ' novas)' : '')
+        : 'Minimizar bate-papo da mesa'
+    "
+    (click)="toggleMinimize()"
+    (keydown.enter)="toggleMinimize()"
+    (keydown.space)="$event.preventDefault(); toggleMinimize()"
+  >
     <div class="chat-title">
       <i class="fa fa-comments"></i>
-      <span>Bate-papo da Mesa</span>
+      <span class="chat-title-text">Bate-papo da Mesa</span>
 
       <span
         class="chat-unread-badge"
         *ngIf="isMinimized && unreadCount > 0"
         title="Novas mensagens"
       >
-        {{ unreadCount }}
+        {{ unreadCount > 99 ? '99+' : unreadCount }}
       </span>
     </div>
 

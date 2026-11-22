@@ -1,9 +1,22 @@
+/* Variáveis lidas pelo <app-campaign-chat-component> (filho deste host) para alinhar
+   o botão flutuante do chat com a barra de ferramentas inferior. */
+:host {
+  --chat-fab-size: 52px;
+  --chat-fab-right: 16px;
+  --chat-fab-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Enquanto um modal do tabuleiro está aberto, o chat flutuante some */
+app-campaign-chat-component.chat-hidden {
+  display: none;
+}
+
 .canvas-fullscreen-wrapper {
-  --canvas-top: 76px;                
-  --ui-gap: 16px;               
-  --ui-btn: 40px;                    
-  --ui-pad: 6px;                    
-  --ui-radius: 14px;                 
+  --canvas-top: 76px;
+  --ui-gap: 16px;
+  --ui-btn: 40px;
+  --ui-pad: 6px;
+  --ui-radius: 14px;
   --panel-h: calc(var(--ui-btn) + var(--ui-pad) * 2 + 2px);
 
   position: fixed;
@@ -13,6 +26,7 @@
   z-index: 900;
   user-select: none;
   -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .canvas-fullscreen-wrapper input,
@@ -63,15 +77,17 @@
   font-size: 1.05rem;
   line-height: 1;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 .tool-btn i { line-height: 1; }
 .tool-btn:hover:not(:disabled) {
   background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15));
-  color: var(--rpg-purple, #9E74D0);
+  color: var(--rpg-purple-text, #9E74D0);
 }
 .tool-btn:active:not(:disabled) { transform: scale(0.96); }
-.tool-btn.active {
+.tool-btn.active,
+.tool-btn.active:hover:not(:disabled) {
   background: var(--rpg-purple, #9E74D0);
   color: #fff;
   box-shadow: 0 0 10px rgba(158, 116, 208, 0.5);
@@ -79,7 +95,7 @@
 .tool-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .tool-btn.danger:hover:not(:disabled) {
   background: var(--rpg-error-bg, rgba(231, 76, 60, 0.15));
-  color: var(--rpg-error, #e74c3c);
+  color: var(--rpg-error-text, #e74c3c);
 }
 
 .tool-btn--text {
@@ -93,7 +109,7 @@
 
 /* ── BARRA SUPERIOR ── */
 .canvas-topbar {
-  top: 16px;                      
+  top: var(--ui-gap);
   left: var(--ui-gap);
   right: var(--ui-gap);
   display: grid;
@@ -112,6 +128,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .storage-indicator {
@@ -125,6 +142,7 @@
   font-weight: 700;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  color: var(--rpg-text-body, #b0b0cc);
 }
 
 .storage-indicator i {
@@ -133,22 +151,16 @@
 }
 
 .storage-indicator.warning {
-  border-color: rgba(245, 158, 11, 0.65);
-  color: #d97706;
+  border-color: var(--rpg-warning-border, rgba(245, 158, 11, 0.65));
+  color: var(--rpg-warning, #d97706);
 }
-
-.storage-indicator.warning i {
-  color: #f59e0b;
-}
+.storage-indicator.warning i { color: var(--rpg-warning, #f59e0b); }
 
 .storage-indicator.limit-reached {
-  border-color: rgba(231, 76, 60, 0.65);
-  color: var(--rpg-error, #e74c3c);
+  border-color: var(--rpg-error-border, rgba(231, 76, 60, 0.65));
+  color: var(--rpg-error-text, #e74c3c);
 }
-
-.storage-indicator.limit-reached i {
-  color: var(--rpg-error, #e74c3c);
-}
+.storage-indicator.limit-reached i { color: var(--rpg-error-text, #e74c3c); }
 
 .canvas-brand {
   height: var(--panel-h);
@@ -157,13 +169,36 @@
   font-family: 'Exo 2', sans-serif;
   font-weight: 800;
   font-size: 0.9rem;
-  color: var(--rpg-purple, #9E74D0);
+  color: var(--rpg-purple-text, #9E74D0);
   white-space: nowrap;
 }
 
+/* ── BARRA DE FERRAMENTAS ── */
+.canvas-toolbar {
+  top: calc(var(--ui-gap) * 2 + var(--panel-h));
+  left: var(--ui-gap);
+  /* reserva espaço para o painel de zoom no canto inferior esquerdo */
+  max-height: calc(100% - var(--ui-gap) * 4 - var(--panel-h) * 2);
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: visible;
+  /* acima do menu de contexto (1015) para que os popovers de cor e "+" fiquem por cima dele */
+  z-index: 1016;
+}
+
+/* ── ZOOM ── */
+.canvas-zoom {
+  left: var(--ui-gap);
+  bottom: calc(var(--ui-gap) + env(safe-area-inset-bottom, 0px));
+  gap: 2px;
+  z-index: 1010;
+}
+
 .zoom-text {
-  min-width: 46px;
-  text-align: center;
+  min-width: 56px;
+  padding: 0 6px;
   font-family: 'Exo 2', sans-serif;
   font-size: 0.8rem;
   font-weight: 700;
@@ -171,28 +206,8 @@
   color: var(--rpg-text-strong, #ffffff);
 }
 
-/* ── BARRA LATERAL DE FERRAMENTAS ── */
-.canvas-toolbar {
-  top: calc(var(--ui-gap) * 2 + var(--panel-h));
-  left: var(--ui-gap);
-  max-height: calc(100% - var(--ui-gap) * 3 - var(--panel-h));
-  padding: 2px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: visible;
-  z-index: 1010;
-}
-.canvas-toolbar::-webkit-scrollbar { width: 4px; }
-.canvas-toolbar::-webkit-scrollbar-thumb {
-  background: var(--rpg-purple-soft, #7f5db0);
-  border-radius: 4px;
-}
-
 /* ── SELETOR DE CORES (NGX-COLOR SKETCH) ── */
-.color-picker-wrapper {
-  position: relative;
-}
+.color-picker-wrapper { position: relative; }
 
 .color-swatch {
   position: relative;
@@ -205,6 +220,7 @@
   background: transparent;
   border-radius: 10px;
   cursor: pointer;
+  touch-action: manipulation;
   transition: background 0.2s;
 }
 .color-swatch:hover,
@@ -228,23 +244,15 @@
   top: 0;
   left: calc(100% + 12px);
   z-index: 1200;
-  animation: colorPopoverIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: popoverIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-@keyframes colorPopoverIn {
-  from {
-    opacity: 0;
-    transform: translateX(-8px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
+@keyframes popoverIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-.ngx-token-picker-box {
-  display: inline-block;
-}
+.ngx-token-picker-box { display: inline-block; max-width: 100%; }
 
 /* Estilização Dark RPGDex para o ngx-color <color-sketch> */
 ::ng-deep .sketch-picker {
@@ -286,24 +294,34 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
 }
 
-/* ── MENU DE CONTEXTO ── */
+/* ── MENU "ADICIONAR" ──
+   Desktop: os três botões aparecem direto na barra (o wrapper usa display: contents).
+   Telas pequenas: viram um popover aberto pelo botão "+". */
+.add-menu { position: relative; }
+.add-menu-toggle { display: none; }
+.add-menu-items { display: contents; }
+.add-menu-label { display: none; }
+
+/* ── MENU DE CONTEXTO (no topo, como a barra contextual do Canva) ── */
 .context-menu {
-  bottom: var(--ui-gap);
-  left: 50%;
-  transform: translateX(-50%);
+  top: calc(var(--ui-gap) * 2 + var(--panel-h));
+  /* centralizado sem transform, deixando livre a faixa da toolbar vertical */
+  left: calc(var(--ui-gap) * 2 + var(--panel-h));
+  right: calc(var(--ui-gap) * 2 + var(--panel-h));
+  margin-inline: auto;
   width: max-content;
-  max-width: calc(100% - var(--ui-gap) * 2);
+  max-width: calc(100% - (var(--ui-gap) * 2 + var(--panel-h)) * 2);
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px 14px;
   padding: var(--ui-pad) 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.2s ease-out;
+  animation: contextIn 0.2s ease-out;
   z-index: 1015;
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translate(-50%, 10px); }
-  to   { opacity: 1; transform: translate(-50%, 0); }
+@keyframes contextIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .context-info {
@@ -312,7 +330,7 @@
   color: var(--rpg-text-muted, #a0a0cc);
   white-space: nowrap;
 }
-.context-info strong { color: var(--rpg-purple, #9E74D0); font-family: 'Exo 2', sans-serif; }
+.context-info strong { color: var(--rpg-purple-text, #9E74D0); font-family: 'Exo 2', sans-serif; }
 
 .context-actions {
   display: flex;
@@ -377,7 +395,7 @@
   display: flex; align-items: center; justify-content: center;
   transition: background 0.2s, color 0.2s;
 }
-.token-close-btn:hover { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15)); color: var(--rpg-purple, #9E74D0); }
+.token-close-btn:hover { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.15)); color: var(--rpg-purple-text, #9E74D0); }
 
 .token-modal-tabs {
   flex-shrink: 0;
@@ -391,10 +409,10 @@
   color: var(--rpg-text-muted, #a0a0cc); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: all 0.2s; border-bottom: 2px solid transparent;
 }
-.tab-btn:hover { color: var(--rpg-purple, #9E74D0); }
-.tab-btn.active { color: var(--rpg-purple, #9E74D0); border-bottom-color: var(--rpg-purple, #9E74D0); background: var(--rpg-surface, #252342); }
+.tab-btn:hover { color: var(--rpg-purple-text, #9E74D0); }
+.tab-btn.active { color: var(--rpg-purple-text, #9E74D0); border-bottom-color: var(--rpg-purple, #9E74D0); background: var(--rpg-surface, #252342); }
 
-.token-modal-body { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; }
+.token-modal-body { padding: 20px; overflow-y: auto; flex: 1; min-height: 0; overscroll-behavior: contain; }
 .character-tokens-grid { display: flex; flex-direction: column; gap: 10px; }
 
 .character-token-card {
@@ -476,7 +494,7 @@
   background: transparent; border: none; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--rpg-text-muted, #a0a0cc);
   padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s, color 0.2s;
 }
-.shape-btn.active { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.2)); color: var(--rpg-purple, #9E74D0); }
+.shape-btn.active { background: var(--rpg-purple-tint, rgba(158, 116, 208, 0.2)); color: var(--rpg-purple-text, #9E74D0); }
 
 .cropper-body {
   padding: 20px; display: flex; justify-content: center; align-items: center;
@@ -499,8 +517,10 @@ image-cropper { max-height: 400px; width: 100%; }
   background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 40px 40px; pointer-events: none;
 }
-.board-element { position: absolute; cursor: grab; }
-.board-element:active { cursor: grabbing; z-index: 500 !important; }
+.board-element { position: absolute; cursor: grab; touch-action: none; }
+/* Antes havia "z-index: 500 !important" aqui: um elemento com z maior que 500
+   ia para TRÁS dos outros enquanto era arrastado. */
+.board-element:active { cursor: grabbing; }
 
 .is-selected {
   outline: 3px dashed var(--rpg-purple, #b085f5);
@@ -523,7 +543,9 @@ image-cropper { max-height: 400px; width: 100%; }
 
 .type-drawing { top: 0; left: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
 .type-drawing path { pointer-events: stroke; cursor: pointer; transition: filter 0.2s; }
-.type-drawing path:hover { filter: drop-shadow(0 0 4px var(--rpg-purple, #9E74D0)); }
+@media (hover: hover) {
+  .type-drawing path:hover { filter: drop-shadow(0 0 4px var(--rpg-purple, #9E74D0)); }
+}
 
 /* ── TOKEN ── */
 .type-token {
@@ -600,7 +622,7 @@ image-cropper { max-height: 400px; width: 100%; }
   font-family: 'Exo 2', sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
-  color: var(--rpg-error, #e74c3c);
+  color: var(--rpg-error-text, #e74c3c);
   border-color: var(--rpg-error-border, rgba(231, 76, 60, 0.4));
   background: var(--rpg-error-bg, rgba(231, 76, 60, 0.15));
   white-space: nowrap;
@@ -614,8 +636,10 @@ image-cropper { max-height: 400px; width: 100%; }
 /* ── TOAST DE ERRO FLUTUANTE ── */
 .canvas-error-toast {
   top: calc(var(--ui-gap) * 2 + var(--panel-h));
-  left: 50%;
-  transform: translateX(-50%);
+  left: var(--ui-gap);
+  right: var(--ui-gap);
+  margin-inline: auto;
+  width: max-content;
   max-width: min(520px, calc(100% - var(--ui-gap) * 2));
   display: flex;
   align-items: center;
@@ -630,11 +654,11 @@ image-cropper { max-height: 400px; width: 100%; }
   font-size: 0.9rem;
   font-weight: 600;
   z-index: 2500;
-  animation: toastDropIn 0.2s ease-out;
+  animation: contextIn 0.2s ease-out;
 }
 
 .canvas-error-toast > i {
-  color: var(--rpg-error, #e74c3c);
+  color: var(--rpg-error-text, #e74c3c);
   font-size: 1.05rem;
   flex-shrink: 0;
 }
@@ -664,67 +688,199 @@ image-cropper { max-height: 400px; width: 100%; }
 
 .canvas-error-close:hover {
   background: rgba(231, 76, 60, 0.2);
-  color: var(--rpg-error, #e74c3c);
+  color: var(--rpg-error-text, #e74c3c);
 }
 
-@keyframes toastDropIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVO
+   • ≤ 640px de altura OU ≤ 600px de largura → barra "compacta":
+     um único painel, e Token/Anotação/Imagem vão para o menu "+".
+   • ≤ 560px de altura OU ≤ 600px de largura → zoom vira só a pílula de %
+     (no toque o zoom é por pinça).
+   • ≤ 600px de largura → barra inferior (estilo Miro/Canva no celular).
+   ══════════════════════════════════════════════════════════════════ */
 
-/* ── RESPONSIVO ── */
 @media (max-height: 560px) and (min-width: 601px) {
-  .canvas-fullscreen-wrapper { --ui-btn: 36px; --ui-gap: 12px; }
+  .canvas-fullscreen-wrapper { --ui-btn: 36px; --ui-gap: 12px; --ui-pad: 5px; }
 }
 
-@media (max-width: 760px) {
-  .hide-tablet { display: none; }
+/* Barra compacta (painel único + menu "+") */
+@media (max-width: 600px), (max-height: 640px) {
+  .canvas-toolbar {
+    gap: 4px;
+    padding: var(--ui-pad);
+    background: var(--rpg-surface, #252342);
+    border: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.12));
+    border-radius: var(--ui-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .canvas-toolbar .toolbar-group {
+    padding: 0;
+    gap: 4px;
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .canvas-toolbar .toolbar-group + .toolbar-group {
+    padding-top: 4px;
+    border-top: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.12));
+  }
+
+  .add-menu-toggle { display: inline-flex; }
+  .add-menu-toggle i { transition: transform 0.2s ease; }
+  .add-menu.is-open .add-menu-toggle i { transform: rotate(45deg); }
+
+  .add-menu-items {
+    display: none;
+    position: absolute;
+    left: calc(100% + 12px);
+    bottom: 0;
+    min-width: 170px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: var(--ui-pad);
+    background: var(--rpg-surface, #252342);
+    border: 1px solid var(--rpg-border-light, rgba(255, 255, 255, 0.16));
+    border-radius: var(--ui-radius);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+    z-index: 1200;
+  }
+  .add-menu.is-open .add-menu-items {
+    display: flex;
+    animation: popoverIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .add-menu-items .tool-btn {
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 12px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+  .add-menu-items .tool-btn i { width: 18px; text-align: center; }
+  .add-menu-label { display: inline; }
+}
+
+/* Zoom: só a pílula de porcentagem, no canto superior direito */
+@media (max-width: 600px), (max-height: 560px) {
+  .canvas-zoom {
+    top: calc(var(--ui-gap) * 2 + var(--panel-h));
+    right: var(--ui-gap);
+    left: auto;
+    bottom: auto;
+    padding: 4px;
+  }
+  .canvas-zoom .zoom-step { display: none; }
+  .zoom-text { height: calc(var(--ui-btn) - 8px); min-width: 52px; }
+
+  /* libera a faixa da pílula de zoom à direita */
+  .context-menu {
+    left: calc(var(--ui-gap) * 2 + 64px);
+    right: calc(var(--ui-gap) * 2 + 64px);
+    max-width: calc(100% - (var(--ui-gap) * 2 + 64px) * 2);
+  }
+
+  .canvas-toolbar { max-height: calc(100% - var(--ui-gap) * 3 - var(--panel-h)); }
+}
+
+@media (max-width: 768px) {
   .canvas-brand { padding: 0 14px; }
 }
 
+/* Celular */
 @media (max-width: 600px) {
+  :host {
+    --chat-fab-size: 48px;
+    --chat-fab-right: 10px;
+    --chat-fab-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
   .canvas-fullscreen-wrapper { --ui-gap: 10px; --ui-btn: 36px; --ui-pad: 5px; }
   .hide-mobile { display: none !important; }
 
-  .canvas-topbar { grid-template-columns: 1fr 1fr; }
+  .canvas-topbar { grid-template-columns: auto 1fr; }
   .topbar-center { display: none; }
+  .canvas-brand { display: none; }
+  .storage-indicator { padding: 0 10px; gap: 6px; font-size: 0.76rem; }
 
+  /* Barra inferior centralizada no espaço à esquerda do botão do chat */
   .canvas-toolbar {
     top: auto;
-    left: 50%;
+    left: var(--ui-gap);
+    right: calc(var(--ui-gap) * 2 + var(--chat-fab-size));
     bottom: calc(var(--ui-gap) + env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
+    margin-inline: auto;
+    width: max-content;
+    max-width: calc(100% - var(--ui-gap) * 3 - var(--chat-fab-size));
     max-height: none;
-    max-width: calc(100% - var(--ui-gap) * 2);
-    padding: 2px;
     flex-direction: row;
     align-items: center;
-    overflow: visible;
   }
-  .canvas-toolbar::-webkit-scrollbar { display: none; }
-  .toolbar-group { flex-direction: row; flex-shrink: 0; }
+  .canvas-toolbar .toolbar-group { flex-direction: row; flex-shrink: 0; }
+  .canvas-toolbar .toolbar-group + .toolbar-group {
+    padding-top: 0;
+    border-top: none;
+    padding-left: 4px;
+    border-left: 1px solid var(--rpg-border, rgba(255, 255, 255, 0.12));
+  }
 
+  /* Popovers abrem para cima */
   .ngx-color-popover {
     top: auto;
-    bottom: calc(100% + 12px);
+    bottom: calc(100% + 14px);
     left: 0;
   }
-
-  .context-menu {
-    bottom: calc(var(--ui-gap) * 2 + var(--panel-h) + env(safe-area-inset-bottom, 0px));
-    padding: var(--ui-pad) 8px;
+  .add-menu-items {
+    left: auto;
+    right: 0;
+    bottom: calc(100% + 14px);
   }
+
+  /* Menu de contexto: logo acima da barra, rolagem horizontal se não couber */
+  .context-menu {
+    top: auto;
+    bottom: calc(var(--ui-gap) * 2 + var(--panel-h) + env(safe-area-inset-bottom, 0px));
+    left: var(--ui-gap);
+    right: var(--ui-gap);
+    max-width: calc(100% - var(--ui-gap) * 2);
+    padding: var(--ui-pad) 8px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    animation-name: contextInUp;
+  }
+  .context-menu::-webkit-scrollbar { display: none; }
+  .context-actions { flex-wrap: nowrap; gap: 4px; }
   .context-info { display: none; }
   .context-range input { width: 72px; }
 
-  .token-modal-backdrop, .cropper-backdrop { padding: 12px; }
-  .token-modal-card, .cropper-card { border-radius: 16px; max-height: calc(100dvh - 24px); }
+  @keyframes contextInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Toast acima do menu de contexto, sem disputar o topo com a pílula de zoom */
+  .canvas-error-toast {
+    top: auto;
+    bottom: calc(var(--ui-gap) * 3 + var(--panel-h) * 2 + env(safe-area-inset-bottom, 0px));
+    font-size: 0.85rem;
+  }
+
+  /* Modais viram "bottom sheet" */
+  .token-modal-backdrop, .cropper-backdrop { padding: 0; align-items: flex-end; }
+  .token-modal-card, .cropper-card {
+    max-width: none;
+    border-radius: 18px 18px 0 0;
+    max-height: calc(100dvh - 24px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
   .token-modal-header { padding: 14px 16px; }
   .token-modal-body { padding: 16px; }
   .tab-btn { padding: 10px 6px; font-size: 0.8rem; }
@@ -734,8 +890,13 @@ image-cropper { max-height: 400px; width: 100%; }
   .cropper-body { padding: 12px; }
   .cropper-footer { padding: 12px 16px; }
   .cropper-footer .btn, .form-actions .btn { flex: 1; }
+  image-cropper { max-height: 50dvh; }
+
+  /* 16px evita o zoom automático do iOS ao focar o campo */
+  .rpg-input { font-size: 16px; }
 }
 
-@media (max-width: 380px) {
-  .zoom-text { display: none; }
+@media (max-width: 360px) {
+  .canvas-fullscreen-wrapper { --ui-btn: 34px; }
+  .storage-indicator i { display: none; }
 }

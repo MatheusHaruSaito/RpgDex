@@ -30,8 +30,8 @@ export class CanvasElementService {
   private readonly reordered$ = new Subject<{ id: string; z: number }[]>();
   private readonly activeChanged$ = new Subject<{ ids: string[]; state: boolean }>();
   private readonly colorChanged$ = new Subject<{ ids: string[]; color: string }>();
-  private readonly contentChanged$ = new Subject<{ id: string; content: string}>();
-  private readonly isLockedChanged$ = new Subject<{ ids: string[]; state: boolean}>();
+  private readonly contentChanged$ = new Subject<{ id: string; content: string }>();
+  private readonly isLockedChanged$ = new Subject<{ ids: string[]; state: boolean }>();
   constructor(private http: HttpClient) {}
 
   public async startConnection(campaignId: string, getToken: () => string): Promise<void> {
@@ -60,9 +60,12 @@ export class CanvasElementService {
     this.hubConnection.on('ElementsReOrdered', (elements: { id: string; z: number }[]) =>
       this.reordered$.next(elements),
     );
-    this.hubConnection.on('ElementsActiveChanged', (elements: { ids: string[]; state: boolean }) => {
-      this.activeChanged$.next(elements);
-    });
+    this.hubConnection.on(
+      'ElementsActiveChanged',
+      (elements: { ids: string[]; state: boolean }) => {
+        this.activeChanged$.next(elements);
+      },
+    );
     this.hubConnection.on('ElementColorChanged', (elements: { ids: string[]; color: string }) => {
       this.colorChanged$.next(elements);
     });
@@ -114,13 +117,13 @@ export class CanvasElementService {
   public onElementsReOrdered(): Observable<{ id: string; z: number }[]> {
     return this.reordered$.asObservable();
   }
-  public onElementsColorChanged(): Observable<{ ids: string[]; color: string}> {
+  public onElementsColorChanged(): Observable<{ ids: string[]; color: string }> {
     return this.colorChanged$.asObservable();
   }
-  public onElementContentChanged(): Observable<{ id: string; content: string}> {
+  public onElementContentChanged(): Observable<{ id: string; content: string }> {
     return this.contentChanged$.asObservable();
   }
-    public onElementIsLockedStateChanged(): Observable<{ ids: string[]; state: boolean}> {
+  public onElementIsLockedStateChanged(): Observable<{ ids: string[]; state: boolean }> {
     return this.isLockedChanged$.asObservable();
   }
   public CreateElement(
@@ -219,13 +222,15 @@ export class CanvasElementService {
       headers: this.connectionHeaders(),
     });
   }
-  public UpdateElementContent(request: UpdateElementContentRequest): Observable<ApiResponse<boolean>> {
-    return this.http.patch<ApiResponse<boolean>>(`${this.env}/lockElement`, request, {
+  public UpdateElementContent(
+    request: UpdateElementContentRequest,
+  ): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/UpdateElementContent`, request, {
       headers: this.connectionHeaders(),
     });
   }
   public LockElement(request: SetElementIsLockedStateRequest): Observable<ApiResponse<boolean>> {
-    return this.http.patch<ApiResponse<boolean>>(`${this.env}/UpdateElementContent`, request, {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/lockElement`, request, {
       headers: this.connectionHeaders(),
     });
   }

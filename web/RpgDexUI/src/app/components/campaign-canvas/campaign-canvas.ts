@@ -1,4 +1,5 @@
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
@@ -43,6 +44,9 @@ interface EraserTrailPoint {
   id: number;
 }
 
+/** id do elemento -> estado antes da ação (null = elemento criado pela ação). */
+type HistoryEntry = Record<string, ExtendedCanvasElement | null>;
+
 @Component({
   selector: 'app-campaign-canvas',
   standalone: true,
@@ -57,7 +61,7 @@ interface EraserTrailPoint {
   templateUrl: './campaign-canvas.html',
   styleUrls: ['./campaign-canvas.css'],
 })
-export class CampaignCanvasComponent implements OnInit, OnDestroy {
+export class CampaignCanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvasContainer') canvasContainer!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -104,12 +108,26 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   elements: ExtendedCanvasElement[] = [];
 
-  history: string[] = [];
-  redoHistory: string[] = [];
-  pointerDownState: string = '';
+  history: HistoryEntry[] = [];
+  redoHistory: HistoryEntry[] = [];
+  private readonly maxHistory = 50;
+
+  // Estado da interação atual com ponteiro
+  private activePointers = new Map<number, { x: number; y: number }>();
+  private primaryPointerId: number | null = null;
+  private gesture: {
+    startDist: number;
+    startScale: number;
+    lastMidX: number;
+    lastMidY: number;
+  } | null = null;
+  private dragBefore: HistoryEntry | null = null;
+  private eraserBatch: HistoryEntry | null = null;
+  private pendingSingleSelect: ExtendedCanvasElement | null = null;
 
   selectedColor: string = '#9E74D0';
   isColorPickerOpen: boolean = false;
+  isAddMenuOpen: boolean = false;
 
   readonly presetColors: string[] = [
     '#9E74D0',
@@ -180,7 +198,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.canvasElementService.onElementsMoved().subscribe((elements) => {
       elements.forEach((moved) => {
         const el = this.elements.find((e) => e.id === moved.id);
-        if (el) {
+        // Não deixa um eco atrasado do servidor "puxar" o elemento que está sendo arrastado agora.
+        if (el && !(this.hasDragged && this.selectedElements.includes(el))) {
           el.x = moved.x;
           el.y = moved.y;
         }
@@ -204,18 +223,32 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         }
       });
     });
-    this.canvasElementService.onElementsColorChanged().subscribe(({ids,color}) => {
+
+    this.canvasElementService.onElementsColorChanged().subscribe(({ ids, color }) => {
       const idSet = new Set(ids);
-      this.elements.forEach((el)=>{
-        if(idSet.has(el.id)) el.color = color;
-      })
+      this.elements.forEach((el) => {
+        if (idSet.has(el.id)) {
+          el.color = color;
+        }
+      });
       this.refreshStorageUsage();
     });
 
-    this.canvasElementService.onElementContentChanged().subscribe(({id,content}) => {
-        const element = this.elements.find((c) => c.id === id);
-        if (element) element.content = content;
+    this.canvasElementService.onElementContentChanged().subscribe(({ id, content }) => {
+      const element = this.elements.find((c) => c.id === id);
+      if (element) {
+        element.content = content;
+      }
       this.refreshStorageUsage();
+    });
+
+    this.canvasElementService.onElementIsLockedStateChanged().subscribe(({ ids, state }) => {
+      const idSet = new Set(ids);
+      this.elements.forEach((el) => {
+        if (idSet.has(el.id)) {
+          el.isLocked = state;
+        }
+      });
     });
 
     this.canvasElementService.onCreateElement().subscribe((newEl) => {
@@ -226,6 +259,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           scale: Number(newEl.scale) || 1,
           imageUrl: newEl.imageUrl || (newEl as any).image || undefined,
           isRound: newEl.content === 'round' || extendedEl.isRound === true,
+          isLocked: Boolean(newEl.isLocked),
         };
         this.elements.push(formatted);
         this.refreshStorageUsage();
@@ -239,16 +273,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       }
       this.refreshStorageUsage();
     });
-    
-    this.canvasElementService.onElementIsLockedStateChanged().subscribe(({ ids, state }) => {
-      const idSet = new Set(ids);
-      this.elements.forEach((el) => {
-        if (idSet.has(el.id)) el.isLocked = state;
-      });
+  }
 
-      if (state) {
-        this.selectedElements = this.selectedElements.filter((e) => !idSet.has(e.id));
-      }
+  ngAfterViewInit(): void {
+    this.canvasContainer?.nativeElement?.addEventListener('wheel', this.onWheel, {
+      passive: false,
     });
   }
 
@@ -256,16 +285,19 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
     }
+    this.canvasContainer?.nativeElement?.removeEventListener('wheel', this.onWheel);
     this.canvasElementService.stopConnection();
   }
 
-  // ── CONTROLES DO NGX-COLOR ──
+  // ── MENUS FLUTUANTES (COR / ADICIONAR) ──
   @HostListener('document:pointerdown', ['$event'])
   onDocumentPointerDown(event: PointerEvent): void {
-    if (!this.isColorPickerOpen) return;
     const target = event.target as HTMLElement;
-    if (!target.closest('.color-picker-wrapper')) {
+    if (this.isColorPickerOpen && !target.closest('.color-picker-wrapper')) {
       this.isColorPickerOpen = false;
+    }
+    if (this.isAddMenuOpen && !target.closest('.add-menu')) {
+      this.isAddMenuOpen = false;
     }
   }
 
@@ -273,6 +305,35 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     if (!this.isCampaignActive) return;
     this.isColorPickerOpen = !this.isColorPickerOpen;
+    this.isAddMenuOpen = false;
+  }
+
+  toggleAddMenu(event: Event): void {
+    event.stopPropagation();
+    if (!this.isCampaignActive) return;
+    this.isAddMenuOpen = !this.isAddMenuOpen;
+    this.isColorPickerOpen = false;
+  }
+
+  closeAddMenu(): void {
+    this.isAddMenuOpen = false;
+  }
+
+  get isAnyModalOpen(): boolean {
+    return this.isTextModalOpen || this.isTokenModalOpen || this.isCropping;
+  }
+
+  /** Atalhos do tabuleiro não devem disparar enquanto o usuário digita ou usa um modal. */
+  private shouldIgnoreShortcut(target: EventTarget | null): boolean {
+    if (this.isAnyModalOpen) return true;
+    const el = target as HTMLElement | null;
+    return (
+      !!el &&
+      (el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement ||
+        el.isContentEditable)
+    );
   }
 
   handleSketchColorChange(event: ColorEvent): void {
@@ -340,7 +401,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     };
   }
 
-  selectAndSyncElement(element: ExtendedCanvasElement): void {
+  /** Usado logo após CRIAR um elemento: sincroniza, seleciona e registra no histórico. */
+  selectAndSyncElement(element: ExtendedCanvasElement, recordHistory = true): void {
     let target = this.elements.find((e) => e.id === element.id);
     if (!target) {
       target = element;
@@ -348,6 +410,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     }
     this.setTool('cursor');
     this.selectedElements = [target];
+    if (recordHistory) this.recordCreated([target.id]);
   }
 
   getElementTypeName(type: CanvasElementType): string {
@@ -365,7 +428,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   toggleSelectedTokenNames(): void {
     if (!this.isCampaignActive || !this.hasTokenSelected()) return;
-    this.saveState();
+    this.saveState(this.selectedElements.filter((el) => el.elementType === CanvasElementType.Token));
 
     const shouldHide = !this.areAllSelectedTokensHidden();
 
@@ -377,11 +440,35 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
+  areAllSelectedLocked(): boolean {
+    return this.selectedElements.length > 0 && this.selectedElements.every((el) => el.isLocked);
+  }
+
   toggleLockSelected(): void {
     if (!this.isCampaignActive || this.selectedElements.length === 0) return;
-    this.saveState();
-    this.selectedElements.forEach((el) => {
-      el.isLocked = !el.isLocked;
+    const shouldLock = !this.areAllSelectedLocked();
+
+    const elementsToChange = this.selectedElements.filter(
+      (el) => !el.id.startsWith('temp-') && Boolean(el.isLocked) !== shouldLock,
+    );
+    if (elementsToChange.length === 0) return;
+
+    this.saveState(elementsToChange);
+
+    const ids = elementsToChange.map((el) => el.id);
+    elementsToChange.forEach((el) => {
+      el.isLocked = shouldLock;
+    });
+
+    const request$ = shouldLock
+      ? this.canvasElementService.LockElement({ campaignId: this.campaignId, ids })
+      : this.canvasElementService.UnLockElement({ campaignId: this.campaignId, ids });
+
+    request$.subscribe({
+      error: (err) => {
+        console.error('[Canvas] Erro ao alterar estado de travamento:', err);
+        this.handleApiError(err);
+      },
     });
   }
 
@@ -460,7 +547,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   addCharacterToken(character: Character): void {
     if (!this.isCampaignActive || this.isCreatingElement) return;
     this.isCreatingElement = true;
-    this.saveState();
 
     const center = this.getViewportCenterWorld();
 
@@ -525,7 +611,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (this.isCreatingElement) return;
     this.isCreatingElement = true;
-    this.saveState();
 
     const center = this.getViewportCenterWorld();
     const targetX = center.x - 25;
@@ -534,7 +619,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     const tokenName = this.customTokenName.trim();
 
     if (this.customTokenFile) {
-      // Cria diretamente como CanvasElement (ElementType.Token) com imagem via /element/image, sem criar personagem
       const formData = new FormData();
       formData.append('campaignId', this.campaignId);
       formData.append('elementType', CanvasElementType.Token.toString());
@@ -580,7 +664,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         },
       });
     } else {
-      // Cria diretamente como CanvasElement (ElementType.Token) sem imagem via /element, sem criar personagem
       const req: CreateCanvaElementRequest = {
         campaignId: this.campaignId,
         elementType: CanvasElementType.Token,
@@ -636,7 +719,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (this.isCreatingElement) return;
     this.isCreatingElement = true;
-    this.saveState();
 
     const center = this.getViewportCenterWorld();
 
@@ -693,6 +775,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             scale: Number(el.scale) || 1,
             imageUrl: el.imageUrl || el.image || undefined,
             isRound: el.content === 'round' || el.isRound === true,
+            isLocked: Boolean(el.isLocked),
           }));
 
           if (this.elements.length > 0) {
@@ -771,6 +854,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
     if (isNaN(newScale)) return;
 
+    this.saveState([this.selectedElements[0]]);
     this.selectedElements[0].scale = newScale;
 
     const req: ScaleElementRequest = {
@@ -791,178 +875,245 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  saveState(): void {
-    if (!this.isCampaignActive) return;
-    this.history.push(JSON.stringify(this.elements));
-    if (this.history.length > 30) this.history.shift();
+  // ── HISTÓRICO (DESFAZER / REFAZER) ──
+  private cloneElement(el: ExtendedCanvasElement): ExtendedCanvasElement {
+    return JSON.parse(JSON.stringify(el));
+  }
+
+  private captureSnapshot(els: ExtendedCanvasElement[]): HistoryEntry {
+    const entry: HistoryEntry = {};
+    els.forEach((el) => {
+      if (el?.id && !el.id.startsWith('temp-') && !(el.id in entry)) {
+        entry[el.id] = this.cloneElement(el);
+      }
+    });
+    return entry;
+  }
+
+  private pushHistory(entry: HistoryEntry | null): void {
+    if (!this.isCampaignActive || !entry || Object.keys(entry).length === 0) return;
+    this.history.push(entry);
+    if (this.history.length > this.maxHistory) this.history.shift();
     this.redoHistory = [];
   }
 
+  /** Salva o estado atual dos elementos que a próxima ação vai alterar. */
+  saveState(els: ExtendedCanvasElement[] = this.selectedElements): void {
+    this.pushHistory(this.captureSnapshot(els));
+  }
+
+  private recordCreated(ids: string[]): void {
+    const entry: HistoryEntry = {};
+    ids.forEach((id) => {
+      if (id && !id.startsWith('temp-')) entry[id] = null;
+    });
+    this.pushHistory(entry);
+  }
+
   undo(): void {
-    if (!this.isCampaignActive) return;
-
-    if (this.history.length > 0) {
-      this.redoHistory.push(JSON.stringify(this.elements));
-      const prevState = this.history.pop()!;
-      const previousElements: ExtendedCanvasElement[] = JSON.parse(prevState);
-
-      const removedIds = this.elements
-        .filter(
-          (el) => !previousElements.some((prev) => prev.id === el.id) && !el.id.startsWith('temp-'),
-        )
-        .map((el) => el.id);
-
-      if (removedIds.length > 0) {
-        this.canvasElementService
-          .DeactiveElement({
-            campaignId: this.campaignId,
-            ids: removedIds,
-          })
-          .subscribe({
-            next: () => this.refreshStorageUsage(),
-            error: (err) => {
-              console.error('[Canvas] Erro ao sincronizar desativação no undo:', err);
-              this.handleApiError(err);
-            },
-          });
-      }
-
-      const restoredIds = previousElements
-        .filter(
-          (prev) => !this.elements.some((el) => el.id === prev.id) && !prev.id.startsWith('temp-'),
-        )
-        .map((prev) => prev.id);
-
-      if (restoredIds.length > 0) {
-        this.canvasElementService
-          .ActiveElement({
-            campaignId: this.campaignId,
-            ids: restoredIds,
-          })
-          .subscribe({
-            next: () => this.refreshStorageUsage(),
-            error: (err) => {
-              console.error('[Canvas] Erro ao reativar elementos no undo:', err);
-              this.handleApiError(err);
-            },
-          });
-      }
-
-      const movedItems: { id: string; x: number; y: number }[] = [];
-      previousElements.forEach((prev) => {
-        const current = this.elements.find((e) => e.id === prev.id);
-        if (current && (current.x !== prev.x || current.y !== prev.y)) {
-          movedItems.push({ id: prev.id, x: prev.x, y: prev.y });
-        }
-      });
-
-      if (movedItems.length > 0) {
-        this.canvasElementService
-          .MoveElement({
-            campaignId: this.campaignId,
-            items: movedItems,
-          })
-          .subscribe({
-            error: (err) => {
-              console.error('[Canvas] Erro ao mover elementos no undo:', err);
-              this.handleApiError(err);
-            },
-          });
-      }
-
-      this.elements = previousElements;
-      this.selectedElements = [];
-    }
+    if (!this.isCampaignActive || this.history.length === 0) return;
+    const entry = this.history.pop()!;
+    this.redoHistory.push(this.applyHistoryEntry(entry));
   }
 
   redo(): void {
-    if (!this.isCampaignActive) return;
+    if (!this.isCampaignActive || this.redoHistory.length === 0) return;
+    const entry = this.redoHistory.pop()!;
+    this.history.push(this.applyHistoryEntry(entry));
+  }
 
-    if (this.redoHistory.length > 0) {
-      this.history.push(JSON.stringify(this.elements));
-      const nextState = this.redoHistory.pop()!;
-      const nextElements: ExtendedCanvasElement[] = JSON.parse(nextState);
+  /** Aplica a entrada (local + servidor) e devolve a entrada inversa. */
+  private applyHistoryEntry(entry: HistoryEntry): HistoryEntry {
+    const inverse: HistoryEntry = {};
+    const toDeactivate: string[] = [];
+    const toActivate: string[] = [];
+    const toLock: string[] = [];
+    const toUnlock: string[] = [];
+    const moved: { id: string; x: number; y: number }[] = [];
+    const scaled: { id: string; scale: number }[] = [];
+    const colorGroups = new Map<string, string[]>();
+    let zChanged = false;
 
-      const removedIds = this.elements
-        .filter(
-          (el) => !nextElements.some((next) => next.id === el.id) && !el.id.startsWith('temp-'),
-        )
-        .map((el) => el.id);
+    Object.entries(entry).forEach(([id, target]) => {
+      const idx = this.elements.findIndex((e) => e.id === id);
+      const current = idx > -1 ? this.elements[idx] : null;
+      inverse[id] = current ? this.cloneElement(current) : null;
 
-      if (removedIds.length > 0) {
-        this.canvasElementService
-          .DeactiveElement({
-            campaignId: this.campaignId,
-            ids: removedIds,
-          })
-          .subscribe({
-            next: () => this.refreshStorageUsage(),
-            error: (err) => {
-              console.error('[Canvas] Erro ao desativar elementos no redo:', err);
-              this.handleApiError(err);
-            },
-          });
-      }
-
-      const restoredIds = nextElements
-        .filter(
-          (next) => !this.elements.some((el) => el.id === next.id) && !next.id.startsWith('temp-'),
-        )
-        .map((next) => next.id);
-
-      if (restoredIds.length > 0) {
-        this.canvasElementService
-          .ActiveElement({
-            campaignId: this.campaignId,
-            ids: restoredIds,
-          })
-          .subscribe({
-            next: () => this.refreshStorageUsage(),
-            error: (err) => {
-              console.error('[Canvas] Erro ao reativar elementos no redo:', err);
-              this.handleApiError(err);
-            },
-          });
-      }
-
-      const movedItems: { id: string; x: number; y: number }[] = [];
-      nextElements.forEach((next) => {
-        const current = this.elements.find((e) => e.id === next.id);
-        if (current && (current.x !== next.x || current.y !== next.y)) {
-          movedItems.push({ id: next.id, x: next.x, y: next.y });
+      if (!target) {
+        if (current) {
+          this.elements.splice(idx, 1);
+          toDeactivate.push(id);
         }
-      });
+        return;
+      }
 
-      if (movedItems.length > 0) {
+      const restored = this.cloneElement(target);
+
+      if (!current) {
+        this.elements.push(restored);
+        toActivate.push(id);
+        return;
+      }
+
+      this.elements[idx] = restored;
+
+      if (Boolean(current.isLocked) !== Boolean(restored.isLocked)) {
+        if (restored.isLocked) toLock.push(id);
+        else toUnlock.push(id);
+      }
+
+      if (
+        restored.elementType !== CanvasElementType.Drawing &&
+        (current.x !== restored.x || current.y !== restored.y)
+      ) {
+        moved.push({ id, x: restored.x, y: restored.y });
+      }
+      if ((current.scale || 1) !== (restored.scale || 1)) {
+        scaled.push({ id, scale: restored.scale || 1 });
+      }
+      if (current.z !== restored.z) zChanged = true;
+
+      if (restored.color && current.color?.toUpperCase() !== restored.color.toUpperCase()) {
+        const targetColor = restored.color.toUpperCase();
+        const group = colorGroups.get(targetColor) ?? [];
+        group.push(id);
+        colorGroups.set(targetColor, group);
+      }
+
+      if (current.content !== restored.content && restored.content !== undefined) {
         this.canvasElementService
-          .MoveElement({
+          .UpdateElementContent({
             campaignId: this.campaignId,
-            items: movedItems,
+            elementId: id,
+            content: restored.content,
           })
           .subscribe({
+            next: () => this.refreshStorageUsage(),
             error: (err) => {
-              console.error('[Canvas] Erro ao mover elementos no redo:', err);
+              console.error('[Canvas] Erro ao sincronizar conteúdo (histórico):', err);
               this.handleApiError(err);
             },
           });
       }
 
-      this.elements = nextElements;
-      this.selectedElements = [];
+      if (this.hasOtherVisualDiff(current, restored)) {
+        this.updateElementAPI(restored);
+      }
+    });
+
+    if (toDeactivate.length > 0) {
+      this.canvasElementService
+        .DeactiveElement({ campaignId: this.campaignId, ids: toDeactivate })
+        .subscribe({
+          next: () => this.refreshStorageUsage(),
+          error: (err) => {
+            console.error('[Canvas] Erro ao desativar elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
     }
+
+    if (toActivate.length > 0) {
+      this.canvasElementService
+        .ActiveElement({ campaignId: this.campaignId, ids: toActivate })
+        .subscribe({
+          next: () => this.refreshStorageUsage(),
+          error: (err) => {
+            console.error('[Canvas] Erro ao reativar elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    }
+
+    if (toLock.length > 0) {
+      this.canvasElementService
+        .LockElement({ campaignId: this.campaignId, ids: toLock })
+        .subscribe({
+          error: (err) => {
+            console.error('[Canvas] Erro ao travar elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    }
+
+    if (toUnlock.length > 0) {
+      this.canvasElementService
+        .UnLockElement({ campaignId: this.campaignId, ids: toUnlock })
+        .subscribe({
+          error: (err) => {
+            console.error('[Canvas] Erro ao destravar elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    }
+
+    if (moved.length > 0) {
+      this.canvasElementService
+        .MoveElement({ campaignId: this.campaignId, items: moved })
+        .subscribe({
+          error: (err) => {
+            console.error('[Canvas] Erro ao mover elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    }
+
+    if (scaled.length > 0) {
+      this.canvasElementService
+        .ScaleElement({ campaignId: this.campaignId, items: scaled })
+        .subscribe({
+          error: (err) => {
+            console.error('[Canvas] Erro ao escalonar elementos (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    }
+
+    colorGroups.forEach((ids, color) => {
+      this.canvasElementService
+        .ChangeColor({
+          campaignId: this.campaignId,
+          ids,
+          color,
+        })
+        .subscribe({
+          next: () => this.refreshStorageUsage(),
+          error: (err) => {
+            console.error('[Canvas] Erro ao sincronizar cor (histórico):', err);
+            this.handleApiError(err);
+          },
+        });
+    });
+
+    if (zChanged) {
+      this.sortElements();
+      this.syncZOrderAPI();
+    }
+
+    this.selectedElements = [];
+    return inverse;
+  }
+
+  private hasOtherVisualDiff(a: ExtendedCanvasElement, b: ExtendedCanvasElement): boolean {
+    return (
+      !!a.hideName !== !!b.hideName ||
+      !!a.isRound !== !!b.isRound ||
+      a.imageUrl !== b.imageUrl ||
+      JSON.stringify(a.points ?? null) !== JSON.stringify(b.points ?? null)
+    );
   }
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && this.isColorPickerOpen) {
+    if (event.key === 'Escape' && (this.isColorPickerOpen || this.isAddMenuOpen)) {
       this.isColorPickerOpen = false;
+      this.isAddMenuOpen = false;
       event.preventDefault();
       return;
     }
 
     if (!this.isCampaignActive) return;
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-      return;
+    if (this.shouldIgnoreShortcut(event.target)) return;
 
     const ctrlOrCmd = event.ctrlKey || event.metaKey;
 
@@ -989,8 +1140,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   @HostListener('window:copy', ['$event'])
   onCopy(event: ClipboardEvent): void {
     if (!this.isCampaignActive) return;
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-      return;
+    if (this.shouldIgnoreShortcut(event.target)) return;
 
     if (this.selectedElements.length > 0) {
       this.clipboardStorage = JSON.parse(JSON.stringify(this.selectedElements));
@@ -1004,8 +1154,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   @HostListener('window:cut', ['$event'])
   onCut(event: ClipboardEvent): void {
     if (!this.isCampaignActive) return;
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-      return;
+    if (this.shouldIgnoreShortcut(event.target)) return;
 
     if (this.selectedElements.length > 0) {
       this.clipboardStorage = JSON.parse(JSON.stringify(this.selectedElements));
@@ -1021,8 +1170,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   @HostListener('window:paste', ['$event'])
   onPaste(event: ClipboardEvent): void {
     if (!this.isCampaignActive) return;
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-      return;
+    if (this.shouldIgnoreShortcut(event.target)) return;
 
     const items = event.clipboardData?.items;
     const textData = event.clipboardData?.getData('text/plain');
@@ -1044,8 +1192,15 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     }
 
     if (elementsToPaste.length > 0) {
-      this.saveState();
       this.selectedElements = [];
+
+      const pasteEntry: HistoryEntry = {};
+      let pendingPastes = elementsToPaste.length;
+      const onPasted = (createdId?: string) => {
+        if (createdId) pasteEntry[createdId] = null;
+        pendingPastes--;
+        if (pendingPastes <= 0) this.pushHistory(pasteEntry);
+      };
 
       const targetPos =
         this.mouseWorldPos.x !== 0 || this.mouseWorldPos.y !== 0 ? this.mouseWorldPos : center;
@@ -1111,6 +1266,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                   ...responseData,
                   imageUrl: responseData.imageUrl || (responseData as any).image || el.imageUrl,
                   isRound: el.isRound,
+                  isLocked: Boolean(responseData.isLocked),
                 };
 
                 const index = this.elements.findIndex((e) => e.id === responseData.id);
@@ -1123,10 +1279,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 this.selectedElements = [...this.selectedElements, createdEl];
                 this.refreshStorageUsage();
               }
+              onPasted(res.success ? res.data?.id : undefined);
             },
             error: (err) => {
               console.error('[Canvas] Erro ao colar token:', err);
               this.handleApiError(err);
+              onPasted();
             },
           });
 
@@ -1167,6 +1325,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                       imageUrl:
                         res.data.imageUrl || (res.data as any).image || el.imageUrl,
                       isRound: !isToken && (el.isRound || res.data.content === 'round'),
+                      isLocked: Boolean(res.data.isLocked),
                     };
                     const index = this.elements.findIndex((e) => e.id === res.data!.id);
                     if (index > -1) this.elements[index] = createdEl;
@@ -1175,16 +1334,19 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                     this.selectedElements = [...this.selectedElements, createdEl];
                     this.refreshStorageUsage();
                   }
+                  onPasted(res.success ? res.data?.id : undefined);
                 },
                 error: (err) => {
                   console.error('[Canvas] Erro ao colar elemento com imagem:', err);
                   this.handleApiError(err);
+                  onPasted();
                 },
               });
             })
             .catch((err) => {
               console.error('[Canvas] Erro ao obter blob da imagem copiada:', err);
               this.showError('Não foi possível duplicar a imagem selecionada.');
+              onPasted();
             });
 
         // 3. Demais elementos (Texto, Desenho, Token personalizado sem imagem)
@@ -1212,6 +1374,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                   points: translatedPoints,
                   imageUrl: responseData.imageUrl || (responseData as any).image || el.imageUrl,
                   isRound: el.isRound,
+                  isLocked: Boolean(responseData.isLocked),
                 };
 
                 const index = this.elements.findIndex((e) => e.id === responseData.id);
@@ -1224,10 +1387,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 this.selectedElements = [...this.selectedElements, createdEl];
                 this.refreshStorageUsage();
               }
+              onPasted(res.success ? res.data?.id : undefined);
             },
             error: (err) => {
               console.error('[Canvas] Erro ao colar elemento:', err);
               this.handleApiError(err);
+              onPasted();
             },
           });
         }
@@ -1242,7 +1407,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            this.saveState();
             this.selectedFile = file;
 
             const targetPos =
@@ -1280,8 +1444,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     }
 
     if (textData && textData.trim() !== '') {
-      this.saveState();
-
       const targetPos =
         this.mouseWorldPos.x !== 0 || this.mouseWorldPos.y !== 0 ? this.mouseWorldPos : center;
 
@@ -1319,6 +1481,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (!this.isCampaignActive && tool !== 'cursor') return;
     this.activeTool = tool;
     this.selectedElements = [];
+    this.isAddMenuOpen = false;
   }
 
   triggerImageUpload(): void {
@@ -1364,21 +1527,43 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
   onColorChange(colorValue: string): void {
     if (!this.isCampaignActive) return;
-    if (this.selectedColor.toUpperCase() === colorValue.toUpperCase()) return;
-    this.selectedColor = colorValue.toUpperCase();
+    const normalizedColor = colorValue.toUpperCase();
+    if (this.selectedColor.toUpperCase() === normalizedColor) return;
+    this.selectedColor = normalizedColor;
 
     if (this.selectedElements.length > 0) {
-      this.saveState();
-      this.selectedElements.forEach((el) => {
-        if (
+      const elementsToUpdate = this.selectedElements.filter(
+        (el) =>
           el.elementType !== CanvasElementType.Image &&
           !el.isLocked &&
-          el.color?.toUpperCase() !== this.selectedColor
-        ) {
-          el.color = this.selectedColor;
-          this.updateElementAPI(el);
-        }
+          !el.id.startsWith('temp-') &&
+          el.color?.toUpperCase() !== this.selectedColor,
+      );
+
+      if (elementsToUpdate.length === 0) return;
+
+      this.saveState(elementsToUpdate);
+
+      const idsToUpdate = elementsToUpdate.map((el) => el.id);
+      elementsToUpdate.forEach((el) => {
+        el.color = this.selectedColor;
       });
+
+      this.canvasElementService
+        .ChangeColor({
+          campaignId: this.campaignId,
+          ids: idsToUpdate,
+          color: this.selectedColor,
+        })
+        .subscribe({
+          next: () => {
+            this.refreshStorageUsage();
+          },
+          error: (err) => {
+            console.error('[Canvas] Erro ao alterar cor dos elementos:', err);
+            this.handleApiError(err);
+          },
+        });
     }
   }
 
@@ -1386,7 +1571,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     if (!this.isCampaignActive) return;
     const deletable = this.selectedElements.filter((e) => !e.isLocked);
     if (deletable.length === 0) return;
-    this.saveState();
+    this.saveState(deletable);
 
     const idsToDelete = deletable.map((el) => el.id);
 
@@ -1429,7 +1614,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     );
 
     if (drawingsToErase.length > 0) {
-      this.saveState();
+      if (this.eraserBatch) Object.assign(this.eraserBatch, this.captureSnapshot(drawingsToErase));
+      else this.saveState(drawingsToErase);
       const idsToErase = drawingsToErase.map((el) => el.id);
 
       const deleteRequest = {
@@ -1504,7 +1690,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       !this.selectedElements[0].isLocked &&
       this.selectedElements[0].imageUrl
     ) {
-      this.saveState();
       const currentImage = this.selectedElements[0].imageUrl ?? '';
 
       this.isRoundCrop = !!this.selectedElements[0].isRound;
@@ -1565,6 +1750,13 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       const oldId = targetElement.id;
       const isRound = this.isRoundCrop;
       const currentScale = targetElement.scale || 1;
+      const isToken = targetElement.elementType === CanvasElementType.Token;
+      const beforeSnapshot = this.cloneElement(targetElement);
+      const keptContent = isToken
+        ? targetElement.content || 'Token'
+        : isRound
+          ? 'round'
+          : 'square';
 
       if (this.croppedBlob) {
         const croppedFile = new File([this.croppedBlob], 'cropped-element.png', {
@@ -1583,8 +1775,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         formData.append('Z', targetElement.z.toString());
         formData.append('scale', currentScale.toString());
         formData.append('Scale', currentScale.toString());
-        formData.append('content', isRound ? 'round' : 'square');
-        formData.append('Content', isRound ? 'round' : 'square');
+        formData.append('content', keptContent);
+        formData.append('Content', keptContent);
+        if (isToken) {
+          formData.append('color', targetElement.color || '#9E74D0');
+        }
         formData.append('image', croppedFile, croppedFile.name);
 
         this.canvasElementService.CreateImageElement(formData as any).subscribe({
@@ -1611,8 +1806,9 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 z: targetElement.z,
                 scale: currentScale,
                 imageUrl: newUrl,
-                isRound: isRound,
-                content: isRound ? 'round' : 'square',
+                isRound: !isToken && isRound,
+                content: keptContent,
+                color: res.data.color || targetElement.color,
                 isLocked: targetElement.isLocked,
                 hideName: targetElement.hideName,
               };
@@ -1628,6 +1824,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
 
               this.updateElementAPI(newEl);
 
+              this.elements = this.elements.filter((e) => e.id !== newEl.id);
               const index = this.elements.findIndex((e) => e.id === oldId);
               if (index > -1) {
                 this.elements[index] = newEl;
@@ -1635,6 +1832,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
                 this.elements.push(newEl);
               }
               this.selectedElements = [newEl];
+              this.pushHistory({ [oldId]: beforeSnapshot, [newEl.id]: null });
               this.refreshStorageUsage();
             } else {
               this.showError(res.message || 'Erro ao salvar imagem recortada.');
@@ -1645,7 +1843,8 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
             this.handleApiError(err);
           },
         });
-      } else {
+      } else if (!isToken && !!targetElement.isRound !== isRound) {
+        this.saveState([targetElement]);
         targetElement.isRound = isRound;
         targetElement.content = isRound ? 'round' : 'square';
         this.updateElementAPI(targetElement);
@@ -1662,9 +1861,6 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.isCroppingCustomToken = false;
     this.cropImageSource = '';
     this.croppedBlob = null;
-    if (!this.isCroppingCustomToken) {
-      this.history.pop();
-    }
   }
 
   setCropShape(isRound: boolean): void {
@@ -1715,14 +1911,12 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     this.doZoom(this.scale - 0.2, bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
   }
 
-  @HostListener('window:wheel', ['$event'])
-  onWheel(event: WheelEvent): void {
-    if ((event.target as HTMLElement).closest('.canvas-ui')) return;
+  private readonly onWheel = (event: WheelEvent): void => {
     event.preventDefault();
-    const zoomFactor = 0.08;
-    const newScale = event.deltaY < 0 ? this.scale + zoomFactor : this.scale - zoomFactor;
-    this.doZoom(newScale, event.clientX, event.clientY);
-  }
+    const intensity = event.ctrlKey ? 0.01 : 0.0015;
+    const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+    this.doZoom(this.scale * Math.exp(-delta * intensity), event.clientX, event.clientY);
+  };
 
   getMin(a: number, b: number): number {
     return Math.min(a, b);
@@ -1787,14 +1981,96 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
     });
   }
 
-  onPointerDown(event: PointerEvent): void {
-    if ((event.target as HTMLElement).closest('.canvas-ui')) return;
+  // ── PONTEIROS (MOUSE, CANETA E TOQUE) ──
+  private registerPointer(event: PointerEvent): boolean {
+    if (event.isPrimary) {
+      this.activePointers.clear();
+      this.gesture = null;
+    }
+    this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (this.activePointers.size === 2) {
+      this.beginGesture();
+      return true;
+    }
+    if (this.activePointers.size > 2 || this.gesture) return true;
+
+    this.primaryPointerId = event.pointerId;
+    return false;
+  }
+
+  private beginGesture(): void {
+    this.cancelCurrentInteraction();
+    const [a, b] = Array.from(this.activePointers.values());
+    this.gesture = {
+      startDist: Math.max(Math.hypot(b.x - a.x, b.y - a.y), 1),
+      startScale: this.scale,
+      lastMidX: (a.x + b.x) / 2,
+      lastMidY: (a.y + b.y) / 2,
+    };
+  }
+
+  private updateGesture(): void {
+    if (!this.gesture || this.activePointers.size < 2) return;
+    const [a, b] = Array.from(this.activePointers.values());
+    const midX = (a.x + b.x) / 2;
+    const midY = (a.y + b.y) / 2;
+    const dist = Math.max(Math.hypot(b.x - a.x, b.y - a.y), 1);
+
+    this.panX += midX - this.gesture.lastMidX;
+    this.panY += midY - this.gesture.lastMidY;
+    this.gesture.lastMidX = midX;
+    this.gesture.lastMidY = midY;
+
+    this.doZoom(this.gesture.startScale * (dist / this.gesture.startDist), midX, midY);
+  }
+
+  private cancelCurrentInteraction(): void {
+    if (this.activeDrawing) {
+      const tempId = this.activeDrawing.id;
+      this.elements = this.elements.filter((e) => e.id !== tempId);
+    }
+
+    if (this.dragBefore && this.hasDragged) {
+      Object.entries(this.dragBefore).forEach(([id, before]) => {
+        const el = this.elements.find((e) => e.id === id);
+        if (el && before) {
+          el.x = before.x;
+          el.y = before.y;
+          if (before.points) el.points = before.points.map((p) => ({ ...p }));
+        }
+      });
+    }
+
+    this.pushHistory(this.eraserBatch);
+    this.resetInteractionState();
+  }
+
+  private resetInteractionState(): void {
+    this.isInteracting = false;
+    this.isPanning = false;
+    this.selectionBox.active = false;
+    this.activeDrawing = null;
+    this.hasDragged = false;
+    this.dragBefore = null;
+    this.eraserBatch = null;
+    this.pendingSingleSelect = null;
+    this.primaryPointerId = null;
+  }
+
+  private capturePointer(event: PointerEvent): void {
     const targetEl = event.target as Element;
-    if (targetEl && targetEl.setPointerCapture) {
+    if (targetEl?.setPointerCapture) {
       try {
         targetEl.setPointerCapture(event.pointerId);
       } catch (e) {}
     }
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    if ((event.target as HTMLElement).closest('.canvas-ui')) return;
+    if (this.registerPointer(event)) return;
+    this.capturePointer(event);
 
     this.lastPointer = { x: event.clientX, y: event.clientY };
     this.hasDragged = false;
@@ -1805,12 +2081,11 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.pointerDownState = JSON.stringify(this.elements);
-    this.isInteracting = true;
     const wx = this.getWorldX(event.clientX);
     const wy = this.getWorldY(event.clientY);
 
     if (this.activeTool === 'draw') {
+      this.isInteracting = true;
       this.selectedElements = [];
       this.maxZ++;
 
@@ -1824,59 +2099,58 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         color: this.selectedColor,
         strokeWidth: this.brushSize,
         points: [{ x: wx, y: wy }],
-        isLocked: false
+        isLocked: false,
       };
       this.elements.push(newDrawing);
       this.activeDrawing = newDrawing;
     } else if (this.activeTool === 'eraser') {
-      this.lastPointer = { x: event.clientX, y: event.clientY };
-    } else if (this.activeTool === 'cursor') {
-      if (!(event.target as HTMLElement).closest('.board-element')) {
-        this.selectedElements = [];
-        this.selectionBox.active = true;
-        this.selectionBox.startX = wx;
-        this.selectionBox.startY = wy;
-        this.selectionBox.currentX = wx;
-        this.selectionBox.currentY = wy;
+      this.isInteracting = true;
+      this.eraserBatch = {};
+      this.eraseDrawingsAt(wx, wy);
+    } else if (!(event.target as HTMLElement).closest('.board-element')) {
+      this.selectedElements = [];
+
+      if (event.pointerType === 'touch') {
+        this.isPanning = true;
+        return;
       }
+
+      this.isInteracting = true;
+      this.selectionBox = { active: true, startX: wx, startY: wy, currentX: wx, currentY: wy };
     }
   }
 
   onElementDown(event: PointerEvent, element: ExtendedCanvasElement): void {
     if (!this.isCampaignActive) return;
     if (event.button === 1 || event.button === 2) return;
+    if (this.activeTool === 'draw') return;
+
+    event.stopPropagation();
+    if (this.registerPointer(event)) return;
+    this.capturePointer(event);
+
+    this.lastPointer = { x: event.clientX, y: event.clientY };
+    this.hasDragged = false;
+    this.dragStartScreen = { x: event.clientX, y: event.clientY };
+    this.isInteracting = true;
 
     if (this.activeTool === 'eraser') {
-      event.stopPropagation();
-      this.isInteracting = true;
+      this.eraserBatch = {};
+      this.eraseDrawingsAt(this.getWorldX(event.clientX), this.getWorldY(event.clientY));
       return;
     }
 
-    if (this.activeTool !== 'cursor') return;
-
-    event.stopPropagation();
-    const targetEl = event.target as Element;
-    if (targetEl && targetEl.setPointerCapture) {
-      try {
-        targetEl.setPointerCapture(event.pointerId);
-      } catch (e) {}
-    }
-
-    this.pointerDownState = JSON.stringify(this.elements);
-    this.isInteracting = true;
-    this.hasDragged = false;
-    this.dragStartScreen = { x: event.clientX, y: event.clientY };
-
     const isMultiSelect = event.ctrlKey || event.shiftKey || event.metaKey;
+    this.pendingSingleSelect = null;
 
     if (isMultiSelect) {
-      const index = this.selectedElements.indexOf(element);
-      if (index > -1) this.selectedElements.splice(index, 1);
-      else this.selectedElements.push(element);
-    } else {
-      if (!this.selectedElements.includes(element)) {
-        this.selectedElements = [element];
-      }
+      this.selectedElements = this.selectedElements.includes(element)
+        ? this.selectedElements.filter((e) => e !== element)
+        : [...this.selectedElements, element];
+    } else if (!this.selectedElements.includes(element)) {
+      this.selectedElements = [element];
+    } else if (this.selectedElements.length > 1) {
+      this.pendingSingleSelect = element;
     }
 
     if (
@@ -1887,34 +2161,36 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
       this.selectedColor = element.color.toUpperCase();
     }
 
-    this.lastPointer = { x: event.clientX, y: event.clientY };
+    this.dragBefore = this.captureSnapshot(this.selectedElements.filter((e) => !e.isLocked));
   }
 
   @HostListener('window:pointermove', ['$event'])
   onPointerMove(event: PointerEvent): void {
+    if (this.activePointers.has(event.pointerId)) {
+      this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+
+    if (this.gesture) {
+      this.updateGesture();
+      return;
+    }
+
+    if (this.primaryPointerId !== null && event.pointerId !== this.primaryPointerId) return;
+
     this.mouseWorldPos = {
       x: this.getWorldX(event.clientX),
       y: this.getWorldY(event.clientY),
     };
 
     if (this.isPanning) {
-      const deltaX = event.clientX - this.lastPointer.x;
-      const deltaY = event.clientY - this.lastPointer.y;
-      this.panX += deltaX;
-      this.panY += deltaY;
+      this.panX += event.clientX - this.lastPointer.x;
+      this.panY += event.clientY - this.lastPointer.y;
       this.lastPointer = { x: event.clientX, y: event.clientY };
       return;
     }
 
     if (!this.isCampaignActive || !this.isInteracting) return;
-
-    if (
-      event.clientX === this.lastPointer.x &&
-      event.clientY === this.lastPointer.y &&
-      this.activeTool === 'eraser'
-    ) {
-      return;
-    }
+    if (event.clientX === this.lastPointer.x && event.clientY === this.lastPointer.y) return;
 
     const wx = this.getWorldX(event.clientX);
     const wy = this.getWorldY(event.clientY);
@@ -1937,24 +2213,22 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
           );
           if (dist < 4) return;
           this.hasDragged = true;
+          this.pendingSingleSelect = null;
         }
 
-        const deltaX = event.clientX - this.lastPointer.x;
-        const deltaY = event.clientY - this.lastPointer.y;
-        const deltaWorldX = deltaX / this.scale;
-        const deltaWorldY = deltaY / this.scale;
+        const deltaWorldX = (event.clientX - this.lastPointer.x) / this.scale;
+        const deltaWorldY = (event.clientY - this.lastPointer.y) / this.scale;
 
         this.selectedElements.forEach((el) => {
-          if (!el.isLocked) {
-            el.x += deltaWorldX;
-            el.y += deltaWorldY;
+          if (el.isLocked) return;
+          el.x += deltaWorldX;
+          el.y += deltaWorldY;
 
-            if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
-              el.points.forEach((p) => {
-                p.x += deltaWorldX;
-                p.y += deltaWorldY;
-              });
-            }
+          if (el.elementType === CanvasElementType.Drawing && el.points && el.points.length > 0) {
+            el.points.forEach((p) => {
+              p.x += deltaWorldX;
+              p.y += deltaWorldY;
+            });
           }
         });
       }
@@ -1965,84 +2239,113 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
   @HostListener('window:pointerup', ['$event'])
   @HostListener('window:pointercancel', ['$event'])
   onPointerUp(event: PointerEvent): void {
-    if (this.isCampaignActive && (this.isPanning || this.isInteracting)) {
-      const currentState = JSON.stringify(this.elements);
+    this.activePointers.delete(event.pointerId);
 
-      if (this.pointerDownState && this.pointerDownState !== currentState) {
-        this.history.push(this.pointerDownState);
-        if (this.history.length > 30) this.history.shift();
-        this.redoHistory = [];
+    if (this.gesture) {
+      if (this.activePointers.size < 2) this.gesture = null;
+      return;
+    }
 
-        if (this.activeTool === 'draw' && this.activeDrawing) {
-          const drw = this.activeDrawing;
-          const req: CreateCanvaElementRequest = {
-            campaignId: this.campaignId,
-            elementType: CanvasElementType.Drawing,
-            x: drw.x,
-            y: drw.y,
-            z: drw.z,
-            scale: drw.scale,
-            color: drw.color,
-            strokeWidth: drw.strokeWidth,
-            points: drw.points,
-            image: undefined,
-          };
+    if (this.primaryPointerId !== null && event.pointerId !== this.primaryPointerId) return;
 
-          this.canvasElementService.CreateElement(req).subscribe({
-            next: (res) => {
-              if (res.success && res.data) {
-                const idx = this.elements.findIndex((e) => e.id === drw.id);
-                if (idx > -1) this.elements[idx] = res.data;
-                this.refreshStorageUsage();
-              } else {
-                this.elements = this.elements.filter((e) => e.id !== drw.id);
-                this.showError(res.message || 'Erro ao salvar traço no tabuleiro.');
-              }
-            },
-            error: (err) => {
-              console.error('[Canvas] Erro ao salvar desenho:', err);
-              this.elements = this.elements.filter((e) => e.id !== drw.id);
-              this.handleApiError(err);
-            },
-          });
-        } else if (
-          this.activeTool === 'cursor' &&
-          this.selectedElements.length > 0 &&
-          !this.selectionBox.active &&
-          this.hasDragged
-        ) {
-          const movable = this.selectedElements.filter((e) => !e.isLocked);
-          if (movable.length > 0) {
-            const standardElements = movable.filter(
-              (e) => e.elementType !== CanvasElementType.Drawing,
-            );
-            if (standardElements.length > 0) {
-              const req: MoveCanvaElementsRequest = {
-                campaignId: this.campaignId,
-                items: standardElements.map((el) => ({ id: el.id, x: el.x, y: el.y })),
-              };
-              this.canvasElementService.MoveElement(req).subscribe({
-                error: (err) => {
-                  console.error('[Canvas] Erro ao mover elementos:', err);
-                  this.handleApiError(err);
-                },
-              });
-            }
+    if (event.type === 'pointercancel') {
+      this.cancelCurrentInteraction();
+      return;
+    }
 
-            const drawings = movable.filter((e) => e.elementType === CanvasElementType.Drawing);
-            drawings.forEach((drw) => {
-              this.updateElementAPI(drw);
-            });
-          }
+    if (this.isCampaignActive && this.isInteracting) {
+      if (this.activeTool === 'draw' && this.activeDrawing) {
+        this.persistDrawing(this.activeDrawing);
+      } else if (this.activeTool === 'cursor' && !this.selectionBox.active) {
+        if (this.hasDragged) {
+          this.persistDrag();
+        } else if (this.pendingSingleSelect) {
+          this.selectedElements = [this.pendingSingleSelect];
         }
+      } else if (this.activeTool === 'eraser') {
+        this.pushHistory(this.eraserBatch);
       }
     }
 
-    this.isInteracting = false;
-    this.isPanning = false;
-    this.selectionBox.active = false;
-    this.activeDrawing = null;
-    this.hasDragged = false;
+    this.resetInteractionState();
+  }
+
+  private persistDrawing(drw: ExtendedCanvasElement): void {
+    const points = drw.points ?? [];
+    if (points.length === 0) {
+      this.elements = this.elements.filter((e) => e.id !== drw.id);
+      return;
+    }
+    if (points.length === 1) points.push({ ...points[0] });
+
+    const req: CreateCanvaElementRequest = {
+      campaignId: this.campaignId,
+      elementType: CanvasElementType.Drawing,
+      x: drw.x,
+      y: drw.y,
+      z: drw.z,
+      scale: drw.scale,
+      color: drw.color,
+      strokeWidth: drw.strokeWidth,
+      points: points,
+      image: undefined,
+    };
+
+    this.canvasElementService.CreateElement(req).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const saved: ExtendedCanvasElement = {
+            ...res.data,
+            points: res.data.points?.length ? res.data.points : points,
+            isLocked: Boolean(res.data.isLocked),
+          };
+
+          if (this.elements.some((e) => e.id === saved.id)) {
+            this.elements = this.elements.filter((e) => e.id !== drw.id);
+          } else {
+            const idx = this.elements.findIndex((e) => e.id === drw.id);
+            if (idx > -1) this.elements[idx] = saved;
+            else this.elements.push(saved);
+          }
+
+          this.recordCreated([saved.id]);
+          this.refreshStorageUsage();
+        } else {
+          this.elements = this.elements.filter((e) => e.id !== drw.id);
+          this.showError(res.message || 'Erro ao salvar traço no tabuleiro.');
+        }
+      },
+      error: (err) => {
+        console.error('[Canvas] Erro ao salvar desenho:', err);
+        this.elements = this.elements.filter((e) => e.id !== drw.id);
+        this.handleApiError(err);
+      },
+    });
+  }
+
+  private persistDrag(): void {
+    const movable = this.selectedElements.filter((e) => !e.isLocked && !e.id.startsWith('temp-'));
+    if (movable.length === 0) return;
+
+    this.pushHistory(this.dragBefore);
+
+    const standardElements = movable.filter((e) => e.elementType !== CanvasElementType.Drawing);
+    if (standardElements.length > 0) {
+      const req: MoveCanvaElementsRequest = {
+        campaignId: this.campaignId,
+        items: standardElements.map((el) => ({ id: el.id, x: el.x, y: el.y })),
+      };
+      this.canvasElementService.MoveElement(req).subscribe({
+        error: (err) => {
+          console.error('[Canvas] Erro ao mover elementos:', err);
+          this.handleApiError(err);
+        },
+      });
+    }
+
+    movable
+      .filter((e) => e.elementType === CanvasElementType.Drawing)
+      .forEach((drw) => this.updateElementAPI(drw));
   }
 
   getSvgPath(points?: { x: number; y: number }[]): string {

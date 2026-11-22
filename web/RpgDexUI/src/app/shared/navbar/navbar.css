@@ -1,7 +1,7 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000;
   box-shadow: var(--rpg-shadow-nav);
 }
 
@@ -22,7 +22,7 @@
   height: 100%;
   text-decoration: none;
   cursor: pointer;
-  z-index: 1100;
+  z-index: 1;
 }
 
 .nav-container {
@@ -100,7 +100,6 @@
   padding: 0;
   overflow: hidden;
   background: transparent;
-  
 }
 
 .user-profile__img {
