@@ -13,6 +13,7 @@ namespace RpgDex.Application.Interfaces
         Task ScaleElements(string campaignId, ScaleElementsEvent evt);
         Task ReOrderElements(string campaignId, ReOrderElementsEvent evt);
         Task SetActiveElements(string campaignId, SetActiveElementsEvent evt);
+        Task ChangeColorElements(string campaignId, ChangeColorElementsEvent evt);
 
     }
 }

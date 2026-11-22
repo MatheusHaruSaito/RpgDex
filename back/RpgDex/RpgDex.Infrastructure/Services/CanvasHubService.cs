@@ -12,6 +12,9 @@ namespace RpgDex.Infrastructure.Services
         public Task AddElement(string campaignId, CreateElementEvent evt)
             => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementAdded", evt.Element);
 
+        public Task ChangeColorElements(string campaignId, ChangeColorElementsEvent evt)
+            => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementColorChanged", new {ids = evt.Ids, color = evt.Color});
+
         public Task MoveElements(string campaignId, MoveElementsEvent evt)
             =>Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementsMoved", evt.Elements);
 

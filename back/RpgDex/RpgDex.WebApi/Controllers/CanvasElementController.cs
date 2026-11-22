@@ -21,25 +21,25 @@ namespace RpgDex.WebApi.Controllers
             _canvasElementService = canvasElementService;
         }
         [HttpPost("element")]   
-        public async Task<IActionResult> CreateElement([FromBody] CreateCanvaElementRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> CreateElement([FromBody] CreateCanvaElementRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.CreateElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
         [HttpPost("element/image")]
-        public async Task<IActionResult> CreateImageElement([FromForm] CreateCanvaElementRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> CreateImageElement([FromForm] CreateCanvaElementRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.CreateElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
         [HttpPost("element/token")]
-        public async Task<IActionResult> CreateTokenElement([FromBody] CreateCanvaTokenElementRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> CreateTokenElement([FromBody] CreateCanvaTokenElementRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.CreateTokenElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
         [HttpPost("element/token/quick")]
-        public async Task<IActionResult> QuickCreateCharacterTokenElement([FromForm] QuickCreateCanvaTokenElementRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> QuickCreateCharacterTokenElement([FromForm] QuickCreateCanvaTokenElementRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.QuickCreateTokenElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
@@ -64,31 +64,37 @@ namespace RpgDex.WebApi.Controllers
             return result.ToIActionResult();
         }
         [HttpPatch("MoveElement")]
-        public async Task<IActionResult> MoveElement([FromBody] MoveCanvasElementsRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> MoveElement([FromBody] MoveCanvasElementsRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.MoveElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
         [HttpPatch("ReOrderElement")]
-        public async Task<IActionResult> ReOrderElement([FromBody] ReOrderCanvasElementsRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> ReOrderElement([FromBody] ReOrderCanvasElementsRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.ReOrderElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
+        [HttpPatch("ChangeColor")]
+        public async Task<IActionResult> ChangeColor([FromBody] ChangeColorCanvasElementsRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
+        {
+            var result = await _canvasElementService.ChangeElementsColor(currentUser, request with { ExceptConnectionId = exceptConnectionId });
+            return result.ToIActionResult();
+        }
         [HttpPatch("Deactive")]
-        public async Task<IActionResult> Deactive([FromBody] SetElementActiveStateRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> Deactive([FromBody] SetElementActiveStateRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.SetElementActiveState(currentUser, request with { ExceptConnectionId = exceptConnectionId }, false);
             return result.ToIActionResult();
         }
         [HttpPatch("Active")]
-        public async Task<IActionResult> Active([FromBody] SetElementActiveStateRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> Active([FromBody] SetElementActiveStateRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.SetElementActiveState(currentUser, request with { ExceptConnectionId = exceptConnectionId }, true);
             return result.ToIActionResult();
         }
         [HttpPatch("ScaleElement")]
-        public async Task<IActionResult> ScaleElement([FromBody] ScaleCanvasElementsRequest request, [FromHeader(Name = "Except-Connection-Id")] string? exceptConnectionId = null)
+        public async Task<IActionResult> ScaleElement([FromBody] ScaleCanvasElementsRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
         {
             var result = await _canvasElementService.ScaleElement(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();

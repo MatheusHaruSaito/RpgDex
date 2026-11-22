@@ -22,7 +22,7 @@ namespace RpgDex.Application.Services
     public class CanvasElementService(ICanvasElementRepository canvasElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
         SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvasElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
-        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator,ISubscriptionService subscriptionService
+        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator, IValidator<ChangeColorCanvasElementsRequest> changeColorValidator, ISubscriptionService subscriptionService
         ) : ICanvasElementService
     {
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
@@ -257,6 +257,26 @@ namespace RpgDex.Application.Services
             return Result<CanvasElementResponse>.Success(element.Adapt<CanvasElementResponse>());
 
         }
+        public async Task<Result<bool>> ChangeElementsColor(string userId, ChangeColorCanvasElementsRequest request)
+        {
+            var check = changeColorValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
+
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            //var colors = request.Items.Select(i => new ChangeColorCanvasElement(i.Id, i.Color));
+            var ok = await canvasElementRepository.ChangeColorAsync(request.Ids, request.Color);
+
+            await canvasHubService.ChangeColorElements(
+                request.CampaignId.ToString(),
+                new ChangeColorElementsEvent(
+                    request.Ids,
+                    request.Color,
+                    request.ExceptConnectionId));
+
+            return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.UpdateFailed);
+        }
         private async Task<bool> CheckCanvasStorageAsync(string userId, Guid campaignId, decimal? imageLenghtOffset=0)
         {
             var campaignStorageSize = await canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);
@@ -288,5 +308,6 @@ namespace RpgDex.Application.Services
 
             return (guidUserId, campaign.GameMasterId, null);
         }
+
     }
 }

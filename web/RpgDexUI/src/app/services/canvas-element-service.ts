@@ -14,6 +14,7 @@ import { SetElementActiveStateRequest } from '../../models/setElementActiveState
 import { CreateCanvaTokenElementRequest as CreateCanvasTokenElementRequest } from '../../models/createCanvaTokenElementRequest';
 import { QuickCreateCanvaTokenElementRequest } from '../../models/quickCreateCanvaTokenElementRequest';
 import { ScaleElementRequest } from '../../models/scaleElementRequest';
+import { ChangeColorCanvasElementsRequest } from '../../models/changeColorCanvasElementsRequest';
 
 @Injectable({ providedIn: 'root' })
 export class CanvasElementService {
@@ -26,6 +27,7 @@ export class CanvasElementService {
   private readonly elementAdded$ = new Subject<CanvasElementResponse>();
   private readonly reordered$ = new Subject<{ id: string; z: number }[]>();
   private readonly activeChanged$ = new Subject<{ ids: string[]; state: boolean }>();
+  private readonly colorChanged$ = new Subject<{ ids: string[]; color: string }>();
   constructor(private http: HttpClient) {}
 
   public async startConnection(campaignId: string, getToken: () => string): Promise<void> {
@@ -56,6 +58,9 @@ export class CanvasElementService {
     );
     this.hubConnection.on('ElementsActiveChanged', (elements: { ids: string[]; state: boolean }) => {
       this.activeChanged$.next(elements);
+    });
+    this.hubConnection.on('ElementColorChanged', (elements: { ids: string[]; color: string }) => {
+      this.colorChanged$.next(elements);
     });
     this.hubConnection.onreconnected(() => {
       this.hubConnection!.invoke('JoinCampaignCanvas', this.currentCampaignId).catch((err) =>
@@ -98,6 +103,9 @@ export class CanvasElementService {
   }
   public onElementsReOrdered(): Observable<{ id: string; z: number }[]> {
     return this.reordered$.asObservable();
+  }
+  public onElementsColorChanged(): Observable<{ ids: string[]; color: string}> {
+    return this.colorChanged$.asObservable();
   }
   public CreateElement(
     request: CreateCanvaElementRequest | FormData,
@@ -171,6 +179,11 @@ export class CanvasElementService {
 
   public ReOrderElement(request: ReOrderCanvaElementsRequest): Observable<ApiResponse<boolean>> {
     return this.http.patch<ApiResponse<boolean>>(`${this.env}/ReOrderElement`, request, {
+      headers: this.connectionHeaders(),
+    });
+  }
+  public ChangeColor(request: ChangeColorCanvasElementsRequest): Observable<ApiResponse<boolean>> {
+    return this.http.patch<ApiResponse<boolean>>(`${this.env}/ChangeColor`, request, {
       headers: this.connectionHeaders(),
     });
   }

@@ -20,5 +20,7 @@ namespace RpgDex.Domain.Interfaces
         Task<bool> ScaleElement(Guid campaignId, IEnumerable<ElementScale> items);
         Task<IEnumerable<Guid>> GetTokensIdsByCharacterId(Guid characterId);
         Task<bool> SetActiveStateByCharacterId(IEnumerable<Guid> characterIds, bool state);
+        Task<bool> ChangeColorAsync(IEnumerable<Guid> ids, string color);
+
     }
 }

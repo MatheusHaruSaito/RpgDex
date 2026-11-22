@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using RpgDex.Application.Dto.Canvas;
 using RpgDex.Domain.Entities;
 using RpgDex.Domain.Interfaces;
 using RpgDex.Domain.ValueObjects;
@@ -140,6 +141,19 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.UpdateManyAsync(filter, update);
 
             return result.IsAcknowledged && result.MatchedCount > 0;
+        }
+
+        public async Task<bool> ChangeColorAsync(IEnumerable<Guid> ids, string color)
+        {
+            var models = ids.Select(id => new UpdateOneModel<CanvasElement>(
+                Builders<CanvasElement>.Filter.Where(e => e.Id == id),
+                Builders<CanvasElement>.Update.Set(e => e.Color, color)))
+                .ToList();
+
+            if (models.Count == 0) return true;
+
+            var result = await _entity.BulkWriteAsync(models, new BulkWriteOptions { IsOrdered = false });
+            return result.IsAcknowledged && result.MatchedCount == models.Count;
         }
     }
 }
