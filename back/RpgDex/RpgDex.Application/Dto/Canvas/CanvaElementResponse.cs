@@ -6,5 +6,5 @@ using System.Text;
 
 namespace RpgDex.Application.Dto.Canvas
 {
-    public record CanvasElementResponse(Guid Id, CanvasElementType ElementType, double X, double Y, int Z, double Scale, string? Content, string? Color, string? ImageUrl, List<CanvasPoint>? Points, double? StrokeWidth, Guid? CharacterId = null);
+    public record CanvasElementResponse(Guid Id, CanvasElementType ElementType, double X, double Y, int Z, double Scale, string? Content, string? Color, string? ImageUrl, List<CanvasPoint>? Points, double? StrokeWidth,bool IsLocked, Guid? CharacterId = null);
 }

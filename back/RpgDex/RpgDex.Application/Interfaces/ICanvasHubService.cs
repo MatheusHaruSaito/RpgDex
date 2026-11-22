@@ -15,6 +15,7 @@ namespace RpgDex.Application.Interfaces
         Task SetActiveElements(string campaignId, SetActiveElementsEvent evt);
         Task ChangeColorElements(string campaignId, ChangeColorElementsEvent evt);
         Task UpdateElementContent(string campaignId, UpdateElementContentEvent evt);
+        Task SetIsLockedState(string campaignId, SetIsLockedElementsEvent evt);
 
     }
 }

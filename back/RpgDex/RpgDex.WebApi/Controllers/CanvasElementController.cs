@@ -105,5 +105,17 @@ namespace RpgDex.WebApi.Controllers
             var result = await _canvasElementService.UpdateElementContent(currentUser, request with { ExceptConnectionId = exceptConnectionId });
             return result.ToIActionResult();
         }
+        [HttpPatch("lockElement")]
+        public async Task<IActionResult> LockElement([FromBody] SetElementIsLockedStateRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
+        {
+            var result = await _canvasElementService.SetIsLockedState(currentUser, request with { ExceptConnectionId = exceptConnectionId },false);
+            return result.ToIActionResult();
+        }
+        [HttpPatch("unLockElement")]
+        public async Task<IActionResult> UnLockElement([FromBody] SetElementIsLockedStateRequest request, [FromHeader(Name = "X-Connection-Id")] string? exceptConnectionId = null)
+        {
+            var result = await _canvasElementService.SetIsLockedState(currentUser, request with { ExceptConnectionId = exceptConnectionId },false);
+            return result.ToIActionResult();
+        }
     }
 }

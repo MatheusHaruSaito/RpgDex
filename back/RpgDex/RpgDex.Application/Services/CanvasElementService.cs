@@ -22,7 +22,8 @@ namespace RpgDex.Application.Services
     public class CanvasElementService(ICanvasElementRepository canvasElementRepository, UserManager<ApplicationUser> userManager, ICampaignRepository campaignRepository, IFileService fileService, ICharacterRepository characterRepository,
         ICanvasElementQueries canvasElementQueries,CreateCanvaElementRequestValidator createCanvaElementValidator, MoveCanvaElementsRequestValidator moveCanvaElementValidator, ReOrderCanvaElementsRequestValidator reOrderCanvaElementValidator,
         SetElementActiveStateRequestValidator setElementActiveStateValidator, UpdateCanvasElementRequestValidator updateCanvasElementValidator, ILogger<CanvasElementService> logger, ICharacterService characterSevice, ICampaignService campaignService,
-        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator, IValidator<ChangeColorCanvasElementsRequest> changeColorValidator, IValidator<UpdateElementContentRequest> updateContentValidator, ISubscriptionService subscriptionService
+        ICanvasHubService canvasHubService,ScaleCanvasElementsRequestValidator scaleCamvasElementValidator, IValidator<ChangeColorCanvasElementsRequest> changeColorValidator, IValidator<UpdateElementContentRequest> updateContentValidator,
+        IValidator<SetElementIsLockedStateRequest> setIsLockedValidator, ISubscriptionService subscriptionService
         ) : ICanvasElementService
     {
         public async Task<Result<CanvasElementResponse>> CreateElement(string userId, CreateCanvaElementRequest request)
@@ -296,6 +297,21 @@ namespace RpgDex.Application.Services
 
             return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.UpdateFailed);
         }
+        public async Task<Result<bool>> SetIsLockedState(string userId, SetElementIsLockedStateRequest request, bool state)
+        {
+            var check = setIsLockedValidator.Validate(request);
+            if (!check.IsValid) return check.ReturnErrors<bool>();
+            var (_, _, accessError) = await CheckAccessAsync(userId, request.CampaignId);
+            if (accessError is not null) return Result<bool>.Failure(accessError);
+
+            var ok = await canvasElementRepository.SetIsLockedStateAsync(request.CampaignId,request.Ids, state);
+
+            await canvasHubService.SetIsLockedState(
+                request.CampaignId.ToString(),
+                new SetIsLockedElementsEvent(request.Ids, state, request.ExceptConnectionId));
+
+            return ok ? Result<bool>.Success(true) : Result<bool>.Failure(CanvaElementError.SetActiveStateFailed);
+        }  
         private async Task<bool> CheckCanvasStorageAsync(string userId, Guid campaignId, decimal? imageLenghtOffset=0)
         {
             var campaignStorageSize = await canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);

@@ -11,6 +11,7 @@ export interface CanvasElementResponse {
   color?: string;
   imageUrl?: string;
   points?: { x: number; y: number }[];
+  isLocked: boolean;
   strokeWidth?: number;
   characterId?: string;
 }

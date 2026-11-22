@@ -73,6 +73,7 @@ namespace RpgDex.Infrastructure.Queries
                     e.Content, e.Color,
                     String.IsNullOrWhiteSpace(imageUrl) ? null:$"{_apiSettings.BaseUrl}/api/File/{imageUrl}",
                     e.Points, e.StrokeWidth,
+                    e.IsLocked,
                     e.CharacterId);
             }).ToList();
             var storageSize = await _canvasElementRepository.GetCanvasSizeByCampaignIdAsync(campaignId);

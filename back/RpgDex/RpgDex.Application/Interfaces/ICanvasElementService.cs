@@ -16,5 +16,6 @@ namespace RpgDex.Application.Interfaces
         Task<Result<bool>> SetElementActiveState(string userId,SetElementActiveStateRequest request,bool state);
         Task<Result<bool>> ChangeElementsColor(string userId, ChangeColorCanvasElementsRequest request);
         Task<Result<bool>> UpdateElementContent(string userId, UpdateElementContentRequest request);
+        Task<Result<bool>> SetIsLockedState(string userId, SetElementIsLockedStateRequest request, bool state);
     }
 }

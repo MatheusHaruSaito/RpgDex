@@ -167,5 +167,19 @@ namespace RpgDex.Infrastructure.Repositories
             var result = await _entity.UpdateOneAsync(filter,update);
             return result.IsAcknowledged && result.ModifiedCount > 0;
         }
+        public async Task<bool> SetIsLockedStateAsync(Guid campaignId,IEnumerable<Guid> elementsIds, bool state)
+        {
+            var ids = elementsIds.Distinct().Select(id => (Guid?)id).ToList();
+            if (ids.Count == 0) return true;
+            var f = Builders<CanvasElement>.Filter;
+            var filter = f.And(
+                f.Eq(e => e.CampaignId, campaignId),
+                f.In(e => e.Id, ids));
+            var update = Builders<CanvasElement>.Update.Set(e => e.IsActive, state);
+
+            var result = await _entity.UpdateManyAsync(filter, update);
+
+            return result.IsAcknowledged && result.MatchedCount > 0;
+        }
     }
 }

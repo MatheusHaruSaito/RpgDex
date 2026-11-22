@@ -22,6 +22,7 @@ namespace RpgDex.Domain.Entities
         public List<CanvasPoint>? Points { get; set; }
         public double? StrokeWidth { get; set; }
         public bool IsActive { get; set; } = true;
+        public bool IsLocked { get; set; } = false;
         public decimal ElementSize { get; set; }
         public DateTime? DeactivatedAt { get; set; }
 

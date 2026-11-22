@@ -29,6 +29,8 @@ namespace RpgDex.Infrastructure.Services
 
         public Task UpdateElementContent(string campaignId, UpdateElementContentEvent evt)
          => Target(campaignId, evt.ExceptConnectionId).SendAsync("ElementContentChanged", new { id = evt.ElementId, content = evt.Content });
+        public Task SetIsLockedState(string campaignId, SetIsLockedElementsEvent evt)
+         => Target(campaignId, evt.ExceptConnectionId).SendAsync("SetIsLockedState", new { ids = evt.ElementIds, state = evt.State });
 
 
         private IClientProxy Target(string campaignId, string? exceptConnectionId)

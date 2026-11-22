@@ -33,7 +33,6 @@ import { ErrorHandlerUtil } from '../../utils/error-handler.util';
 export type ToolMode = 'cursor' | 'draw' | 'eraser';
 
 export interface ExtendedCanvasElement extends CanvasElementResponse {
-  isLocked?: boolean;
   hideName?: boolean;
   isRound?: boolean;
 }
@@ -239,6 +238,17 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         this.selectedElements = this.selectedElements.filter((e) => !ids.includes(e.id));
       }
       this.refreshStorageUsage();
+    });
+    
+    this.canvasElementService.onElementIsLockedStateChanged().subscribe(({ ids, state }) => {
+      const idSet = new Set(ids);
+      this.elements.forEach((el) => {
+        if (idSet.has(el.id)) el.isLocked = state;
+      });
+
+      if (state) {
+        this.selectedElements = this.selectedElements.filter((e) => !idSet.has(e.id));
+      }
     });
   }
 
@@ -1814,6 +1824,7 @@ export class CampaignCanvasComponent implements OnInit, OnDestroy {
         color: this.selectedColor,
         strokeWidth: this.brushSize,
         points: [{ x: wx, y: wy }],
+        isLocked: false
       };
       this.elements.push(newDrawing);
       this.activeDrawing = newDrawing;
