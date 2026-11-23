@@ -1,11 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { catchError, filter, switchMap } from 'rxjs/operators';
+import { catchError, filter } from 'rxjs/operators';
 import { NavbarComponent } from './shared/navbar/navbar';
 import { FooterComponent } from './shared/footer/footer';
 import { NavigationService } from './services/navigation-service';
 import { AuthService } from './services/auth-service';
+import { ThemeService } from './services/theme-service';
 import { AgeVerificationModalComponent } from './modals/age-verification-modal/age-verification-modal';
 import { TranslateService } from '@ngx-translate/core';
 import { EMPTY } from 'rxjs';
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit {
 
   private router = inject(Router);
   private authService = inject(AuthService);
+  private themeService = inject(ThemeService);
   public navigationService = inject(NavigationService);
 
   showBackButton = false;
@@ -70,7 +72,6 @@ export class AppComponent implements OnInit {
         this.ageModalDismissed = false;
         this.evaluateAgeModal(currentUrl);
       });
-
   }
 
   ngOnInit(): void {
@@ -81,18 +82,24 @@ export class AppComponent implements OnInit {
     this.translate.use(browserLang?.match(/en|pt/) ? browserLang : 'pt');
 
     if (this.authService.isLoggedIn() && this.isStatusStale()) {
-    this.authService.RefreshToken().pipe(catchError(() => EMPTY)).subscribe();
-  }
+      this.authService
+        .RefreshToken()
+        .pipe(catchError(() => EMPTY))
+        .subscribe();
+    }
+
     this.evaluateAgeModal(this.router.url.split('?')[0]);
 
     this.authService.currentUser.subscribe(() => {
       this.evaluateAgeModal(this.router.url.split('?')[0]);
     });
   }
-private isStatusStale(): boolean {
-  const s = this.authService.getLoggedUserAgeStatus()?.toLowerCase();
-  return s === 'pending' || s === 'unverified';
-}
+
+  private isStatusStale(): boolean {
+    const s = this.authService.getLoggedUserAgeStatus()?.toLowerCase();
+    return s === 'pending' || s === 'unverified';
+  }
+
   private evaluateAgeModal(currentUrl: string): void {
     if (this.ageModalDismissed || !this.authService.isLoggedIn()) {
       this.showAgeVerificationModal.set(false);
